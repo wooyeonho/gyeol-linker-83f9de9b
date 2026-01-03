@@ -62,22 +62,6 @@ export default async function HeroSection() {
                 {t('joinCommunity')}
               </Link>
             </div>
-
-            {/* 통계 (선택적) */}
-            <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-center">
-              <div>
-                <div className="text-3xl font-bold text-primary mb-1">1,000+</div>
-                <div className="text-sm text-gray-400">프롬프트</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-primary mb-1">500+</div>
-                <div className="text-sm text-gray-400">전문가</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-primary mb-1">10,000+</div>
-                <div className="text-sm text-gray-400">사용자</div>
-              </div>
-            </div>
           </div>
         </HeroSectionAnimated>
       </div>
