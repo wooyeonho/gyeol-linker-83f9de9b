@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+  /* Jade Green Primary Color */
+  --primary: #00A86B;
+  --primary-50: #E6F5F0;
+  --primary-100: #CCEBE1;
+  --primary-200: #99D7C3;
+  --primary-300: #66C3A5;
+  --primary-400: #33AF87;
+  --primary-500: #00A86B;
+  --primary-600: #008656;
+  --primary-700: #006441;
+  --primary-800: #00422B;
+  --primary-900: #002116;
+}
+
+/* 다크모드 설정 */
+.dark {
+  /* 다크모드에서도 Jade Green이 잘 보이도록 설정 */
+  --primary: #00A86B;
+  --primary-500: #00A86B;
+  --primary-600: #33AF87; /* 다크모드에서 더 밝게 */
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  /* 한글 단어 보호 및 텍스트 레이아웃 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 제목 및 강조 텍스트 - Apple 스타일 밀도 */
+h1, h2, h3, h4, h5, h6,
+.font-bold, .font-semibold {
+  letter-spacing: -0.02em;
+}
+
+/* 본문 - Toss 스타일 가독성 */
+p, .text-base, .text-sm, .text-lg {
+  line-height: 1.625; /* leading-relaxed */
+}
+
