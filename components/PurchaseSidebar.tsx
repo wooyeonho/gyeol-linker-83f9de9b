@@ -14,10 +14,12 @@ export default function PurchaseSidebar({
   promptId,
   price,
   hasPurchased,
+  slug, // [수정됨] 이제 slug를 받습니다!
 }: {
   promptId: string;
   price: number;
   hasPurchased: boolean;
+  slug: string; // [수정됨] 타입 정의 추가!
 }) {
   const t = useTranslations('prompts');
   const tCommon = useTranslations('common');
