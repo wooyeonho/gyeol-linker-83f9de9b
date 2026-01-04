@@ -294,6 +294,69 @@
     "taggedPrompt": "태깅된 프롬프트",
     "loginRequired": "로그인이 필요합니다",
     "permissionDenied": "권한이 없습니다"
+  },
+  "checkout": {
+    "title": "결제",
+    "subtitle": "안전하고 빠른 결제를 진행해주세요",
+    "orderSummary": "주문 요약",
+    "securePayment": "안전한 결제",
+    "securePaymentDescription": "모든 결제는 암호화되어 안전하게 처리됩니다",
+    "platformFee": "플랫폼 수수료",
+    "total": "총액",
+    "completePurchase": "결제 완료",
+    "processing": "처리 중...",
+    "success": "결제가 완료되었습니다",
+    "failed": "결제에 실패했습니다",
+    "secureTransaction": "안전한 거래",
+    "instantAccess": "즉시 접근 가능",
+    "lifetimeAccess": "평생 사용 가능"
+  },
+  "orders": {
+    "title": "구매 내역",
+    "emptyMessage": "구매한 프롬프트가 없습니다",
+    "orderDate": "주문일",
+    "amount": "금액",
+    "status": "상태",
+    "pending": "대기중",
+    "completed": "완료됨",
+    "refunded": "환불됨",
+    "viewPrompt": "프롬프트 보기",
+    "download": "다운로드"
+  },
+  "myPrompts": {
+    "title": "내 프롬프트",
+    "emptyMessage": "등록한 프롬프트가 없습니다",
+    "createPrompt": "새 프롬프트 등록",
+    "edit": "수정",
+    "delete": "삭제",
+    "status": "상태",
+    "pending": "대기중",
+    "approved": "승인됨",
+    "rejected": "거부됨",
+    "view": "보기"
+  },
+  "adminUsers": {
+    "title": "사용자 관리",
+    "search": "사용자 검색",
+    "searchPlaceholder": "이메일 또는 이름으로 검색...",
+    "role": "역할",
+    "user": "사용자",
+    "seller": "판매자",
+    "admin": "관리자",
+    "changeRole": "역할 변경",
+    "success": "역할이 변경되었습니다",
+    "failed": "역할 변경에 실패했습니다"
+  },
+  "adminAnalytics": {
+    "title": "통계 대시보드",
+    "totalUsers": "총 사용자",
+    "totalSellers": "총 판매자",
+    "totalPrompts": "총 프롬프트",
+    "totalOrders": "총 주문",
+    "totalRevenue": "총 수익",
+    "recentOrders": "최근 주문",
+    "topSellers": "인기 판매자",
+    "topPrompts": "인기 프롬프트"
   }
 }
 

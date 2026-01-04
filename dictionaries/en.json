@@ -294,6 +294,69 @@
     "taggedPrompt": "Tagged Prompt",
     "loginRequired": "Login required",
     "permissionDenied": "Permission denied"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "subtitle": "Complete your secure and fast payment",
+    "orderSummary": "Order Summary",
+    "securePayment": "Secure Payment",
+    "securePaymentDescription": "All payments are encrypted and processed securely",
+    "platformFee": "Platform Fee",
+    "total": "Total",
+    "completePurchase": "Complete Purchase",
+    "processing": "Processing...",
+    "success": "Payment completed successfully",
+    "failed": "Payment failed",
+    "secureTransaction": "Secure transaction",
+    "instantAccess": "Instant access",
+    "lifetimeAccess": "Lifetime access"
+  },
+  "orders": {
+    "title": "Order History",
+    "emptyMessage": "You haven't purchased any prompts yet",
+    "orderDate": "Order Date",
+    "amount": "Amount",
+    "status": "Status",
+    "pending": "Pending",
+    "completed": "Completed",
+    "refunded": "Refunded",
+    "viewPrompt": "View Prompt",
+    "download": "Download"
+  },
+  "myPrompts": {
+    "title": "My Prompts",
+    "emptyMessage": "You haven't registered any prompts yet",
+    "createPrompt": "Create New Prompt",
+    "edit": "Edit",
+    "delete": "Delete",
+    "status": "Status",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "view": "View"
+  },
+  "adminUsers": {
+    "title": "User Management",
+    "search": "Search Users",
+    "searchPlaceholder": "Search by email or name...",
+    "role": "Role",
+    "user": "User",
+    "seller": "Seller",
+    "admin": "Admin",
+    "changeRole": "Change Role",
+    "success": "Role changed successfully",
+    "failed": "Failed to change role"
+  },
+  "adminAnalytics": {
+    "title": "Analytics Dashboard",
+    "totalUsers": "Total Users",
+    "totalSellers": "Total Sellers",
+    "totalPrompts": "Total Prompts",
+    "totalOrders": "Total Orders",
+    "totalRevenue": "Total Revenue",
+    "recentOrders": "Recent Orders",
+    "topSellers": "Top Sellers",
+    "topPrompts": "Top Prompts"
   }
 }
 

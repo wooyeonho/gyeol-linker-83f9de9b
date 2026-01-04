@@ -6,11 +6,8 @@ import PromptApprovalActions from './PromptApprovalActions';
 import { CheckCircle, XCircle, Clock, User } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-
-/**
- * 관리자 이메일 (환경 변수로 설정 가능)
- */
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
+import { checkAdminAccess } from '@/lib/utils/auth';
+import { formatDate } from '@/lib/utils/date';
 
 /**
  * 관리자 프롬프트 승인/반려 페이지
@@ -24,47 +21,11 @@ export default async function AdminPromptsPage({
   const t = await getTranslations('admin');
   const supabase = await createClient();
 
-  // locale을 redirect 호출 전에 명시적으로 사용
   const redirectPath = `/${locale}`;
-  void redirectPath;
 
-  // 1. 사용자 인증 확인
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(redirectPath);
-  }
-
-  // 2. 관리자 권한 확인 (이메일 + role) - 강화된 보안
-  // ADMIN_EMAIL 환경변수가 설정되지 않은 경우 접근 차단
-  if (!process.env.ADMIN_EMAIL) {
-    console.error('ADMIN_EMAIL 환경변수가 설정되지 않았습니다.');
-    redirect(redirectPath);
-  }
-
-  // 이메일 기반 접근 제어 (엄격한 검증)
-  if (!user.email || user.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`관리자 페이지 접근 시도: ${user.email} (허용된 이메일: ${ADMIN_EMAIL})`);
-    redirect(redirectPath);
-  }
-
-  // role 기반 접근 제어
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, email')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    console.warn(`관리자 페이지 접근 시도: ${user.email} (role: ${profile?.role || 'none'})`);
-    redirect(redirectPath);
-  }
-
-  // 이중 검증: 프로필의 이메일도 확인
-  if (profile.email && profile.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`프로필 이메일 불일치: ${profile.email} (허용된 이메일: ${ADMIN_EMAIL})`);
+  // 관리자 권한 확인
+  const { authorized } = await checkAdminAccess();
+  if (!authorized) {
     redirect(redirectPath);
   }
 
@@ -81,19 +42,7 @@ export default async function AdminPromptsPage({
     );
   }
 
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(
-      locale === 'ko' ? 'ko-KR' : 'en-US',
-      {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }
-    );
-  };
+  // formatDate는 lib/utils/date.ts에서 import
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-6xl">
@@ -170,7 +119,7 @@ export default async function AdminPromptsPage({
                       </span>
                       <span className="text-gray-600">•</span>
                       <span className="text-gray-400">
-                        {formatDate(prompt.created_at)}
+                        {formatDate(prompt.created_at, { locale, includeTime: true })}
                       </span>
                     </div>
 

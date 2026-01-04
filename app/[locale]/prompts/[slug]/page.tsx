@@ -2,15 +2,20 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import ImageGallery from '@/components/ImageGallery';
 import PromptContent from '@/components/PromptContent';
 import PurchaseSidebar from '@/components/PurchaseSidebar';
-import ShareButtons from '@/components/ShareButtons';
 import RecommendedPrompts from '@/components/RecommendedPrompts';
 import PromptCardSkeleton from '@/components/PromptCardSkeleton';
 import { createClient } from '@/lib/supabase/server';
 import { getRelatedPrompts } from '@/app/actions/recommendations';
 import { Star, Eye, ShoppingBag, User } from 'lucide-react';
+
+// Dynamic import for code splitting (ShareButtons는 Client Component이므로 ssr: false 불필요)
+const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
+  loading: () => <div className="h-10 w-32 bg-gray-800 rounded animate-pulse" />,
+});
 
 /**
  * 프롬프트 상세 정보 타입
@@ -212,8 +217,41 @@ export default async function PromptDetailPage({
     .select('*', { count: 'exact', head: true })
     .eq('prompt_id', prompt.id);
 
+  // Schema.org 구조화된 데이터 생성
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prompt-jeongeum.com';
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: title,
+    description: description,
+    image: prompt.thumbnail_url,
+    offers: {
+      '@type': 'Offer',
+      price: prompt.price,
+      priceCurrency: 'KRW',
+      availability: 'https://schema.org/InStock',
+      url: `${baseUrl}/${locale}/prompts/${prompt.slug}`,
+    },
+    aggregateRating: reviewCount && reviewCount > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: prompt.average_rating,
+      reviewCount: reviewCount,
+    } : undefined,
+    brand: {
+      '@type': 'Brand',
+      name: '프롬프트 정음',
+    },
+    category: category,
+  };
+
   return (
-    <main className="container mx-auto px-4 py-8">
+    <>
+      {/* Schema.org 구조화된 데이터 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 메인 콘텐츠 */}
           <div className="lg:col-span-2 space-y-8">
@@ -227,7 +265,7 @@ export default async function PromptDetailPage({
               <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
                 {/* 판매자 */}
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <User className="w-4 h-4" aria-hidden="true" />
                   <span>{prompt.seller_name || '판매자'}</span>
                 </div>
 
@@ -238,21 +276,21 @@ export default async function PromptDetailPage({
                 </div>
 
                 {/* 평점 */}
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <div className="flex items-center gap-2" aria-label={`평점: ${prompt.average_rating.toFixed(1)}점, 리뷰 ${reviewCount || 0}개`}>
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                   <span>{prompt.average_rating.toFixed(1)}</span>
                   <span>({reviewCount || 0} {t('reviews')})</span>
                 </div>
 
                 {/* 조회수 */}
-                <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4" />
+                <div className="flex items-center gap-2" aria-label={`조회수: ${prompt.view_count.toLocaleString()}`}>
+                  <Eye className="w-4 h-4" aria-hidden="true" />
                   <span>{prompt.view_count.toLocaleString()}</span>
                 </div>
 
                 {/* 구매수 */}
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4" />
+                <div className="flex items-center gap-2" aria-label={`구매수: ${prompt.purchase_count.toLocaleString()}`}>
+                  <ShoppingBag className="w-4 h-4" aria-hidden="true" />
                   <span>{prompt.purchase_count.toLocaleString()}</span>
                 </div>
               </div>
@@ -316,6 +354,7 @@ export default async function PromptDetailPage({
               promptId={prompt.id}
               price={prompt.price}
               hasPurchased={hasPurchased}
+              slug={prompt.slug}
             />
           </div>
         </div>
@@ -336,6 +375,7 @@ export default async function PromptDetailPage({
           <RelatedPromptsSection promptId={prompt.id} locale={locale} />
         </Suspense>
       </main>
+    </>
   );
 }
 

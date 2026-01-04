@@ -3,11 +3,10 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PayoutActionButton from './PayoutActionButton';
 import { DollarSign, Calendar, User, CreditCard } from 'lucide-react';
+import { formatDate } from '@/lib/utils/date';
+import { checkAdminAccess } from '@/lib/utils/auth';
 
-/**
- * 관리자 이메일 (환경 변수로 설정 가능)
- */
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
+// ADMIN_EMAIL은 lib/utils/auth.ts에서 관리
 
 /**
  * 출금 요청 타입
@@ -29,11 +28,8 @@ async function fetchPendingPayouts(): Promise<PayoutRequest[]> {
   const supabase = await createClient();
 
   // 관리자 권한 확인
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || user.email !== ADMIN_EMAIL) {
+  const { authorized } = await checkAdminAccess();
+  if (!authorized) {
     return [];
   }
 
@@ -80,71 +76,13 @@ export default async function AdminPayoutsPage({
   const { locale } = await params;
   const t = await getTranslations('admin');
 
-  // locale을 redirect 호출 전에 명시적으로 사용하여 TypeScript가 인식하도록 함
-  // formatDate 함수를 먼저 정의하여 locale이 사용됨을 보장
-  const formatDate = (dateString: string, localeParam: string) => {
-    return new Date(dateString).toLocaleDateString(
-      localeParam === 'ko' ? 'ko-KR' : 'en-US',
-      {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }
-    );
-  };
+  // formatDate는 lib/utils/date.ts에서 import
 
-  // locale을 redirect 호출 전에 명시적으로 사용
-  // TypeScript가 locale이 사용됨을 인식하도록 변수에 할당하고 즉시 사용
-  const currentLocale = locale;
   const redirectPath = `/${locale}`;
-  
-  // locale을 redirect 호출 전에 명시적으로 사용하여 TypeScript가 인식하도록 함
-  // formatDate와 redirectPath를 사용하여 locale이 사용됨을 보장
-  // void 연산자를 사용하여 TypeScript가 locale 사용을 인식하도록 함
-  void formatDate(new Date().toISOString(), currentLocale);
-  void redirectPath;
 
-  const supabase = await createClient();
-
-  // 1. 사용자 인증 확인
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(redirectPath);
-  }
-
-  // 2. 관리자 권한 확인 (이메일 + role) - 강화된 보안
-  // ADMIN_EMAIL 환경변수가 설정되지 않은 경우 접근 차단
-  if (!process.env.ADMIN_EMAIL) {
-    console.error('ADMIN_EMAIL 환경변수가 설정되지 않았습니다.');
-    redirect(redirectPath);
-  }
-
-  // 이메일 기반 접근 제어 (엄격한 검증)
-  if (!user.email || user.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`관리자 페이지 접근 시도: ${user.email} (허용된 이메일: ${ADMIN_EMAIL})`);
-    redirect(redirectPath);
-  }
-
-  // role 기반 접근 제어
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, email')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    console.warn(`관리자 페이지 접근 시도: ${user.email} (role: ${profile?.role || 'none'})`);
-    redirect(redirectPath);
-  }
-
-  // 이중 검증: 프로필의 이메일도 확인
-  if (profile.email && profile.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`프로필 이메일 불일치: ${profile.email} (허용된 이메일: ${ADMIN_EMAIL})`);
+  // 관리자 권한 확인
+  const { authorized } = await checkAdminAccess();
+  if (!authorized) {
     redirect(redirectPath);
   }
 
@@ -224,9 +162,9 @@ export default async function AdminPayoutsPage({
                       <td className="px-6 py-4 text-gray-300">
                         {payout.payout_method}
                       </td>
-                      <td className="px-6 py-4 text-gray-400 text-sm">
-                        {formatDate(payout.requested_at, currentLocale)}
-                      </td>
+                          <td className="px-6 py-4 text-gray-400 text-sm">
+                            {formatDate(payout.requested_at, { locale, includeTime: true })}
+                          </td>
                       <td className="px-6 py-4">
                         <PayoutActionButton payoutId={payout.id} />
                       </td>

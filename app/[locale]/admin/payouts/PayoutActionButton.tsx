@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { completePayout } from '@/app/actions/admin';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 

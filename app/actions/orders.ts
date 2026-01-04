@@ -74,10 +74,18 @@ export async function createOrder(promptId: string, amount: number) {
   // - orders_update_seller_balance: 판매자 balance += sellerRevenue
   // - orders_increment_purchase_count: 프롬프트 purchase_count += 1
 
-  // 7. 페이지 캐시 무효화 (상세 페이지 갱신)
-  revalidatePath('/prompts/[slug]', 'page');
+  // 7. 프롬프트 slug 조회 (리다이렉트용)
+  const { data: prompt } = await supabase
+    .from('prompts')
+    .select('slug')
+    .eq('id', promptId)
+    .single();
 
-  return { success: true, orderId: order.id };
+  // 8. 페이지 캐시 무효화 (상세 페이지 갱신)
+  revalidatePath('/prompts/[slug]', 'page');
+  revalidatePath('/library', 'page');
+
+  return { success: true, orderId: order.id, slug: prompt?.slug || null };
 }
 
 

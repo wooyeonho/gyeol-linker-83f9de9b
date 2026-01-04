@@ -3,60 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from '@/app/actions/notifications';
-
-/**
- * 관리자 이메일 (환경 변수로 설정 가능)
- */
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
-
-/**
- * 관리자 권한 확인
- */
-async function checkAdminAccess(): Promise<{ authorized: boolean; error?: string }> {
-  const supabase = await createClient();
-
-  // 1. 사용자 인증 확인
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { authorized: false, error: '로그인이 필요합니다.' };
-  }
-
-  // 2. ADMIN_EMAIL 환경변수 확인
-  if (!process.env.ADMIN_EMAIL) {
-    console.error('ADMIN_EMAIL 환경변수가 설정되지 않았습니다.');
-    return { authorized: false, error: '관리자 설정이 올바르지 않습니다.' };
-  }
-
-  // 3. 이메일 기반 접근 제어 (엄격한 검증)
-  if (!user.email || user.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`관리자 액션 접근 시도: ${user.email} (허용된 이메일: ${ADMIN_EMAIL})`);
-    return { authorized: false, error: '관리자 권한이 없습니다.' };
-  }
-
-  // 4. role='admin' 확인
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, email')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    console.warn(`관리자 액션 접근 시도: ${user.email} (role: ${profile?.role || 'none'})`);
-    return { authorized: false, error: '관리자 권한이 필요합니다.' };
-  }
-
-  // 5. 이중 검증: 프로필의 이메일도 확인
-  if (profile.email && profile.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
-    console.warn(`프로필 이메일 불일치: ${profile.email} (허용된 이메일: ${ADMIN_EMAIL})`);
-    return { authorized: false, error: '관리자 권한이 없습니다.' };
-  }
-
-  return { authorized: true };
-}
+import { checkAdminAccess } from '@/lib/utils/auth';
 
 /**
  * 대기 중인 프롬프트 조회
