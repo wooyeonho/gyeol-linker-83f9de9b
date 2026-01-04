@@ -1,19 +1,24 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useState, useRef, useMemo, useCallback } from 'react';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
 import { createPrompt } from '@/app/actions/prompts';
+import Image from 'next/image';
 import { X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/components/ui/Toast';
 
 /**
  * 프롬프트 등록 폼 컴포넌트 (클라이언트)
  */
 export default function PromptForm() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations('promptForm');
   const tCommon = useTranslations('common');
+  const { addToast } = useToast();
 
   // 폼 상태
   const [titleKo, setTitleKo] = useState('');
@@ -22,6 +27,9 @@ export default function PromptForm() {
   const [descriptionEn, setDescriptionEn] = useState('');
   const [content, setContent] = useState('');
   const [price, setPrice] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [categoryKo, setCategoryKo] = useState('');
+  const [categoryEn, setCategoryEn] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
@@ -93,7 +101,7 @@ export default function PromptForm() {
 
     // 파일 크기 검증 (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하여야 합니다.');
+      addToast({ type: 'error', message: '파일 크기는 5MB 이하여야 합니다.' });
       return;
     }
 
@@ -118,7 +126,7 @@ export default function PromptForm() {
       clearInterval(progressInterval);
     } catch (error) {
       console.error('썸네일 업로드 오류:', error);
-      alert('썸네일 업로드에 실패했습니다.');
+      addToast({ type: 'error', message: '썸네일 업로드에 실패했습니다.' });
       setThumbnailProgress(0);
     } finally {
       setThumbnailUploading(false);
@@ -144,7 +152,7 @@ export default function PromptForm() {
 
         // 파일 크기 검증 (5MB)
         if (file.size > 5 * 1024 * 1024) {
-          alert(`${file.name}의 파일 크기는 5MB 이하여야 합니다.`);
+          addToast({ type: 'error', message: `${file.name}의 파일 크기는 5MB 이하여야 합니다.` });
           continue;
         }
 
@@ -170,7 +178,7 @@ export default function PromptForm() {
       setResultImagesProgress(100);
     } catch (error) {
       console.error('결과물 이미지 업로드 오류:', error);
-      alert('결과물 이미지 업로드에 실패했습니다.');
+      addToast({ type: 'error', message: '결과물 이미지 업로드에 실패했습니다.' });
       setResultImagesProgress(0);
     } finally {
       setResultImagesUploading(false);
@@ -206,13 +214,36 @@ export default function PromptForm() {
   };
 
   /**
+   * 폼 유효성 검사
+   */
+  const validateForm = useCallback((): string | null => {
+    if (!titleKo.trim() || !titleEn.trim()) {
+      return '제목(한국어/영어)을 모두 입력해주세요.';
+    }
+    if (!descriptionKo.trim() || !descriptionEn.trim()) {
+      return '설명(한국어/영어)을 모두 입력해주세요.';
+    }
+    if (!content.trim()) {
+      return '프롬프트 원문을 입력해주세요.';
+    }
+    if (!price || parseFloat(price) < 0.99) {
+      return '가격은 최소 $0.99 이상이어야 합니다.';
+    }
+    if (!thumbnailUrl) {
+      return '썸네일 이미지를 업로드해주세요.';
+    }
+    return null;
+  }, [titleKo, titleEn, descriptionKo, descriptionEn, content, price, thumbnailUrl]);
+
+  /**
    * 폼 제출 핸들러
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!thumbnailUrl) {
-      alert('썸네일 이미지를 업로드해주세요.');
+    const validationError = validateForm();
+    if (validationError) {
+      addToast({ type: 'warning', message: validationError });
       return;
     }
 
@@ -229,6 +260,15 @@ export default function PromptForm() {
       formData.append('thumbnail_url', thumbnailUrl);
       formData.append('result_images', JSON.stringify(resultImages));
       formData.append('tags', JSON.stringify(tags));
+      if (aiModel) {
+        formData.append('ai_model', aiModel);
+      }
+      if (categoryKo) {
+        formData.append('category_ko', categoryKo);
+      }
+      if (categoryEn) {
+        formData.append('category_en', categoryEn);
+      }
       if (resultVideoUrl) {
         formData.append('result_video_url', resultVideoUrl);
       }
@@ -236,24 +276,36 @@ export default function PromptForm() {
       const result = await createPrompt(formData);
 
       if (result.error) {
-        alert(result.error);
+        addToast({ type: 'error', message: result.error });
         setSubmitting(false);
         return;
       }
 
-      alert(t('registerSuccess'));
-      router.push('/seller/dashboard');
+      addToast({ type: 'success', message: t('registerSuccess') });
+      router.push(`/${locale}/prompts/${result.slug}`);
     } catch (error) {
       console.error('프롬프트 등록 오류:', error);
-      alert(t('registerFailed'));
+      addToast({ type: 'error', message: t('registerFailed') });
       setSubmitting(false);
     }
-  };
+  }, [validateForm, thumbnailUrl, titleKo, titleEn, descriptionKo, descriptionEn, content, price, aiModel, categoryKo, categoryEn, tags, resultImages, resultVideoUrl, locale, router, t, addToast]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="container mx-auto px-4 py-8 max-w-4xl"
+    >
         {/* 페이지 타이틀 */}
-        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="text-3xl font-bold mb-8"
+        >
+          {t('title')}
+        </motion.h1>
 
         {/* 등록 폼 */}
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -268,9 +320,15 @@ export default function PromptForm() {
                 value={titleKo}
                 onChange={(e) => setTitleKo(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                maxLength={100}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="프롬프트 제목을 입력하세요"
+                aria-label="한국어 제목"
+                aria-describedby="titleKo-help"
               />
+              <p id="titleKo-help" className="mt-1 text-xs text-gray-500">
+                {titleKo.length}/100
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -281,9 +339,15 @@ export default function PromptForm() {
                 value={titleEn}
                 onChange={(e) => setTitleEn(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                maxLength={100}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="Enter prompt title"
+                aria-label="English title"
+                aria-describedby="titleEn-help"
               />
+              <p id="titleEn-help" className="mt-1 text-xs text-gray-500">
+                {titleEn.length}/100
+              </p>
             </div>
           </div>
 
@@ -298,9 +362,15 @@ export default function PromptForm() {
                 onChange={(e) => setDescriptionKo(e.target.value)}
                 required
                 rows={5}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                maxLength={500}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                 placeholder="프롬프트에 대한 상세 설명을 입력하세요"
+                aria-label="한국어 설명"
+                aria-describedby="descriptionKo-help"
               />
+              <p id="descriptionKo-help" className="mt-1 text-xs text-gray-500">
+                {descriptionKo.length}/500
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -311,9 +381,15 @@ export default function PromptForm() {
                 onChange={(e) => setDescriptionEn(e.target.value)}
                 required
                 rows={5}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                maxLength={500}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                 placeholder="Enter detailed description"
+                aria-label="English description"
+                aria-describedby="descriptionEn-help"
               />
+              <p id="descriptionEn-help" className="mt-1 text-xs text-gray-500">
+                {descriptionEn.length}/500
+              </p>
             </div>
           </div>
 
@@ -336,6 +412,48 @@ export default function PromptForm() {
               />
             </div>
             <p className="mt-1 text-sm text-gray-400">{t('minPrice')}</p>
+          </div>
+
+          {/* AI 모델 (선택적) */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {t('aiModel') || 'AI 모델'} <span className="text-gray-400 text-xs">(선택)</span>
+            </label>
+            <input
+              type="text"
+              value={aiModel}
+              onChange={(e) => setAiModel(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="예: GPT-4, Claude, Midjourney"
+            />
+          </div>
+
+          {/* 카테고리 (선택적) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {t('categoryKo') || '카테고리 (한국어)'} <span className="text-gray-400 text-xs">(선택)</span>
+              </label>
+              <input
+                type="text"
+                value={categoryKo}
+                onChange={(e) => setCategoryKo(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="예: 비즈니스, 창작, 교육"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {t('categoryEn') || 'Category (English)'} <span className="text-gray-400 text-xs">(선택)</span>
+              </label>
+              <input
+                type="text"
+                value={categoryEn}
+                onChange={(e) => setCategoryEn(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="e.g., Business, Creative, Education"
+              />
+            </div>
           </div>
 
           {/* 프롬프트 원문 */}
@@ -368,25 +486,37 @@ export default function PromptForm() {
               Enter 키를 눌러 태그를 추가하세요
             </p>
             {/* 태그 배지 */}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="hover:text-primary-600 transition-colors"
+            <AnimatePresence mode="popLayout">
+              {tags.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-2 mt-3"
+                >
+                  {tags.map((tag) => (
+                    <motion.span
+                      key={tag}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      whileHover={{ scale: 1.05 }}
+                      className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium"
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-primary-600 transition-colors"
+                        aria-label={`태그 ${tag} 제거`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </motion.span>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* 썸네일 업로드 */}
@@ -431,22 +561,34 @@ export default function PromptForm() {
                 </div>
               )}
               {/* 업로드된 이미지 미리보기 */}
-              {thumbnailUrl && (
-                <div className="relative w-48 h-48 border border-gray-800 rounded-lg overflow-hidden">
-                  <img
-                    src={thumbnailUrl}
-                    alt="Thumbnail"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setThumbnailUrl('')}
-                    className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+              <AnimatePresence>
+                {thumbnailUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="relative w-48 h-48 border border-gray-800 rounded-lg overflow-hidden"
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+                    <Image
+                      src={thumbnailUrl}
+                      alt="썸네일 미리보기"
+                      fill
+                      className="object-cover"
+                      sizes="192px"
+                    />
+                    <motion.button
+                      type="button"
+                      onClick={() => setThumbnailUrl('')}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                      aria-label="썸네일 제거"
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -493,29 +635,45 @@ export default function PromptForm() {
                 </div>
               )}
               {/* 업로드된 이미지 미리보기 */}
-              {resultImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {resultImages.map((url, index) => (
-                    <div
-                      key={index}
-                      className="relative aspect-square border border-gray-800 rounded-lg overflow-hidden"
-                    >
-                      <img
-                        src={url}
-                        alt={`Result ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveResultImage(index)}
-                        className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+              <AnimatePresence mode="popLayout">
+                {resultImages.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                  >
+                    {resultImages.map((url, index) => (
+                      <motion.div
+                        key={url}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="relative aspect-square border border-gray-800 rounded-lg overflow-hidden"
                       >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                        <Image
+                          src={url}
+                          alt={`결과 이미지 ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                        />
+                        <motion.button
+                          type="button"
+                          onClick={() => handleRemoveResultImage(index)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                          aria-label={`결과 이미지 ${index + 1} 제거`}
+                        >
+                          <X className="w-4 h-4" />
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -540,9 +698,11 @@ export default function PromptForm() {
             >
               취소
             </button>
-            <button
+            <motion.button
               type="submit"
               disabled={submitting || thumbnailUploading || resultImagesUploading}
+              whileHover={{ scale: submitting ? 1 : 1.02 }}
+              whileTap={{ scale: submitting ? 1 : 0.98 }}
               className="px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {submitting ? (
@@ -553,10 +713,10 @@ export default function PromptForm() {
               ) : (
                 <span>{t('submit')}</span>
               )}
-            </button>
+            </motion.button>
           </div>
         </form>
-      </div>
+      </motion.div>
   );
 }
 

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 /**
  * 알림 타입
  */
-export type NotificationType = 'review' | 'payout' | 'prompt_status';
+export type NotificationType = 'review' | 'payout' | 'prompt_status' | 'prompt_approved' | 'prompt_rejected';
 
 /**
  * 알림 데이터 타입

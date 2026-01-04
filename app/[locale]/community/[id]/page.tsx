@@ -1,7 +1,7 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import CommentList from '@/components/CommentList';
 import CommentForm from '@/components/CommentForm';
 import PromptCard, { PromptCardData } from '@/components/PromptCard';
@@ -30,6 +30,7 @@ export default async function CommunityPostDetailPage({
 }) {
   const { locale, id } = await params;
   const t = await getTranslations('community');
+  const currentLocale = await getLocale();
   const supabase = await createClient();
 
   // 게시글 조회
@@ -104,7 +105,7 @@ export default async function CommunityPostDetailPage({
     <main className="container mx-auto px-4 py-8">
         {/* 뒤로가기 */}
         <Link
-          href="/community"
+          href={`/${currentLocale}/community`}
           className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -165,7 +166,7 @@ export default async function CommunityPostDetailPage({
             {isAuthor && (
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/community/${post.id}/edit`}
+                  href={`/${currentLocale}/community/${post.id}/edit`}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   <Edit className="w-4 h-4" />

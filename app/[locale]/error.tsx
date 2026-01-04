@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { AlertCircle, Home, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 /**
  * 전역 에러 페이지
@@ -18,6 +19,7 @@ export default function Error({
   reset: () => void;
 }) {
   const t = useTranslations('error');
+  const locale = useLocale();
 
   useEffect(() => {
     // 에러 로깅 (선택사항)
@@ -26,15 +28,24 @@ export default function Error({
 
   return (
     <div className="min-h-screen bg-black text-white">
-      
       <main className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="max-w-2xl mx-auto text-center"
+        >
           {/* 에러 아이콘 */}
-          <div className="mb-8 flex justify-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="mb-8 flex justify-center"
+          >
             <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center">
               <AlertCircle className="w-12 h-12 text-red-400" />
             </div>
-          </div>
+          </motion.div>
 
           {/* 에러 메시지 */}
           <h1 className="text-4xl font-bold mb-4 text-white">
@@ -59,23 +70,37 @@ export default function Error({
           )}
 
           {/* 액션 버튼 */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
+            <motion.button
               onClick={reset}
+              aria-label={t('retry')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors font-medium"
             >
-              <RefreshCw className="w-5 h-5" />
+              <RefreshCw className="w-5 h-5" aria-hidden="true" />
               {t('retry')}
-            </button>
-            <Link
-              href="/"
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
+            </motion.button>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Home className="w-5 h-5" />
-              {t('goHome')}
-            </Link>
-          </div>
-        </div>
+              <Link
+                href={`/${locale}`}
+                aria-label={t('goHome')}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
+              >
+                <Home className="w-5 h-5" aria-hidden="true" />
+                {t('goHome')}
+              </Link>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </main>
     </div>
   );

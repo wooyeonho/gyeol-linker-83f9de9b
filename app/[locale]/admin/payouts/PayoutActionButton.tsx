@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { completePayout } from '@/app/actions/admin';
 import { CheckCircle2, Loader2 } from 'lucide-react';
@@ -11,11 +11,10 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
  */
 export default function PayoutActionButton({
   payoutId,
-  locale,
 }: {
   payoutId: string;
-  locale: string;
 }) {
+  const locale = useLocale();
   const router = useRouter();
   const t = useTranslations('admin');
   const [processing, setProcessing] = useState(false);

@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
+import { getTranslations, getLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
 import { getPopularPosts } from '@/app/actions/community';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { MessageCircle, Sparkles } from 'lucide-react';
@@ -10,6 +10,7 @@ import { MessageCircle, Sparkles } from 'lucide-react';
 export default async function CommunityPopularSection() {
   const tCommunity = await getTranslations('community');
   const tHome = await getTranslations('home');
+  const locale = await getLocale();
   const posts = await getPopularPosts(4);
 
   if (posts.length === 0) {
@@ -28,7 +29,7 @@ export default async function CommunityPopularSection() {
             </h2>
           </div>
           <Link
-            href="/community"
+            href={`/${locale}/community`}
             className="text-primary hover:text-primary-600 transition-colors font-medium"
           >
             {tHome('viewMore')} →

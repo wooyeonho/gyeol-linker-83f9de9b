@@ -32,6 +32,8 @@
   "prompts": {
     "title": "Prompt Marketplace",
     "description": "Marketplace for AI Prompt Experts",
+    "emptyMessage": "No prompts available",
+    "viewDetails": "View Details",
     "categories": "Categories",
     "tags": "Tags",
     "results": "Results",

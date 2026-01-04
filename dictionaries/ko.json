@@ -32,6 +32,8 @@
   "prompts": {
     "title": "프롬프트 마켓플레이스",
     "description": "AI 프롬프트 전문가들의 마켓플레이스",
+    "emptyMessage": "등록된 프롬프트가 없습니다",
+    "viewDetails": "상세 보기",
     "categories": "카테고리",
     "tags": "태그",
     "results": "결과물",

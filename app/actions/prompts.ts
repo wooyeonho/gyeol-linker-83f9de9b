@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { PromptCardData } from '@/components/PromptCard';
 
 /**
  * Slug 생성 함수
@@ -60,6 +61,9 @@ export async function createPrompt(formData: FormData) {
   const resultImagesJson = formData.get('result_images') as string;
   const resultVideoUrl = formData.get('result_video_url') as string | null;
   const tagsJson = formData.get('tags') as string;
+  const aiModel = formData.get('ai_model') as string | null;
+  const categoryKo = formData.get('category_ko') as string | null;
+  const categoryEn = formData.get('category_en') as string | null;
 
   // 4. 데이터 검증
   if (!titleKo || !titleEn || !descriptionKo || !descriptionEn || !content) {
@@ -117,10 +121,10 @@ export async function createPrompt(formData: FormData) {
       result_video_url: resultVideoUrl || null,
       tags,
       status: 'pending',
-      // ai_model, category_ko, category_en은 NULL로 저장
-      ai_model: null,
-      category_ko: null,
-      category_en: null,
+      // ai_model, category_ko, category_en은 선택적 필드 (nullable)
+      ai_model: aiModel?.trim() || null,
+      category_ko: categoryKo?.trim() || null,
+      category_en: categoryEn?.trim() || null,
     })
     .select()
     .single();
@@ -134,6 +138,101 @@ export async function createPrompt(formData: FormData) {
   revalidatePath('/seller/dashboard', 'page');
 
   return { success: true, promptId: prompt.id, slug: prompt.slug };
+}
+
+/**
+ * 정렬 타입
+ */
+export type SortType = 'popular' | 'rating' | 'sales' | 'newest';
+
+/**
+ * 프롬프트 목록 조회 Server Action
+ * @param locale - 언어 설정 ('ko' | 'en')
+ * @param sort - 정렬 옵션 ('popular' | 'rating' | 'sales' | 'newest')
+ * @param category - 카테고리 필터 (선택)
+ * @param tags - 태그 필터 (선택)
+ * @param limit - 조회 개수 제한 (기본값: 100)
+ */
+export async function getPromptsList(
+  locale: string,
+  sort: SortType = 'popular',
+  category?: string,
+  tags?: string[],
+  limit: number = 100
+): Promise<PromptCardData[]> {
+  const supabase = await createClient();
+
+  // 기본 쿼리: 승인된 프롬프트만 조회
+  let query = supabase
+    .from('prompts')
+    .select('*')
+    .eq('status', 'approved')
+    .is('deleted_at', null);
+
+  // 카테고리 필터
+  if (category) {
+    const categoryField = locale === 'ko' ? 'category_ko' : 'category_en';
+    query = query.eq(categoryField, category);
+  }
+
+  // 태그 필터 (GIN 인덱스 활용)
+  if (tags && tags.length > 0) {
+    query = query.overlaps('tags', tags);
+  }
+
+  // 정렬 옵션에 따른 정렬
+  switch (sort) {
+    case 'popular':
+      query = query.order('purchase_count', { ascending: false });
+      break;
+    case 'rating':
+      query = query.order('average_rating', { ascending: false });
+      break;
+    case 'sales':
+      query = query.order('purchase_count', { ascending: false });
+      break;
+    case 'newest':
+      query = query.order('created_at', { ascending: false });
+      break;
+    default:
+      query = query.order('purchase_count', { ascending: false });
+  }
+
+  // 개수 제한
+  query = query.limit(limit);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('프롬프트 목록 조회 오류:', error);
+    return [];
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // PromptCardData 형식으로 변환
+  return data.map((prompt: any) => {
+    const title = locale === 'ko' ? prompt.title_ko : prompt.title_en;
+    const description =
+      locale === 'ko' ? prompt.description_ko : prompt.description_en;
+
+    return {
+      id: prompt.id,
+      slug: prompt.slug,
+      title,
+      description,
+      thumbnail: prompt.thumbnail_url || '',
+      tags: prompt.tags || [],
+      aiModel: prompt.ai_model || 'N/A', // nullable 필드 처리
+      rating: prompt.average_rating || 0,
+      price: parseFloat(prompt.price),
+      viewCount: prompt.view_count,
+      purchaseCount: prompt.purchase_count,
+      createdAt: prompt.created_at,
+    };
+  });
 }
 
 

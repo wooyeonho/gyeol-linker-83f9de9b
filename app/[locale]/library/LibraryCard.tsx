@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
+import Image from 'next/image';
 import { FileText, Star, Calendar } from 'lucide-react';
 import ReviewModal from '@/components/ReviewModal';
 
@@ -61,14 +62,17 @@ export default function LibraryCard({
         {/* 썸네일 */}
         <div className="relative w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 overflow-hidden">
           {prompt.thumbnail ? (
-            <img
+            <Image
               src={prompt.thumbnail}
               alt={prompt.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              fill
+              className="object-cover group-hover:scale-110 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <FileText className="w-16 h-16 text-primary/30" />
+            <div className="w-full h-full flex items-center justify-center" aria-label="썸네일 없음">
+              <FileText className="w-16 h-16 text-primary/30" aria-hidden="true" />
             </div>
           )}
         </div>

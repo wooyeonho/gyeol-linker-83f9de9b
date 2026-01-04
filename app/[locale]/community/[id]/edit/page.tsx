@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { getPost, updatePost } from '@/app/actions/community';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import PromptSearch from '../../new/PromptSearch';
@@ -18,6 +18,7 @@ export default function CommunityEditPage({
 }) {
   const resolvedParams = params;
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations('community');
   const [post, setPost] = useState<any>(null);
   const [category, setCategory] = useState<'tips' | 'qna' | 'free'>('tips');
@@ -61,7 +62,7 @@ export default function CommunityEditPage({
       });
 
       if (result.success) {
-        router.push(`/community/${id}`);
+        router.push(`/${locale}/community/${id}`);
         router.refresh();
       } else if (result.error) {
         alert(result.error);

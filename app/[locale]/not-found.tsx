@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
+import { getTranslations, getLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
 import { Home, Search } from 'lucide-react';
 
 /**
@@ -7,6 +7,7 @@ import { Home, Search } from 'lucide-react';
  */
 export default async function NotFound() {
   const t = await getTranslations('notFound');
+  const locale = await getLocale();
 
   return (
     <main className="container mx-auto px-4 py-16">
@@ -27,17 +28,19 @@ export default async function NotFound() {
           {/* 액션 버튼 */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/"
+              href={`/${locale}`}
+              aria-label={t('goHome')}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors font-medium"
             >
-              <Home className="w-5 h-5" />
+              <Home className="w-5 h-5" aria-hidden="true" />
               {t('goHome')}
             </Link>
             <Link
-              href="/prompts"
+              href={`/${locale}/prompts`}
+              aria-label={t('browsePrompts')}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5" aria-hidden="true" />
               {t('browsePrompts')}
             </Link>
           </div>

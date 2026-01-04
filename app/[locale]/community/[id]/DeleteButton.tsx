@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
 import { Trash2 } from 'lucide-react';
 import { deletePost } from '@/app/actions/community';
 
@@ -11,6 +11,7 @@ import { deletePost } from '@/app/actions/community';
  */
 export default function DeleteButton({ postId }: { postId: string }) {
   const t = useTranslations('community');
+  const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -22,7 +23,7 @@ export default function DeleteButton({ postId }: { postId: string }) {
     startTransition(async () => {
       const result = await deletePost(postId);
       if (result.success) {
-        router.push('/community');
+        router.push(`/${locale}/community`);
         router.refresh();
       } else if (result.error) {
         alert(result.error);

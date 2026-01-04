@@ -25,8 +25,8 @@ async function RecommendedPromptsList({
 
   return (
     <StaggerGrid className={`grid ${gridColsClass} gap-8`}>
-      {prompts.map((prompt) => (
-        <PromptCard key={prompt.id} prompt={prompt} />
+      {prompts.map((prompt, index) => (
+        <PromptCard key={prompt.id} prompt={prompt} priority={index < 4} />
       ))}
     </StaggerGrid>
   );

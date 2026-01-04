@@ -1,13 +1,15 @@
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
 import { Eye, Heart, MessageCircle, User } from 'lucide-react';
 import { CommunityPost } from '@/app/actions/community';
+import { motion } from 'framer-motion';
 
 /**
  * 커뮤니티 게시글 카드 컴포넌트
  */
 export default function CommunityPostCard({ post }: { post: CommunityPost }) {
   const t = useTranslations('community');
+  const locale = useLocale();
 
   // 카테고리 라벨
   const categoryLabels: Record<string, string> = {
@@ -42,8 +44,15 @@ export default function CommunityPostCard({ post }: { post: CommunityPost }) {
     : post.content;
 
   return (
-    <Link href={`/community/${post.id}`}>
-      <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-6 md:p-8 hover:border-primary transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 active:scale-95 cursor-pointer shadow-xl shadow-primary/5">
+    <Link href={`/${locale}/community/${post.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        whileHover={{ scale: 1.01, y: -2 }}
+        whileTap={{ scale: 0.99 }}
+        className="bg-gray-900 border border-gray-800 rounded-[32px] p-6 md:p-8 hover:border-primary transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 cursor-pointer shadow-xl shadow-primary/5"
+      >
         {/* 헤더 */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -89,7 +98,7 @@ export default function CommunityPostCard({ post }: { post: CommunityPost }) {
             <span>{post.comment_count.toLocaleString()}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
   );
 }

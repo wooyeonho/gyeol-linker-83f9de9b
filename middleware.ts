@@ -20,8 +20,24 @@ export async function middleware(request: NextRequest) {
 
   // Supabase 쿠키를 응답에 포함
   supabaseResponse.cookies.getAll().forEach((cookie) => {
-    const { name, value } = cookie;
-    response.cookies.set(name, value);
+    const { name, value, ...options } = cookie;
+    response.cookies.set({ name, value, ...options });
+  });
+
+  // 보안 헤더 추가
+  const securityHeaders = {
+    'X-DNS-Prefetch-Control': 'on',
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-Content-Type-Options': 'nosniff',
+    'X-XSS-Protection': '1; mode=block',
+    'Referrer-Policy': 'origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  };
+
+  // 헤더 적용
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
   });
 
   return response;

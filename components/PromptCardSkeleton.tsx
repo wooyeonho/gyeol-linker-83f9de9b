@@ -1,10 +1,22 @@
+'use client';
+
+import { motion } from 'framer-motion';
+
 /**
  * 프롬프트 카드 스켈레톤 UI
- * 로딩 중 표시
+ * 로딩 중 표시 (개선된 애니메이션)
  */
 export default function PromptCardSkeleton() {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden animate-pulse shadow-xl shadow-primary/5">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden shadow-xl shadow-primary/5"
+      role="status"
+      aria-label="로딩 중"
+      aria-live="polite"
+    >
       {/* 썸네일 스켈레톤 */}
       <div className="w-full h-48 bg-gray-800 rounded-t-[32px]" />
 
@@ -35,7 +47,7 @@ export default function PromptCardSkeleton() {
           <div className="h-6 bg-gray-800 rounded w-16" />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

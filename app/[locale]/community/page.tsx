@@ -1,6 +1,6 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { Suspense } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import CommunityPostCard from '@/components/CommunityPostCard';
 import { getPosts, getPopularPosts, CommunityPost } from '@/app/actions/community';
 import { CommunityCategory } from '@/app/actions/community';
@@ -44,6 +44,7 @@ async function CommunityList({
  */
 async function PopularPostsSection() {
   const posts = await getPopularPosts(5);
+  const locale = await getLocale();
 
   if (posts.length === 0) {
     return null;
@@ -59,7 +60,7 @@ async function PopularPostsSection() {
         {posts.map((post) => (
           <Link
             key={post.id}
-            href={`/community/${post.id}`}
+            href={`/${locale}/community/${post.id}`}
             className="block p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
           >
             <h4 className="text-sm font-medium text-white line-clamp-1 mb-1">
@@ -108,7 +109,7 @@ export default async function CommunityPage({
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
           <Link
-            href="/community/new"
+            href={`/${locale}/community/new`}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -126,7 +127,7 @@ export default async function CommunityPage({
                 {(['all', 'tips', 'qna', 'free'] as const).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/community?category=${cat}&search=${search}&sort=${sort}`}
+                    href={`/${locale}/community?category=${cat}&search=${search}&sort=${sort}`}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       categoryValue === cat
                         ? 'bg-primary text-white'
@@ -142,7 +143,7 @@ export default async function CommunityPage({
               <div className="flex flex-col sm:flex-row gap-4">
                 <form
                   method="get"
-                  action="/community"
+                  action={`/${locale}/community`}
                   className="flex-1 flex items-center gap-2"
                 >
                   <input type="hidden" name="category" value={categoryValue} />
@@ -170,7 +171,7 @@ export default async function CommunityPage({
                   {(['latest', 'popular', 'views'] as const).map((s) => (
                     <Link
                       key={s}
-                      href={`/community?category=${categoryValue}&search=${search}&sort=${s}`}
+                      href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${s}`}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         sortValue === s
                           ? 'bg-primary text-white'
@@ -212,7 +213,7 @@ export default async function CommunityPage({
             {/* 더보기 버튼 */}
             <div className="text-center">
               <Link
-                href={`/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
+                href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
                 className="inline-block px-6 py-3 bg-gray-900 border border-gray-800 text-white rounded-lg font-medium hover:border-primary transition-colors"
               >
                 {t('loadMore')}

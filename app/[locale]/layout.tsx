@@ -3,6 +3,10 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import Header from '@/components/Header';
+import { ToastProvider } from '@/components/ui/Toast';
+import ProgressBar from '@/components/ui/ProgressBar';
+import KeyboardShortcuts from '@/components/ui/KeyboardShortcuts';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 /**
  * 다국어 레이아웃
@@ -19,7 +23,7 @@ export default async function LocaleLayout({
   const { locale } = await params;
 
   // 지원하지 않는 언어면 404
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 
@@ -28,10 +32,16 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <div className="min-h-screen bg-black text-white">
-        <Header />
-        {children}
-      </div>
+      <ErrorBoundary>
+        <ToastProvider>
+          <ProgressBar />
+          <KeyboardShortcuts />
+          <div className="min-h-screen bg-black text-white">
+            <Header />
+            {children}
+          </div>
+        </ToastProvider>
+      </ErrorBoundary>
     </NextIntlClientProvider>
   );
 }

@@ -61,7 +61,7 @@ export default async function HomePage({
   const { locale } = await params;
 
   return (
-    <main>
+    <main role="main">
         {/* 1. Hero Section */}
         <HeroSection />
 

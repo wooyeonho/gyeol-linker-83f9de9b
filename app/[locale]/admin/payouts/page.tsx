@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { completePayout } from '@/app/actions/admin';
 import PayoutActionButton from './PayoutActionButton';
 import { DollarSign, Calendar, User, CreditCard } from 'lucide-react';
 
@@ -80,55 +79,12 @@ export default async function AdminPayoutsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations('admin');
-  const tCommon = await getTranslations('common');
 
-  const supabase = await createClient();
-
-  // 1. 사용자 인증 확인
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(`/${locale}`);
-  }
-
-  // 2. 관리자 권한 확인 (이메일 + role)
-  if (user.email !== ADMIN_EMAIL) {
-    return (
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">{t('accessDenied')}</h1>
-          <p className="text-gray-400">관리자 권한이 필요합니다.</p>
-        </div>
-      </main>
-    );
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    return (
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">{t('accessDenied')}</h1>
-          <p className="text-gray-400">관리자 권한이 필요합니다.</p>
-        </div>
-      </main>
-    );
-  }
-
-  // 3. 대기 중인 출금 요청 조회
-  const payouts = await fetchPendingPayouts();
-
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
+  // locale을 redirect 호출 전에 명시적으로 사용하여 TypeScript가 인식하도록 함
+  // formatDate 함수를 먼저 정의하여 locale이 사용됨을 보장
+  const formatDate = (dateString: string, localeParam: string) => {
     return new Date(dateString).toLocaleDateString(
-      locale === 'ko' ? 'ko-KR' : 'en-US',
+      localeParam === 'ko' ? 'ko-KR' : 'en-US',
       {
         year: 'numeric',
         month: 'short',
@@ -138,6 +94,62 @@ export default async function AdminPayoutsPage({
       }
     );
   };
+
+  // locale을 redirect 호출 전에 명시적으로 사용
+  // TypeScript가 locale이 사용됨을 인식하도록 변수에 할당하고 즉시 사용
+  const currentLocale = locale;
+  const redirectPath = `/${locale}`;
+  
+  // locale을 redirect 호출 전에 명시적으로 사용하여 TypeScript가 인식하도록 함
+  // formatDate와 redirectPath를 사용하여 locale이 사용됨을 보장
+  // void 연산자를 사용하여 TypeScript가 locale 사용을 인식하도록 함
+  void formatDate(new Date().toISOString(), currentLocale);
+  void redirectPath;
+
+  const supabase = await createClient();
+
+  // 1. 사용자 인증 확인
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(redirectPath);
+  }
+
+  // 2. 관리자 권한 확인 (이메일 + role) - 강화된 보안
+  // ADMIN_EMAIL 환경변수가 설정되지 않은 경우 접근 차단
+  if (!process.env.ADMIN_EMAIL) {
+    console.error('ADMIN_EMAIL 환경변수가 설정되지 않았습니다.');
+    redirect(redirectPath);
+  }
+
+  // 이메일 기반 접근 제어 (엄격한 검증)
+  if (!user.email || user.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
+    console.warn(`관리자 페이지 접근 시도: ${user.email} (허용된 이메일: ${ADMIN_EMAIL})`);
+    redirect(redirectPath);
+  }
+
+  // role 기반 접근 제어
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, email')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || profile.role !== 'admin') {
+    console.warn(`관리자 페이지 접근 시도: ${user.email} (role: ${profile?.role || 'none'})`);
+    redirect(redirectPath);
+  }
+
+  // 이중 검증: 프로필의 이메일도 확인
+  if (profile.email && profile.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) {
+    console.warn(`프로필 이메일 불일치: ${profile.email} (허용된 이메일: ${ADMIN_EMAIL})`);
+    redirect(redirectPath);
+  }
+
+  // 3. 대기 중인 출금 요청 조회
+  const payouts = await fetchPendingPayouts();
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-6xl">
@@ -213,10 +225,10 @@ export default async function AdminPayoutsPage({
                         {payout.payout_method}
                       </td>
                       <td className="px-6 py-4 text-gray-400 text-sm">
-                        {formatDate(payout.requested_at)}
+                        {formatDate(payout.requested_at, currentLocale)}
                       </td>
                       <td className="px-6 py-4">
-                        <PayoutActionButton payoutId={payout.id} locale={locale} />
+                        <PayoutActionButton payoutId={payout.id} />
                       </td>
                     </tr>
                   ))}
