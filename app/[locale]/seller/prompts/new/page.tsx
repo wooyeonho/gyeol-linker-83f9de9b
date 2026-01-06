@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import PromptForm from './PromptForm';
+import EnhancedPromptForm from './EnhancedPromptForm';
 
 /**
  * 프롬프트 등록 페이지 (서버 컴포넌트)
@@ -47,5 +47,5 @@ export default async function NewPromptPage({
     );
   }
 
-  return <PromptForm />;
+  return <EnhancedPromptForm />;
 }

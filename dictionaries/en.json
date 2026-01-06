@@ -99,10 +99,11 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "noPrompts": "No prompts registered",
-    "accessDenied": "Seller access required",
-    "loginRequired": "Login required"
-  },
-  "promptForm": {
+      "accessDenied": "Seller access required",
+      "loginRequired": "Login required",
+      "topPerforming": "Top Performing Prompts"
+    },
+    "promptForm": {
     "title": "Register Prompt",
     "titleKo": "Title (Korean)",
     "titleEn": "Title (English)",
@@ -130,9 +131,13 @@
     "required": "Required",
     "optional": "Optional",
     "minPrice": "Minimum price is $0.99",
-    "registerSuccess": "Prompt registered successfully",
-    "registerFailed": "Failed to register prompt"
-  },
+      "registerSuccess": "Prompt registered successfully",
+      "registerFailed": "Failed to register prompt",
+      "step1Title": "English",
+      "step2Title": "Korean",
+      "step3Title": "Content",
+      "step4Title": "Preview"
+    },
   "library": {
     "title": "My Library",
     "myPurchases": "My Purchases",

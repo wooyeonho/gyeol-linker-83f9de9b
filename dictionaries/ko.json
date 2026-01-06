@@ -99,10 +99,11 @@
     "approved": "승인됨",
     "rejected": "거부됨",
     "noPrompts": "등록된 프롬프트가 없습니다",
-    "accessDenied": "판매자 권한이 필요합니다",
-    "loginRequired": "로그인이 필요합니다"
-  },
-  "promptForm": {
+      "accessDenied": "판매자 권한이 필요합니다",
+      "loginRequired": "로그인이 필요합니다",
+      "topPerforming": "최고 성과 프롬프트"
+    },
+    "promptForm": {
     "title": "프롬프트 등록",
     "titleKo": "제목 (한국어)",
     "titleEn": "제목 (영어)",
@@ -130,9 +131,13 @@
     "required": "필수",
     "optional": "선택",
     "minPrice": "최소 가격은 $0.99입니다",
-    "registerSuccess": "프롬프트가 성공적으로 등록되었습니다",
-    "registerFailed": "프롬프트 등록에 실패했습니다"
-  },
+      "registerSuccess": "프롬프트가 성공적으로 등록되었습니다",
+      "registerFailed": "프롬프트 등록에 실패했습니다",
+      "step1Title": "영어",
+      "step2Title": "한국어",
+      "step3Title": "콘텐츠",
+      "step4Title": "미리보기"
+    },
   "library": {
     "title": "내 라이브러리",
     "myPurchases": "구매한 프롬프트",
