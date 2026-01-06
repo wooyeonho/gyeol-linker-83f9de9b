@@ -91,7 +91,7 @@ export default function Error({
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href={`/${locale}`}
+                href="/"
                 aria-label={t('goHome')}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-[32px] transition-all font-medium"
               >

@@ -182,7 +182,7 @@ async function OrdersList({ locale }: { locale: string }) {
                 {order.status === 'completed' && (
                   <>
                     <Link
-                      href={`/${locale}/prompts/${order.prompt.slug}`}
+                      href={`/prompts/${order.prompt.slug}`}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all"
                     >
                       <Eye className="w-4 h-4" />

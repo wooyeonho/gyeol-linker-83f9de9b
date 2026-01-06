@@ -50,14 +50,14 @@ export default async function HeroSection() {
             {/* CTA 버튼 */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href={`/${locale}/prompts`}
+                href="/prompts"
                 className="group flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-[32px] font-semibold text-lg hover:bg-primary-600 transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/30 active:scale-95"
               >
                 {t('browsePrompts')}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                href={`/${locale}/community`}
+                href="/community"
                 className="px-8 py-4 bg-gray-900 border border-gray-800 text-white rounded-[32px] font-semibold text-lg hover:bg-gray-800 transition-all duration-200 hover:border-primary active:scale-95"
               >
                 {t('joinCommunity')}

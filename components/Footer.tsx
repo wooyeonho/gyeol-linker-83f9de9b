@@ -18,7 +18,7 @@ export default async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link href={`/${locale}`} className="inline-block mb-4">
+            <Link href="/" className="inline-block mb-4">
               <span className="text-2xl font-bold text-white tracking-tight">
                 {APP_NAME}
               </span>
@@ -70,7 +70,7 @@ export default async function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href={`/${locale}/prompts`}
+                  href="/prompts"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('browsePrompts')}
@@ -78,7 +78,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/seller/prompts/new`}
+                  href="/seller/prompts/new"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('sellPrompts')}
@@ -86,7 +86,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/community`}
+                  href="/community"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('community')}
@@ -101,7 +101,7 @@ export default async function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href={`/${locale}/about`}
+                  href="/about"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('about')}
@@ -109,7 +109,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/terms`}
+                  href="/terms"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('terms')}
@@ -117,7 +117,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/privacy`}
+                  href="/privacy"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('privacy')}
@@ -140,7 +140,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href={`/${locale}/seller/dashboard`}
+                  href="/seller/dashboard"
                   className="text-gray-400 hover:text-primary transition-colors text-sm"
                 >
                   {t('sellerDashboard')}

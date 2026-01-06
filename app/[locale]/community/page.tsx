@@ -60,7 +60,7 @@ async function PopularPostsSection() {
         {posts.map((post) => (
           <Link
             key={post.id}
-            href={`/${locale}/community/${post.id}`}
+            href={`/community/${post.id}`}
             className="block p-3 bg-gray-800 rounded-[24px] hover:bg-gray-700 transition-all"
           >
             <h4 className="text-sm font-medium text-white line-clamp-1 mb-1">
@@ -109,7 +109,7 @@ export default async function CommunityPage({
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
           <Link
-            href={`/${locale}/community/new`}
+            href="/community/new"
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-[32px] font-medium hover:bg-primary-600 hover:brightness-110 transition-all shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
@@ -127,7 +127,7 @@ export default async function CommunityPage({
                 {(['all', 'tips', 'qna', 'free'] as const).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/${locale}/community?category=${cat}&search=${search}&sort=${sort}`}
+                    href={`/community?category=${cat}&search=${search}&sort=${sort}`}
                                         className={`px-4 py-2 rounded-[32px] font-medium transition-all ${
                                           categoryValue === cat
                                             ? 'bg-primary text-white shadow-lg shadow-primary/20'
@@ -143,7 +143,7 @@ export default async function CommunityPage({
               <div className="flex flex-col sm:flex-row gap-4">
                 <form
                   method="get"
-                  action={`/${locale}/community`}
+                  action="/community"
                   className="flex-1 flex items-center gap-2"
                 >
                   <input type="hidden" name="category" value={categoryValue} />
@@ -168,10 +168,10 @@ export default async function CommunityPage({
 
                 {/* 정렬 */}
                 <div className="flex gap-2">
-                  {(['latest', 'popular', 'views'] as const).map((s) => (
-                    <Link
-                      key={s}
-                      href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${s}`}
+                    {(['latest', 'popular', 'views'] as const).map((s) => (
+                      <Link
+                        key={s}
+                        href={`/community?category=${categoryValue}&search=${search}&sort=${s}`}
                                             className={`px-4 py-2 rounded-[32px] font-medium transition-all ${
                                               sortValue === s
                                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
@@ -213,7 +213,7 @@ export default async function CommunityPage({
             {/* 더보기 버튼 */}
             <div className="text-center">
               <Link
-                href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
+                href={`/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
                 className="inline-block px-6 py-3 bg-gray-900 border border-gray-800 text-white rounded-[32px] font-medium hover:border-primary transition-all"
               >
                 {t('loadMore')}

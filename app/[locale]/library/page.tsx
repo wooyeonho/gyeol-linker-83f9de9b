@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { Link } from '@/i18n/routing';
 import LibraryCard from './LibraryCard';
 
 /**
@@ -143,12 +144,12 @@ export default async function LibraryPage({
               <p className="text-xl text-gray-500 mb-8 max-w-md mx-auto">
                 {t('emptyDescription')}
               </p>
-              <a
-                href={`/${locale}/prompts`}
+              <Link
+                href="/prompts"
                 className="inline-block bg-[#00A86B] hover:brightness-110 hover:scale-105 px-10 py-5 rounded-[32px] text-white font-semibold transition-all shadow-lg shadow-[#00A86B]/20"
               >
                 {t('browsePrompts')} →
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

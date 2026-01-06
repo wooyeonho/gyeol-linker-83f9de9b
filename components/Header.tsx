@@ -36,7 +36,7 @@ export default async function Header() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
         <nav className="flex items-center justify-between gap-4" aria-label="메인 네비게이션">
           {/* 로고 */}
-          <Link href={`/${locale}`} className="flex items-center gap-2" aria-label="홈으로 이동">
+          <Link href="/" className="flex items-center gap-2" aria-label="홈으로 이동">
             <h1 className="text-2xl font-bold text-primary">{t('appName')}</h1>
           </Link>
 

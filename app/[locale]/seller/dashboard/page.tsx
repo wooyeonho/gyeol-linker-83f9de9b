@@ -431,7 +431,7 @@ export default async function SellerDashboardPage({
                                   {index + 1}
                                 </div>
                                 <a
-                                  href={`/${locale}/prompts/${prompt.slug}`}
+                                  href={`/prompts/${prompt.slug}`}
                                   className="text-[#00A86B] hover:brightness-110 transition-all"
                                 >
                                   <ArrowUpRight className="w-5 h-5" />

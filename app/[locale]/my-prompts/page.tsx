@@ -82,7 +82,7 @@ async function PromptsList({ locale }: { locale: string }) {
       <div className="text-center py-16">
         <p className="text-gray-400 text-lg mb-6">{t('emptyMessage')}</p>
         <Link
-          href={`/${locale}/seller/prompts/new`}
+          href="/seller/prompts/new"
           className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all shadow-lg shadow-primary/20"
         >
           <Plus className="w-5 h-5" />
@@ -161,7 +161,7 @@ async function PromptsList({ locale }: { locale: string }) {
               {/* 액션 */}
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/${locale}/prompts/${prompt.slug}`}
+                  href={`/prompts/${prompt.slug}`}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all"
                 >
                   <Eye className="w-4 h-4" />
@@ -218,7 +218,7 @@ export default async function MyPromptsPage({
             <p className="text-gray-400">등록한 프롬프트를 관리하세요</p>
           </div>
           <Link
-            href={`/${locale}/seller/prompts/new`}
+            href="/seller/prompts/new"
             className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />

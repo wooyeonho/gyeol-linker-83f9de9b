@@ -39,7 +39,7 @@ export default function CommunityNewPage() {
       });
 
       if (result.success && result.postId) {
-        router.push(`/${locale}/community/${result.postId}`);
+        router.push(`/community/${result.postId}`);
         router.refresh();
       } else if (result.error) {
         alert(result.error);
@@ -53,7 +53,7 @@ export default function CommunityNewPage() {
       <main className="container mx-auto px-4 py-24 max-w-4xl">
         {/* 뒤로가기 */}
         <Link
-          href={`/${locale}/community`}
+          href="/community"
           className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -128,7 +128,7 @@ export default function CommunityNewPage() {
           {/* 제출 버튼 */}
           <div className="flex items-center justify-end gap-4">
             <Link
-              href={`/${locale}/community`}
+              href="/community"
               className="px-6 py-2 bg-gray-800 text-white rounded-[32px] font-medium hover:bg-gray-700 transition-all"
             >
               취소

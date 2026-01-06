@@ -57,7 +57,7 @@ const PromptCard = memo(function PromptCard({
       whileTap={{ scale: 0.98 }}
     >
       <Link 
-        href={`/${locale}/prompts/${prompt.slug}`} 
+        href={`/prompts/${prompt.slug}`} 
         className="block"
         aria-label={`${prompt.title} - ${t('viewDetails')}`}
       >

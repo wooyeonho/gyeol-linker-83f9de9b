@@ -133,7 +133,7 @@ export default function LibraryCard({
           {/* 버튼 */}
           <div className="flex items-center gap-2 pt-2 border-t border-gray-800">
             <Link
-              href={`/${locale}/prompts/${prompt.slug}`}
+              href={`/prompts/${prompt.slug}`}
               className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] text-center text-sm transition-all"
             >
               {t('viewOriginal')}
