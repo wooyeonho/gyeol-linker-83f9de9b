@@ -60,10 +60,22 @@
     "share": "공유하기",
     "copyLink": "링크 복사",
     "linkCopied": "링크가 복사되었습니다",
-    "shareOnTwitter": "트위터에 공유",
-    "shareOnFacebook": "페이스북에 공유"
-  },
-  "dashboard": {
+      "shareOnTwitter": "트위터에 공유",
+      "shareOnFacebook": "페이스북에 공유",
+      "premiumContentLocked": "프리미엄 콘텐츠 잠김",
+      "unlockDescription": "이 검증된 프롬프트를 사용한",
+      "professionals": "명의 전문가",
+      "instantAccess": "즉시 접근",
+      "lifetimeUpdates": "평생 업데이트",
+      "purchaseUnlockNow": "구매하고 잠금 해제",
+      "securePayment": "안전한 결제",
+      "instantDelivery": "즉시 전달",
+      "support247": "24시간 지원",
+      "youOwnThisPrompt": "이 프롬프트를 소유하고 있습니다",
+      "purchasedOn": "구매일",
+      "copyToClipboard": "클립보드에 복사"
+    },
+    "dashboard": {
     "title": "판매자 대시보드",
     "balance": "현재 잔액",
     "totalSales": "총 판매수",

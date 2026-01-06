@@ -122,7 +122,8 @@ async function checkPurchaseStatus(
 }
 
 /**
- * 메타데이터 생성
+ * World-Class SEO Metadata Generation
+ * Keyword-optimized for Google ranking
  */
 export async function generateMetadata({
   params,
@@ -134,7 +135,7 @@ export async function generateMetadata({
 
   if (!prompt) {
     return {
-      title: '프롬프트를 찾을 수 없습니다',
+      title: locale === 'ko' ? '프롬프트를 찾을 수 없습니다' : 'Prompt Not Found',
     };
   }
 
@@ -146,18 +147,34 @@ export async function generateMetadata({
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prompt-jeongeum.com';
   const url = `${baseUrl}/${locale}/prompts/${slug}`;
 
+  // SEO-optimized titles with keywords
+  const seoTitle = locale === 'ko'
+    ? `${title} | AI 프롬프트 마켓 - 프롬프트 정음`
+    : `${title} | Premium AI Prompt Marketplace`;
+
+  // SEO-optimized descriptions with social proof
+  const seoDescription = locale === 'ko'
+    ? `${description} 전문가가 검증한 프리미엄 ${prompt.ai_model} 프롬프트. ${prompt.purchase_count || 0}명 이상 구매.`
+    : `${description} Expert-verified ${prompt.ai_model} prompt. Trusted by ${prompt.purchase_count || 0}+ professionals.`;
+
+  // Keywords for SEO
+  const keywords = locale === 'ko'
+    ? ['AI 프롬프트', prompt.ai_model, '프롬프트 마켓', '프롬프트 정음', prompt.category_ko]
+    : ['AI prompt', prompt.ai_model, 'prompt marketplace', 'premium prompts', prompt.category_en];
+
   return {
-    title: `${title} | 프롬프트 정음`,
-    description: description,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: keywords.filter(Boolean),
     openGraph: {
       type: 'website',
-      title,
-      description,
+      title: seoTitle,
+      description: seoDescription,
       url,
-      siteName: '프롬프트 정음',
+      siteName: locale === 'ko' ? '프롬프트 정음' : 'Prompt Jeongeom',
       images: [
         {
-          url: prompt.thumbnail_url,
+          url: prompt.thumbnail_url || '/og-default.png',
           width: 1200,
           height: 630,
           alt: title,
@@ -167,12 +184,16 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
-      images: [prompt.thumbnail_url],
+      title: seoTitle,
+      description: seoDescription,
+      images: [prompt.thumbnail_url || '/og-default.png'],
     },
     alternates: {
       canonical: url,
+      languages: {
+        'en': `${baseUrl}/en/prompts/${slug}`,
+        'ko': `${baseUrl}/ko/prompts/${slug}`,
+      },
     },
   };
 }
@@ -339,13 +360,15 @@ export default async function PromptDetailPage({
               </div>
             </div>
 
-            {/* 프롬프트 원문 */}
-            <div>
-              <PromptContent
-                content={prompt.content}
-                hasPurchased={hasPurchased}
-              />
-            </div>
+                        {/* 프롬프트 원문 */}
+                        <div>
+                          <PromptContent
+                            content={prompt.content}
+                            hasPurchased={hasPurchased}
+                            price={prompt.price}
+                            salesCount={prompt.purchase_count}
+                          />
+                        </div>
           </div>
 
           {/* Sticky 사이드바 */}
