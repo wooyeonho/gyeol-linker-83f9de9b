@@ -9,6 +9,8 @@ import {
   TrendingUp,
   Star,
   BarChart3,
+  Trophy,
+  ArrowUpRight,
 } from 'lucide-react';
 import SalesTrendChart, {
   DailySalesData,
@@ -391,12 +393,102 @@ export default async function SellerDashboardPage({
           </div>
         </div>
 
-        {/* 매출 추이 차트 */}
-        <div className="mb-8">
-          <SalesTrendChart data={salesTrend} locale={locale} />
-        </div>
+                {/* 매출 추이 차트 */}
+                <div className="mb-8">
+                  <SalesTrendChart data={salesTrend} locale={locale} />
+                </div>
 
-        {/* 프롬프트 목록 */}
+                {/* Top Performing Prompts */}
+                {prompts.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 bg-[#00A86B]/20 rounded-full flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-[#00A86B]" />
+                      </div>
+                      <h2 className="text-xl font-semibold">{t('topPerforming') || 'Top Performing Prompts'}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {prompts
+                        .sort((a, b) => b.total_revenue - a.total_revenue)
+                        .slice(0, 3)
+                        .map((prompt, index) => {
+                          const title = locale === 'ko' ? prompt.title_ko : prompt.title_en;
+                          const medals = ['gold', 'silver', 'bronze'];
+                          const medalColors = {
+                            gold: 'from-yellow-400 to-yellow-600',
+                            silver: 'from-gray-300 to-gray-500',
+                            bronze: 'from-orange-400 to-orange-600',
+                          };
+                  
+                          return (
+                            <div
+                              key={prompt.id}
+                              className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-[32px] p-6 hover:border-[#00A86B]/30 transition-all"
+                            >
+                              {/* Rank Badge */}
+                              <div className="flex items-start justify-between mb-4">
+                                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${medalColors[medals[index] as keyof typeof medalColors]} flex items-center justify-center text-black font-bold text-sm`}>
+                                  {index + 1}
+                                </div>
+                                <a
+                                  href={`/${locale}/prompts/${prompt.slug}`}
+                                  className="text-[#00A86B] hover:brightness-110 transition-all"
+                                >
+                                  <ArrowUpRight className="w-5 h-5" />
+                                </a>
+                              </div>
+                      
+                              {/* Title */}
+                              <h3 className="font-semibold text-white mb-4 line-clamp-2">{title}</h3>
+                      
+                              {/* Mini Analytics */}
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-gray-400">{t('promptRevenue') || 'Revenue'}</span>
+                                  <span className="font-semibold text-[#00A86B]">{formatPrice(prompt.total_revenue)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-gray-400">{t('purchases') || 'Sales'}</span>
+                                  <span className="font-medium text-white">{prompt.purchase_count}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-gray-400">{t('purchaseConversionRate') || 'Conversion'}</span>
+                                  <span className="font-medium text-white">{prompt.conversion_rate.toFixed(1)}%</span>
+                                </div>
+                                {prompt.average_rating > 0 && (
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-400">{t('averageRating') || 'Rating'}</span>
+                                    <div className="flex items-center gap-1">
+                                      <Star className="w-4 h-4 fill-[#00A86B] text-[#00A86B]" />
+                                      <span className="font-medium text-white">{prompt.average_rating.toFixed(1)}</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                      
+                              {/* Mini Progress Bar */}
+                              <div className="mt-4 pt-4 border-t border-[#1A1A1A]">
+                                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                                  <span>{t('views') || 'Views'}</span>
+                                  <span>{prompt.view_count.toLocaleString()}</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-[#00A86B] rounded-full transition-all"
+                                    style={{ 
+                                      width: `${Math.min((prompt.view_count / Math.max(...prompts.map(p => p.view_count))) * 100, 100)}%` 
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 프롬프트 목록 */}
         <div className="bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden">
           <div className="p-6 border-b border-gray-800">
             <h2 className="text-xl font-semibold">{t('myPrompts')}</h2>
