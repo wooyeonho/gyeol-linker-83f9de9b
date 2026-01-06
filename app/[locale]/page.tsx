@@ -98,7 +98,7 @@ export default async function HomePage({
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
-                        className="bg-gray-900 border border-gray-800 rounded-lg p-6 animate-pulse"
+                        className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 animate-pulse"
                       >
                         <div className="h-6 bg-gray-800 rounded w-3/4 mb-4" />
                         <div className="h-4 bg-gray-800 rounded w-full mb-2" />

@@ -32,7 +32,7 @@ async function CategorySection({
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold text-white">{categoryLabel}</h3>
         <Link
-          href={`/${locale}/prompts?category=${encodeURIComponent(category)}`}
+          href={`/prompts?category=${encodeURIComponent(category)}`}
           className="text-primary hover:text-primary-600 transition-colors font-medium"
         >
           {t('viewMore')} →

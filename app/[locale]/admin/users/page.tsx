@@ -68,7 +68,7 @@ export default async function AdminUsersPage({
               name="search"
               defaultValue={search}
               placeholder={t('searchPlaceholder')}
-              className="w-full pl-12 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               aria-label={t('search')}
             />
           </form>
@@ -81,7 +81,7 @@ export default async function AdminUsersPage({
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-gray-900 border border-gray-800 rounded-lg p-6 animate-pulse"
+                  className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 animate-pulse"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gray-800 rounded-full" />

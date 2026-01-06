@@ -62,7 +62,7 @@ export default function PayoutHistory({
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
       <h2 className="text-xl font-semibold mb-6">{t('payoutHistory')}</h2>
 
       {payouts.length === 0 ? (
@@ -78,7 +78,7 @@ export default function PayoutHistory({
             return (
               <div
                 key={payout.id}
-                className="bg-gray-800 border border-gray-700 rounded-lg p-4 space-y-3"
+                className="bg-gray-800 border border-gray-700 rounded-[24px] p-4 space-y-3"
               >
                 {/* 금액 및 상태 */}
                 <div className="flex items-center justify-between">

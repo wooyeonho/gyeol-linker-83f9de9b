@@ -73,7 +73,7 @@ export default function PromptApprovalActions({ promptId }: { promptId: string }
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="반려 사유를 입력하세요"
-              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               disabled={isRejecting}
               aria-label="반려 사유 입력"
             />
@@ -82,7 +82,7 @@ export default function PromptApprovalActions({ promptId }: { promptId: string }
               disabled={isRejecting || !rejectReason.trim()}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isRejecting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -99,7 +99,7 @@ export default function PromptApprovalActions({ promptId }: { promptId: string }
               disabled={isRejecting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-[32px] transition-all disabled:opacity-50"
             >
               취소
             </motion.button>
@@ -117,7 +117,7 @@ export default function PromptApprovalActions({ promptId }: { promptId: string }
               disabled={isApproving || isRejecting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isApproving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -131,7 +131,7 @@ export default function PromptApprovalActions({ promptId }: { promptId: string }
               disabled={isApproving || isRejecting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <XCircle className="w-4 h-4" />
               <span>반려</span>

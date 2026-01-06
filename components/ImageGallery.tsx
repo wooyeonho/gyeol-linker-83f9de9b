@@ -32,7 +32,7 @@ const ImageGallery = memo(function ImageGallery({
 
   if (allImages.length === 0 && !videoUrl) {
     return (
-      <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
+      <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[32px] flex items-center justify-center">
         <p className="text-gray-500">이미지가 없습니다</p>
       </div>
     );
@@ -42,7 +42,7 @@ const ImageGallery = memo(function ImageGallery({
     <div className="relative w-full">
       {/* 비디오가 있으면 비디오 표시 */}
       {videoUrl && (
-        <div className="w-full aspect-video rounded-lg overflow-hidden bg-gray-900">
+        <div className="w-full aspect-video rounded-[24px] overflow-hidden bg-gray-900">
           <video
             src={videoUrl}
             controls
@@ -65,7 +65,7 @@ const ImageGallery = memo(function ImageGallery({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900"
+            className="relative w-full aspect-video rounded-[24px] overflow-hidden bg-gray-900"
           >
             <Image
               src={allImages[currentIndex]}

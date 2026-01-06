@@ -74,7 +74,7 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-primary transition-colors">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 hover:border-primary transition-all hover:scale-[1.02]">
       <div className="flex items-center justify-between mb-4">
         <Icon className={`w-8 h-8 ${color}`} />
       </div>
@@ -101,7 +101,7 @@ export default async function AnalyticsDashboard({ locale }: { locale: string })
           icon={Users}
           label={t('totalUsers')}
           value={analytics.totalUsers.toLocaleString()}
-          color="text-blue-400"
+          color="text-primary"
         />
         <StatCard
           icon={ShoppingBag}
@@ -130,8 +130,8 @@ export default async function AnalyticsDashboard({ locale }: { locale: string })
       </div>
 
       {/* 추가 통계 섹션 (향후 확장 가능) */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">{t('recentOrders')}</h2>
+            <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
+              <h2 className="text-xl font-semibold mb-4">{t('recentOrders')}</h2>
         <p className="text-gray-400">최근 주문 통계는 향후 구현 예정입니다.</p>
       </div>
     </div>

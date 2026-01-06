@@ -7,6 +7,7 @@ import { createOrder } from '@/app/actions/orders';
 import { ShoppingCart, Loader2, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/Toast';
+import { formatPrice, calculateEarnings } from '@/lib/utils/currency';
 
 /**
  * 결제 폼 컴포넌트
@@ -55,24 +56,23 @@ export default function CheckoutForm({
   };
 
   // 수수료 계산
-  const commission = price * 0.2;
-  const total = price;
+  const earnings = calculateEarnings(price);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 space-y-6">
       {/* 가격 정보 */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
           <span className="text-gray-400">{tCommon('price')}</span>
-          <span className="text-white">${price.toFixed(2)}</span>
+          <span className="text-white">{earnings.formattedTotal}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-400">{t('platformFee')}</span>
-          <span className="text-gray-400">${commission.toFixed(2)}</span>
+          <span className="text-gray-400">{earnings.formattedPlatform}</span>
         </div>
         <div className="pt-3 border-t border-gray-800 flex justify-between">
           <span className="font-semibold">{t('total')}</span>
-          <span className="text-2xl font-bold text-primary">${total.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-primary">{earnings.formattedTotal}</span>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ export default function CheckoutForm({
         disabled={isProcessing}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
         aria-label={t('completePurchase')}
       >
         {isProcessing ? (

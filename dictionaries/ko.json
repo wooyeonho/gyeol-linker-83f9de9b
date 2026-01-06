@@ -60,10 +60,23 @@
     "share": "공유하기",
     "copyLink": "링크 복사",
     "linkCopied": "링크가 복사되었습니다",
-    "shareOnTwitter": "트위터에 공유",
-    "shareOnFacebook": "페이스북에 공유"
-  },
-  "dashboard": {
+            "shareOnTwitter": "트위터에 공유",
+            "shareOnLinkedIn": "링크드인에 공유",
+            "shareOnFacebook": "페이스북에 공유",
+      "premiumContentLocked": "프리미엄 콘텐츠 잠김",
+      "unlockDescription": "이 검증된 프롬프트를 사용한",
+      "professionals": "명의 전문가",
+      "instantAccess": "즉시 접근",
+      "lifetimeUpdates": "평생 업데이트",
+      "purchaseUnlockNow": "구매하고 잠금 해제",
+      "securePayment": "안전한 결제",
+      "instantDelivery": "즉시 전달",
+      "support247": "24시간 지원",
+      "youOwnThisPrompt": "이 프롬프트를 소유하고 있습니다",
+      "purchasedOn": "구매일",
+      "copyToClipboard": "클립보드에 복사"
+    },
+    "dashboard": {
     "title": "판매자 대시보드",
     "balance": "현재 잔액",
     "totalSales": "총 판매수",
@@ -87,10 +100,11 @@
     "approved": "승인됨",
     "rejected": "거부됨",
     "noPrompts": "등록된 프롬프트가 없습니다",
-    "accessDenied": "판매자 권한이 필요합니다",
-    "loginRequired": "로그인이 필요합니다"
-  },
-  "promptForm": {
+      "accessDenied": "판매자 권한이 필요합니다",
+      "loginRequired": "로그인이 필요합니다",
+      "topPerforming": "최고 성과 프롬프트"
+    },
+    "promptForm": {
     "title": "프롬프트 등록",
     "titleKo": "제목 (한국어)",
     "titleEn": "제목 (영어)",
@@ -118,9 +132,13 @@
     "required": "필수",
     "optional": "선택",
     "minPrice": "최소 가격은 $0.99입니다",
-    "registerSuccess": "프롬프트가 성공적으로 등록되었습니다",
-    "registerFailed": "프롬프트 등록에 실패했습니다"
-  },
+      "registerSuccess": "프롬프트가 성공적으로 등록되었습니다",
+      "registerFailed": "프롬프트 등록에 실패했습니다",
+      "step1Title": "영어",
+      "step2Title": "한국어",
+      "step3Title": "콘텐츠",
+      "step4Title": "미리보기"
+    },
   "library": {
     "title": "내 라이브러리",
     "myPurchases": "구매한 프롬프트",
@@ -357,6 +375,73 @@
     "recentOrders": "최근 주문",
     "topSellers": "인기 판매자",
     "topPrompts": "인기 프롬프트"
+  },
+    "reviews": {
+      "writeReview": "리뷰 작성하기",
+      "yourRating": "평점",
+      "yourReview": "리뷰 내용",
+      "reviewPlaceholder": "이 프롬프트 사용 경험을 공유해주세요. 어떻게 도움이 되었나요? 어떤 결과를 얻으셨나요?",
+      "submitReview": "리뷰 등록",
+      "submitting": "등록 중...",
+      "selectRating": "평점을 선택해주세요",
+      "commentTooShort": "리뷰는 최소 10자 이상이어야 합니다",
+      "alreadyReviewed": "이미 이 프롬프트에 리뷰를 작성하셨습니다",
+      "submitFailed": "리뷰 등록에 실패했습니다. 다시 시도해주세요.",
+      "submitSuccess": "리뷰가 성공적으로 등록되었습니다!",
+      "ratingExcellent": "최고예요!",
+      "ratingGood": "좋아요",
+      "ratingAverage": "보통이에요",
+      "ratingPoor": "별로예요",
+      "ratingTerrible": "최악이에요",
+      "verifiedReviews": "개의 인증된 리뷰",
+      "verifiedBuyer": "인증된 구매자",
+      "star": "점",
+      "allReviews": "전체 리뷰",
+      "anonymousUser": "익명",
+      "noReviewsYet": "아직 리뷰가 없습니다",
+      "beFirstToReview": "첫 번째 리뷰를 작성해보세요!",
+      "reviewsSection": "고객 리뷰",
+      "onlyBuyersCanReview": "구매자만 리뷰를 작성할 수 있습니다"
+    },
+    "library": {
+      "title": "내 라이브러리",
+      "subtitle": "개의 구매한 프롬프트",
+      "fullAccessForever": "영구 전체 접근",
+      "owned": "소유 중",
+      "emptyTitle": "라이브러리가 비어있습니다",
+      "emptyDescription": "프리미엄 AI 프롬프트 컬렉션을 시작해보세요",
+      "browsePrompts": "프리미엄 프롬프트 둘러보기",
+      "purchasedOn": "구매일",
+      "viewPrompt": "프롬프트 보기",
+      "copyContent": "내용 복사"
+    },
+    "footer": {
+      "description": "전문가들이 검증한 프리미엄 AI 프롬프트를 발견하고 판매하세요.",
+    "product": "제품",
+    "browsePrompts": "프롬프트 둘러보기",
+    "sellPrompts": "프롬프트 판매",
+    "community": "커뮤니티",
+    "company": "회사",
+    "about": "소개",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "support": "지원",
+    "contact": "문의하기",
+    "sellerDashboard": "판매자 대시보드",
+    "allRightsReserved": "All rights reserved.",
+    "madeWith": "Made with",
+    "inKorea": "in Korea"
+  },
+  "discovery": {
+    "sortBy": "정렬",
+    "filters": "필터",
+    "aiModel": "AI 모델",
+    "category": "카테고리",
+    "priceRange": "가격대",
+    "rating": "평점",
+    "clearAll": "전체 해제",
+    "applyFilters": "필터 적용",
+    "activeFilters": "적용된 필터"
   }
 }
 

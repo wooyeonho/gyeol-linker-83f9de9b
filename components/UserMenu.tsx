@@ -47,7 +47,7 @@ export default function UserMenu({
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800"
+        className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-[32px] border border-gray-800"
       >
         <User className="w-4 h-4 text-gray-400" />
         <span className="text-sm text-white hidden sm:inline">
@@ -61,7 +61,7 @@ export default function UserMenu({
         disabled={isLoading}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg border border-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-[32px] border border-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <LogOut className="w-4 h-4" />
         <span className="hidden sm:inline">{t('logout')}</span>

@@ -41,11 +41,11 @@ export default function LikeButton({
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
-        liked
-          ? 'bg-primary text-white hover:bg-primary-600'
-          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-      }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-[32px] font-medium transition-all disabled:opacity-50 ${
+              liked
+                ? 'bg-primary text-white hover:bg-primary-600 hover:brightness-110 shadow-lg shadow-primary/20'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
     >
       <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
       <span>{count.toLocaleString()}</span>

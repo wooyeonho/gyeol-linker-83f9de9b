@@ -166,7 +166,7 @@ export default function SearchBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full mt-2 w-full bg-gray-900 border border-gray-800 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+            className="absolute top-full mt-2 w-full bg-gray-900 border border-gray-800 rounded-[24px] shadow-xl z-50 max-h-96 overflow-y-auto"
             role="listbox"
           >
             {suggestions.length > 0 ? (

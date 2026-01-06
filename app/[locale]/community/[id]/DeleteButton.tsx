@@ -35,7 +35,7 @@ export default function DeleteButton({ postId }: { postId: string }) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-[32px] hover:bg-red-700 transition-all disabled:opacity-50"
     >
       <Trash2 className="w-4 h-4" />
       {t('delete')}

@@ -12,7 +12,7 @@ export default async function TermsPage({
   const t = await getTranslations('terms');
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <main className="container mx-auto px-4 py-24 max-w-4xl">
         <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
         <p className="text-gray-400 mb-8">
           {t('lastUpdated')}: {new Date().toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US')}

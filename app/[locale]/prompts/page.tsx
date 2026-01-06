@@ -1,12 +1,20 @@
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
-import { getPromptsList, SortType } from '@/app/actions/prompts';
+import { getPromptsListWithFilters, SortType, PromptsFilterOptions } from '@/app/actions/prompts';
 import PromptCard from '@/components/PromptCard';
 import PromptCardSkeleton from '@/components/PromptCardSkeleton';
-import SortTabs from '@/components/SortTabs';
+import DiscoveryFilters from '@/components/DiscoveryFilters';
 import StaggerGrid from '@/components/StaggerGrid';
 import { PromptCardData } from '@/components/PromptCard';
+
+// Price range mapping
+const PRICE_RANGES: Record<string, { min: number; max: number }> = {
+  'under10': { min: 0, max: 10 },
+  '10to30': { min: 10, max: 30 },
+  '30to50': { min: 30, max: 50 },
+  'over50': { min: 50, max: 999 },
+};
 
 /**
  * 동적 SEO 메타데이터 생성
@@ -126,12 +134,12 @@ const SAMPLE_PROMPTS: PromptCardData[] = [
  */
 async function PromptsList({
   locale,
-  sort,
+  filterOptions,
 }: {
   locale: string;
-  sort: SortType;
+  filterOptions: PromptsFilterOptions;
 }) {
-  const prompts = await getPromptsList(locale, sort);
+  const prompts = await getPromptsListWithFilters(locale, filterOptions);
 
   // DB가 비어있으면 샘플 데이터 표시
   const displayPrompts = prompts.length > 0 ? prompts : SAMPLE_PROMPTS;
@@ -166,15 +174,26 @@ export default async function PromptsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ 
+    sort?: string;
+    models?: string;
+    categories?: string;
+    price?: string;
+    rating?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { sort } = await searchParams;
+  const { sort, models, categories, price, rating } = await searchParams;
   const t = await getTranslations('prompts');
 
-  // 정렬 옵션 파싱 (기본값: popular)
-  const sortOption: SortType =
-    (sort as SortType) || 'popular';
+  // Build filter options from URL params
+  const filterOptions: PromptsFilterOptions = {
+    sort: (sort as SortType) || 'popular',
+    models: models ? models.split(',').filter(Boolean) : [],
+    categories: categories ? categories.split(',').filter(Boolean) : [],
+    priceRange: price && PRICE_RANGES[price] ? PRICE_RANGES[price] : undefined,
+    minRating: rating ? parseFloat(rating) : 0,
+  };
 
   return (
     <main className="min-h-screen">
@@ -190,9 +209,9 @@ export default async function PromptsPage({
             </p>
           </div>
 
-          {/* 정렬 탭 */}
+          {/* Discovery Filters */}
           <div className="mb-12">
-            <SortTabs />
+            <DiscoveryFilters locale={locale} />
           </div>
 
           {/* 프롬프트 목록 */}
@@ -205,7 +224,7 @@ export default async function PromptsPage({
               </div>
             }
           >
-            <PromptsList locale={locale} sort={sortOption} />
+            <PromptsList locale={locale} filterOptions={filterOptions} />
           </Suspense>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { ToastProvider } from '@/components/ui/Toast';
 import ProgressBar from '@/components/ui/ProgressBar';
 import KeyboardShortcuts from '@/components/ui/KeyboardShortcuts';
@@ -36,10 +37,13 @@ export default async function LocaleLayout({
         <ToastProvider>
           <ProgressBar />
           <KeyboardShortcuts />
-          <div className="min-h-screen bg-black text-white">
-            <Header />
-            {children}
-          </div>
+                    <div className="min-h-screen bg-black text-white flex flex-col">
+                      <Header />
+                      <main className="flex-1">
+                        {children}
+                      </main>
+                      <Footer />
+                    </div>
         </ToastProvider>
       </ErrorBoundary>
     </NextIntlClientProvider>

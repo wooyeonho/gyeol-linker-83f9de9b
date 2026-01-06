@@ -49,7 +49,7 @@ export default function SalesTrendChart({
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg">
+        <div className="bg-gray-800 border border-gray-700 rounded-[24px] p-3 shadow-lg">
           <p className="text-sm text-gray-400 mb-2">
             {payload[0].payload.date
               ? formatDate(payload[0].payload.date)
@@ -73,7 +73,7 @@ export default function SalesTrendChart({
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
       <h2 className="text-xl font-semibold mb-6">{t('salesTrend')}</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -117,9 +117,9 @@ export default function SalesTrendChart({
             type="monotone"
             dataKey="sales"
             name={t('dailySales')}
-            stroke="#3B82F6"
-            strokeWidth={2}
-            dot={{ fill: '#3B82F6', r: 4 }}
+                        stroke="#00A86B"
+                        strokeWidth={2}
+                        dot={{ fill: '#00A86B', r: 4 }}
             activeDot={{ r: 6 }}
           />
           <Line

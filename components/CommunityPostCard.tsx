@@ -44,7 +44,7 @@ export default function CommunityPostCard({ post }: { post: CommunityPost }) {
     : post.content;
 
   return (
-    <Link href={`/${locale}/community/${post.id}`}>
+    <Link href={`/community/${post.id}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

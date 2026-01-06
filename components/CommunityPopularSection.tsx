@@ -29,7 +29,7 @@ export default async function CommunityPopularSection() {
             </h2>
           </div>
           <Link
-            href={`/${locale}/community`}
+            href="/community"
             className="text-primary hover:text-primary-600 transition-colors font-medium"
           >
             {tHome('viewMore')} →

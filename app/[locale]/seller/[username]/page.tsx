@@ -212,9 +212,9 @@ export default async function SellerProfilePage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
+    <main className="container mx-auto px-4 py-24 max-w-7xl">
         {/* 판매자 프로필 헤더 */}
-        <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-lg p-8 mb-8">
+        <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-[32px] p-8 mb-8">
           <div className="flex items-start gap-6">
             {/* 아바타 */}
             <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-3xl font-bold text-primary border-2 border-primary/30">

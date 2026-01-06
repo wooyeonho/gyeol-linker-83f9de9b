@@ -130,12 +130,12 @@ export default async function CheckoutPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 프롬프트 정보 */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
               <h2 className="text-xl font-semibold mb-4">{t('orderSummary')}</h2>
               
               {/* 프롬프트 카드 */}
               <div className="flex gap-4">
-                <div className="relative w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="relative w-24 h-24 bg-gray-800 rounded-[24px] overflow-hidden flex-shrink-0">
                   {prompt.thumbnail_url ? (
                     <Image
                       src={prompt.thumbnail_url}
@@ -166,7 +166,7 @@ export default async function CheckoutPage({
             </div>
 
             {/* 보안 정보 */}
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
               <div className="flex items-start gap-4">
                 <Shield className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                 <div>

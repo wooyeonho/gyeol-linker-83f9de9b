@@ -82,8 +82,8 @@ async function PromptsList({ locale }: { locale: string }) {
       <div className="text-center py-16">
         <p className="text-gray-400 text-lg mb-6">{t('emptyMessage')}</p>
         <Link
-          href={`/${locale}/seller/prompts/new`}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
+          href="/seller/prompts/new"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all shadow-lg shadow-primary/20"
         >
           <Plus className="w-5 h-5" />
           {t('createPrompt')}
@@ -120,11 +120,11 @@ async function PromptsList({ locale }: { locale: string }) {
         return (
           <div
             key={prompt.id}
-            className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-primary transition-colors"
+            className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 hover:border-primary transition-all hover:scale-[1.01]"
           >
             <div className="flex gap-4">
               {/* 썸네일 */}
-              <div className="relative w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+              <div className="relative w-24 h-24 bg-gray-800 rounded-[24px] overflow-hidden flex-shrink-0">
                 {prompt.thumbnail_url ? (
                   <Image
                     src={prompt.thumbnail_url}
@@ -161,8 +161,8 @@ async function PromptsList({ locale }: { locale: string }) {
               {/* 액션 */}
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/${locale}/prompts/${prompt.slug}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                  href={`/prompts/${prompt.slug}`}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all"
                 >
                   <Eye className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('view')}</span>
@@ -218,8 +218,8 @@ export default async function MyPromptsPage({
             <p className="text-gray-400">등록한 프롬프트를 관리하세요</p>
           </div>
           <Link
-            href={`/${locale}/seller/prompts/new`}
-            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
+            href="/seller/prompts/new"
+            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
             {t('createPrompt')}
@@ -233,10 +233,10 @@ export default async function MyPromptsPage({
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-gray-900 border border-gray-800 rounded-lg p-6 animate-pulse"
+                  className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 animate-pulse"
                 >
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 bg-gray-800 rounded-lg" />
+                    <div className="w-24 h-24 bg-gray-800 rounded-[24px]" />
                     <div className="flex-1 space-y-2">
                       <div className="h-6 bg-gray-800 rounded w-3/4" />
                       <div className="h-4 bg-gray-800 rounded w-1/2" />

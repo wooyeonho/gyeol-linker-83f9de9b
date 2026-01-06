@@ -57,7 +57,7 @@ export default function Error({
 
           {/* 에러 상세 정보 (개발 환경에서만) */}
           {process.env.NODE_ENV === 'development' && error.message && (
-            <div className="mb-8 p-4 bg-gray-900 border border-gray-800 rounded-lg text-left">
+            <div className="mb-8 p-4 bg-gray-900 border border-gray-800 rounded-[24px] text-left">
               <p className="text-sm text-red-400 font-mono break-all">
                 {error.message}
               </p>
@@ -81,7 +81,7 @@ export default function Error({
               aria-label={t('retry')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors font-medium"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all font-medium shadow-lg shadow-primary/20"
             >
               <RefreshCw className="w-5 h-5" aria-hidden="true" />
               {t('retry')}
@@ -91,9 +91,9 @@ export default function Error({
               whileTap={{ scale: 0.95 }}
             >
               <Link
-                href={`/${locale}`}
+                href="/"
                 aria-label={t('goHome')}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-[32px] transition-all font-medium"
               >
                 <Home className="w-5 h-5" aria-hidden="true" />
                 {t('goHome')}

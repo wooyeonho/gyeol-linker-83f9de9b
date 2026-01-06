@@ -51,7 +51,7 @@ async function PopularPostsSection() {
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
         <Sparkles className="w-5 h-5 text-primary" />
         인기글
@@ -60,8 +60,8 @@ async function PopularPostsSection() {
         {posts.map((post) => (
           <Link
             key={post.id}
-            href={`/${locale}/community/${post.id}`}
-            className="block p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+            href={`/community/${post.id}`}
+            className="block p-3 bg-gray-800 rounded-[24px] hover:bg-gray-700 transition-all"
           >
             <h4 className="text-sm font-medium text-white line-clamp-1 mb-1">
               {post.title}
@@ -104,13 +104,13 @@ export default async function CommunityPage({
   const pageValue = parseInt(page) || 1;
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-24">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
           <Link
-            href={`/${locale}/community/new`}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+            href="/community/new"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-[32px] font-medium hover:bg-primary-600 hover:brightness-110 transition-all shadow-lg shadow-primary/20"
           >
             <Plus className="w-5 h-5" />
             {t('write')}
@@ -121,18 +121,18 @@ export default async function CommunityPage({
           {/* 메인 콘텐츠 */}
           <div className="lg:col-span-3 space-y-6">
             {/* 필터 및 검색 */}
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
+            <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-6 space-y-4">
               {/* 카테고리 필터 */}
               <div className="flex flex-wrap gap-2">
                 {(['all', 'tips', 'qna', 'free'] as const).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/${locale}/community?category=${cat}&search=${search}&sort=${sort}`}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      categoryValue === cat
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
+                    href={`/community?category=${cat}&search=${search}&sort=${sort}`}
+                                        className={`px-4 py-2 rounded-[32px] font-medium transition-all ${
+                                          categoryValue === cat
+                                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                        }`}
                   >
                     {t(cat)}
                   </Link>
@@ -143,7 +143,7 @@ export default async function CommunityPage({
               <div className="flex flex-col sm:flex-row gap-4">
                 <form
                   method="get"
-                  action={`/${locale}/community`}
+                  action="/community"
                   className="flex-1 flex items-center gap-2"
                 >
                   <input type="hidden" name="category" value={categoryValue} />
@@ -155,12 +155,12 @@ export default async function CommunityPage({
                       name="search"
                       defaultValue={search}
                       placeholder={t('searchPlaceholder')}
-                      className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+                    className="px-4 py-2 bg-primary text-white rounded-[32px] font-medium hover:bg-primary-600 hover:brightness-110 transition-all shadow-lg shadow-primary/20"
                   >
                     {t('search')}
                   </button>
@@ -168,15 +168,15 @@ export default async function CommunityPage({
 
                 {/* 정렬 */}
                 <div className="flex gap-2">
-                  {(['latest', 'popular', 'views'] as const).map((s) => (
-                    <Link
-                      key={s}
-                      href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${s}`}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        sortValue === s
-                          ? 'bg-primary text-white'
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                      }`}
+                    {(['latest', 'popular', 'views'] as const).map((s) => (
+                      <Link
+                        key={s}
+                        href={`/community?category=${categoryValue}&search=${search}&sort=${s}`}
+                                            className={`px-4 py-2 rounded-[32px] font-medium transition-all ${
+                                              sortValue === s
+                                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                            }`}
                     >
                       {t(`sort${s.charAt(0).toUpperCase() + s.slice(1)}`)}
                     </Link>
@@ -192,7 +192,7 @@ export default async function CommunityPage({
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
-                      className="bg-gray-900 border border-gray-800 rounded-lg p-6 animate-pulse"
+                      className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 animate-pulse"
                     >
                       <div className="h-6 bg-gray-800 rounded w-3/4 mb-4" />
                       <div className="h-4 bg-gray-800 rounded w-full mb-2" />
@@ -213,8 +213,8 @@ export default async function CommunityPage({
             {/* 더보기 버튼 */}
             <div className="text-center">
               <Link
-                href={`/${locale}/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
-                className="inline-block px-6 py-3 bg-gray-900 border border-gray-800 text-white rounded-lg font-medium hover:border-primary transition-colors"
+                href={`/community?category=${categoryValue}&search=${search}&sort=${sortValue}&page=${pageValue + 1}`}
+                className="inline-block px-6 py-3 bg-gray-900 border border-gray-800 text-white rounded-[32px] font-medium hover:border-primary transition-all"
               >
                 {t('loadMore')}
               </Link>
@@ -223,7 +223,7 @@ export default async function CommunityPage({
 
           {/* 사이드바 */}
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-64 bg-gray-900 rounded-lg animate-pulse" />}>
+            <Suspense fallback={<div className="h-64 bg-gray-900 rounded-[32px] animate-pulse" />}>
               <PopularPostsSection />
             </Suspense>
           </div>

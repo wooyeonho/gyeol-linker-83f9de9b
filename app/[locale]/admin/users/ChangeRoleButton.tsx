@@ -64,7 +64,7 @@ export default function ChangeRoleButton({
         disabled={isProcessing}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label={t('changeRole')}
       >
         {isProcessing ? (
@@ -82,7 +82,7 @@ export default function ChangeRoleButton({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl z-50"
+          className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-800 rounded-[24px] shadow-xl z-50"
         >
           <div className="py-2">
             {roles.map((role) => (

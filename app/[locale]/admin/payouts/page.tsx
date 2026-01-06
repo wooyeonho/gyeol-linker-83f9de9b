@@ -90,12 +90,12 @@ export default async function AdminPayoutsPage({
   const payouts = await fetchPendingPayouts();
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <main className="container mx-auto px-4 py-24 max-w-6xl">
         {/* 페이지 타이틀 */}
         <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
         {/* 출금 요청 목록 */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden">
           <div className="p-6 border-b border-gray-800">
             <h2 className="text-xl font-semibold">{t('payoutRequests')}</h2>
           </div>

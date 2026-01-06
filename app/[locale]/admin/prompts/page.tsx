@@ -34,7 +34,7 @@ export default async function AdminPromptsPage({
 
   if (error) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-24 max-w-6xl">
         <div className="text-center text-red-400">
           <p>{error}</p>
         </div>
@@ -45,7 +45,7 @@ export default async function AdminPromptsPage({
   // formatDate는 lib/utils/date.ts에서 import
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <main className="container mx-auto px-4 py-24 max-w-6xl">
       {/* 페이지 타이틀 */}
       <div className="flex items-center gap-3 mb-8">
         <Clock className="w-8 h-8 text-primary" />
@@ -54,7 +54,7 @@ export default async function AdminPromptsPage({
 
       {/* 프롬프트 목록 */}
       {prompts.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-12 text-center">
+        <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-12 text-center">
           <CheckCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-400 text-lg">대기 중인 프롬프트가 없습니다.</p>
         </div>
@@ -76,11 +76,11 @@ export default async function AdminPromptsPage({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ scale: 1.01 }}
-                className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-primary/50 transition-colors"
+                className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 hover:border-primary/50 transition-all"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* 썸네일 */}
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
+                  <div className="relative aspect-video rounded-[24px] overflow-hidden bg-gray-800">
                     {prompt.thumbnail_url ? (
                       <Image
                         src={prompt.thumbnail_url}

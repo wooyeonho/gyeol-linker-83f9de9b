@@ -6,6 +6,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { formatPrice } from '@/lib/utils/currency';
+import { 
+  HotBadge, 
+  BestRatedBadge, 
+  NewBadge,
+  shouldShowHotBadge,
+  shouldShowBestRatedBadge,
+  shouldShowNewBadge
+} from '@/components/badges';
 
 /**
  * 프롬프트 카드 타입
@@ -48,7 +57,7 @@ const PromptCard = memo(function PromptCard({
       whileTap={{ scale: 0.98 }}
     >
       <Link 
-        href={`/${locale}/prompts/${prompt.slug}`} 
+        href={`/prompts/${prompt.slug}`} 
         className="block"
         aria-label={`${prompt.title} - ${t('viewDetails')}`}
       >
@@ -59,6 +68,13 @@ const PromptCard = memo(function PromptCard({
         >
       {/* 썸네일 */}
       <div className="relative w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 overflow-hidden rounded-t-[32px]">
+        {/* Badge Overlay */}
+        <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+          {shouldShowHotBadge(prompt.purchaseCount || 0) && <HotBadge />}
+          {shouldShowBestRatedBadge(prompt.rating, prompt.purchaseCount || 0) && <BestRatedBadge />}
+          {prompt.createdAt && shouldShowNewBadge(prompt.createdAt) && <NewBadge />}
+        </div>
+        
         {prompt.thumbnail ? (
           <Image
             src={prompt.thumbnail}
@@ -119,14 +135,14 @@ const PromptCard = memo(function PromptCard({
           {/* 가격 */}
           <span 
             className="text-lg font-bold text-primary" 
-            aria-label={`가격: $${prompt.price.toFixed(2)}`}
+            aria-label={`가격: ${formatPrice(prompt.price)}`}
             itemProp="offers"
             itemScope
             itemType="https://schema.org/Offer"
           >
             <meta itemProp="price" content={prompt.price.toFixed(2)} />
             <meta itemProp="priceCurrency" content="USD" />
-            ${prompt.price.toFixed(2)}
+            {formatPrice(prompt.price)}
           </span>
         </div>
       </div>

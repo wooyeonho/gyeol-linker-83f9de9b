@@ -102,7 +102,7 @@ export default async function CommunityPostDetailPage({
   const isAuthor = user?.id === post.author_id;
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-24">
         {/* 뒤로가기 */}
         <Link
           href={`/${currentLocale}/community`}
@@ -113,7 +113,7 @@ export default async function CommunityPostDetailPage({
         </Link>
 
         {/* 게시글 */}
-        <article className="bg-gray-900 border border-gray-800 rounded-lg p-8 mb-8">
+        <article className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 mb-8">
           {/* 헤더 */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -167,7 +167,7 @@ export default async function CommunityPostDetailPage({
               <div className="flex items-center gap-2">
                 <Link
                   href={`/${currentLocale}/community/${post.id}/edit`}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-[32px] hover:bg-gray-700 transition-all"
                 >
                   <Edit className="w-4 h-4" />
                   {t('edit')}
@@ -191,7 +191,7 @@ export default async function CommunityPostDetailPage({
         )}
 
         {/* 댓글 섹션 */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
+        <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
           <h2 className="text-2xl font-semibold text-white mb-6">
             {t('comments')} ({comments.length})
           </h2>
@@ -202,7 +202,7 @@ export default async function CommunityPostDetailPage({
               <CommentForm postId={post.id} />
             </div>
           ) : (
-            <div className="mb-8 p-4 bg-gray-800 rounded-lg text-center text-gray-400">
+            <div className="mb-8 p-4 bg-gray-800 rounded-[24px] text-center text-gray-400">
               <p>{t('loginRequired')}</p>
             </div>
           )}
@@ -212,7 +212,7 @@ export default async function CommunityPostDetailPage({
             fallback={
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse">
+                  <div key={i} className="bg-gray-800 rounded-[24px] p-4 animate-pulse">
                     <div className="h-4 bg-gray-700 rounded w-1/4 mb-2" />
                     <div className="h-4 bg-gray-700 rounded w-full" />
                   </div>

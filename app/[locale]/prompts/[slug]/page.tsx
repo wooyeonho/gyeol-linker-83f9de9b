@@ -8,6 +8,7 @@ import PromptContent from '@/components/PromptContent';
 import PurchaseSidebar from '@/components/PurchaseSidebar';
 import RecommendedPrompts from '@/components/RecommendedPrompts';
 import PromptCardSkeleton from '@/components/PromptCardSkeleton';
+import ReviewList from '@/components/ReviewList';
 import { createClient } from '@/lib/supabase/server';
 import { getRelatedPrompts } from '@/app/actions/recommendations';
 import { Star, Eye, ShoppingBag, User } from 'lucide-react';
@@ -122,7 +123,8 @@ async function checkPurchaseStatus(
 }
 
 /**
- * 메타데이터 생성
+ * World-Class SEO Metadata Generation
+ * Keyword-optimized for Google ranking
  */
 export async function generateMetadata({
   params,
@@ -134,7 +136,7 @@ export async function generateMetadata({
 
   if (!prompt) {
     return {
-      title: '프롬프트를 찾을 수 없습니다',
+      title: locale === 'ko' ? '프롬프트를 찾을 수 없습니다' : 'Prompt Not Found',
     };
   }
 
@@ -146,18 +148,39 @@ export async function generateMetadata({
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prompt-jeongeum.com';
   const url = `${baseUrl}/${locale}/prompts/${slug}`;
 
+  // SEO-optimized titles with keywords
+  const seoTitle = locale === 'ko'
+    ? `${title} | AI 프롬프트 마켓 - 프롬프트 정음`
+    : `${title} | Premium AI Prompt Marketplace`;
+
+  // SEO-optimized descriptions with social proof
+  const seoDescription = locale === 'ko'
+    ? `${description} 전문가가 검증한 프리미엄 ${prompt.ai_model} 프롬프트. ${prompt.purchase_count || 0}명 이상 구매.`
+    : `${description} Expert-verified ${prompt.ai_model} prompt. Trusted by ${prompt.purchase_count || 0}+ professionals.`;
+
+  // Keywords for SEO
+  const keywords = locale === 'ko'
+    ? ['AI 프롬프트', prompt.ai_model, '프롬프트 마켓', '프롬프트 정음', prompt.category_ko]
+    : ['AI prompt', prompt.ai_model, 'prompt marketplace', 'premium prompts', prompt.category_en];
+
+  // Enhanced description with rating and sales for social sharing
+  const socialDescription = locale === 'ko'
+    ? `${description} ⭐ ${prompt.average_rating.toFixed(1)}/5 평점 • ${prompt.purchase_count || 0}+ 판매 • ${prompt.ai_model.toUpperCase()}용 프리미엄 프롬프트`
+    : `${description} ⭐ ${prompt.average_rating.toFixed(1)}/5 rating • ${prompt.purchase_count || 0}+ sales • Premium ${prompt.ai_model.toUpperCase()} prompt`;
+
   return {
-    title: `${title} | 프롬프트 정음`,
-    description: description,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: keywords.filter(Boolean),
     openGraph: {
-      type: 'website',
-      title,
-      description,
+      type: 'product',
+      title: seoTitle,
+      description: socialDescription,
       url,
-      siteName: '프롬프트 정음',
+      siteName: locale === 'ko' ? '프롬프트 정음' : 'Prompt Jeongeom',
       images: [
         {
-          url: prompt.thumbnail_url,
+          url: prompt.thumbnail_url || `${baseUrl}/og-default.png`,
           width: 1200,
           height: 630,
           alt: title,
@@ -167,12 +190,25 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
-      images: [prompt.thumbnail_url],
+      title: seoTitle,
+      description: socialDescription,
+      images: [prompt.thumbnail_url || `${baseUrl}/og-default.png`],
+      creator: '@PromptJeongeom',
+      site: '@PromptJeongeom',
+    },
+    // Product-specific meta for e-commerce crawlers
+    other: {
+      'product:price:amount': prompt.price.toString(),
+      'product:price:currency': 'USD',
+      'product:availability': 'in stock',
+      'product:condition': 'new',
     },
     alternates: {
       canonical: url,
+      languages: {
+        'en': `${baseUrl}/en/prompts/${slug}`,
+        'ko': `${baseUrl}/ko/prompts/${slug}`,
+      },
     },
   };
 }
@@ -251,7 +287,7 @@ export default async function PromptDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 메인 콘텐츠 */}
           <div className="lg:col-span-2 space-y-8">
@@ -339,14 +375,29 @@ export default async function PromptDetailPage({
               </div>
             </div>
 
-            {/* 프롬프트 원문 */}
-            <div>
-              <PromptContent
-                content={prompt.content}
-                hasPurchased={hasPurchased}
-              />
-            </div>
-          </div>
+                                  {/* 프롬프트 원문 */}
+                                  <div>
+                                    <PromptContent
+                                      content={prompt.content}
+                                      hasPurchased={hasPurchased}
+                                      price={prompt.price}
+                                      salesCount={prompt.purchase_count}
+                                    />
+                                  </div>
+
+                      {/* 리뷰 섹션 */}
+                      <div className="mt-12">
+                        <h2 className="text-2xl font-bold mb-6">{t('reviews')}</h2>
+                        <Suspense fallback={
+                          <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-[32px] p-8 animate-pulse">
+                            <div className="h-16 bg-gray-800 rounded mb-4" />
+                            <div className="h-32 bg-gray-800 rounded" />
+                          </div>
+                        }>
+                          <ReviewList promptId={prompt.id} locale={locale} />
+                        </Suspense>
+                      </div>
+                    </div>
 
           {/* Sticky 사이드바 */}
           <div className="lg:col-span-1">

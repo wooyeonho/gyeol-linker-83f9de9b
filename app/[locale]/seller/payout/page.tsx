@@ -105,7 +105,7 @@ export default async function PayoutPage({
   const { balance, payouts } = await fetchPayoutData(profile.id);
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <main className="container mx-auto px-4 py-24 max-w-6xl">
         {/* 페이지 타이틀 */}
         <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
@@ -113,7 +113,7 @@ export default async function PayoutPage({
           {/* 왼쪽: 출금 신청 폼 */}
           <div className="lg:col-span-2 space-y-8">
             {/* 출금 가능 잔액 강조 표시 */}
-            <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-lg p-8">
+            <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-[32px] p-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium text-gray-300">
                   {t('availableBalance')}

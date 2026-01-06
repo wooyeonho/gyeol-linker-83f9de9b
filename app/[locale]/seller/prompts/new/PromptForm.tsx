@@ -295,7 +295,7 @@ export default function PromptForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="container mx-auto px-4 py-8 max-w-4xl"
+      className="container mx-auto px-4 py-24 max-w-4xl"
     >
         {/* 페이지 타이틀 */}
         <motion.h1
@@ -321,7 +321,7 @@ export default function PromptForm() {
                 onChange={(e) => setTitleKo(e.target.value)}
                 required
                 maxLength={100}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="프롬프트 제목을 입력하세요"
                 aria-label="한국어 제목"
                 aria-describedby="titleKo-help"
@@ -340,7 +340,7 @@ export default function PromptForm() {
                 onChange={(e) => setTitleEn(e.target.value)}
                 required
                 maxLength={100}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="Enter prompt title"
                 aria-label="English title"
                 aria-describedby="titleEn-help"
@@ -363,7 +363,7 @@ export default function PromptForm() {
                 required
                 rows={5}
                 maxLength={500}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[24px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                 placeholder="프롬프트에 대한 상세 설명을 입력하세요"
                 aria-label="한국어 설명"
                 aria-describedby="descriptionKo-help"
@@ -382,7 +382,7 @@ export default function PromptForm() {
                 required
                 rows={5}
                 maxLength={500}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[24px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
                 placeholder="Enter detailed description"
                 aria-label="English description"
                 aria-describedby="descriptionEn-help"
@@ -407,7 +407,7 @@ export default function PromptForm() {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 required
-                className="w-full pl-8 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-8 pr-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="0.99"
               />
             </div>
@@ -423,7 +423,7 @@ export default function PromptForm() {
               type="text"
               value={aiModel}
               onChange={(e) => setAiModel(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="예: GPT-4, Claude, Midjourney"
             />
           </div>
@@ -438,7 +438,7 @@ export default function PromptForm() {
                 type="text"
                 value={categoryKo}
                 onChange={(e) => setCategoryKo(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="예: 비즈니스, 창작, 교육"
               />
             </div>
@@ -450,7 +450,7 @@ export default function PromptForm() {
                 type="text"
                 value={categoryEn}
                 onChange={(e) => setCategoryEn(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="e.g., Business, Creative, Education"
               />
             </div>
@@ -466,7 +466,7 @@ export default function PromptForm() {
               onChange={(e) => setContent(e.target.value)}
               required
               rows={10}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none font-mono text-sm"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[24px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none font-mono text-sm"
               placeholder="프롬프트 원문을 입력하세요"
             />
           </div>
@@ -479,7 +479,7 @@ export default function PromptForm() {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleAddTag}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder={t('tagsPlaceholder')}
             />
             <p className="mt-1 text-sm text-gray-400">
@@ -536,7 +536,7 @@ export default function PromptForm() {
                 type="button"
                 onClick={() => thumbnailInputRef.current?.click()}
                 disabled={thumbnailUploading}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900 border border-gray-800 rounded-lg hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-gray-900 border border-gray-800 rounded-[32px] hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {thumbnailUploading ? (
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -567,7 +567,7 @@ export default function PromptForm() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="relative w-48 h-48 border border-gray-800 rounded-lg overflow-hidden"
+                    className="relative w-48 h-48 border border-gray-800 rounded-[24px] overflow-hidden"
                   >
                     <Image
                       src={thumbnailUrl}
@@ -610,7 +610,7 @@ export default function PromptForm() {
                 type="button"
                 onClick={() => resultImagesInputRef.current?.click()}
                 disabled={resultImagesUploading}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900 border border-gray-800 rounded-lg hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-gray-900 border border-gray-800 rounded-[32px] hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resultImagesUploading ? (
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -650,7 +650,7 @@ export default function PromptForm() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         whileHover={{ scale: 1.05 }}
-                        className="relative aspect-square border border-gray-800 rounded-lg overflow-hidden"
+                        className="relative aspect-square border border-gray-800 rounded-[24px] overflow-hidden"
                       >
                         <Image
                           src={url}
@@ -684,7 +684,7 @@ export default function PromptForm() {
               type="url"
               value={resultVideoUrl}
               onChange={(e) => setResultVideoUrl(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder={t('resultVideoPlaceholder')}
             />
           </div>
@@ -694,7 +694,7 @@ export default function PromptForm() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all"
             >
               취소
             </button>
@@ -703,7 +703,7 @@ export default function PromptForm() {
               disabled={submitting || thumbnailUploading || resultImagesUploading}
               whileHover={{ scale: submitting ? 1 : 1.02 }}
               whileTap={{ scale: submitting ? 1 : 0.98 }}
-              className="px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
             >
               {submitting ? (
                 <>
