@@ -3,13 +3,32 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { createClient } from '@/lib/supabase/client';
-import { Database, CheckCircle, XCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { Database, CheckCircle, XCircle, Loader2, AlertTriangle, Star, MessageSquare } from 'lucide-react';
 
 interface LogEntry {
   timestamp: string;
   message: string;
   type: 'info' | 'success' | 'error' | 'warning';
 }
+
+// Sample reviews data for testing
+const SAMPLE_REVIEWS = [
+  {
+    rating: 5,
+    comment: 'This prompt completely transformed my email marketing. Open rates went from 15% to 45% in just two weeks. Worth every penny!',
+    comment_ko: '이 프롬프트가 제 이메일 마케팅을 완전히 바꿔놨어요. 오픈율이 2주 만에 15%에서 45%로 올랐습니다. 가격 대비 최고예요!',
+  },
+  {
+    rating: 5,
+    comment: 'The logo designs generated were incredibly professional. My client was blown away by the quality.',
+    comment_ko: '생성된 로고 디자인이 정말 프로페셔널했어요. 클라이언트가 품질에 감탄했습니다.',
+  },
+  {
+    rating: 4,
+    comment: 'Great code review system. Found several security issues I would have missed. Highly recommended for any developer.',
+    comment_ko: '훌륭한 코드 리뷰 시스템입니다. 놓칠 뻔한 보안 이슈를 여러 개 찾았어요. 모든 개발자에게 강력 추천합니다.',
+  },
+];
 
 // Premium sample prompts data
 const SAMPLE_PROMPTS = [
@@ -287,18 +306,70 @@ export default function AdminSetupPage() {
         }
       }
 
-      // Step 5: Verify insertion
-      addLog('Verifying database state...', 'info');
-      const { count } = await supabase
-        .from('prompts')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'approved');
+            // Step 5: Check and setup reviews table
+            addLog('Checking reviews table...', 'info');
+            const { data: reviewsCheck, error: reviewsError } = await supabase
+              .from('reviews')
+              .select('id')
+              .limit(1);
 
-      addLog(`Total approved prompts in database: ${count}`, 'success');
+            if (reviewsError) {
+              addLog(`Reviews table check: ${reviewsError.message}`, 'warning');
+              addLog('Note: Reviews table may need to be created in Supabase Dashboard.', 'warning');
+              addLog('SQL to create reviews table:', 'info');
+              addLog(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        prompt_id UUID REFERENCES prompts(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT NOT NULL CHECK (char_length(comment) >= 10),
+        verified_purchase BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(prompt_id, user_id)
+      );
 
-      // Complete
-      addLog('Database initialization complete!', 'success');
-      setIsComplete(true);
+      -- Enable RLS
+      ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+      -- Policies
+      CREATE POLICY "Anyone can view reviews" ON reviews FOR SELECT USING (true);
+      CREATE POLICY "Verified buyers can insert reviews" ON reviews FOR INSERT WITH CHECK (
+        auth.uid() = user_id AND
+        EXISTS (
+          SELECT 1 FROM orders
+          WHERE orders.prompt_id = reviews.prompt_id
+          AND orders.buyer_id = auth.uid()
+          AND orders.status = 'completed'
+        )
+      );
+      CREATE POLICY "Users can update own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
+      CREATE POLICY "Users can delete own reviews" ON reviews FOR DELETE USING (auth.uid() = user_id);
+              `, 'info');
+            } else {
+              addLog('Reviews table exists!', 'success');
+        
+              // Check for existing reviews
+              const { count: reviewCount } = await supabase
+                .from('reviews')
+                .select('*', { count: 'exact', head: true });
+        
+              addLog(`Existing reviews in database: ${reviewCount || 0}`, 'success');
+            }
+
+            // Step 6: Verify prompts insertion
+            addLog('Verifying database state...', 'info');
+            const { count } = await supabase
+              .from('prompts')
+              .select('*', { count: 'exact', head: true })
+              .eq('status', 'approved');
+
+            addLog(`Total approved prompts in database: ${count}`, 'success');
+
+            // Complete
+            addLog('Database initialization complete!', 'success');
+            setIsComplete(true);
 
     } catch (error) {
       addLog(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
@@ -342,9 +413,9 @@ export default function AdminSetupPage() {
           <Database className="w-10 h-10 text-primary" />
         </div>
         <h1 className="text-4xl font-bold tracking-tight mb-4">Database Setup</h1>
-        <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
-          Initialize your database with premium sample prompts. This will create your admin profile and insert 3 high-quality sample prompts to get started.
-        </p>
+                <p className="text-lg text-gray-400 leading-relaxed max-w-2xl mx-auto">
+                  Initialize your database with premium sample prompts and verify the reviews system. This will create your admin profile, insert 3 high-quality sample prompts, and check the reviews table setup.
+                </p>
       </div>
 
       {/* Main Card */}
