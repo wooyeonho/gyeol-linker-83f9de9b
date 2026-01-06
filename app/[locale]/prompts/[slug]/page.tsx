@@ -163,19 +163,24 @@ export async function generateMetadata({
     ? ['AI 프롬프트', prompt.ai_model, '프롬프트 마켓', '프롬프트 정음', prompt.category_ko]
     : ['AI prompt', prompt.ai_model, 'prompt marketplace', 'premium prompts', prompt.category_en];
 
+  // Enhanced description with rating and sales for social sharing
+  const socialDescription = locale === 'ko'
+    ? `${description} ⭐ ${prompt.average_rating.toFixed(1)}/5 평점 • ${prompt.purchase_count || 0}+ 판매 • ${prompt.ai_model.toUpperCase()}용 프리미엄 프롬프트`
+    : `${description} ⭐ ${prompt.average_rating.toFixed(1)}/5 rating • ${prompt.purchase_count || 0}+ sales • Premium ${prompt.ai_model.toUpperCase()} prompt`;
+
   return {
     title: seoTitle,
     description: seoDescription,
     keywords: keywords.filter(Boolean),
     openGraph: {
-      type: 'website',
+      type: 'product',
       title: seoTitle,
-      description: seoDescription,
+      description: socialDescription,
       url,
       siteName: locale === 'ko' ? '프롬프트 정음' : 'Prompt Jeongeom',
       images: [
         {
-          url: prompt.thumbnail_url || '/og-default.png',
+          url: prompt.thumbnail_url || `${baseUrl}/og-default.png`,
           width: 1200,
           height: 630,
           alt: title,
@@ -186,8 +191,17 @@ export async function generateMetadata({
     twitter: {
       card: 'summary_large_image',
       title: seoTitle,
-      description: seoDescription,
-      images: [prompt.thumbnail_url || '/og-default.png'],
+      description: socialDescription,
+      images: [prompt.thumbnail_url || `${baseUrl}/og-default.png`],
+      creator: '@PromptJeongeom',
+      site: '@PromptJeongeom',
+    },
+    // Product-specific meta for e-commerce crawlers
+    other: {
+      'product:price:amount': prompt.price.toString(),
+      'product:price:currency': 'USD',
+      'product:availability': 'in stock',
+      'product:condition': 'new',
     },
     alternates: {
       canonical: url,

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Share2, Copy, Check, Twitter, Facebook } from 'lucide-react';
+import { Copy, Check, Twitter, Linkedin, Link as LinkIcon } from 'lucide-react';
 
 /**
- * 소셜 공유 버튼 컴포넌트
+ * Premium Social Share Buttons Component
+ * Stitch Design System - Jade Green hover effects, circular buttons
  */
 export default function ShareButtons({
   url,
@@ -43,57 +44,58 @@ export default function ShareButtons({
     window.open(twitterUrl, '_blank', 'width=550,height=420');
   };
 
-  // 페이스북 공유
-  const handleShareFacebook = () => {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+  // LinkedIn 공유
+  const handleShareLinkedIn = () => {
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
       fullUrl
     )}`;
-    window.open(facebookUrl, '_blank', 'width=550,height=420');
+    window.open(linkedInUrl, '_blank', 'width=550,height=420');
   };
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-gray-400">{t('share')}</span>
-      <div className="flex items-center gap-2">
-        {/* 링크 복사 */}
-        <button
-          onClick={handleCopyLink}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-800 rounded-[32px] transition-all duration-200 hover:border-primary active:scale-95 text-sm"
-          title={t('copyLink')}
-        >
-          {copied ? (
-            <>
-              <Check className="w-4 h-4 text-green-400" />
-              <span className="text-green-400">{t('linkCopied')}</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4 text-gray-300" />
-              <span className="text-gray-300">{t('copyLink')}</span>
-            </>
-          )}
-        </button>
-
-        {/* 트위터 공유 */}
-        <button
-          onClick={handleShareTwitter}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-800 rounded-[32px] transition-all duration-200 hover:border-primary active:scale-95 text-sm"
-          title={t('shareOnTwitter')}
-        >
-          <Twitter className="w-4 h-4 text-gray-300" />
-          <span className="text-gray-300 hidden sm:inline">{t('shareOnTwitter')}</span>
-        </button>
-
-        {/* 페이스북 공유 */}
-        <button
-          onClick={handleShareFacebook}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-800 rounded-[32px] transition-all duration-200 hover:border-primary active:scale-95 text-sm"
-          title={t('shareOnFacebook')}
-        >
-          <Facebook className="w-4 h-4 text-gray-300" />
-          <span className="text-gray-300 hidden sm:inline">{t('shareOnFacebook')}</span>
-        </button>
-      </div>
+      <span className="text-sm text-gray-400 font-medium">{t('share')}:</span>
+      
+      {/* Twitter/X */}
+      <button
+        onClick={handleShareTwitter}
+        className="group size-10 rounded-full bg-[#0A0A0A] border border-[#1A1A1A] hover:border-[#00A86B] flex items-center justify-center transition-all hover:scale-110"
+        aria-label={t('shareOnTwitter')}
+        title={t('shareOnTwitter')}
+      >
+        <Twitter className="size-4 text-gray-400 group-hover:text-[#00A86B] transition-colors" />
+      </button>
+      
+      {/* LinkedIn */}
+      <button
+        onClick={handleShareLinkedIn}
+        className="group size-10 rounded-full bg-[#0A0A0A] border border-[#1A1A1A] hover:border-[#00A86B] flex items-center justify-center transition-all hover:scale-110"
+        aria-label={t('shareOnLinkedIn')}
+        title={t('shareOnLinkedIn')}
+      >
+        <Linkedin className="size-4 text-gray-400 group-hover:text-[#00A86B] transition-colors" />
+      </button>
+      
+      {/* Copy Link */}
+      <button
+        onClick={handleCopyLink}
+        className="group size-10 rounded-full bg-[#0A0A0A] border border-[#1A1A1A] hover:border-[#00A86B] flex items-center justify-center transition-all hover:scale-110"
+        aria-label={t('copyLink')}
+        title={t('copyLink')}
+      >
+        {copied ? (
+          <Check className="size-4 text-[#00A86B]" />
+        ) : (
+          <LinkIcon className="size-4 text-gray-400 group-hover:text-[#00A86B] transition-colors" />
+        )}
+      </button>
+      
+      {/* Copied feedback */}
+      {copied && (
+        <span className="text-xs text-[#00A86B] font-medium animate-pulse">
+          {t('linkCopied')}
+        </span>
+      )}
     </div>
   );
 }

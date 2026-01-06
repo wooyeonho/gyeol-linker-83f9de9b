@@ -7,6 +7,14 @@ import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/utils/currency';
+import { 
+  HotBadge, 
+  BestRatedBadge, 
+  NewBadge,
+  shouldShowHotBadge,
+  shouldShowBestRatedBadge,
+  shouldShowNewBadge
+} from '@/components/badges';
 
 /**
  * 프롬프트 카드 타입
@@ -60,6 +68,13 @@ const PromptCard = memo(function PromptCard({
         >
       {/* 썸네일 */}
       <div className="relative w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 overflow-hidden rounded-t-[32px]">
+        {/* Badge Overlay */}
+        <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+          {shouldShowHotBadge(prompt.purchaseCount || 0) && <HotBadge />}
+          {shouldShowBestRatedBadge(prompt.rating, prompt.purchaseCount || 0) && <BestRatedBadge />}
+          {prompt.createdAt && shouldShowNewBadge(prompt.createdAt) && <NewBadge />}
+        </div>
+        
         {prompt.thumbnail ? (
           <Image
             src={prompt.thumbnail}
