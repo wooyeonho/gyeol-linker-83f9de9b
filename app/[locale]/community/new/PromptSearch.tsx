@@ -79,7 +79,7 @@ export default function PromptSearch({
   return (
     <div className="space-y-2">
       {selectedPrompt ? (
-        <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-gray-800 rounded-[24px]">
           <span className="text-white">
             {selectedPrompt.title_ko || selectedPrompt.title_en}
           </span>
@@ -102,10 +102,10 @@ export default function PromptSearch({
               handleSearch(e.target.value);
             }}
             placeholder={t('searchPrompt')}
-            className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
           {results.length > 0 && (
-            <div className="absolute z-10 w-full mt-2 bg-gray-900 border border-gray-800 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-2 bg-gray-900 border border-gray-800 rounded-[24px] shadow-lg max-h-60 overflow-y-auto">
               {results.map((prompt) => (
                 <button
                   key={prompt.id}

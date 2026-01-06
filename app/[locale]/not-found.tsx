@@ -30,7 +30,7 @@ export default async function NotFound() {
             <Link
               href={`/${locale}`}
               aria-label={t('goHome')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors font-medium"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all font-medium shadow-lg shadow-primary/20"
             >
               <Home className="w-5 h-5" aria-hidden="true" />
               {t('goHome')}
@@ -38,7 +38,7 @@ export default async function NotFound() {
             <Link
               href={`/${locale}/prompts`}
               aria-label={t('browsePrompts')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-[32px] transition-all font-medium"
             >
               <Search className="w-5 h-5" aria-hidden="true" />
               {t('browsePrompts')}

@@ -57,7 +57,7 @@ export default function PayoutForm({
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
       <h2 className="text-xl font-semibold mb-6">{t('requestPayout')}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,7 +76,7 @@ export default function PayoutForm({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full pl-8 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder={t('amountPlaceholder')}
             />
           </div>
@@ -104,14 +104,14 @@ export default function PayoutForm({
             value={payoutMethod}
             onChange={(e) => setPayoutMethod(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder={t('payoutMethodPlaceholder')}
           />
         </div>
 
         {/* 잔액 부족 안내 */}
         {balance < MINIMUM_AMOUNT && (
-          <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-lg p-4">
+          <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-[24px] p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
               <div>
@@ -130,7 +130,7 @@ export default function PayoutForm({
         <button
           type="submit"
           disabled={!canRequest || submitting || balance < MINIMUM_AMOUNT}
-          className="w-full px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+          className="w-full px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium shadow-lg shadow-primary/20"
         >
           {submitting ? (
             <>

@@ -51,7 +51,7 @@ export default function PurchaseSidebar({
   };
 
   return (
-    <div className="sticky top-24 bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
+    <div className="sticky top-24 bg-gray-900 border border-gray-800 rounded-[32px] p-8 space-y-4">
       {/* 가격 */}
       <div className="space-y-2">
         <p className="text-sm text-gray-400">{tCommon('price')}</p>
@@ -65,13 +65,13 @@ export default function PurchaseSidebar({
         <button
           onClick={handlePurchase}
           disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
         >
           <ShoppingCart className="w-5 h-5" />
           {isProcessing ? t('purchaseProcessing') : t('buyNow')}
         </button>
       ) : (
-        <div className="w-full px-6 py-3 bg-gray-800 text-gray-400 rounded-lg text-center">
+        <div className="w-full px-6 py-3 bg-gray-800 text-gray-400 rounded-[32px] text-center">
           {t('purchaseCompleted')}
         </div>
       )}

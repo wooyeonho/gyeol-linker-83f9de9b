@@ -109,9 +109,9 @@ function ToastItem({
   };
 
   const colors = {
-    success: 'bg-green-500/10 border-green-500/20 text-green-400',
+    success: 'bg-primary/10 border-primary/20 text-primary',
     error: 'bg-red-500/10 border-red-500/20 text-red-400',
-    info: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    info: 'bg-primary/10 border-primary/20 text-primary',
     warning: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
   };
 
@@ -124,7 +124,7 @@ function ToastItem({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative flex items-start gap-3 p-4 rounded-lg border backdrop-blur-md ${colorClass} pointer-events-auto shadow-lg`}
+      className={`relative flex items-start gap-3 p-4 rounded-[24px] border backdrop-blur-md ${colorClass} pointer-events-auto shadow-lg`}
       role="alert"
       aria-live="polite"
     >

@@ -48,7 +48,7 @@ export default function PayoutActionButton({
     <button
       onClick={handleComplete}
       disabled={processing}
-      className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+      className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-lg shadow-primary/20"
     >
       {processing ? (
         <>

@@ -32,7 +32,7 @@ export default async function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-md border-b border-gray-800" role="banner">
+    <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-gray-800/50" role="banner">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
         <nav className="flex items-center justify-between gap-4" aria-label="메인 네비게이션">
           {/* 로고 */}

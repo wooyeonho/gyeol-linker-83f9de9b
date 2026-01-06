@@ -100,7 +100,7 @@ function ErrorFallback({ error }: { error: Error | null }) {
 
         {/* 개발 환경에서만 에러 상세 정보 표시 */}
         {process.env.NODE_ENV === 'development' && error && (
-          <div className="mb-8 p-4 bg-gray-900 border border-gray-800 rounded-lg text-left">
+          <div className="mb-8 p-6 bg-gray-900 border border-gray-800 rounded-[24px] text-left">
             <p className="text-sm text-red-400 font-mono break-all mb-2">
               {error.name}: {error.message}
             </p>
@@ -118,7 +118,7 @@ function ErrorFallback({ error }: { error: Error | null }) {
             onClick={handleRetry}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg transition-colors font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all font-medium shadow-lg shadow-primary/20"
             aria-label="페이지 새로고침"
           >
             <RefreshCw className="w-5 h-5" aria-hidden="true" />
@@ -128,7 +128,7 @@ function ErrorFallback({ error }: { error: Error | null }) {
             onClick={handleGoHome}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-[32px] transition-all font-medium"
             aria-label="홈으로 이동"
           >
             <Home className="w-5 h-5" aria-hidden="true" />

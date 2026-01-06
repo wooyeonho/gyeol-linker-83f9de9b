@@ -124,7 +124,7 @@ export default async function LibraryPage({
   const purchasedPrompts = await fetchPurchasedPrompts(user.id, locale);
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-24">
         {/* 페이지 타이틀 */}
         <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 

@@ -137,11 +137,11 @@ async function OrdersList({ locale }: { locale: string }) {
         return (
           <div
             key={order.id}
-            className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-primary transition-colors"
+            className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 hover:border-primary transition-all hover:scale-[1.01]"
           >
             <div className="flex gap-4">
               {/* 썸네일 */}
-              <div className="relative w-20 h-20 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+              <div className="relative w-20 h-20 bg-gray-800 rounded-[24px] overflow-hidden flex-shrink-0">
                 {order.prompt.thumbnail_url ? (
                   <Image
                     src={order.prompt.thumbnail_url}
@@ -183,7 +183,7 @@ async function OrdersList({ locale }: { locale: string }) {
                   <>
                     <Link
                       href={`/${locale}/prompts/${order.prompt.slug}`}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all"
                     >
                       <Eye className="w-4 h-4" />
                       <span className="hidden sm:inline">{t('viewPrompt')}</span>
@@ -236,10 +236,10 @@ export default async function OrdersPage({
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-gray-900 border border-gray-800 rounded-lg p-6 animate-pulse"
+                  className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 animate-pulse"
                 >
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-800 rounded-lg" />
+                    <div className="w-20 h-20 bg-gray-800 rounded-[24px]" />
                     <div className="flex-1 space-y-2">
                       <div className="h-6 bg-gray-800 rounded w-3/4" />
                       <div className="h-4 bg-gray-800 rounded w-1/2" />

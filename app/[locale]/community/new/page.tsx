@@ -50,7 +50,7 @@ export default function CommunityNewPage() {
   return (
     <div className="min-h-screen bg-black text-white">
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-24 max-w-4xl">
         {/* 뒤로가기 */}
         <Link
           href={`/${locale}/community`}
@@ -74,7 +74,7 @@ export default function CommunityNewPage() {
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value as 'tips' | 'qna' | 'free')}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-[32px] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="tips">{t('tips')}</option>
               <option value="qna">{t('qna')}</option>
@@ -93,7 +93,7 @@ export default function CommunityNewPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded-[32px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
@@ -109,7 +109,7 @@ export default function CommunityNewPage() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 입력하세요"
               rows={15}
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-[24px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               required
             />
           </div>
@@ -129,14 +129,14 @@ export default function CommunityNewPage() {
           <div className="flex items-center justify-end gap-4">
             <Link
               href={`/${locale}/community`}
-              className="px-6 py-2 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              className="px-6 py-2 bg-gray-800 text-white rounded-[32px] font-medium hover:bg-gray-700 transition-all"
             >
               취소
             </Link>
             <button
               type="submit"
               disabled={isPending}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2 bg-primary text-white rounded-[32px] font-medium hover:bg-primary-600 hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {isPending ? t('submitting') : t('submit')}

@@ -34,7 +34,7 @@ export default function PromptContent({
     return (
       <div className="relative">
         {/* Blur 처리된 원문 영역 */}
-        <div className="relative bg-gray-900 border border-gray-800 rounded-lg p-6 overflow-hidden">
+        <div className="relative bg-gray-900 border border-gray-800 rounded-[32px] p-8 overflow-hidden">
           <pre className="text-sm text-gray-300 whitespace-pre-wrap font-mono blur-sm select-none">
             {content || '프롬프트 원문이 여기에 표시됩니다...'}
           </pre>
@@ -57,14 +57,14 @@ export default function PromptContent({
 
   // 구매한 경우 (content 존재)
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">
           {t('originalPrompt')}
         </h3>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-600 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] transition-all shadow-lg shadow-primary/20"
         >
           {copied ? (
             <>

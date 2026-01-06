@@ -84,7 +84,7 @@ export default function ReviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-lg shadow-xl">
+      <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-[32px] shadow-xl">
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
           <h2 className="text-xl font-bold text-white">
@@ -92,7 +92,7 @@ export default function ReviewModal({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-800 rounded-[24px] transition-colors"
             disabled={submitting}
           >
             <X className="w-5 h-5 text-gray-400" />
@@ -141,7 +141,7 @@ export default function ReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={5}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-[24px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               placeholder={t('commentPlaceholder')}
               disabled={submitting}
             />
@@ -153,14 +153,14 @@ export default function ReviewModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || rating === 0}
-              className="px-6 py-2 bg-primary hover:bg-primary-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-primary/20"
             >
               {submitting ? (
                 <>

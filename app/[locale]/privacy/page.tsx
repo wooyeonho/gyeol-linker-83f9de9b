@@ -12,7 +12,7 @@ export default async function PrivacyPage({
   const t = await getTranslations('privacy');
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <main className="container mx-auto px-4 py-24 max-w-4xl">
         <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
         <p className="text-gray-400 mb-8">
           {t('lastUpdated')}: {new Date().toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US')}
@@ -125,7 +125,7 @@ export default async function PrivacyPage({
             <h2 className="text-2xl font-semibold mb-4 text-white">제8조 (개인정보 보호책임자)</h2>
             <div className="space-y-3 text-gray-300">
               <p>1. 회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 mt-4">
+              <div className="bg-gray-900 border border-gray-800 rounded-[24px] p-4 mt-4">
                 <p className="font-semibold mb-2">개인정보 보호책임자</p>
                 <p>이메일: privacy@prompt-jeongeum.com</p>
               </div>

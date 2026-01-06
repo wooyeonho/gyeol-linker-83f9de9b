@@ -112,7 +112,7 @@ export default async function UserManagementList({
         return (
           <div
             key={user.id}
-            className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-primary transition-colors"
+            className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 hover:border-primary transition-all hover:scale-[1.02]"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4 flex-1">

@@ -315,14 +315,14 @@ export default async function SellerDashboardPage({
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
+    <main className="container mx-auto px-4 py-24 max-w-7xl">
         {/* 페이지 타이틀 */}
         <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
         {/* 요약 위젯 - 6개 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* 현재 잔액 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('balance')}</h2>
               <Wallet className="w-5 h-5 text-primary" />
@@ -333,7 +333,7 @@ export default async function SellerDashboardPage({
           </div>
 
           {/* 총 판매수 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('totalSales')}</h2>
               <ShoppingBag className="w-5 h-5 text-primary" />
@@ -344,7 +344,7 @@ export default async function SellerDashboardPage({
           </div>
 
           {/* 총 수익 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('totalRevenue')}</h2>
               <DollarSign className="w-5 h-5 text-primary" />
@@ -355,7 +355,7 @@ export default async function SellerDashboardPage({
           </div>
 
           {/* 총 조회수 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('totalViews')}</h2>
               <Eye className="w-5 h-5 text-primary" />
@@ -366,7 +366,7 @@ export default async function SellerDashboardPage({
           </div>
 
           {/* 평균 평점 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('averageRating')}</h2>
               <Star className="w-5 h-5 text-primary" />
@@ -379,7 +379,7 @@ export default async function SellerDashboardPage({
           </div>
 
           {/* 전체 전환율 */}
-          <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="bg-gray-900 border border-gray-800 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm text-gray-400">{t('conversionRate')}</h2>
               <BarChart3 className="w-5 h-5 text-primary" />
@@ -396,7 +396,7 @@ export default async function SellerDashboardPage({
         </div>
 
         {/* 프롬프트 목록 */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden">
           <div className="p-6 border-b border-gray-800">
             <h2 className="text-xl font-semibold">{t('myPrompts')}</h2>
           </div>

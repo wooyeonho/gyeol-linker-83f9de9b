@@ -59,7 +59,7 @@ export default function CheckoutForm({
   const total = price;
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-[32px] p-8 space-y-6">
       {/* 가격 정보 */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
@@ -82,7 +82,7 @@ export default function CheckoutForm({
         disabled={isProcessing}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary hover:bg-primary-600 hover:brightness-110 text-white rounded-[32px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
         aria-label={t('completePurchase')}
       >
         {isProcessing ? (

@@ -58,7 +58,7 @@ export default function LibraryCard({
 
   return (
     <>
-      <div className="group relative bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-primary transition-all duration-300">
+      <div className="group relative bg-gray-900 border border-gray-800 rounded-[32px] overflow-hidden hover:border-primary transition-all duration-300">
         {/* 썸네일 */}
         <div className="relative w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 overflow-hidden">
           {prompt.thumbnail ? (
@@ -134,13 +134,13 @@ export default function LibraryCard({
           <div className="flex items-center gap-2 pt-2 border-t border-gray-800">
             <Link
               href={`/${locale}/prompts/${prompt.slug}`}
-              className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-center text-sm transition-colors"
+              className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-[32px] text-center text-sm transition-all"
             >
               {t('viewOriginal')}
             </Link>
             <button
               onClick={() => setIsReviewModalOpen(true)}
-              className="flex-1 px-4 py-2 bg-primary hover:bg-primary-600 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-primary hover:bg-primary-600 hover:brightness-110 rounded-[32px] text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
             >
               <Star className="w-4 h-4" />
               {prompt.existingReview ? t('editReview') : t('writeReview')}
