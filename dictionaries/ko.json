@@ -357,6 +357,23 @@
     "recentOrders": "최근 주문",
     "topSellers": "인기 판매자",
     "topPrompts": "인기 프롬프트"
+  },
+  "footer": {
+    "description": "전문가들이 검증한 프리미엄 AI 프롬프트를 발견하고 판매하세요.",
+    "product": "제품",
+    "browsePrompts": "프롬프트 둘러보기",
+    "sellPrompts": "프롬프트 판매",
+    "community": "커뮤니티",
+    "company": "회사",
+    "about": "소개",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "support": "지원",
+    "contact": "문의하기",
+    "sellerDashboard": "판매자 대시보드",
+    "allRightsReserved": "All rights reserved.",
+    "madeWith": "Made with",
+    "inKorea": "in Korea"
   }
 }
 

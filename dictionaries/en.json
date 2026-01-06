@@ -357,6 +357,23 @@
     "recentOrders": "Recent Orders",
     "topSellers": "Top Sellers",
     "topPrompts": "Top Prompts"
+  },
+  "footer": {
+    "description": "Discover and sell premium AI prompts verified by experts.",
+    "product": "Product",
+    "browsePrompts": "Browse Prompts",
+    "sellPrompts": "Sell Prompts",
+    "community": "Community",
+    "company": "Company",
+    "about": "About",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "support": "Support",
+    "contact": "Contact Us",
+    "sellerDashboard": "Seller Dashboard",
+    "allRightsReserved": "All rights reserved.",
+    "madeWith": "Made with",
+    "inKorea": "in Korea"
   }
 }
 
