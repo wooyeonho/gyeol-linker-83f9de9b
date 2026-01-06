@@ -123,28 +123,50 @@ export default async function LibraryPage({
   // 2. 구매한 프롬프트 목록 조회
   const purchasedPrompts = await fetchPurchasedPrompts(user.id, locale);
 
-  return (
-    <main className="container mx-auto px-4 py-24">
-        {/* 페이지 타이틀 */}
-        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
+    return (
+      <main className="max-w-7xl mx-auto px-6 py-24">
+          {/* 페이지 헤더 */}
+          <div className="mb-12">
+            <h1 className="text-5xl lg:text-7xl font-bold mb-4 tracking-tight">
+              {t('title')}
+            </h1>
+            <p className="text-xl text-gray-400 leading-relaxed">
+              {purchasedPrompts.length} {t('subtitle')} • {t('fullAccessForever')}
+            </p>
+          </div>
 
-        {/* 구매한 프롬프트 목록 */}
-        {purchasedPrompts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-lg">{t('emptyMessage')}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {purchasedPrompts.map((prompt) => (
-              <LibraryCard
-                key={prompt.orderId}
-                prompt={prompt}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
-      </main>
-  );
+          {/* 구매한 프롬프트 목록 */}
+          {purchasedPrompts.length === 0 ? (
+            <div className="text-center py-32">
+              <div className="text-6xl mb-6 opacity-20">📚</div>
+              <h2 className="text-2xl font-bold text-white mb-4">{t('emptyTitle')}</h2>
+              <p className="text-xl text-gray-500 mb-8 max-w-md mx-auto">
+                {t('emptyDescription')}
+              </p>
+              <a
+                href={`/${locale}/prompts`}
+                className="inline-block bg-[#00A86B] hover:brightness-110 hover:scale-105 px-10 py-5 rounded-[32px] text-white font-semibold transition-all shadow-lg shadow-[#00A86B]/20"
+              >
+                {t('browsePrompts')} →
+              </a>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {purchasedPrompts.map((prompt) => (
+                <div key={prompt.orderId} className="relative">
+                  {/* Ownership badge */}
+                  <div className="absolute top-4 right-4 z-10 bg-[#00A86B]/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-[#00A86B] border border-[#00A86B]/30">
+                    ✓ {t('owned')}
+                  </div>
+                  <LibraryCard
+                    prompt={prompt}
+                    locale={locale}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
+    );
 }
 

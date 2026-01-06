@@ -8,6 +8,7 @@ import PromptContent from '@/components/PromptContent';
 import PurchaseSidebar from '@/components/PurchaseSidebar';
 import RecommendedPrompts from '@/components/RecommendedPrompts';
 import PromptCardSkeleton from '@/components/PromptCardSkeleton';
+import ReviewList from '@/components/ReviewList';
 import { createClient } from '@/lib/supabase/server';
 import { getRelatedPrompts } from '@/app/actions/recommendations';
 import { Star, Eye, ShoppingBag, User } from 'lucide-react';
@@ -360,16 +361,29 @@ export default async function PromptDetailPage({
               </div>
             </div>
 
-                        {/* 프롬프트 원문 */}
-                        <div>
-                          <PromptContent
-                            content={prompt.content}
-                            hasPurchased={hasPurchased}
-                            price={prompt.price}
-                            salesCount={prompt.purchase_count}
-                          />
-                        </div>
-          </div>
+                                  {/* 프롬프트 원문 */}
+                                  <div>
+                                    <PromptContent
+                                      content={prompt.content}
+                                      hasPurchased={hasPurchased}
+                                      price={prompt.price}
+                                      salesCount={prompt.purchase_count}
+                                    />
+                                  </div>
+
+                      {/* 리뷰 섹션 */}
+                      <div className="mt-12">
+                        <h2 className="text-2xl font-bold mb-6">{t('reviews')}</h2>
+                        <Suspense fallback={
+                          <div className="bg-[#0A0A0A] border border-[#1A1A1A] rounded-[32px] p-8 animate-pulse">
+                            <div className="h-16 bg-gray-800 rounded mb-4" />
+                            <div className="h-32 bg-gray-800 rounded" />
+                          </div>
+                        }>
+                          <ReviewList promptId={prompt.id} locale={locale} />
+                        </Suspense>
+                      </div>
+                    </div>
 
           {/* Sticky 사이드바 */}
           <div className="lg:col-span-1">
