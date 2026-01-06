@@ -55,5 +55,53 @@ export function formatNumber(num: number, locale: string = 'ko'): string {
   return new Intl.NumberFormat(localeString).format(num);
 }
 
+/**
+ * Commission rates for the platform
+ */
+export const COMMISSION_RATES = {
+  PLATFORM: 0.20, // 20% platform fee
+  SELLER: 0.80,   // 80% to seller
+} as const;
+
+/**
+ * Format price to USD currency format
+ * @param price Price in USD
+ * @returns Formatted price string (e.g., "$29.99")
+ */
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+}
+
+/**
+ * Calculate earnings breakdown for a given price
+ * @param price Total price in USD
+ * @returns Object with total, platform fee, and seller earnings
+ */
+export function calculateEarnings(price: number): {
+  total: number;
+  platform: number;
+  seller: number;
+  formattedTotal: string;
+  formattedPlatform: string;
+  formattedSeller: string;
+} {
+  const platform = price * COMMISSION_RATES.PLATFORM;
+  const seller = price * COMMISSION_RATES.SELLER;
+  
+  return {
+    total: price,
+    platform: Math.round(platform * 100) / 100,
+    seller: Math.round(seller * 100) / 100,
+    formattedTotal: formatPrice(price),
+    formattedPlatform: formatPrice(platform),
+    formattedSeller: formatPrice(seller),
+  };
+}
+
 
 

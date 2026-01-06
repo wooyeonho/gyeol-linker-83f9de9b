@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { formatPrice } from '@/lib/utils/currency';
 
 /**
  * 프롬프트 카드 타입
@@ -119,14 +120,14 @@ const PromptCard = memo(function PromptCard({
           {/* 가격 */}
           <span 
             className="text-lg font-bold text-primary" 
-            aria-label={`가격: $${prompt.price.toFixed(2)}`}
+            aria-label={`가격: ${formatPrice(prompt.price)}`}
             itemProp="offers"
             itemScope
             itemType="https://schema.org/Offer"
           >
             <meta itemProp="price" content={prompt.price.toFixed(2)} />
             <meta itemProp="priceCurrency" content="USD" />
-            ${prompt.price.toFixed(2)}
+            {formatPrice(prompt.price)}
           </span>
         </div>
       </div>

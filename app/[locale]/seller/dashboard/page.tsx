@@ -13,6 +13,7 @@ import {
 import SalesTrendChart, {
   DailySalesData,
 } from './SalesTrendChart';
+import { formatPrice } from '@/lib/utils/currency';
 
 /**
  * 판매자 대시보드 요약 데이터 타입
@@ -327,9 +328,9 @@ export default async function SellerDashboardPage({
               <h2 className="text-sm text-gray-400">{t('balance')}</h2>
               <Wallet className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-primary">
-              ${summary.balance.toFixed(2)}
-            </p>
+                        <p className="text-3xl font-bold text-primary">
+                          {formatPrice(summary.balance)}
+                        </p>
           </div>
 
           {/* 총 판매수 */}
@@ -349,9 +350,9 @@ export default async function SellerDashboardPage({
               <h2 className="text-sm text-gray-400">{t('totalRevenue')}</h2>
               <DollarSign className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-green-400">
-              ${summary.totalRevenue.toFixed(2)}
-            </p>
+                        <p className="text-3xl font-bold text-green-400">
+                          {formatPrice(summary.totalRevenue)}
+                        </p>
           </div>
 
           {/* 총 조회수 */}
@@ -470,9 +471,9 @@ export default async function SellerDashboardPage({
                             {statusInfo.label}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-gray-300">
-                          ${prompt.price.toFixed(2)}
-                        </td>
+                                                <td className="px-6 py-4 text-gray-300">
+                                                  {formatPrice(prompt.price)}
+                                                </td>
                         <td className="px-6 py-4 text-gray-300">
                           {prompt.view_count.toLocaleString()}
                         </td>
@@ -482,9 +483,9 @@ export default async function SellerDashboardPage({
                         <td className="px-6 py-4 text-gray-300">
                           {prompt.conversion_rate.toFixed(2)}%
                         </td>
-                        <td className="px-6 py-4 text-green-400 font-medium">
-                          ${prompt.total_revenue.toFixed(2)}
-                        </td>
+                                                <td className="px-6 py-4 text-green-400 font-medium">
+                                                  {formatPrice(prompt.total_revenue)}
+                                                </td>
                         <td className="px-6 py-4 text-gray-400 text-sm">
                           {createdAt}
                         </td>

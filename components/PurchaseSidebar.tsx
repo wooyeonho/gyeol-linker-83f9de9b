@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createOrder } from '@/app/actions/orders';
+import { formatPrice } from '@/lib/utils/currency';
 
 /**
  * 구매 사이드바 컴포넌트
@@ -55,9 +56,9 @@ export default function PurchaseSidebar({
       {/* 가격 */}
       <div className="space-y-2">
         <p className="text-sm text-gray-400">{tCommon('price')}</p>
-        <p className="text-3xl font-bold text-primary">
-          ${price.toFixed(2)}
-        </p>
+                <p className="text-3xl font-bold text-primary">
+                  {formatPrice(price)}
+                </p>
       </div>
 
       {/* 구매 버튼 */}
