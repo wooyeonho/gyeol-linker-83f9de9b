@@ -146,6 +146,18 @@ export async function createPrompt(formData: FormData) {
 export type SortType = 'popular' | 'rating' | 'sales' | 'newest';
 
 /**
+ * Filter options for prompts list
+ */
+export interface PromptsFilterOptions {
+  sort?: SortType;
+  models?: string[];
+  categories?: string[];
+  priceRange?: { min: number; max: number };
+  minRating?: number;
+  limit?: number;
+}
+
+/**
  * 프롬프트 목록 조회 Server Action
  * @param locale - 언어 설정 ('ko' | 'en')
  * @param sort - 정렬 옵션 ('popular' | 'rating' | 'sales' | 'newest')
@@ -226,6 +238,104 @@ export async function getPromptsList(
       thumbnail: prompt.thumbnail_url || '',
       tags: prompt.tags || [],
       aiModel: prompt.ai_model || 'N/A', // nullable 필드 처리
+      rating: prompt.average_rating || 0,
+      price: parseFloat(prompt.price),
+      viewCount: prompt.view_count,
+      purchaseCount: prompt.purchase_count,
+      createdAt: prompt.created_at,
+    };
+  });
+}
+
+/**
+ * Advanced prompts list with filters
+ * Supports AI model, category, price range, and rating filters
+ */
+export async function getPromptsListWithFilters(
+  locale: string,
+  options: PromptsFilterOptions = {}
+): Promise<PromptCardData[]> {
+  const supabase = await createClient();
+  const { 
+    sort = 'popular', 
+    models = [], 
+    categories = [], 
+    priceRange,
+    minRating = 0,
+    limit = 100 
+  } = options;
+
+  // 기본 쿼리: 승인된 프롬프트만 조회
+  let query = supabase
+    .from('prompts')
+    .select('*')
+    .eq('status', 'approved')
+    .is('deleted_at', null);
+
+  // AI 모델 필터
+  if (models.length > 0) {
+    query = query.in('ai_model', models);
+  }
+
+  // 카테고리 필터
+  if (categories.length > 0) {
+    const categoryField = locale === 'ko' ? 'category_ko' : 'category_en';
+    query = query.in(categoryField, categories);
+  }
+
+  // 가격 범위 필터
+  if (priceRange) {
+    query = query.gte('price', priceRange.min).lte('price', priceRange.max);
+  }
+
+  // 최소 평점 필터
+  if (minRating > 0) {
+    query = query.gte('average_rating', minRating);
+  }
+
+  // 정렬 옵션
+  switch (sort) {
+    case 'popular':
+      query = query.order('purchase_count', { ascending: false });
+      break;
+    case 'rating':
+      query = query.order('average_rating', { ascending: false });
+      break;
+    case 'sales':
+      query = query.order('purchase_count', { ascending: false });
+      break;
+    case 'newest':
+      query = query.order('created_at', { ascending: false });
+      break;
+    default:
+      query = query.order('purchase_count', { ascending: false });
+  }
+
+  query = query.limit(limit);
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('프롬프트 목록 조회 오류:', error);
+    return [];
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  return data.map((prompt: any) => {
+    const title = locale === 'ko' ? prompt.title_ko : prompt.title_en;
+    const description = locale === 'ko' ? prompt.description_ko : prompt.description_en;
+
+    return {
+      id: prompt.id,
+      slug: prompt.slug,
+      title,
+      description,
+      thumbnail: prompt.thumbnail_url || '',
+      tags: prompt.tags || [],
+      aiModel: prompt.ai_model || 'N/A',
       rating: prompt.average_rating || 0,
       price: parseFloat(prompt.price),
       viewCount: prompt.view_count,

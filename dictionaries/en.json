@@ -430,6 +430,17 @@
     "allRightsReserved": "All rights reserved.",
     "madeWith": "Made with",
     "inKorea": "in Korea"
+  },
+  "discovery": {
+    "sortBy": "Sort by",
+    "filters": "Filters",
+    "aiModel": "AI Model",
+    "category": "Category",
+    "priceRange": "Price Range",
+    "rating": "Rating",
+    "clearAll": "Clear all",
+    "applyFilters": "Apply Filters",
+    "activeFilters": "Active Filters"
   }
 }
 

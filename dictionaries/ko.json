@@ -430,6 +430,17 @@
     "allRightsReserved": "All rights reserved.",
     "madeWith": "Made with",
     "inKorea": "in Korea"
+  },
+  "discovery": {
+    "sortBy": "정렬",
+    "filters": "필터",
+    "aiModel": "AI 모델",
+    "category": "카테고리",
+    "priceRange": "가격대",
+    "rating": "평점",
+    "clearAll": "전체 해제",
+    "applyFilters": "필터 적용",
+    "activeFilters": "적용된 필터"
   }
 }
 
