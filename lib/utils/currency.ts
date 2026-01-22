@@ -105,3 +105,4 @@ export function calculateEarnings(price: number): {
 
 
 
+

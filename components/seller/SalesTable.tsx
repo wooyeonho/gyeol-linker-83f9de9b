@@ -103,3 +103,4 @@ export function SalesTable({ sales, showViewAll = true }: SalesTableProps) {
 }
 
 
+
