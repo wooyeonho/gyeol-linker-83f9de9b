@@ -223,7 +223,15 @@ export async function POST(req: NextRequest) {
         .order('created_at', { ascending: false })
         .limit(20);
       const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
-      const deltaFromLLM = await analyzeConversationWithLLM(messages);
+      let usedProvider = provider;
+      let usedApiKey = process.env.GROQ_API_KEY ?? '';
+      if (provider === 'openclaw' || !usedApiKey) {
+        usedProvider = 'groq';
+        usedApiKey = process.env.GROQ_API_KEY ?? '';
+      }
+      const deltaFromLLM = usedApiKey
+        ? await analyzeConversationWithLLM(messages, usedProvider, usedApiKey)
+        : null;
       const delta = deltaFromLLM ?? analyzeConversationSimple(messages);
       const current = {
         warmth: agent.warmth,

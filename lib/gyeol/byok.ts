@@ -59,5 +59,6 @@ export const SUPPORTED_PROVIDERS = [
   'deepseek',
   'groq',
   'gemini',
-  'custom',
+  'cloudflare',
+  'ollama',
 ] as const;
