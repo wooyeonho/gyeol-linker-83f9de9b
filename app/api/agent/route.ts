@@ -1,5 +1,6 @@
 /**
  * GYEOL 에이전트 조회/생성 — userId 기준
+ * Supabase 없으면 인메모리 기본 에이전트 반환
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,11 +14,34 @@ const DEFAULT_VISUAL = {
   form: 'point',
 };
 
+function makeDefaultAgent(userId: string, name = 'GYEOL') {
+  return {
+    id: `local-${userId}`,
+    user_id: userId,
+    name,
+    gen: 1,
+    warmth: 50,
+    logic: 50,
+    creativity: 50,
+    energy: 50,
+    humor: 50,
+    total_conversations: 0,
+    evolution_progress: 0,
+    visual_state: DEFAULT_VISUAL,
+    created_at: new Date().toISOString(),
+    last_active: new Date().toISOString(),
+  };
+}
+
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('userId');
   if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
 
   const supabase = createGyeolServerClient();
+  if (!supabase) {
+    return NextResponse.json(makeDefaultAgent(userId));
+  }
+
   const { data, error } = await supabase
     .from('gyeol_agents')
     .select('*')
@@ -26,7 +50,7 @@ export async function GET(req: NextRequest) {
     .limit(1)
     .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json(makeDefaultAgent(userId));
   if (data) return NextResponse.json(data);
   return NextResponse.json({ error: 'Not found' }, { status: 404 });
 }
@@ -37,6 +61,10 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
 
   const supabase = createGyeolServerClient();
+  if (!supabase) {
+    return NextResponse.json(makeDefaultAgent(userId, name));
+  }
+
   const { data: existing } = await supabase
     .from('gyeol_agents')
     .select('id')
