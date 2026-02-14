@@ -184,11 +184,13 @@ export async function callProviderWithMessages(
 
 function cleanResponse(text: string): string {
   return text
-    .replace(/\$1/g, '')
     .replace(/\\n/g, '\n')
-    .replace(/\*\*/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
     .replace(/^#+\s/gm, '')
     .replace(/^[-*]\s/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 

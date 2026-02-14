@@ -1,9 +1,9 @@
 -- ================================================
--- GYEOL 전체 스키마 (Phase 1 + 2)
--- Gyeol 전용 Supabase 프로젝트용 마이그레이션
+-- GYEOL 전체 스키마 (통합)
+-- Supabase 프로젝트에 한 번에 적용
 -- ================================================
 
--- ■ 사용자 (GYEOL 전용 프로필)
+-- ■ 사용자
 CREATE TABLE IF NOT EXISTS gyeol_users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE,
@@ -26,10 +26,13 @@ CREATE TABLE IF NOT EXISTS gyeol_agents (
     creativity INTEGER DEFAULT 50 CHECK (creativity BETWEEN 0 AND 100),
     energy INTEGER DEFAULT 50 CHECK (energy BETWEEN 0 AND 100),
     humor INTEGER DEFAULT 50 CHECK (humor BETWEEN 0 AND 100),
-    visual_state JSONB DEFAULT '{"color_primary": "#FFFFFF", "color_secondary": "#4F46E5", "glow_intensity": 0.3, "particle_count": 10, "form": "point"}'::jsonb,
+    visual_state JSONB DEFAULT '{"color_primary":"#FFFFFF","color_secondary":"#4F46E5","glow_intensity":0.3,"particle_count":10,"form":"point"}'::jsonb,
     skin_id UUID,
     preferred_provider TEXT DEFAULT 'groq',
     openclaw_agent_id TEXT,
+    content_filter_on BOOLEAN DEFAULT TRUE,
+    notifications_on BOOLEAN DEFAULT TRUE,
+    autonomy_level INTEGER DEFAULT 50 CHECK (autonomy_level >= 0 AND autonomy_level <= 100),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     last_active TIMESTAMPTZ DEFAULT NOW()
 );
@@ -131,7 +134,7 @@ CREATE TABLE IF NOT EXISTS gyeol_purchases (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ■ 사용자 API 키 (BYOK)
+-- ■ BYOK 키
 CREATE TABLE IF NOT EXISTS gyeol_user_api_keys (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES gyeol_users(id) ON DELETE CASCADE,
@@ -142,7 +145,7 @@ CREATE TABLE IF NOT EXISTS gyeol_user_api_keys (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ■ 보안: Kill Switch / 시스템 상태
+-- ■ Kill Switch / 시스템 상태
 CREATE TABLE IF NOT EXISTS gyeol_system_state (
     key TEXT PRIMARY KEY,
     value JSONB NOT NULL,
@@ -154,6 +157,26 @@ INSERT INTO gyeol_system_state (key, value) VALUES
     ('maintenance_mode', '{"active": false}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
+-- ■ Telegram 봇 연동
+CREATE TABLE IF NOT EXISTS gyeol_telegram_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    telegram_chat_id TEXT NOT NULL UNIQUE,
+    agent_id UUID REFERENCES gyeol_agents(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
+    telegram_username TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ■ 웹 푸시 구독
+CREATE TABLE IF NOT EXISTS gyeol_push_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    agent_id UUID REFERENCES gyeol_agents(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ■ 인덱스
 CREATE INDEX IF NOT EXISTS idx_gyeol_agents_user ON gyeol_agents(user_id);
 CREATE INDEX IF NOT EXISTS idx_gyeol_conversations_agent ON gyeol_conversations(agent_id);
@@ -164,3 +187,14 @@ CREATE INDEX IF NOT EXISTS idx_gyeol_autonomous_logs_created ON gyeol_autonomous
 CREATE INDEX IF NOT EXISTS idx_gyeol_matches_agents ON gyeol_ai_matches(agent_1_id, agent_2_id);
 CREATE INDEX IF NOT EXISTS idx_gyeol_skins_category ON gyeol_skins(category);
 CREATE INDEX IF NOT EXISTS idx_gyeol_skills_category ON gyeol_skills(category);
+CREATE INDEX IF NOT EXISTS idx_telegram_links_chat_id ON gyeol_telegram_links(telegram_chat_id);
+CREATE INDEX IF NOT EXISTS idx_push_subs_agent ON gyeol_push_subscriptions(agent_id);
+
+-- ■ 데모 사용자 + 에이전트 (첫 방문 시 바로 사용 가능)
+INSERT INTO gyeol_users (id, email, display_name) VALUES
+    ('00000000-0000-0000-0000-000000000001', 'demo@gyeol.ai', 'Demo User')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO gyeol_agents (id, user_id, name) VALUES
+    ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'GYEOL')
+ON CONFLICT (id) DO NOTHING;

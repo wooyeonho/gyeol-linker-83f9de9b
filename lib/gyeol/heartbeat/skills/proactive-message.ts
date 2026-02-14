@@ -74,7 +74,7 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
 
   const { data: subs } = await supabase
     .from('gyeol_push_subscriptions')
-    .select('endpoint')
+    .select('endpoint, p256dh, auth')
     .eq('agent_id', agentId);
   if (subs && subs.length > 0) {
     const pushPayload = JSON.stringify({
@@ -82,16 +82,17 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
       body: cleaned.slice(0, 100),
       data: { url: '/', agentId },
     });
-    for (const sub of subs) {
-      try {
-        await fetch(sub.endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/octet-stream', TTL: '86400' },
-          body: pushPayload,
-        });
-      } catch {
-        // ignore push failures
-      }
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000';
+      await fetch(`${baseUrl}/api/push/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, payload: pushPayload }),
+      });
+    } catch {
+      // push send failed silently
     }
   }
 
