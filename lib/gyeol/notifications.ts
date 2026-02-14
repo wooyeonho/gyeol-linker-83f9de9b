@@ -11,9 +11,9 @@ export async function subscribe(
   registration: ServiceWorkerRegistration,
   vapidPublicKey?: string
 ): Promise<PushSubscription | null> {
-  if (!registration.pushManager) return null;
+  if (!(registration as any).pushManager) return null;
   try {
-    const sub = await registration.pushManager.subscribe({
+    const sub = await (registration as any).pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: vapidPublicKey,
     });
