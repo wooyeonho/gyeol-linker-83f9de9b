@@ -1,112 +1,7 @@
 'use client';
 
-/**
- * GYEOL Void 비주얼 — React Three Fiber 3D
- * Gen별 형상, 성격 기반 색상, 펄스/파티클
- */
-
-import { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere } from '@react-three/drei';
-import * as THREE from 'three';
+import { useRef, useEffect, useCallback } from 'react';
 import type { PersonalityParams, VisualState } from '@/lib/gyeol/types';
-
-function hexToVec3(hex: string): THREE.Color {
-  return new THREE.Color(hex);
-}
-
-interface CoreProps {
-  gen: number;
-  personality: PersonalityParams;
-  isThinking: boolean;
-  isListening: boolean;
-}
-
-function Core({ gen, personality, isThinking, isListening }: CoreProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
-  const [pulse, setPulse] = useState(0);
-
-  const primary = useMemo(() => hexToVec3('#FFFFFF'), []);
-  const secondary = useMemo(() => hexToVec3('#4F46E5'), []);
-
-  const warmth = personality.warmth / 100;
-  const logic = personality.logic / 100;
-  const creativity = personality.creativity / 100;
-  const energy = personality.energy / 100;
-  const humor = personality.humor / 100;
-
-  const mixColor = useMemo(() => {
-    const c = new THREE.Color();
-    c.lerpColors(primary, secondary, (creativity + humor) / 2);
-    return c;
-  }, [primary, secondary, creativity, humor]);
-
-  const radius = useMemo(() => {
-    if (gen <= 1) return 0.03;
-    if (gen === 2) return 0.1;
-    if (gen === 3) return 0.2;
-    if (gen === 4) return 0.25;
-    return 0.3;
-  }, [gen]);
-
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    const speed = isThinking ? 3 : isListening ? 2 : 1;
-    setPulse(0.7 + 0.3 * Math.sin(t * speed));
-    if (meshRef.current) {
-      meshRef.current.scale.setScalar(pulse);
-    }
-    if (glowRef.current) {
-      (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + 0.1 * pulse;
-    }
-  });
-
-  return (
-    <group>
-      <Sphere ref={glowRef} args={[radius * 2.5, 16, 16]}>
-        <meshBasicMaterial color={mixColor.getStyle()} transparent opacity={0.2} depthWrite={false} />
-      </Sphere>
-      <Sphere ref={meshRef} args={[radius, 32, 32]}>
-        <meshBasicMaterial color={mixColor.getStyle()} />
-      </Sphere>
-    </group>
-  );
-}
-
-function Particle({ delay }: { delay: number }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const pos = useMemo(() => {
-    const r = 1.5 + Math.random() * 1.5;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.random() * Math.PI * 0.5;
-    return [r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta)] as [number, number, number];
-  }, []);
-  useFrame((state) => {
-    if (!ref.current) return;
-    const t = state.clock.elapsedTime + delay;
-    ref.current.position.x = pos[0] + 0.1 * Math.sin(t * 0.5);
-    ref.current.position.y = pos[1] + 0.1 * Math.cos(t * 0.3);
-    ref.current.position.z = pos[2] + 0.1 * Math.sin(t * 0.4);
-  });
-  return (
-    <mesh ref={ref} position={pos}>
-      <sphereGeometry args={[0.01, 8, 8]} />
-      <meshBasicMaterial color="#4F46E5" transparent opacity={0.4} />
-    </mesh>
-  );
-}
-
-function Particles({ count }: { count: number }) {
-  const arr = useMemo(() => Array.from({ length: count }, (_, i) => i), [count]);
-  return (
-    <>
-      {arr.map((i) => (
-        <Particle key={i} delay={i * 0.2} />
-      ))}
-    </>
-  );
-}
 
 export interface VoidCanvasProps {
   gen?: number;
@@ -124,33 +19,182 @@ const defaultPersonality: PersonalityParams = {
   humor: 50,
 };
 
+interface VoidParticle {
+  x: number;
+  y: number;
+  baseX: number;
+  baseY: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  delay: number;
+}
+
 function VoidCanvas({
   gen = 1,
   personality = defaultPersonality,
   isThinking = false,
   isListening = false,
 }: VoidCanvasProps) {
-  const particleCount = Math.min(50, 10 + Math.floor((Object.values(personality).reduce((a, b) => a + b, 0) / 500) * 40));
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
+  const particlesRef = useRef<VoidParticle[]>([]);
+  const mouseRef = useRef({ x: -1000, y: -1000 });
+  const stateRef = useRef({ isThinking, isListening, gen, personality });
+
+  stateRef.current = { isThinking, isListening, gen, personality };
+
+  const creativity = personality.creativity / 100;
+  const humor = personality.humor / 100;
+  const totalTraits = Object.values(personality).reduce((a, b) => a + b, 0);
+  const particleCount = Math.min(80, 20 + Math.floor((totalTraits / 500) * 60));
+  const coreRadius = gen <= 1 ? 8 : gen === 2 ? 25 : gen === 3 ? 40 : gen === 4 ? 50 : 60;
+  const pR = Math.round(79 + (176 * (1 - (creativity + humor) / 2)));
+  const pG = Math.round(70 + (185 * (1 - (creativity + humor) / 2)));
+  const pB = 229;
+
+  const initParticles = useCallback((w: number, h: number) => {
+    const cx = w / 2;
+    const cy = h / 2;
+    const out: VoidParticle[] = [];
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * Math.min(w, h) * 0.35;
+      const x = cx + Math.cos(angle) * dist;
+      const y = cy + Math.sin(angle) * dist;
+      out.push({
+        x, y, baseX: x, baseY: y,
+        vx: 0, vy: 0,
+        size: 1 + Math.random() * 2,
+        alpha: 0.2 + Math.random() * 0.4,
+        delay: i * 0.15,
+      });
+    }
+    particlesRef.current = out;
+  }, [particleCount]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.scale(dpr, dpr);
+      initParticles(canvas.offsetWidth, canvas.offsetHeight);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const onMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+    const onLeave = () => { mouseRef.current = { x: -1000, y: -1000 }; };
+    canvas.addEventListener('mousemove', onMove);
+    canvas.addEventListener('mouseleave', onLeave);
+
+    const startTime = Date.now();
+
+    const draw = () => {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      const cx = w / 2;
+      const cy = h / 2;
+      const t = (Date.now() - startTime) / 1000;
+      const { isThinking: thinking, isListening: listening } = stateRef.current;
+      const speed = thinking ? 3 : listening ? 2 : 1;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const pulse = 0.7 + 0.3 * Math.sin(t * speed);
+      const glowSize = coreRadius * 3 * pulse;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+      grad.addColorStop(0, `rgba(${pR},${pG},${pB},${(0.3 * pulse).toFixed(2)})`);
+      grad.addColorStop(0.5, `rgba(${pR},${pG},${pB},${(0.1 * pulse).toFixed(2)})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius * pulse);
+      coreGrad.addColorStop(0, `rgba(255,255,255,${(0.9 * pulse).toFixed(2)})`);
+      coreGrad.addColorStop(0.6, `rgba(${pR},${pG},${pB},${(0.7 * pulse).toFixed(2)})`);
+      coreGrad.addColorStop(1, `rgba(${pR},${pG},${pB},0)`);
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreRadius * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      const parts = particlesRef.current;
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        const pt = t + p.delay;
+        const tx = p.baseX + 10 * Math.sin(pt * 0.5);
+        const ty = p.baseY + 10 * Math.cos(pt * 0.3);
+        const dx = mx - p.x;
+        const dy = my - p.y;
+        const dm = Math.sqrt(dx * dx + dy * dy);
+        if (dm < 100 && dm > 0) {
+          const f = (100 - dm) / 100;
+          p.vx -= (dx / dm) * f * 2;
+          p.vy -= (dy / dm) * f * 2;
+        }
+        p.vx += (tx - p.x) * 0.02;
+        p.vy += (ty - p.y) * 0.02;
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.x += p.vx;
+        p.y += p.vy;
+        const pa = p.alpha * (0.6 + 0.4 * Math.sin(pt * 0.8));
+        ctx.fillStyle = `rgba(${pR},${pG},${pB},${pa.toFixed(2)})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      for (let i = 0; i < parts.length; i++) {
+        for (let j = i + 1; j < parts.length; j++) {
+          const a = parts[i];
+          const b = parts[j];
+          const ddx = a.x - b.x;
+          const ddy = a.y - b.y;
+          const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+          if (dist < 80) {
+            ctx.strokeStyle = `rgba(${pR},${pG},${pB},${((1 - dist / 80) * 0.15).toFixed(3)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    animRef.current = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      window.removeEventListener('resize', resize);
+      canvas.removeEventListener('mousemove', onMove);
+      canvas.removeEventListener('mouseleave', onLeave);
+    };
+  }, [coreRadius, pR, pG, pB, initParticles]);
 
   return (
     <div className="absolute inset-0 bg-black overflow-hidden">
-      <Canvas
-        camera={{ position: [0, 0, 3], fov: 50 }}
-        dpr={[1, 2]}
-        gl={{ alpha: true, antialias: true }}
-      >
-        <ambientLight intensity={0.3} />
-        <pointLight position={[2, 2, 2]} intensity={1} />
-        <Float speed={0.5} floatIntensity={0.2}>
-          <Core
-            gen={gen}
-            personality={personality}
-            isThinking={isThinking}
-            isListening={isListening}
-          />
-        </Float>
-        <Particles count={particleCount} />
-      </Canvas>
+      <canvas ref={canvasRef} className="w-full h-full" style={{ display: 'block' }} />
     </div>
   );
 }
