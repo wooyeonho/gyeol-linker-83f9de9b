@@ -1,5 +1,5 @@
 {
-  "name": "prompt-jeongeom",
+  "name": "gyeol",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
 "lint": "next lint",
-    "openclaw:extract": "node scripts/extract-openclaw.js"
-},
+    "openclaw:extract": "echo 'openclaw extract placeholder'"
+  },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^8.18.0",
@@ -21,7 +21,6 @@
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.344.0",
     "next": "^15.0.0",
-    "next-intl": "^3.5.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",
