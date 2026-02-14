@@ -1,5 +1,5 @@
 /**
- * GYEOL 채팅 API
+ * GYEOL 채팅 API — OpenClaw → BYOK(사용자 키) 우선 → env GROQ 폴백
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
@@ -12,7 +12,55 @@ import {
   checkEvolution,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
-import { EVOLUTION_INTERVAL } from '@/lib/gyeol/constants';
+import { EVOLUTION_INTERVAL, DEMO_USER_ID } from '@/lib/gyeol/constants';
+import { decryptKey } from '@/lib/gyeol/byok';
+import { callProvider, buildSystemPrompt } from '@/lib/gyeol/chat-ai';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic'> = ['groq', 'openai', 'deepseek', 'anthropic'];
+
+async function tryByok(
+  supabase: SupabaseClient,
+  userId: string,
+  providerOrder: string[],
+  systemPrompt: string,
+  userMessage: string
+): Promise<{ content: string; provider: string } | null> {
+  for (const provider of providerOrder) {
+    if (!BYOK_PROVIDER_ORDER.includes(provider as (typeof BYOK_PROVIDER_ORDER)[number])) continue;
+    const { data: row } = await supabase
+      .from('gyeol_user_api_keys')
+      .select('id, encrypted_key')
+      .eq('user_id', userId)
+      .eq('provider', provider)
+      .eq('is_valid', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!row?.encrypted_key) continue;
+    try {
+      const apiKey = await decryptKey(row.encrypted_key);
+      const content = await callProvider(
+        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic',
+        apiKey,
+        systemPrompt,
+        userMessage
+      );
+      if (content) {
+        if (row.id) {
+          await supabase
+            .from('gyeol_user_api_keys')
+            .update({ last_used: new Date().toISOString() })
+            .eq('id', row.id);
+        }
+        return { content, provider };
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,13 +85,21 @@ export async function POST(req: NextRequest) {
     const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
     let assistantContent = '';
     let provider = 'groq';
+    const systemPrompt = buildSystemPrompt({
+      warmth: agent.warmth ?? 50,
+      logic: agent.logic ?? 50,
+      creativity: agent.creativity ?? 50,
+      energy: agent.energy ?? 50,
+      humor: agent.humor ?? 50,
+    });
+    const userMessage = inputFilter.filtered;
 
     if (openclawUrl) {
       try {
         const gwRes = await fetch(`${openclawUrl.replace(/\/$/, '')}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ agentId, message: inputFilter.filtered }),
+          body: JSON.stringify({ agentId, message: userMessage }),
         });
         if (gwRes.ok) {
           const gwData = await gwRes.json();
@@ -57,30 +113,32 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!assistantContent && process.env.GROQ_API_KEY) {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: `You are GYEOL. Respond in Korean. Personality: warmth=${agent.warmth}, logic=${agent.logic}, creativity=${agent.creativity}, energy=${agent.energy}, humor=${agent.humor}. Be natural and helpful.`,
-            },
-            { role: 'user', content: inputFilter.filtered },
-          ],
-          max_tokens: 1024,
-        }),
-      });
-      const data = await res.json();
-      assistantContent = data.choices?.[0]?.message?.content ?? '';
-    }
     if (!assistantContent) {
-      assistantContent = 'GYEOL이에요. (GROQ_API_KEY 또는 OPENCLAW_GATEWAY_URL을 설정하면 대화가 가능해요.)';
+      const userId = agent.user_id ?? DEMO_USER_ID;
+      const preferred = (agent.preferred_provider as string) || 'groq';
+      const providerOrder = [preferred, ...BYOK_PROVIDER_ORDER.filter((p) => p !== preferred)];
+      const byokResult = await tryByok(supabase, userId, providerOrder, systemPrompt, userMessage);
+      if (byokResult) {
+        assistantContent = byokResult.content;
+        provider = byokResult.provider;
+      }
+    }
+
+    if (!assistantContent && process.env.GROQ_API_KEY) {
+      try {
+        const content = await callProvider('groq', process.env.GROQ_API_KEY, systemPrompt, userMessage);
+        if (content) {
+          assistantContent = content;
+          provider = 'groq';
+        }
+      } catch {
+        // fallback message below
+      }
+    }
+
+    if (!assistantContent) {
+      assistantContent =
+        'GYEOL이에요. (설정에서 BYOK API 키를 등록하거나, 서버에 GROQ_API_KEY를 설정하면 대화가 가능해요.)';
     }
 
     const outputFilter = filterOutput(assistantContent);
