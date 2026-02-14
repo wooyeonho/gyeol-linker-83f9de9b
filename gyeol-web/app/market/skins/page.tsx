@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useGyeolStore } from '@/store/gyeol-store';
 
 interface SkinItem {
   id: string;
@@ -12,8 +13,25 @@ interface SkinItem {
 }
 
 export default function SkinsPage() {
+  const { agent } = useGyeolStore();
   const [skins, setSkins] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applying, setApplying] = useState<string | null>(null);
+
+  const applySkin = async (skinId: string) => {
+    if (!agent?.id) return;
+    setApplying(skinId);
+    try {
+      const res = await fetch('/api/market/skins/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.id, skinId }),
+      });
+      if (res.ok) setApplying(null);
+    } finally {
+      setApplying(null);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/market/skins')
@@ -37,7 +55,7 @@ export default function SkinsPage() {
                 <div className="p-3">
                   <p className="font-medium text-white truncate">{s.name}</p>
                   <p className="text-xs text-indigo-400">{s.price === 0 ? '무료' : `${s.price}P`}</p>
-                  <button type="button" className="w-full mt-2 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium">사용</button>
+                  <button type="button" onClick={() => applySkin(s.id)} disabled={applying === s.id} className="w-full mt-2 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium disabled:opacity-50">{applying === s.id ? '적용 중...' : '사용'}</button>
                 </div>
               </div>
             ))}

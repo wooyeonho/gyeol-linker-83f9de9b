@@ -13,6 +13,13 @@ export default function SettingsPage() {
   const [byokOpen, setByokOpen] = useState<string | null>(null);
   const [byokKey, setByokKey] = useState('');
   const [byokSaving, setByokSaving] = useState(false);
+  const [contentFilterOn, setContentFilterOn] = useState(true);
+  const [notificationsOn, setNotificationsOn] = useState(true);
+  const [autonomyLevel, setAutonomyLevel] = useState(50);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [killSwitchToken, setKillSwitchToken] = useState('');
+  const [killSwitchLoading, setKillSwitchLoading] = useState(false);
+  const [killSwitchMessage, setKillSwitchMessage] = useState('');
 
   useEffect(() => {
     fetch(`/api/byok?userId=${encodeURIComponent(DEMO_USER_ID)}`)
@@ -20,6 +27,18 @@ export default function SettingsPage() {
       .then((list: { provider: string; masked?: string }[]) => setByokList(list.map((x) => ({ ...x, id: x.provider, masked: x.masked ?? '****' }))))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!agent?.id) return;
+    fetch(`/api/settings?agentId=${encodeURIComponent(agent.id)}`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: { contentFilterOn?: boolean; notificationsOn?: boolean; autonomyLevel?: number }) => {
+        if (typeof data.contentFilterOn === 'boolean') setContentFilterOn(data.contentFilterOn);
+        if (typeof data.notificationsOn === 'boolean') setNotificationsOn(data.notificationsOn);
+        if (typeof data.autonomyLevel === 'number') setAutonomyLevel(data.autonomyLevel);
+      })
+      .catch(() => {});
+  }, [agent?.id]);
 
   const saveByok = async (provider: string) => {
     if (!byokKey.trim()) return;
@@ -38,6 +57,49 @@ export default function SettingsPage() {
       }
     } finally {
       setByokSaving(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    if (!agent?.id) return;
+    setSettingsSaving(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId: agent.id,
+          contentFilterOn,
+          notificationsOn,
+          autonomyLevel,
+        }),
+      });
+      if (res.ok) setKillSwitchMessage('');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const triggerKillSwitch = async (action: 'activate' | 'deactivate') => {
+    if (!killSwitchToken.trim()) {
+      setKillSwitchMessage('토큰을 입력하세요.');
+      return;
+    }
+    setKillSwitchLoading(true);
+    setKillSwitchMessage('');
+    try {
+      const res = await fetch('/api/admin/kill-switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${killSwitchToken.trim()}` },
+        body: JSON.stringify({ action, reason: action === 'activate' ? '설정에서 비상 정지' : null }),
+      });
+      const data = await res.json();
+      if (res.ok) setKillSwitchMessage(action === 'activate' ? '시스템이 일시 정지되었습니다.' : '시스템이 재개되었습니다.');
+      else setKillSwitchMessage(data.error ?? '실패');
+    } catch {
+      setKillSwitchMessage('요청 실패');
+    } finally {
+      setKillSwitchLoading(false);
     }
   };
 
@@ -70,6 +132,81 @@ export default function SettingsPage() {
             ))}
           </div>
         </section>
+
+        <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
+          <h2 className="text-sm font-medium text-white/80">Safety</h2>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">AI 자율성</span>
+            <span className="text-xs text-white/50">보수적 ↔ 자유</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={autonomyLevel}
+            onChange={(e) => setAutonomyLevel(Number(e.target.value))}
+            onBlur={saveSettings}
+            className="w-full h-2 rounded-full appearance-none bg-white/10 accent-indigo-500"
+          />
+          <p className="text-xs text-white/50">{autonomyLevel}%</p>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">콘텐츠 필터</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={contentFilterOn}
+              onClick={() => { setContentFilterOn((v) => !v); setTimeout(saveSettings, 0); }}
+              className={`relative w-11 h-6 rounded-full transition ${contentFilterOn ? 'bg-indigo-500' : 'bg-white/20'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition left-1 ${contentFilterOn ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">활동 알림</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={notificationsOn}
+              onClick={() => { setNotificationsOn((v) => !v); setTimeout(saveSettings, 0); }}
+              className={`relative w-11 h-6 rounded-full transition ${notificationsOn ? 'bg-indigo-500' : 'bg-white/20'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition left-1 ${notificationsOn ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          {settingsSaving && <p className="text-xs text-indigo-400">저장 중...</p>}
+        </section>
+
+        <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
+          <h2 className="text-sm font-medium text-white/80">Emergency Stop</h2>
+          <p className="text-xs text-white/50">관리자 토큰 입력 후 시스템 전체를 일시 정지할 수 있습니다.</p>
+          <input
+            type="password"
+            placeholder="KILL_SWITCH_TOKEN"
+            value={killSwitchToken}
+            onChange={(e) => setKillSwitchToken(e.target.value)}
+            className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => triggerKillSwitch('activate')}
+              disabled={killSwitchLoading}
+              className="flex-1 rounded-xl bg-red-500/20 text-red-400 py-2 text-sm font-medium disabled:opacity-50"
+            >
+              일시 정지
+            </button>
+            <button
+              type="button"
+              onClick={() => triggerKillSwitch('deactivate')}
+              disabled={killSwitchLoading}
+              className="flex-1 rounded-xl bg-white/10 text-white/80 py-2 text-sm font-medium disabled:opacity-50"
+            >
+              재개
+            </button>
+          </div>
+          {killSwitchMessage && <p className="text-sm text-white/70">{killSwitchMessage}</p>}
+        </section>
+
         <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
           <h2 className="text-sm font-medium text-white/80">AI Brain (BYOK)</h2>
           <div className="grid grid-cols-2 gap-2">

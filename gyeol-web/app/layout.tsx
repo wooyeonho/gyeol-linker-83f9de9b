@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { RegisterSW } from '@/components/RegisterSW';
+import { VoidLayout } from '@/components/VoidLayout';
 
 export const metadata: Metadata = {
   title: 'GYEOL (결) | 자율 진화 AI',
@@ -14,7 +16,8 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark" suppressHydrationWarning>
       <body className="bg-black text-[#E5E5E5]" suppressHydrationWarning>
-        {children}
+        <RegisterSW />
+        <VoidLayout>{children}</VoidLayout>
       </body>
     </html>
   );

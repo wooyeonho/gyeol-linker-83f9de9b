@@ -73,4 +73,48 @@ export function analyzeConversationSimple(messages: Message[]): Partial<Personal
   return delta;
 }
 
+const PERSONALITY_ANALYSIS_PROMPT = `당신은 대화 분석기입니다. 한국어 대화를 보고 AI 캐릭터의 성격 변화 방향을 JSON으로만 출력하세요.
+출력 형식 (다른 텍스트 없이): {"warmth": 0, "logic": 0, "creativity": 0, "energy": 0, "humor": 0}
+각 키는 -2 ~ +2 정수만 가능. 변화가 없으면 0. 따뜻한/감사 표현 많으면 warmth 양수, 분석/논리 많으면 logic 양수, 창의/상상 많으면 creativity, 활기 많으면 energy, 유머 많으면 humor 양수.`;
+
+/** LLM으로 대화 분석 → 성격 델타. 실패 시 null (호출부에서 simple 폴백) */
+export async function analyzeConversationWithLLM(
+  messages: { role: string; content: string }[]
+): Promise<Partial<PersonalityParams> | null> {
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return null;
+  const text = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+  if (!text.trim()) return null;
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: PERSONALITY_ANALYSIS_PROMPT },
+          { role: 'user', content: `대화:\n${text.slice(0, 3000)}` },
+        ],
+        max_tokens: 150,
+        temperature: 0.3,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content?.trim() ?? '';
+    const json = raw.replace(/```json?\s*|\s*```/g, '').trim();
+    const parsed = JSON.parse(json) as Record<string, number>;
+    const delta: Partial<PersonalityParams> = {};
+    const clamp = (v: number) => Math.max(-2, Math.min(2, Math.round(Number(v))));
+    if (typeof parsed.warmth === 'number') delta.warmth = clamp(parsed.warmth);
+    if (typeof parsed.logic === 'number') delta.logic = clamp(parsed.logic);
+    if (typeof parsed.creativity === 'number') delta.creativity = clamp(parsed.creativity);
+    if (typeof parsed.energy === 'number') delta.energy = clamp(parsed.energy);
+    if (typeof parsed.humor === 'number') delta.humor = clamp(parsed.humor);
+    return delta;
+  } catch {
+    return null;
+  }
+}
+
 export { EVOLUTION_THRESHOLDS, PERSONALITY_COLORS, DEFAULT_VISUAL };

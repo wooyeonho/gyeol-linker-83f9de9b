@@ -16,6 +16,24 @@ export default function SocialPage() {
   const { agent } = useGyeolStore();
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState<string | null>(null);
+
+  const connect = async (targetAgentId: string) => {
+    if (!agent?.id) return;
+    setConnecting(targetAgentId);
+    try {
+      const res = await fetch('/api/social/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.id, targetAgentId }),
+      });
+      if (res.ok) {
+        // 연결 완료 (같은 카드 다시 연결 시도해도 upsert로 무시됨)
+      }
+    } finally {
+      setConnecting(null);
+    }
+  };
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -48,7 +66,7 @@ export default function SocialPage() {
                   <p className="font-medium text-white">{card.name}</p>
                   <p className="text-sm text-indigo-400">호환성 {card.compatibilityScore}%</p>
                 </div>
-                <button type="button" className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium">연결</button>
+                <button type="button" onClick={() => connect(card.agentId)} disabled={connecting === card.agentId} className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium disabled:opacity-50">{connecting === card.agentId ? '연결 중...' : '연결'}</button>
               </div>
             ))}
           </div>

@@ -13,6 +13,8 @@ interface GyeolState {
   autonomousLogs: AutonomousLog[];
   isLoading: boolean;
   isListening: boolean;
+  /** 채팅 중 Void 반응용: 메시지 도착 시 갱신 */
+  lastMessagePulseAt: number;
   error: GyeolError;
   evolutionCeremony: { show: boolean; newGen?: number } | null;
   setAgent: (a: Agent | null) => void;
@@ -35,6 +37,7 @@ const initialState = {
   autonomousLogs: [] as AutonomousLog[],
   isLoading: false,
   isListening: false,
+  lastMessagePulseAt: 0,
   error: null as GyeolError,
   evolutionCeremony: null as { show: boolean; newGen?: number } | null,
 };
@@ -94,6 +97,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
       set((s) => ({
         messages: [...s.messages, assistantMsg],
         isLoading: false,
+        lastMessagePulseAt: Date.now(),
         ...(data.newVisualState && s.agent ? { agent: { ...s.agent, visual_state: data.newVisualState } } : {}),
         ...(data.evolved && data.newGen ? { evolutionCeremony: { show: true, newGen: data.newGen } } : {}),
       }));

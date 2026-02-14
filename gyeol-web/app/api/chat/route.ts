@@ -7,24 +7,32 @@ import { checkKillSwitch } from '@/lib/gyeol/security/kill-switch-check';
 import { filterInput, filterOutput } from '@/lib/gyeol/security/content-filter';
 import {
   analyzeConversationSimple,
+  analyzeConversationWithLLM,
   applyPersonalityDelta,
   calculateVisualState,
   checkEvolution,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
-import { EVOLUTION_INTERVAL, DEMO_USER_ID } from '@/lib/gyeol/constants';
+import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeol/constants';
 import { decryptKey } from '@/lib/gyeol/byok';
-import { callProvider, buildSystemPrompt } from '@/lib/gyeol/chat-ai';
+import { callProviderWithMessages, buildSystemPrompt, suggestProviderForMessage, type ChatMessage } from '@/lib/gyeol/chat-ai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic'> = ['groq', 'openai', 'deepseek', 'anthropic'];
+const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare'> = [
+  'groq',
+  'openai',
+  'deepseek',
+  'anthropic',
+  'gemini',
+  'cloudflare',
+];
 
 async function tryByok(
   supabase: SupabaseClient,
   userId: string,
   providerOrder: string[],
   systemPrompt: string,
-  userMessage: string
+  chatMessages: ChatMessage[]
 ): Promise<{ content: string; provider: string } | null> {
   for (const provider of providerOrder) {
     if (!BYOK_PROVIDER_ORDER.includes(provider as (typeof BYOK_PROVIDER_ORDER)[number])) continue;
@@ -40,11 +48,11 @@ async function tryByok(
     if (!row?.encrypted_key) continue;
     try {
       const apiKey = await decryptKey(row.encrypted_key);
-      const content = await callProvider(
-        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic',
+      const content = await callProviderWithMessages(
+        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare',
         apiKey,
         systemPrompt,
-        userMessage
+        chatMessages
       );
       if (content) {
         if (row.id) {
@@ -55,7 +63,8 @@ async function tryByok(
         }
         return { content, provider };
       }
-    } catch {
+    } catch (err) {
+      console.error('[BYOK] decrypt or call failed', { provider, userId }, err);
       continue;
     }
   }
@@ -74,13 +83,14 @@ export async function POST(req: NextRequest) {
     const killed = await checkKillSwitch(supabase);
     if (killed) return NextResponse.json({ error: 'System temporarily paused' }, { status: 503 });
 
-    const inputFilter = filterInput(message);
+    const { data: agent } = await supabase.from('gyeol_agents').select('*').eq('id', agentId).single();
+    if (!agent) return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+
+    const contentFilterOn = (agent as { content_filter_on?: boolean }).content_filter_on !== false;
+    const inputFilter = contentFilterOn ? filterInput(message) : { safe: true, filtered: message, flags: [] as string[] };
     if (!inputFilter.safe) {
       return NextResponse.json({ error: 'Content not allowed', flags: inputFilter.flags }, { status: 400 });
     }
-
-    const { data: agent } = await supabase.from('gyeol_agents').select('*').eq('id', agentId).single();
-    if (!agent) return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
 
     const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
     let assistantContent = '';
@@ -93,6 +103,20 @@ export async function POST(req: NextRequest) {
       humor: agent.humor ?? 50,
     });
     const userMessage = inputFilter.filtered;
+
+    const { data: recentRows } = await supabase
+      .from('gyeol_conversations')
+      .select('role, content')
+      .eq('agent_id', agentId)
+      .order('created_at', { ascending: false })
+      .limit(CHAT_HISTORY_LIMIT);
+    const historyReversed = (recentRows ?? []).reverse();
+    const chatMessages: ChatMessage[] = [
+      ...historyReversed
+        .filter((r) => r.role === 'user' || r.role === 'assistant')
+        .map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content })),
+      { role: 'user', content: userMessage },
+    ];
 
     if (openclawUrl) {
       try {
@@ -116,8 +140,13 @@ export async function POST(req: NextRequest) {
     if (!assistantContent) {
       const userId = agent.user_id ?? DEMO_USER_ID;
       const preferred = (agent.preferred_provider as string) || 'groq';
-      const providerOrder = [preferred, ...BYOK_PROVIDER_ORDER.filter((p) => p !== preferred)];
-      const byokResult = await tryByok(supabase, userId, providerOrder, systemPrompt, userMessage);
+      const situationProvider = suggestProviderForMessage(userMessage);
+      const baseOrder = [preferred, ...BYOK_PROVIDER_ORDER.filter((p) => p !== preferred)];
+      const providerOrder =
+        situationProvider && BYOK_PROVIDER_ORDER.includes(situationProvider as (typeof BYOK_PROVIDER_ORDER)[number])
+          ? [situationProvider, ...baseOrder.filter((p) => p !== situationProvider)]
+          : baseOrder;
+      const byokResult = await tryByok(supabase, userId, providerOrder, systemPrompt, chatMessages);
       if (byokResult) {
         assistantContent = byokResult.content;
         provider = byokResult.provider;
@@ -126,13 +155,38 @@ export async function POST(req: NextRequest) {
 
     if (!assistantContent && process.env.GROQ_API_KEY) {
       try {
-        const content = await callProvider('groq', process.env.GROQ_API_KEY, systemPrompt, userMessage);
+        const content = await callProviderWithMessages(
+          'groq',
+          process.env.GROQ_API_KEY,
+          systemPrompt,
+          chatMessages
+        );
         if (content) {
           assistantContent = content;
           provider = 'groq';
         }
       } catch {
-        // fallback message below
+        // fallback below
+      }
+    }
+    if (
+      !assistantContent &&
+      process.env.CLOUDFLARE_ACCOUNT_ID &&
+      process.env.CLOUDFLARE_API_TOKEN
+    ) {
+      try {
+        const content = await callProviderWithMessages(
+          'cloudflare',
+          process.env.CLOUDFLARE_API_TOKEN,
+          systemPrompt,
+          chatMessages
+        );
+        if (content) {
+          assistantContent = content;
+          provider = 'cloudflare';
+        }
+      } catch {
+        // fallback below
       }
     }
 
@@ -141,7 +195,7 @@ export async function POST(req: NextRequest) {
         'GYEOL이에요. (설정에서 BYOK API 키를 등록하거나, 서버에 GROQ_API_KEY를 설정하면 대화가 가능해요.)';
     }
 
-    const outputFilter = filterOutput(assistantContent);
+    const outputFilter = contentFilterOn ? filterOutput(assistantContent) : { safe: true, filtered: assistantContent, warnings: [] as string[] };
     const finalContent = outputFilter.filtered;
 
     await supabase.from('gyeol_conversations').insert([
@@ -167,8 +221,9 @@ export async function POST(req: NextRequest) {
         .eq('agent_id', agentId)
         .order('created_at', { ascending: false })
         .limit(20);
-      const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content }));
-      const delta = analyzeConversationSimple(messages as { role: string; content: string }[]);
+      const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
+      const deltaFromLLM = await analyzeConversationWithLLM(messages);
+      const delta = deltaFromLLM ?? analyzeConversationSimple(messages);
       const current = {
         warmth: agent.warmth,
         logic: agent.logic,

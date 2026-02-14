@@ -40,14 +40,29 @@ GYEOL 전용 Next.js 앱입니다. **이 저장소(wooyeonho/Gyeol)가 GYEOL 개
 ## 로컬 실행
 
 ```bash
-cd gyeol-web
 npm install
 cp .env.example .env
-# .env에 NEXT_PUBLIC_SUPABASE_*, SUPABASE_SERVICE_ROLE_KEY, GROQ_API_KEY 등 설정
+# .env에 아래 환경변수 설정 후
 npm run dev
 ```
 
 브라우저에서 `http://localhost:3000` 접속.
+
+## 서버 연결 (Supabase + 환경변수)
+
+실제로 동작하려면 Supabase와 환경변수가 필요합니다. **없으면 API가 500 에러**를 냅니다.
+
+1. **Supabase**: 프로젝트 생성 후 SQL Editor에서 `supabase/migrations/001_gyeol_schema.sql` 실행.
+2. **`.env` 또는 `.env.local`** 에 다음 설정:
+   - `NEXT_PUBLIC_SUPABASE_URL` — Supabase 프로젝트 URL  
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon key  
+   - `SUPABASE_SERVICE_ROLE_KEY` — 서버용 service role key  
+   - `ENCRYPTION_SECRET` — **32자 이상** (BYOK 키 암호화. 없으면 BYOK 등록/복호화 실패)  
+   - `GROQ_API_KEY` — (선택) Groq API 키  
+   - `OPENCLAW_GATEWAY_URL` — (선택) OpenClaw 게이트웨이  
+   - `KILL_SWITCH_TOKEN` — (선택) 관리자 킬스위치 토큰  
+
+Vercel 배포 시에는 Vercel 대시보드 > Settings > Environment Variables에 위 값들을 넣으면 됩니다.
 
 ## DB 스키마
 
@@ -75,5 +90,7 @@ API는 `/api/chat`, `/api/agent`, `/api/conversations`, `/api/activity`, `/api/b
 - GitHub 저장소(예: `wooyeonho/Gyeol`) 연결 후, Vercel에서 **Project Name**을 위 규칙에 맞게 설정(예: `gyeol` 또는 `gyeol-web`).
 - **Environment Variables**에 다음 추가:
   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+  - `ENCRYPTION_SECRET` (32자 이상, BYOK용)
   - `GROQ_API_KEY` (또는 `OPENCLAW_GATEWAY_URL`)
+  - `KILL_SWITCH_TOKEN` (선택)
 - 루트가 이 Next.js 앱이므로 Root Directory는 비워 두면 됩니다.

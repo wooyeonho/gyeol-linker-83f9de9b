@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useGyeolStore } from '@/store/gyeol-store';
 
 interface SkillItem {
   id: string;
@@ -13,8 +14,24 @@ interface SkillItem {
 }
 
 export default function SkillsPage() {
+  const { agent } = useGyeolStore();
   const [skills, setSkills] = useState<SkillItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [installing, setInstalling] = useState<string | null>(null);
+
+  const installSkill = async (skillId: string) => {
+    if (!agent?.id) return;
+    setInstalling(skillId);
+    try {
+      await fetch('/api/market/skills/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.id, skillId }),
+      });
+    } finally {
+      setInstalling(null);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/market/skills')
@@ -40,7 +57,7 @@ export default function SkillsPage() {
                   <p className="text-xs text-white/50 line-clamp-2">{s.description ?? '-'}</p>
                   {s.min_gen > 1 && <span className="text-xs text-indigo-400">Gen {s.min_gen}+</span>}
                 </div>
-                <button type="button" className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium shrink-0">설치</button>
+                <button type="button" onClick={() => installSkill(s.id)} disabled={installing === s.id} className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium shrink-0 disabled:opacity-50">{installing === s.id ? '설치 중...' : '설치'}</button>
               </div>
             ))}
           </div>
