@@ -1,4 +1,4 @@
-type Provider = 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini';
+export type Provider = 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare' | 'ollama';
 
 const OPENAI_COMPATIBLE = ['openai', 'groq', 'deepseek'] as const;
 const ENDPOINTS: Record<string, string> = {
@@ -13,7 +13,11 @@ const MODELS: Record<string, string> = {
   deepseek: 'deepseek-chat',
   anthropic: 'claude-3-5-haiku-20241022',
   gemini: 'gemini-2.0-flash',
+  cloudflare: '@cf/meta/llama-3.1-8b-instruct',
+  ollama: 'llama3.1',
 };
+
+export const ALL_PROVIDERS: Provider[] = ['openai', 'groq', 'deepseek', 'anthropic', 'gemini', 'cloudflare', 'ollama'];
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -107,6 +111,53 @@ export async function callProvider(
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     if (!text) throw new Error('gemini empty response');
+    return cleanResponse(text);
+  }
+
+  if (provider === 'cloudflare') {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID not set');
+    const model = MODELS.cloudflare;
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ messages }),
+      },
+    );
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`cloudflare ${res.status}: ${err}`);
+    }
+    const data = await res.json();
+    const text = data.result?.response ?? '';
+    if (!text) throw new Error('cloudflare empty response');
+    return cleanResponse(text);
+  }
+
+  if (provider === 'ollama') {
+    const ollamaUrl = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+    const model = MODELS.ollama;
+    const res = await fetch(`${ollamaUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        stream: false,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`ollama ${res.status}: ${err}`);
+    }
+    const data = await res.json();
+    const text = data.message?.content ?? '';
+    if (!text) throw new Error('ollama empty response');
     return cleanResponse(text);
   }
 

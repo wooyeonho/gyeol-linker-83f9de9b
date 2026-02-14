@@ -72,6 +72,29 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
     provider: 'heartbeat',
   });
 
+  const { data: subs } = await supabase
+    .from('gyeol_push_subscriptions')
+    .select('endpoint')
+    .eq('agent_id', agentId);
+  if (subs && subs.length > 0) {
+    const pushPayload = JSON.stringify({
+      title: agent.name ?? 'GYEOL',
+      body: cleaned.slice(0, 100),
+      data: { url: '/', agentId },
+    });
+    for (const sub of subs) {
+      try {
+        await fetch(sub.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream', TTL: '86400' },
+          body: pushPayload,
+        });
+      } catch {
+        // ignore push failures
+      }
+    }
+  }
+
   await supabase.from('gyeol_autonomous_logs').insert({
     agent_id: agentId,
     activity_type: 'proactive_message',

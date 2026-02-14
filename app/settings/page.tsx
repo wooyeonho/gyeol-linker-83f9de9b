@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useGyeolStore } from '@/store/gyeol-store';
+import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
 
 import { DEMO_USER_ID } from '@/lib/gyeol/constants';
-const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini', 'custom'] as const;
+const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini', 'cloudflare', 'ollama', 'custom'] as const;
 
 export default function GyeolSettingsPage() {
   const { agent } = useGyeolStore();
@@ -19,12 +20,22 @@ export default function GyeolSettingsPage() {
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [killSwitchLoading, setKillSwitchLoading] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [openclawStatus, setOpenclawStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
 
   useEffect(() => {
     fetch(`/api/byok?userId=${encodeURIComponent(DEMO_USER_ID)}`)
       .then((r) => r.ok ? r.json() : [])
       .then((list: { provider: string; masked?: string }[]) => setByokList(list.map((x) => ({ ...x, id: x.provider, masked: x.masked ?? '****' }))))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/admin/status')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setOpenclawStatus(data?.openclaw ? 'connected' : 'disconnected'))
+      .catch(() => setOpenclawStatus('disconnected'));
   }, []);
 
   useEffect(() => {
@@ -180,6 +191,31 @@ export default function GyeolSettingsPage() {
         </section>
 
         <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
+          <h2 className="text-sm font-medium text-white/80">Server</h2>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">OpenClaw</span>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${openclawStatus === 'connected' ? 'bg-green-500' : openclawStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'}`} />
+              <span className="text-xs text-white/50">
+                {openclawStatus === 'connected' ? '연결됨' : openclawStatus === 'checking' ? '확인 중' : '미연결'}
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Ollama (로컬 LLM)</span>
+            <span className="text-xs text-white/50">서버에서 설정</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Cloudflare Workers AI</span>
+            <span className="text-xs text-white/50">BYOK에서 키 등록</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">Telegram 봇</span>
+            <span className="text-xs text-white/50">서버에서 설정</span>
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
           <h2 className="text-sm font-medium text-white/80">Safety</h2>
           <div className="flex justify-between items-center">
             <span className="text-sm">자율 수준</span>
@@ -229,6 +265,32 @@ export default function GyeolSettingsPage() {
             >
               <span
                 className={`block w-4 h-4 rounded-full bg-white mt-1 transition ${notificationsOn ? 'ml-5' : 'ml-1'}`}
+              />
+            </button>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm">푸시 알림</span>
+            <button
+              type="button"
+              disabled={pushLoading}
+              onClick={async () => {
+                setPushLoading(true);
+                try {
+                  if (pushEnabled) {
+                    await unsubscribePush();
+                    setPushEnabled(false);
+                  } else if (agent?.id) {
+                    const ok = await subscribePush(agent.id);
+                    setPushEnabled(ok);
+                  }
+                } finally {
+                  setPushLoading(false);
+                }
+              }}
+              className={`w-10 h-6 rounded-full transition ${pushEnabled ? 'bg-indigo-500' : 'bg-white/20'} disabled:opacity-50`}
+            >
+              <span
+                className={`block w-4 h-4 rounded-full bg-white mt-1 transition ${pushEnabled ? 'ml-5' : 'ml-1'}`}
               />
             </button>
           </div>

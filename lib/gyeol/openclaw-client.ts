@@ -1,0 +1,88 @@
+const OPENCLAW_URL = process.env.OPENCLAW_GATEWAY_URL ?? '';
+
+interface OpenClawStatus {
+  connected: boolean;
+  version?: string;
+  uptime?: number;
+  error?: string;
+}
+
+interface OpenClawChatResponse {
+  message: string;
+  model?: string;
+  thinking?: string;
+}
+
+export async function getOpenClawStatus(): Promise<OpenClawStatus> {
+  if (!OPENCLAW_URL) return { connected: false, error: 'OPENCLAW_GATEWAY_URL not set' };
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/status`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return { connected: false, error: `HTTP ${res.status}` };
+    const data = await res.json();
+    return {
+      connected: true,
+      version: data.version as string | undefined,
+      uptime: data.uptime as number | undefined,
+    };
+  } catch (err) {
+    return { connected: false, error: err instanceof Error ? err.message : 'Connection failed' };
+  }
+}
+
+export async function openClawChat(
+  agentId: string,
+  message: string,
+): Promise<OpenClawChatResponse | null> {
+  if (!OPENCLAW_URL) return null;
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId, message }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as OpenClawChatResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function triggerOpenClawHeartbeat(agentId: string): Promise<boolean> {
+  if (!OPENCLAW_URL) return false;
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/heartbeat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId }),
+      signal: AbortSignal.timeout(30000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function listOpenClawSkills(): Promise<string[]> {
+  if (!OPENCLAW_URL) return [];
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/skills`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.skills ?? []) as string[];
+  } catch {
+    return [];
+  }
+}

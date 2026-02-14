@@ -17,7 +17,7 @@ import { decryptKey } from '@/lib/gyeol/byok';
 import { callProvider, buildSystemPrompt, type ChatMessage } from '@/lib/gyeol/chat-ai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini'> = ['groq', 'openai', 'deepseek', 'anthropic', 'gemini'];
+const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare' | 'ollama'> = ['groq', 'openai', 'deepseek', 'anthropic', 'gemini', 'cloudflare', 'ollama'];
 
 async function tryByok(
   supabase: SupabaseClient,
@@ -28,7 +28,7 @@ async function tryByok(
   history?: ChatMessage[],
 ): Promise<{ content: string; provider: string } | null> {
   for (const provider of providerOrder) {
-    if (!BYOK_PROVIDER_ORDER.includes(provider as (typeof BYOK_PROVIDER_ORDER)[number])) continue;
+    if (!BYOK_PROVIDER_ORDER.includes(provider as typeof BYOK_PROVIDER_ORDER[number])) continue;
     const { data: row } = await supabase
       .from('gyeol_user_api_keys')
       .select('id, encrypted_key')
@@ -42,7 +42,7 @@ async function tryByok(
     try {
       const apiKey = await decryptKey(row.encrypted_key);
       const content = await callProvider(
-        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini',
+        provider as typeof BYOK_PROVIDER_ORDER[number],
         apiKey,
         systemPrompt,
         userMessage,
