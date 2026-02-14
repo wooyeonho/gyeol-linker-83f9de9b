@@ -260,6 +260,11 @@ export async function POST(req: NextRequest) {
     const outputFilter = filterOutput(assistantContent);
     const finalContent = outputFilter.filtered;
 
+    let personalityChanged = false;
+    let evolved = false;
+    let newGen: number | undefined;
+    let newVisualState: Record<string, unknown> | undefined;
+
     if (supabase) {
       await supabase.from('gyeol_conversations').insert([
         { agent_id: agentId, role: 'user', content: userMessage, channel: 'web' },
@@ -300,7 +305,7 @@ export async function POST(req: NextRequest) {
             humor: (agent.humor as number) ?? 50,
           };
           const next = applyPersonalityDelta(current, delta);
-          const newVisualState = calculateVisualState(next);
+          newVisualState = calculateVisualState(next);
           await supabase
             .from('gyeol_agents')
             .update({
@@ -313,6 +318,7 @@ export async function POST(req: NextRequest) {
               evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
             })
             .eq('id', agentId);
+          personalityChanged = true;
 
           const updatedAgent = {
             ...agent,
@@ -327,6 +333,8 @@ export async function POST(req: NextRequest) {
           const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
           if (evo.evolved && evo.newGen) {
             await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
+            evolved = true;
+            newGen = evo.newGen;
           }
         } catch {
           // evolution analysis failed - non-critical
@@ -349,8 +357,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: finalContent,
-      personalityChanged: false,
-      evolved: false,
+      personalityChanged,
+      evolved,
+      newGen: evolved ? newGen : undefined,
+      newVisualState: personalityChanged ? newVisualState : undefined,
     });
   } catch (e) {
     console.error('gyeol chat error', e);
