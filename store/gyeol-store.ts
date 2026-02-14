@@ -117,7 +117,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'gyeol_conversations', filter: `agent_id=eq.${agentId}` },
-        (payload) => {
+        (payload: { new: Message }) => {
           const row = payload.new as Message;
           set((s) => ({ messages: [...s.messages, row] }));
         }
