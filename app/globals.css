@@ -52,3 +52,23 @@ p, .text-base, .text-sm, .text-lg {
   line-height: 1.625; /* leading-relaxed */
 }
 
+/* GYEOL Void UI */
+.gyeol-void {
+  background: #000;
+  color: #e5e5e5;
+}
+.gyeol-glow {
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+}
+@keyframes gyeol-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.gyeol-scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.gyeol-scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
