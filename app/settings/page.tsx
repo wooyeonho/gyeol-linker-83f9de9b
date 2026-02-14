@@ -1,10 +1,6 @@
 'use client';
 
-/**
- * GYEOL 설정 — My AI, AI Brain(BYOK), Safety
- */
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useGyeolStore } from '@/store/gyeol-store';
 
@@ -20,6 +16,9 @@ export default function GyeolSettingsPage() {
   const [byokOpen, setByokOpen] = useState<string | null>(null);
   const [byokKey, setByokKey] = useState('');
   const [byokSaving, setByokSaving] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [killSwitchActive, setKillSwitchActive] = useState(false);
+  const [killSwitchLoading, setKillSwitchLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/byok?userId=${encodeURIComponent(DEMO_USER_ID)}`)
@@ -27,6 +26,53 @@ export default function GyeolSettingsPage() {
       .then((list: { provider: string; masked?: string }[]) => setByokList(list.map((x) => ({ ...x, id: x.provider, masked: x.masked ?? '****' }))))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!agent?.id) return;
+    fetch(`/api/settings?agentId=${encodeURIComponent(agent.id)}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) return;
+        if (typeof data.autonomyLevel === 'number') setAutonomyLevel(data.autonomyLevel);
+        if (typeof data.contentFilterOn === 'boolean') setContentFilterOn(data.contentFilterOn);
+        if (typeof data.notificationsOn === 'boolean') setNotificationsOn(data.notificationsOn);
+      })
+      .catch(() => {});
+  }, [agent?.id]);
+
+  const saveSettings = useCallback(async (patch: Record<string, unknown>) => {
+    if (!agent?.id) return;
+    setSettingsSaving(true);
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.id, ...patch }),
+      });
+    } finally {
+      setSettingsSaving(false);
+    }
+  }, [agent?.id]);
+
+  const toggleKillSwitch = async () => {
+    setKillSwitchLoading(true);
+    try {
+      const action = killSwitchActive ? 'deactivate' : 'activate';
+      const res = await fetch('/api/admin/kill-switch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${prompt('Kill Switch 토큰을 입력하세요:') ?? ''}`,
+        },
+        body: JSON.stringify({ action, reason: 'User triggered from settings' }),
+      });
+      if (res.ok) {
+        setKillSwitchActive(!killSwitchActive);
+      }
+    } finally {
+      setKillSwitchLoading(false);
+    }
+  };
 
   const saveByok = async (provider: string) => {
     if (!byokKey.trim()) return;
@@ -137,20 +183,32 @@ export default function GyeolSettingsPage() {
           <h2 className="text-sm font-medium text-white/80">Safety</h2>
           <div className="flex justify-between items-center">
             <span className="text-sm">자율 수준</span>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={autonomyLevel}
-              onChange={(e) => setAutonomyLevel(Number(e.target.value))}
-              className="w-24 accent-indigo-500"
-            />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50 w-6 text-right">{autonomyLevel}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={autonomyLevel}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setAutonomyLevel(v);
+                }}
+                onMouseUp={() => saveSettings({ autonomyLevel })}
+                onTouchEnd={() => saveSettings({ autonomyLevel })}
+                className="w-24 accent-indigo-500"
+              />
+            </div>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm">콘텐츠 필터</span>
             <button
               type="button"
-              onClick={() => setContentFilterOn((v) => !v)}
+              onClick={() => {
+                const next = !contentFilterOn;
+                setContentFilterOn(next);
+                saveSettings({ contentFilterOn: next });
+              }}
               className={`w-10 h-6 rounded-full transition ${contentFilterOn ? 'bg-indigo-500' : 'bg-white/20'}`}
             >
               <span
@@ -162,7 +220,11 @@ export default function GyeolSettingsPage() {
             <span className="text-sm">활동 알림</span>
             <button
               type="button"
-              onClick={() => setNotificationsOn((v) => !v)}
+              onClick={() => {
+                const next = !notificationsOn;
+                setNotificationsOn(next);
+                saveSettings({ notificationsOn: next });
+              }}
               className={`w-10 h-6 rounded-full transition ${notificationsOn ? 'bg-indigo-500' : 'bg-white/20'}`}
             >
               <span
@@ -170,11 +232,18 @@ export default function GyeolSettingsPage() {
               />
             </button>
           </div>
+          {settingsSaving && <p className="text-xs text-indigo-400">저장 중...</p>}
           <button
             type="button"
-            className="w-full py-3 rounded-xl bg-red-500/20 text-red-400 font-medium border border-red-500/30"
+            disabled={killSwitchLoading}
+            onClick={toggleKillSwitch}
+            className={`w-full py-3 rounded-xl font-medium border transition ${
+              killSwitchActive
+                ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                : 'bg-red-500/20 text-red-400 border-red-500/30'
+            } disabled:opacity-50`}
           >
-            비상 정지 (Kill Switch)
+            {killSwitchLoading ? '처리 중...' : killSwitchActive ? '시스템 재개' : '비상 정지 (Kill Switch)'}
           </button>
         </section>
       </div>

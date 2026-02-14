@@ -14,17 +14,18 @@ import {
 import { logAction } from '@/lib/gyeol/security/audit-logger';
 import { EVOLUTION_INTERVAL, DEMO_USER_ID } from '@/lib/gyeol/constants';
 import { decryptKey } from '@/lib/gyeol/byok';
-import { callProvider, buildSystemPrompt } from '@/lib/gyeol/chat-ai';
+import { callProvider, buildSystemPrompt, type ChatMessage } from '@/lib/gyeol/chat-ai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic'> = ['groq', 'openai', 'deepseek', 'anthropic'];
+const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini'> = ['groq', 'openai', 'deepseek', 'anthropic', 'gemini'];
 
 async function tryByok(
   supabase: SupabaseClient,
   userId: string,
   providerOrder: string[],
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
+  history?: ChatMessage[],
 ): Promise<{ content: string; provider: string } | null> {
   for (const provider of providerOrder) {
     if (!BYOK_PROVIDER_ORDER.includes(provider as (typeof BYOK_PROVIDER_ORDER)[number])) continue;
@@ -41,10 +42,11 @@ async function tryByok(
     try {
       const apiKey = await decryptKey(row.encrypted_key);
       const content = await callProvider(
-        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic',
+        provider as 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini',
         apiKey,
         systemPrompt,
-        userMessage
+        userMessage,
+        history,
       );
       if (content) {
         if (row.id) {
@@ -94,6 +96,16 @@ export async function POST(req: NextRequest) {
     });
     const userMessage = inputFilter.filtered;
 
+    const { data: recentHistory } = await supabase
+      .from('gyeol_conversations')
+      .select('role, content')
+      .eq('agent_id', agentId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    const history: ChatMessage[] = (recentHistory ?? [])
+      .reverse()
+      .map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content }));
+
     if (openclawUrl) {
       try {
         const gwRes = await fetch(`${openclawUrl.replace(/\/$/, '')}/api/chat`, {
@@ -117,7 +129,7 @@ export async function POST(req: NextRequest) {
       const userId = agent.user_id ?? DEMO_USER_ID;
       const preferred = (agent.preferred_provider as string) || 'groq';
       const providerOrder = [preferred, ...BYOK_PROVIDER_ORDER.filter((p) => p !== preferred)];
-      const byokResult = await tryByok(supabase, userId, providerOrder, systemPrompt, userMessage);
+      const byokResult = await tryByok(supabase, userId, providerOrder, systemPrompt, userMessage, history);
       if (byokResult) {
         assistantContent = byokResult.content;
         provider = byokResult.provider;
@@ -126,7 +138,7 @@ export async function POST(req: NextRequest) {
 
     if (!assistantContent && process.env.GROQ_API_KEY) {
       try {
-        const content = await callProvider('groq', process.env.GROQ_API_KEY, systemPrompt, userMessage);
+        const content = await callProvider('groq', process.env.GROQ_API_KEY, systemPrompt, userMessage, history);
         if (content) {
           assistantContent = content;
           provider = 'groq';
