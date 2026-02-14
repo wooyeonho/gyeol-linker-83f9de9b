@@ -6,7 +6,7 @@ import { useGyeolStore } from '@/store/gyeol-store';
 import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
 
 import { DEMO_USER_ID } from '@/lib/gyeol/constants';
-const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini', 'cloudflare', 'ollama', 'custom'] as const;
+const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini', 'cloudflare', 'ollama'] as const;
 
 export default function GyeolSettingsPage() {
   const { agent } = useGyeolStore();
@@ -23,6 +23,7 @@ export default function GyeolSettingsPage() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [openclawStatus, setOpenclawStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     fetch(`/api/byok?userId=${encodeURIComponent(DEMO_USER_ID)}`)
@@ -147,76 +148,36 @@ export default function GyeolSettingsPage() {
         </section>
 
         <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-white/80">AI Brain</h2>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-sm">Groq Free (서버 키)</span>
+          <h2 className="text-sm font-medium text-white/80">AI 엔진</h2>
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+            <div>
+              <p className="text-sm text-white">GYEOL 엔진 활성</p>
+              <p className="text-xs text-white/40">별도 설정 없이 바로 대화 가능</p>
+            </div>
           </div>
-          <p className="text-xs text-white/50">내 API 키 추가 (BYOK) — 암호화 저장</p>
-          <div className="grid grid-cols-2 gap-2">
-            {BYOK_PROVIDERS.map((provider) => (
-              <div key={provider} className="flex flex-col gap-1">
-                <button
-                  type="button"
-                  onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
-                  className="rounded-xl border border-white/10 py-2 text-sm text-white/70 hover:bg-white/5 capitalize"
-                >
-                  {provider}
-                </button>
-                {byokOpen === provider && (
-                  <div className="flex gap-1">
-                    <input
-                      type="password"
-                      placeholder="API Key"
-                      value={byokKey}
-                      onChange={(e) => setByokKey(e.target.value)}
-                      className="flex-1 rounded-lg bg-black/50 border border-white/10 px-2 py-1 text-sm text-white placeholder:text-white/40"
-                    />
-                    <button
-                      type="button"
-                      disabled={byokSaving || !byokKey.trim()}
-                      onClick={() => saveByok(provider)}
-                      className="rounded-lg bg-indigo-500/30 text-indigo-300 px-2 py-1 text-sm disabled:opacity-50"
-                    >
-                      저장
-                    </button>
-                  </div>
-                )}
+          {openclawStatus === 'connected' && (
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <div>
+                <p className="text-sm text-white">OpenClaw 서버 연결됨</p>
+                <p className="text-xs text-white/40">자율 에이전트 활성</p>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
           {byokList.length > 0 && (
-            <p className="text-xs text-white/50">등록된 키: {byokList.map((x) => x.provider).join(', ')}</p>
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+              <div>
+                <p className="text-sm text-white">프리미엄 모델 사용 중</p>
+                <p className="text-xs text-white/40">{byokList.map((x) => x.provider).join(', ')}</p>
+              </div>
+            </div>
           )}
         </section>
 
         <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-white/80">Server</h2>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">OpenClaw</span>
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${openclawStatus === 'connected' ? 'bg-green-500' : openclawStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'}`} />
-              <span className="text-xs text-white/50">
-                {openclawStatus === 'connected' ? '연결됨' : openclawStatus === 'checking' ? '확인 중' : '미연결'}
-              </span>
-            </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Ollama (로컬 LLM)</span>
-            <span className="text-xs text-white/50">서버에서 설정</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Cloudflare Workers AI</span>
-            <span className="text-xs text-white/50">BYOK에서 키 등록</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Telegram 봇</span>
-            <span className="text-xs text-white/50">서버에서 설정</span>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-white/80">Safety</h2>
+          <h2 className="text-sm font-medium text-white/80">설정</h2>
           <div className="flex justify-between items-center">
             <span className="text-sm">자율 수준</span>
             <div className="flex items-center gap-2">
@@ -295,18 +256,104 @@ export default function GyeolSettingsPage() {
             </button>
           </div>
           {settingsSaving && <p className="text-xs text-indigo-400">저장 중...</p>}
+        </section>
+
+        <section className="rounded-2xl bg-[#0A0A1A] border border-white/10 overflow-hidden">
           <button
             type="button"
-            disabled={killSwitchLoading}
-            onClick={toggleKillSwitch}
-            className={`w-full py-3 rounded-xl font-medium border transition ${
-              killSwitchActive
-                ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                : 'bg-red-500/20 text-red-400 border-red-500/30'
-            } disabled:opacity-50`}
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full p-5 flex justify-between items-center text-left"
           >
-            {killSwitchLoading ? '처리 중...' : killSwitchActive ? '시스템 재개' : '비상 정지 (Kill Switch)'}
+            <h2 className="text-sm font-medium text-white/80">고급 설정</h2>
+            <span className="text-xs text-white/40">{showAdvanced ? '접기' : '펼치기'}</span>
           </button>
+          {showAdvanced && (
+            <div className="px-5 pb-5 space-y-6">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-white/70">프리미엄 AI 모델 (선택사항)</p>
+                  <p className="text-xs text-white/40">내 API 키를 등록하면 더 강력한 모델 사용 가능</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {BYOK_PROVIDERS.map((provider) => {
+                    const isRegistered = byokList.some((x) => x.provider === provider);
+                    return (
+                      <div key={provider} className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
+                          className={`rounded-xl border py-2 text-sm capitalize transition ${
+                            isRegistered
+                              ? 'border-indigo-500/40 text-indigo-300 bg-indigo-500/10'
+                              : 'border-white/10 text-white/50 hover:bg-white/5'
+                          }`}
+                        >
+                          {provider}
+                        </button>
+                        {byokOpen === provider && (
+                          <div className="flex gap-1">
+                            <input
+                              type="password"
+                              placeholder="API Key"
+                              value={byokKey}
+                              onChange={(e) => setByokKey(e.target.value)}
+                              className="flex-1 rounded-lg bg-black/50 border border-white/10 px-2 py-1 text-sm text-white placeholder:text-white/40"
+                            />
+                            <button
+                              type="button"
+                              disabled={byokSaving || !byokKey.trim()}
+                              onClick={() => saveByok(provider)}
+                              className="rounded-lg bg-indigo-500/30 text-indigo-300 px-2 py-1 text-sm disabled:opacity-50"
+                            >
+                              저장
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm text-white/70">서버 연결</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">OpenClaw</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${openclawStatus === 'connected' ? 'bg-green-500' : openclawStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-white/20'}`} />
+                      <span className="text-xs text-white/40">
+                        {openclawStatus === 'connected' ? '연결됨' : openclawStatus === 'checking' ? '확인 중' : '미연결'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Ollama (로컬 LLM)</span>
+                    <span className="text-xs text-white/40">서버에서 설정</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Cloudflare AI</span>
+                    <span className="text-xs text-white/40">BYOK로 등록</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Telegram 봇</span>
+                    <span className="text-xs text-white/40">서버에서 설정</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={killSwitchLoading}
+                onClick={toggleKillSwitch}
+                className={`w-full py-3 rounded-xl font-medium border transition ${
+                  killSwitchActive
+                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                    : 'bg-red-500/20 text-red-400 border-red-500/30'
+                } disabled:opacity-50`}
+              >
+                {killSwitchLoading ? '처리 중...' : killSwitchActive ? '시스템 재개' : '비상 정지 (Kill Switch)'}
+              </button>
+            </div>
+          )}
         </section>
       </div>
     </main>

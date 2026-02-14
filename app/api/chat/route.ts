@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
 
     if (!assistantContent) {
       assistantContent =
-        'GYEOL이에요. (설정에서 BYOK API 키를 등록하거나, 서버에 GROQ_API_KEY를 설정하면 대화가 가능해요.)';
+        '지금 서버가 잠시 바빠요. 조금만 기다렸다가 다시 말해줄래요?';
     }
 
     const outputFilter = filterOutput(assistantContent);
