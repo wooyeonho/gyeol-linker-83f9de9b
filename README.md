@@ -1,223 +1,145 @@
-# 프롬프트 정음 (Prompt Jeongeom)
+# GYEOL (결)
 
-> **Premium Curated AI Prompt Marketplace**
+> **AI 디지털 동반자 -- 대화할수록 성장하고 진화하는 나만의 AI**
 
-프롬프트 정음은 전문가가 검증한 고품질 AI 프롬프트를 거래하는 프리미엄 마켓플레이스입니다. 판매자와 구매자를 연결하고, 커뮤니티를 통해 지식을 공유하며, AI 추천 엔진으로 개인화된 경험을 제공합니다.
+GYEOL은 대화를 통해 성격이 진화하고, 3D 비주얼이 변화하는 AI 디지털 동반자 앱입니다.
+BYOK(Bring Your Own Key) 방식으로 사용자가 직접 AI API 키를 등록하여 사용합니다.
 
-## ✨ 주요 기능
+## 주요 기능
 
-### 🎯 핵심 기능
-- **프롬프트 마켓플레이스**: 승인된 고품질 프롬프트만 판매
-- **판매자 대시보드**: 실시간 성과 분석, 매출 추이 차트, 전환율 분석
-- **커뮤니티 시스템**: 사용자 간 지식 공유, Q&A, 프롬프트 활용 팁
-- **AI 추천 엔진**: 구매 이력 기반 개인화 추천, 연관 프롬프트 추천
-- **실시간 알림**: 리뷰, 출금, 프롬프트 승인 상태 변경 알림
-- **소셜 공유**: KakaoTalk, X(Twitter), Facebook 공유 최적화
+- **AI 채팅**: OpenClaw / BYOK(OpenAI, Groq, DeepSeek, Anthropic) 멀티 프로바이더 지원
+- **성격 진화**: 대화 패턴을 분석하여 AI의 성격이 점진적으로 변화 (warmth, logic, creativity, humor, empathy)
+- **3D Void 비주얼**: React Three Fiber 기반, Gen별로 변화하는 파티클 시스템
+- **진화 연출**: Gen 레벨업 시 시각적 연출 (EvolutionCeremony)
+- **BYOK 암호화**: AES-256-GCM 기반 API 키 암호화 저장
+- **보안**: 콘텐츠 필터, Kill Switch, 감사 로그
+- **소셜**: AI 매칭, 취향 벡터 기반 추천
+- **마켓**: 스킨/스킬 마켓플레이스
 
-### 🎨 프리미엄 UI/UX
-- **Apple & Toss 스타일**: 절제된 디자인, 부드러운 애니메이션
-- **스크롤 리빌 애니메이션**: Framer Motion 기반 자연스러운 인터랙션
-- **다크 모드**: 눈의 피로를 줄이는 어두운 테마
-- **반응형 디자인**: 모바일, 태블릿, 데스크톱 완벽 지원
+## 기술 스택
 
-### 🌐 다국어 지원
-- 한국어 (기본)
-- 영어
+- **Framework**: Next.js 15 (App Router) + TypeScript
+- **Styling**: Tailwind CSS
+- **3D**: React Three Fiber + @react-three/drei
+- **Database**: Supabase (PostgreSQL + Auth + Realtime)
+- **State**: Zustand
+- **AI**: OpenAI, Groq, DeepSeek, Anthropic API (BYOK)
 
-## 🛠 기술 스택
+## 프로젝트 구조
 
-### Frontend
-- **Next.js 15**: React 기반 풀스택 프레임워크
-- **React 18**: 사용자 인터페이스 라이브러리
-- **TypeScript**: 타입 안전성 보장
-- **Tailwind CSS**: 유틸리티 퍼스트 CSS 프레임워크
-- **Framer Motion**: 고급 애니메이션 라이브러리
+```
+Gyeol/
+├── app/
+│   ├── page.tsx              # 메인 페이지 (Void + 채팅 + 진화)
+│   ├── settings/             # 설정 (BYOK, AI Brain, Safety)
+│   ├── activity/             # 활동 피드
+│   ├── social/               # AI 매칭/소셜
+│   ├── market/
+│   │   ├── skins/            # 스킨 마켓
+│   │   └── skills/           # 스킬 마켓
+│   └── api/
+│       ├── chat/             # 채팅 API (멀티 프로바이더)
+│       ├── agent/            # 에이전트 CRUD
+│       ├── byok/             # BYOK 키 관리
+│       ├── conversations/    # 대화 기록
+│       ├── activity/         # 활동 로그
+│       ├── social/matches/   # AI 매칭
+│       ├── market/           # 스킨/스킬
+│       └── admin/            # Kill Switch, 상태
+├── components/
+│   ├── ChatInterface.tsx     # 채팅 UI
+│   ├── VoidCanvas.tsx        # 3D 파티클 비주얼
+│   ├── EvolutionCeremony.tsx # 진화 연출
+│   └── VoiceInput.tsx        # 음성 입력
+├── lib/gyeol/
+│   ├── types.ts              # 타입 정의
+│   ├── constants.ts          # 상수
+│   ├── chat-ai.ts            # AI 프로바이더 호출
+│   ├── byok.ts               # BYOK 암호화/복호화
+│   ├── evolution-engine.ts   # 성격 진화 엔진
+│   ├── security/             # 콘텐츠 필터, Kill Switch, 감사 로그
+│   └── social/               # 취향 벡터, AI 채팅
+├── store/
+│   └── gyeol-store.ts        # Zustand 스토어
+├── supabase/migrations/
+│   └── 010_gyeol_schema.sql  # GYEOL DB 스키마
+└── docs/gyeol/               # 설계 문서
+```
 
-### Backend & Database
-- **Supabase**: 
-  - PostgreSQL 데이터베이스
-  - 인증 시스템 (Google OAuth)
-  - 실시간 구독 (Realtime)
-  - Row Level Security (RLS)
-
-### 기타 라이브러리
-- **next-intl**: 국제화 (i18n)
-- **recharts**: 데이터 시각화 (대시보드 차트)
-- **react-markdown**: 마크다운 렌더링
-- **remark-gfm**: GitHub Flavored Markdown 지원
-- **lucide-react**: 아이콘 라이브러리
-
-## 🚀 시작하기
+## 시작하기
 
 ### 사전 요구사항
 
-- **Node.js**: 18.0.0 이상
-- **npm** 또는 **yarn**
-- **Supabase 계정**: [supabase.com](https://supabase.com)에서 생성
+- Node.js 18+
+- Supabase 프로젝트
 
 ### 설치
 
-1. 저장소 클론
 ```bash
-git clone <repository-url>
-cd prompt-jeongeom
-```
-
-2. 의존성 설치
-```bash
+git clone https://github.com/wooyeonho/Gyeol.git
+cd Gyeol
 npm install
 ```
 
-3. 환경 변수 설정
-```bash
-cp .env.example .env.local
-```
+### 환경 변수 설정
 
-`.env.local` 파일을 열어 다음 환경 변수를 설정하세요:
+`.env.local` 파일을 생성하고 다음을 설정합니다:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-ADMIN_EMAIL=your_admin_email@example.com
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+# Supabase (필수)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# BYOK 암호화 (필수)
+ENCRYPTION_SECRET=your_32char_encryption_secret
+
+# AI API (선택 - BYOK 없을 때 폴백)
+GROQ_API_KEY=your_groq_api_key
+
+# OpenClaw (선택)
+OPENCLAW_GATEWAY_URL=http://localhost:18789
+
+# 관리자 (선택)
+KILL_SWITCH_TOKEN=your_admin_token
+
+# 사이트 (선택)
+NEXT_PUBLIC_SITE_URL=https://gyeol.app
 ```
 
-4. 데이터베이스 마이그레이션 실행
+### DB 마이그레이션
 
-Supabase 대시보드의 SQL Editor에서 다음 순서로 마이그레이션 파일을 실행하세요:
+Supabase SQL Editor에서 실행:
 
 ```
-supabase/migrations/
-├── 001_initial_schema.sql
-├── 002_add_average_rating.sql
-├── 003_make_prompt_fields_optional.sql
-├── 004_create_payouts_table.sql
-├── 005_add_username_field.sql
-├── 006_enhance_rls_security.sql
-├── 007_notifications.sql
-├── 008_community_system.sql
-└── 009_cleanup_test_data.sql (선택적, 프로덕션 배포 전 실행)
+supabase/migrations/010_gyeol_schema.sql
 ```
 
-5. 개발 서버 실행
+### 개발 서버 실행
+
 ```bash
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인하세요.
+http://localhost:3000 에서 확인
 
-## 📁 프로젝트 구조
+## AI 호출 순서
 
-```
-prompt-jeongeom/
-├── app/
-│   ├── [locale]/              # 다국어 라우팅
-│   │   ├── page.tsx           # 메인 랜딩 페이지
-│   │   ├── prompts/           # 프롬프트 관련 페이지
-│   │   ├── seller/            # 판매자 페이지
-│   │   ├── community/         # 커뮤니티 페이지
-│   │   └── admin/             # 관리자 페이지
-│   ├── actions/               # Server Actions
-│   └── globals.css            # 전역 스타일
-├── components/                # 재사용 가능한 컴포넌트
-├── dictionaries/              # 다국어 번역 파일
-│   ├── ko.json
-│   └── en.json
-├── lib/                       # 유틸리티 함수
-│   └── supabase/             # Supabase 클라이언트
-├── supabase/
-│   └── migrations/           # 데이터베이스 마이그레이션
-└── i18n/                     # 국제화 설정
-```
+채팅 API는 다음 순서로 AI를 호출합니다:
 
-## 🔐 환경 변수
+1. **OpenClaw Gateway** (설정된 경우)
+2. **BYOK** - 사용자가 등록한 API 키 (preferred_provider 우선, 이후 groq -> openai -> deepseek -> anthropic)
+3. **서버 Groq** - 환경변수 GROQ_API_KEY
+4. **기본 메시지** - 위 모두 실패 시
 
-### 필수 환경 변수
+## 배포
 
-| 변수명 | 설명 | 예시 |
-|--------|------|------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL | `https://xxxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Anon Key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
-| `ADMIN_EMAIL` | 관리자 이메일 (출금 승인 등) | `admin@example.com` |
-| `NEXT_PUBLIC_SITE_URL` | 사이트 URL (소셜 공유용) | `https://prompt-jeongeum.com` |
+### Vercel
 
-자세한 내용은 `.env.example` 파일을 참조하세요.
+1. Vercel에 프로젝트 연결
+2. Environment Variables에 위 환경변수 설정
+3. 자동 배포
 
-## 🚢 배포
+## 라이선스
 
-### Vercel 배포 (권장)
-
-1. [Vercel](https://vercel.com)에 프로젝트 연결
-2. 환경 변수 설정 (Vercel 대시보드 → Settings → Environment Variables)
-3. 빌드 명령어: `npm run build` (기본값)
-4. 배포 완료 후 도메인 연결
-
-### Supabase 프로덕션 설정
-
-1. Supabase 프로젝트에서 프로덕션 데이터베이스 생성
-2. 모든 마이그레이션 파일 실행
-3. RLS 정책 활성화 확인
-4. Google OAuth 설정 (인증 → Providers → Google)
-
-### 프로덕션 빌드 테스트
-
-로컬에서 프로덕션 빌드를 테스트하려면:
-
-```bash
-npm run build
-npm start
-```
-
-## 🔒 보안
-
-### Row Level Security (RLS)
-
-모든 테이블에 RLS가 활성화되어 있습니다:
-
-- **prompts**: 승인된 프롬프트만 공개, `content`는 구매자만 접근
-- **orders**: 구매자는 본인 주문만, 판매자는 본인 프롬프트 주문만 조회
-- **community_posts**: 모든 사용자 조회 가능, 작성자만 수정/삭제
-- **payouts**: 판매자는 본인 출금 요청만 조회
-
-### 환경 변수 보안
-
-- `.env.local` 파일은 절대 커밋하지 마세요 (`.gitignore`에 포함됨)
-- 프로덕션 환경에서는 Vercel 등의 플랫폼 환경 변수 설정 사용
-
-## 📊 성능 최적화
-
-### 이미지 최적화
-- 메인 페이지 첫 4개 프롬프트 카드: `priority={true}` 적용
-- 프롬프트 상세 페이지 첫 이미지: `loading="eager"` 적용
-
-### LCP (Largest Contentful Paint) 최적화
-- Hero Section 애니메이션 최소화 (`y: 10`)
-- 중요 이미지 우선 로딩
-- 폰트 최적화
-
-## 🧪 테스트
-
-```bash
-# 린트 검사
-npm run lint
-
-# 타입 체크
-npx tsc --noEmit
-```
-
-## 📝 라이선스
-
-이 프로젝트는 비공개 프로젝트입니다.
-
-## 🤝 기여
-
-현재 이 프로젝트는 비공개입니다. 기여에 대한 문의는 프로젝트 관리자에게 연락하세요.
-
-## 📧 문의
-
-프로젝트 관련 문의사항이 있으시면 이슈를 생성해 주세요.
-
----
-
-**프롬프트 정음** - Premium Curated AI Prompt Marketplace
-
-
+비공개 프로젝트

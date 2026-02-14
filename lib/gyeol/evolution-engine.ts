@@ -4,6 +4,7 @@
  */
 
 import type { Agent, Message, PersonalityParams, VisualState } from './types';
+import { callProvider } from './chat-ai';
 
 const EVOLUTION_THRESHOLDS = [
   { gen: 2, conversations: 20, progress: 100 },
@@ -83,18 +84,53 @@ export function applyPersonalityDelta(
   };
 }
 
-/**
- * 분석용: 최근 메시지에서 간단 키워드 기반 델타 (실제 서비스에서는 LLM 분석 결과 사용)
- */
 export function analyzeConversationSimple(messages: Message[]): Partial<PersonalityParams> {
   const text = messages.map((m) => m.content).join(' ').toLowerCase();
   const delta: Partial<PersonalityParams> = {};
-  if (/\b사랑|감사|고마|따뜻|응원\b/.test(text)) delta.warmth = 1;
-  if (/\b분석|논리|데이터|비율|원인\b/.test(text)) delta.logic = 1;
-  if (/\b상상|아이디어|창작|새로|다른\b/.test(text)) delta.creativity = 1;
-  if (/\b빨리|에너지|활동|운동|재미\b/.test(text)) delta.energy = 1;
-  if (/\b농담|웃|재밌|유머|ㅋ|ㅎ\b/.test(text)) delta.humor = 1;
+  if (/사랑|감사|고마|따뜻|응원/.test(text)) delta.warmth = 1;
+  if (/분석|논리|데이터|비율|원인/.test(text)) delta.logic = 1;
+  if (/상상|아이디어|창작|새로|다른/.test(text)) delta.creativity = 1;
+  if (/빨리|에너지|활동|운동|재미/.test(text)) delta.energy = 1;
+  if (/농담|웃|재밌|유머|ㅋ|ㅎ/.test(text)) delta.humor = 1;
   return delta;
+}
+
+export async function analyzeConversationWithLLM(
+  messages: Message[],
+  provider: string,
+  apiKey: string,
+): Promise<Partial<PersonalityParams>> {
+  const conversationText = messages
+    .map((m) => `${m.role}: ${m.content}`)
+    .join('\n')
+    .slice(0, 2000);
+
+  const systemPrompt = `Analyze this conversation and return ONLY a JSON object with personality trait adjustments.
+Each value: -2 to +2. Format: {"warmth":0,"logic":0,"creativity":0,"energy":0,"humor":0}
+Positive = trait exercised. Negative = trait lacking. 0 = neutral.`;
+
+  try {
+    const raw = await callProvider(
+      provider as 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini',
+      apiKey,
+      systemPrompt,
+      conversationText,
+    );
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        warmth: Math.max(-2, Math.min(2, Number(parsed.warmth) || 0)),
+        logic: Math.max(-2, Math.min(2, Number(parsed.logic) || 0)),
+        creativity: Math.max(-2, Math.min(2, Number(parsed.creativity) || 0)),
+        energy: Math.max(-2, Math.min(2, Number(parsed.energy) || 0)),
+        humor: Math.max(-2, Math.min(2, Number(parsed.humor) || 0)),
+      };
+    }
+  } catch {
+    // fallback to simple analysis
+  }
+  return analyzeConversationSimple(messages);
 }
 
 export { EVOLUTION_THRESHOLDS, PERSONALITY_COLORS, DEFAULT_VISUAL };

@@ -74,7 +74,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     };
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
-      const res = await fetch('/api/gyeol/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId: agent.id, message: text }),

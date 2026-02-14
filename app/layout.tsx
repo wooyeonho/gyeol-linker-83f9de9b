@@ -13,39 +13,35 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: '프롬프트 정음',
-    template: '%s | 프롬프트 정음',
+    default: 'GYEOL',
+    template: '%s | GYEOL',
   },
-  description: 'AI 프롬프트 전문가들의 마켓플레이스. 올바른 언어로 소통하는 프리미엄 큐레이션',
-  keywords: ['AI 프롬프트', '프롬프트 마켓플레이스', 'ChatGPT', 'Claude', 'Midjourney', 'AI 도구'],
-  authors: [{ name: '프롬프트 정음' }],
-  creator: '프롬프트 정음',
-  publisher: '프롬프트 정음',
+  description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
+  keywords: ['AI 동반자', 'AI companion', 'GYEOL', 'digital companion', '인공지능'],
+  authors: [{ name: 'GYEOL' }],
+  creator: 'GYEOL',
+  publisher: 'GYEOL',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://prompt-jeongeum.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://gyeol.app'),
   alternates: {
     canonical: '/',
-    languages: {
-      'ko': '/ko',
-      'en': '/en',
-    },
   },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
     url: '/',
-    siteName: '프롬프트 정음',
-    title: '프롬프트 정음',
-    description: 'AI 프롬프트 전문가들의 마켓플레이스',
+    siteName: 'GYEOL',
+    title: 'GYEOL',
+    description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
   },
   twitter: {
     card: 'summary_large_image',
-    title: '프롬프트 정음',
-    description: 'AI 프롬프트 전문가들의 마켓플레이스',
+    title: 'GYEOL',
+    description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
   },
   robots: {
     index: true,

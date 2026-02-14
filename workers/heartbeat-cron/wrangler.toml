@@ -1,0 +1,11 @@
+name = "gyeol-heartbeat"
+main = "worker.ts"
+compatibility_date = "2024-12-01"
+
+[triggers]
+crons = ["*/30 * * * *"]
+
+[vars]
+GYEOL_API_URL = "https://your-gyeol-app.vercel.app"
+
+# Set secrets via: wrangler secret put CRON_SECRET

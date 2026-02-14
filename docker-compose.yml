@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest # Assuming official image, will verify
+    container_name: openclaw_agent
+    restart: unless-stopped
+    ports:
+      - "18789:18789" # Web UI / API
+    volumes:
+      - ./config.json:/app/config.json
+      - ./system_prompt.md:/app/system_prompt.md
+      - ./data:/app/data
+      - ./skills:/app/skills
+    environment:
+      - NODE_ENV=production
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway" # Open for local access if needed
+
+volumes:
+  data:
