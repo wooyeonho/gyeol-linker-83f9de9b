@@ -11,9 +11,9 @@ export async function subscribePush(agentId: string): Promise<boolean> {
   if (!vapidKey) return false;
 
   try {
-    let sub = await reg.pushManager.getSubscription();
+    let sub = await (reg as any).pushManager.getSubscription();
     if (!sub) {
-      sub = await reg.pushManager.subscribe({
+      sub = await (reg as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
@@ -36,7 +36,7 @@ export async function unsubscribePush(): Promise<boolean> {
   if (!reg) return false;
 
   try {
-    const sub = await reg.pushManager.getSubscription();
+    const sub = await (reg as any).pushManager.getSubscription();
     if (!sub) return true;
 
     await fetch('/api/push/subscribe', {
