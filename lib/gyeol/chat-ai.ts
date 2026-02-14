@@ -1,8 +1,4 @@
-/**
- * GYEOL 채팅용 AI 호출 — BYOK/환경변수 키로 프로바이더 호출
- */
-
-type Provider = 'openai' | 'groq' | 'deepseek' | 'anthropic';
+type Provider = 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini';
 
 const OPENAI_COMPATIBLE = ['openai', 'groq', 'deepseek'] as const;
 const ENDPOINTS: Record<string, string> = {
@@ -15,14 +11,28 @@ const MODELS: Record<string, string> = {
   openai: 'gpt-4o-mini',
   groq: 'llama-3.3-70b-versatile',
   deepseek: 'deepseek-chat',
+  anthropic: 'claude-3-5-haiku-20241022',
+  gemini: 'gemini-2.0-flash',
 };
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
 
 export async function callProvider(
   provider: Provider,
   apiKey: string,
   systemContent: string,
-  userContent: string
+  userContent: string,
+  history?: ChatMessage[],
 ): Promise<string> {
+  const messages: ChatMessage[] = [{ role: 'system', content: systemContent }];
+  if (history?.length) {
+    messages.push(...history.slice(-20));
+  }
+  messages.push({ role: 'user', content: userContent });
+
   if (OPENAI_COMPATIBLE.includes(provider as (typeof OPENAI_COMPATIBLE)[number])) {
     const url = ENDPOINTS[provider] ?? ENDPOINTS.openai;
     const model = MODELS[provider] ?? MODELS.openai;
@@ -32,14 +42,7 @@ export async function callProvider(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemContent },
-          { role: 'user', content: userContent },
-        ],
-        max_tokens: 1024,
-      }),
+      body: JSON.stringify({ model, messages, max_tokens: 1024 }),
     });
     if (!res.ok) {
       const err = await res.text();
@@ -48,10 +51,12 @@ export async function callProvider(
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content ?? '';
     if (!text) throw new Error(`${provider} empty response`);
-    return text;
+    return cleanResponse(text);
   }
 
   if (provider === 'anthropic') {
+    const systemMsg = messages.find((m) => m.role === 'system')?.content ?? '';
+    const nonSystem = messages.filter((m) => m.role !== 'system');
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -60,10 +65,10 @@ export async function callProvider(
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: MODELS.anthropic,
         max_tokens: 1024,
-        system: systemContent,
-        messages: [{ role: 'user', content: userContent }],
+        system: systemMsg,
+        messages: nonSystem.map((m) => ({ role: m.role, content: m.content })),
       }),
     });
     if (!res.ok) {
@@ -73,10 +78,49 @@ export async function callProvider(
     const data = await res.json();
     const text = data.content?.[0]?.text ?? '';
     if (!text) throw new Error('anthropic empty response');
-    return text;
+    return cleanResponse(text);
+  }
+
+  if (provider === 'gemini') {
+    const systemMsg = messages.find((m) => m.role === 'system')?.content ?? '';
+    const nonSystem = messages.filter((m) => m.role !== 'system');
+    const contents = nonSystem.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODELS.gemini}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemMsg }] },
+          contents,
+          generationConfig: { maxOutputTokens: 1024 },
+        }),
+      },
+    );
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`gemini ${res.status}: ${err}`);
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!text) throw new Error('gemini empty response');
+    return cleanResponse(text);
   }
 
   throw new Error(`Unsupported provider: ${provider}`);
+}
+
+function cleanResponse(text: string): string {
+  return text
+    .replace(/\$1/g, '')
+    .replace(/\\n/g, '\n')
+    .replace(/\*\*/g, '')
+    .replace(/^#+\s/gm, '')
+    .replace(/^[-*]\s/gm, '')
+    .trim();
 }
 
 export function buildSystemPrompt(personality: {
@@ -86,5 +130,25 @@ export function buildSystemPrompt(personality: {
   energy: number;
   humor: number;
 }): string {
-  return `You are GYEOL. Respond in Korean. Personality: warmth=${personality.warmth}, logic=${personality.logic}, creativity=${personality.creativity}, energy=${personality.energy}, humor=${personality.humor}. Be natural and helpful.`;
+  const { warmth, logic, creativity, energy, humor } = personality;
+  const entries = Object.entries(personality) as [string, number][];
+  const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
+  const traitDesc: Record<string, string> = {
+    warmth: '따뜻하고 공감적인',
+    logic: '논리적이고 분석적인',
+    creativity: '창의적이고 상상력 풍부한',
+    energy: '활발하고 에너지 넘치는',
+    humor: '유머러스하고 재치있는',
+  };
+  const style = traitDesc[dominant] ?? '자연스러운';
+
+  return `너는 GYEOL이야. 사용자의 AI 동반자.
+성격: 따뜻함 ${warmth}, 논리 ${logic}, 창의 ${creativity}, 에너지 ${energy}, 유머 ${humor}
+주 성향: ${style}
+규칙:
+- 한국어로 자연스럽게 대화해
+- 마크다운 기호(**, ##, - 등) 사용하지 마
+- 짧고 친근하게 답해
+- 이전 대화 맥락을 기억하고 이어가
+- AI라고 스스로 말하지 마`;
 }
