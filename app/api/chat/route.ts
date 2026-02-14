@@ -134,7 +134,11 @@ async function tryByok(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { agentId, message } = body as { agentId: string; message: string };
+    const { agentId, message, byokKeys } = body as {
+      agentId: string;
+      message: string;
+      byokKeys?: { provider: string; apiKey: string }[];
+    };
     if (!agentId || typeof message !== 'string') {
       return NextResponse.json({ error: 'agentId and message required' }, { status: 400 });
     }
@@ -209,6 +213,28 @@ export async function POST(req: NextRequest) {
         }
       } catch {
         // fallback
+      }
+    }
+
+    if (!assistantContent && byokKeys?.length) {
+      for (const bk of byokKeys) {
+        if (!BYOK_PROVIDER_ORDER.includes(bk.provider as typeof BYOK_PROVIDER_ORDER[number])) continue;
+        try {
+          const content = await callProviderWithMessages(
+            bk.provider as typeof BYOK_PROVIDER_ORDER[number],
+            bk.apiKey,
+            systemPrompt,
+            chatMessages,
+          );
+          if (content) {
+            assistantContent = content;
+            provider = bk.provider;
+            break;
+          }
+        } catch (err) {
+          console.error(`[BYOK-client] ${bk.provider} failed`, err);
+          continue;
+        }
       }
     }
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
+import { getStoredKeys, saveKey, removeKey, type BYOKProvider } from '@/lib/gyeol/byok-client';
 
 import { DEMO_USER_ID } from '@/lib/gyeol/constants';
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini', 'cloudflare', 'ollama'] as const;
@@ -26,10 +27,8 @@ export default function GyeolSettingsPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/byok?userId=${encodeURIComponent(DEMO_USER_ID)}`)
-      .then((r) => r.ok ? r.json() : [])
-      .then((list: { provider: string; masked?: string }[]) => setByokList(list.map((x) => ({ ...x, id: x.provider, masked: x.masked ?? '****' }))))
-      .catch(() => {});
+    const stored = getStoredKeys();
+    setByokList(stored.map((x) => ({ id: x.provider, provider: x.provider, masked: x.masked })));
   }, []);
 
   useEffect(() => {
@@ -86,21 +85,20 @@ export default function GyeolSettingsPage() {
     }
   };
 
-  const saveByok = async (provider: string) => {
+  const handleSaveByok = (provider: string) => {
     if (!byokKey.trim()) return;
     setByokSaving(true);
     try {
-      const res = await fetch('/api/byok', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: DEMO_USER_ID, provider, apiKey: byokKey.trim() }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setByokList((prev) => [...prev.filter((x) => x.provider !== provider), { id: data.id ?? provider, provider, masked: data.masked ?? '****' }]);
-        setByokOpen(null);
-        setByokKey('');
-      }
+      saveKey(provider as BYOKProvider, byokKey.trim());
+      const masked = byokKey.trim().length > 8
+        ? byokKey.trim().slice(0, 4) + '****' + byokKey.trim().slice(-4)
+        : '****';
+      setByokList((prev) => [
+        ...prev.filter((x) => x.provider !== provider),
+        { id: provider, provider, masked },
+      ]);
+      setByokOpen(null);
+      setByokKey('');
     } finally {
       setByokSaving(false);
     }
@@ -302,7 +300,7 @@ export default function GyeolSettingsPage() {
                             <button
                               type="button"
                               disabled={byokSaving || !byokKey.trim()}
-                              onClick={() => saveByok(provider)}
+                              onClick={() => handleSaveByok(provider)}
                               className="rounded-lg bg-indigo-500/30 text-indigo-300 px-2 py-1 text-sm disabled:opacity-50"
                             >
                               저장

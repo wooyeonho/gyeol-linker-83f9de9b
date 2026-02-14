@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
 import { createClient } from '@/lib/supabase/client';
+import { getAllKeys } from '@/lib/gyeol/byok-client';
 
 export type GyeolError = { message: string; code?: string } | null;
 
@@ -74,10 +75,11 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     };
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
+      const byokKeys = getAllKeys();
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId: agent.id, message: text }),
+        body: JSON.stringify({ agentId: agent.id, message: text, byokKeys }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
