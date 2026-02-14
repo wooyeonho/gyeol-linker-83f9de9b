@@ -1,4 +1,4 @@
-'use client';
+// VoiceInput component
 
 /**
  * GYEOL 음성 인식 — Web Speech API, 한국어 기본
@@ -14,22 +14,22 @@ export interface VoiceInputProps {
 
 export function VoiceInput({ onResult, disabled }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const startListening = useCallback(() => {
     if (disabled) return;
     const SpeechRecognitionAPI =
       typeof window !== 'undefined' &&
-      (window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: SpeechRecognition }).webkitSpeechRecognition);
+      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
     if (!SpeechRecognitionAPI) {
       onResult('');
       return;
     }
-    const recognition = new SpeechRecognitionAPI() as SpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'ko-KR';
-    recognition.onresult = (e: SpeechRecognitionEvent) => {
+    recognition.onresult = (e: any) => {
       const result = e.results[e.results.length - 1];
       const text = result[0].transcript;
       if (text) onResult(text);
