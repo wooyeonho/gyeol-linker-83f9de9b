@@ -10,8 +10,6 @@
     "openclaw:extract": "echo 'openclaw extract placeholder'"
   },
   "dependencies": {
-    "@react-three/drei": "^9.114.3",
-    "@react-three/fiber": "^8.17.10",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.39.0",
     "@tanstack/react-query": "^5.17.0",
@@ -28,7 +26,6 @@
     "recharts": "^3.6.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.2.0",
-    "three": "^0.164.1",
     "zod": "^3.22.0",
     "zustand": "^5.0.11"
   },
@@ -36,7 +33,6 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/three": "^0.164.1",
     "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.0",
     "eslint": "^8.55.0",
