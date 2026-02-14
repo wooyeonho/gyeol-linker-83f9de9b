@@ -1,7 +1,7 @@
 # GYEOL (결) v2 구현 전체 리뷰
 
 **작성일**: 2025-02-14  
-**대상**: OpenClaw 기반 GYEOL 구현 (prompt-jeongeom 프로젝트 내)  
+**대상**: OpenClaw 기반 GYEOL 구현  
 **목적**: 구현 품질 평가, 강점/약점 정리, 개선 권고
 
 ---
@@ -24,7 +24,7 @@
 
 ### 2.1 구조 일치도
 
-- **사용자 접점**: GYEOL 웹 UI (`/gyeol`) 구현됨. Telegram/WhatsApp 등은 OpenClaw 서버 측 구성 영역.
+- **사용자 접점**: GYEOL 웹 UI (`/`) 구현됨. Telegram/WhatsApp 등은 OpenClaw 서버 측 구성 영역.
 - **Gateway**: `OPENCLAW_GATEWAY_URL` 설정 시 채팅 API가 해당 URL로 프록시하도록 되어 있음. 실제 Gateway 프로세스는 별도(Oracle/로컬 openclaw-src).
 - **AI 라우터**: 현재는 Groq 단일 호출 + OpenClaw URL 옵션. 가이드의 멀티 라우터(DeepSeek, Gemini, Cloudflare)는 스킬 문서만 있고, 코드에는 미구현.
 - **보안 레이어**: 콘텐츠 필터, 감사 로그, Kill Switch, (BYOK 설계) 반영됨.
@@ -35,16 +35,16 @@
 ### 2.2 디렉터리/역할 분리
 
 ```
-app/gyeol/          → 페이지 (메인, 설정, 활동, 소셜, 마켓)
-app/api/gyeol/      → API 라우트 (chat, agent, admin, activity, market, social)
-components/gyeol/   → Void, 채팅, 음성, 진화 연출
+app/                → 페이지 (메인, 설정, 활동, 소셜, 마켓)
+app/api/            → API 라우트 (chat, agent, admin, activity, market, social)
+components/         → Void, 채팅, 음성, 진화 연출
 lib/gyeol/          → 타입, 진화 엔진, 보안, BYOK, 소셜, 알림
 store/gyeol-store   → Zustand (에이전트, 메시지, 자율 로그, sendMessage, Realtime)
 docs/gyeol/         → 스키마, OpenClaw 스킬/AGENT/HEARTBEAT, 연동 가이드
 ```
 
-- GYEOL 전용 코드가 `gyeol` prefix로 묶여 있어 기존 prompt-jeongeom 기능과 혼동이 적음.
-- API·lib·store 분리가 되어 있어, “채팅만 OpenClaw로 바꾸기”, “라우터만 추가하기” 같은 변경이 가능한 구조다.
+- GYEOL이 루트 앱으로 구성되어 있고, 프롬프트 마켓 코드는 제거됨.
+- API·lib·store 분리가 되어 있어, "채팅만 OpenClaw로 바꾸기", "라우터만 추가하기" 같은 변경이 가능한 구조다.조다.
 
 ---
 
@@ -106,7 +106,7 @@ docs/gyeol/         → 스키마, OpenClaw 스킬/AGENT/HEARTBEAT, 연동 가�
 | Supabase 스키마 | ✅ | docs/gyeol/schema.sql, gyeol_* |
 | OpenClaw ↔ Supabase 스킬 | 문서 | SKILL.md 스펙만 있음 |
 | AI 멀티 라우터 | 문서 | Groq + OpenClaw URL 옵션만 구현 |
-| Next.js + Void + 채팅 | ✅ | /gyeol, VoidCanvas, ChatInterface, VoiceInput |
+| Next.js + Void + 채팅 | ✅ | /, VoidCanvas, ChatInterface, VoiceInput |
 | 진화 엔진 | ✅ | 대화→성격→비주얼, 레벨업 |
 | 진화 연출 | ✅ | EvolutionCeremony (플래시·텍스트) |
 | 콘텐츠 필터 | ✅ | 입·출력 |
@@ -114,7 +114,7 @@ docs/gyeol/         → 스키마, OpenClaw 스킬/AGENT/HEARTBEAT, 연동 가�
 | Kill Switch | ✅ | API + checkKillSwitch |
 | BYOK | 설계 | byok.ts, 설정 UI만 |
 | 설정 페이지 | ✅ | My AI, Safety, AI Brain 플레이스홀더 |
-| 활동 피드 | ✅ | /gyeol/activity, API 연동 |
+| 활동 피드 | ✅ | /activity, API 연동 |
 | 소셜 매칭 | ✅ | taste-vector, matches API, 소셜 페이지 |
 | 스킨/스킬 마켓 | ✅ | API + 페이지 |
 | OpenClaw zip 연동 | ✅ | 스크립트 + OPENCLAW_SOURCE.md |
@@ -146,7 +146,7 @@ docs/gyeol/         → 스키마, OpenClaw 스킬/AGENT/HEARTBEAT, 연동 가�
    - RLS: `gyeol_agents` 등에 “본인 user_id만 접근” 등 정책 추가.
 
 3. **기능 확장** (일부 반영)
-   - ✅ BYOK: `POST/GET/DELETE /api/gyeol/byok` 추가, 설정 페이지에서 프로바이더별 API 키 저장/목록 연동.
+   - ✅ BYOK: `POST/GET/DELETE /api/byok` 추가, 설정 페이지에서 프로바이더별 API 키 저장/목록 연동.
    - ✅ 진화 연출: burst 단계에 글로우 확장, 텍스트 단계에 스프링·드롭섀도우·프로그레스 바 추가.
    - ✅ 메인 페이지: 에이전트 로딩 중 "GYEOL을 불러오는 중..." 표시.
    - ✅ 공통 상수: `lib/gyeol/constants.ts` (DEMO_USER_ID 등).
