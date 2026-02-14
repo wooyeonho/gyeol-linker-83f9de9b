@@ -1,4 +1,4 @@
-// VoiceInput component
+'use client';
 
 /**
  * GYEOL 음성 인식 — Web Speech API, 한국어 기본

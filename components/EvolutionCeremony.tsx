@@ -1,4 +1,4 @@
-// EvolutionCeremony component
+'use client';
 
 /**
  * GYEOL 진화 연출 — 레벨업 시 3초 연출

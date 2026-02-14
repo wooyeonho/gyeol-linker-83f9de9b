@@ -1,6 +1,6 @@
-// VoidCanvas component
+'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import{ useRef, useEffect, useCallback } from 'react';
 import type { PersonalityParams, VisualState } from '@/lib/gyeol/types';
 
 export interface VoidCanvasProps {
