@@ -1,4 +1,4 @@
-'use client';
+// ChatInterface component
 
 /**
  * GYEOL 채팅 UI — Void 위 오버레이, 메시지 리스트 + 입력 바

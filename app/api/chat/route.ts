@@ -17,6 +17,7 @@ import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeo
 import { decryptKey } from '@/lib/gyeol/byok';
 import { callProviderWithMessages, buildSystemPrompt, suggestProviderForMessage, type ChatMessage } from '@/lib/gyeol/chat-ai';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Agent, Message } from '@/lib/gyeol/types';
 
 const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare' | 'ollama'> = [
   'groq',
@@ -223,8 +224,8 @@ export async function POST(req: NextRequest) {
         .order('created_at', { ascending: false })
         .limit(20);
       const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
-      const deltaFromLLM = await analyzeConversationWithLLM(messages);
-      const delta = deltaFromLLM ?? analyzeConversationSimple(messages);
+      const deltaFromLLM = await analyzeConversationWithLLM(messages as unknown as Message[], provider, process.env.GROQ_API_KEY ?? '');
+      const delta = deltaFromLLM ?? analyzeConversationSimple(messages as unknown as Message[]);
       const current = {
         warmth: agent.warmth,
         logic: agent.logic,
@@ -233,7 +234,7 @@ export async function POST(req: NextRequest) {
         humor: agent.humor,
       };
       const next = applyPersonalityDelta(current, delta);
-      newVisualState = calculateVisualState(next);
+      newVisualState = calculateVisualState(next) as unknown as Record<string, unknown>;
       await supabase
         .from('gyeol_agents')
         .update({
@@ -258,7 +259,7 @@ export async function POST(req: NextRequest) {
         humor: next.humor,
         evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
       };
-      const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
+      const evo = checkEvolution(updatedAgent as unknown as Agent);
       if (evo.evolved && evo.newGen) {
         await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
         evolved = true;

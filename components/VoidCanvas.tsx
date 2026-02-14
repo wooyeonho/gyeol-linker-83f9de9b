@@ -1,4 +1,4 @@
-'use client';
+// VoidCanvas component
 
 /**
  * GYEOL Void 비주얼 — React Three Fiber 3D

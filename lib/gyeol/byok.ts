@@ -7,10 +7,10 @@ const ALGO = 'AES-GCM';
 const KEY_LEN = 256;
 const IV_LEN = 12;
 
-function getKey(): CryptoKey | null {
+async function getKey(): Promise<CryptoKey | null> {
   const secret = process.env.ENCRYPTION_SECRET;
   if (!secret || secret.length < 32) return null;
-  return crypto.subtle.importKey(
+  return await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret.slice(0, 32)),
     { name: ALGO, length: KEY_LEN },
