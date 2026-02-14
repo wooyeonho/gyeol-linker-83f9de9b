@@ -1,5 +1,6 @@
 /**
- * GYEOL 채팅 API — OpenClaw → BYOK(사용자 키) 우선 → env GROQ 폴백
+ * GYEOL 채팅 API — OpenClaw → BYOK → env GROQ → 내장 응답 폴백
+ * Supabase 없어도 동작 (인메모리 히스토리)
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
@@ -27,6 +28,64 @@ const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 
   'cloudflare',
   'ollama',
 ];
+
+const inMemoryHistory = new Map<string, ChatMessage[]>();
+
+function getLocalHistory(agentId: string): ChatMessage[] {
+  return inMemoryHistory.get(agentId) ?? [];
+}
+
+function pushLocalHistory(agentId: string, msgs: ChatMessage[]) {
+  const hist = getLocalHistory(agentId);
+  hist.push(...msgs);
+  if (hist.length > 40) hist.splice(0, hist.length - 40);
+  inMemoryHistory.set(agentId, hist);
+}
+
+function generateBuiltinResponse(userMessage: string): string {
+  const m = userMessage.toLowerCase().trim();
+  if (/안녕|하이|헬로|반가/.test(m)) {
+    const greetings = [
+      '안녕! 오늘 하루 어땠어?',
+      '반가워! 무슨 이야기 하고 싶어?',
+      '안녕~ 오늘도 좋은 하루 보내고 있어?',
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+  if (/뭐해|뭐하|심심|지루/.test(m)) {
+    const bored = [
+      '나는 너랑 대화하는 중이지! 뭐 재밌는 거 해볼까?',
+      '같이 이야기하면 심심하지 않을 거야. 요즘 관심 있는 거 있어?',
+      '심심하면 나한테 아무 질문이나 해봐!',
+    ];
+    return bored[Math.floor(Math.random() * bored.length)];
+  }
+  if (/고마워|감사|땡큐|thank/.test(m)) {
+    return '별말을~ 언제든 이야기해!';
+  }
+  if (/기분|슬퍼|우울|힘들/.test(m)) {
+    const comfort = [
+      '힘든 일이 있었구나. 이야기해줘, 들을게.',
+      '괜찮아, 그런 날도 있는 거야. 내가 옆에 있을게.',
+      '마음이 힘들 때는 잠깐 쉬어가도 돼. 천천히 이야기해.',
+    ];
+    return comfort[Math.floor(Math.random() * comfort.length)];
+  }
+  if (/너는 누구|이름|뭐야|정체/.test(m)) {
+    return '나는 GYEOL이야. 너랑 대화하면서 같이 성장하는 AI 동반자! 대화할수록 내 성격도 바뀌어.';
+  }
+  if (/날씨|weather/.test(m)) {
+    return '날씨는 직접 확인이 안 되지만, 오늘 기분은 어때? 그게 더 중요해!';
+  }
+  const defaults = [
+    '흥미로운 이야기네! 더 자세히 말해줘.',
+    '오, 그렇구나. 그거에 대해 더 알려줘!',
+    '재밌다! 다른 이야기도 해줘.',
+    '그렇구나~ 나도 같이 생각해볼게.',
+    '좋은 이야기야. 또 뭐 하고 싶은 거 있어?',
+  ];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
 
 async function tryByok(
   supabase: SupabaseClient,
@@ -81,44 +140,59 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createGyeolServerClient();
-    const killed = await checkKillSwitch(supabase);
-    if (killed) return NextResponse.json({ error: 'System temporarily paused' }, { status: 503 });
 
-    const { data: agent } = await supabase.from('gyeol_agents').select('*').eq('id', agentId).single();
-    if (!agent) return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
-
-    const contentFilterOn = (agent as { content_filter_on?: boolean }).content_filter_on !== false;
-    const inputFilter = contentFilterOn ? filterInput(message) : { safe: true, filtered: message, flags: [] as string[] };
+    const inputFilter = filterInput(message);
     if (!inputFilter.safe) {
       return NextResponse.json({ error: 'Content not allowed', flags: inputFilter.flags }, { status: 400 });
     }
-
-    const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
-    let assistantContent = '';
-    let provider = 'groq';
-    const systemPrompt = buildSystemPrompt({
-      warmth: agent.warmth ?? 50,
-      logic: agent.logic ?? 50,
-      creativity: agent.creativity ?? 50,
-      energy: agent.energy ?? 50,
-      humor: agent.humor ?? 50,
-    });
     const userMessage = inputFilter.filtered;
 
-    const { data: recentRows } = await supabase
-      .from('gyeol_conversations')
-      .select('role, content')
-      .eq('agent_id', agentId)
-      .order('created_at', { ascending: false })
-      .limit(CHAT_HISTORY_LIMIT);
-    const historyReversed = (recentRows ?? []).reverse();
-    const chatMessages: ChatMessage[] = [
-      ...historyReversed
-        .filter((r) => r.role === 'user' || r.role === 'assistant')
-        .map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content })),
-      { role: 'user', content: userMessage },
-    ];
+    const defaultPersonality = { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
+    let agent: Record<string, unknown> | null = null;
 
+    if (supabase) {
+      const killed = await checkKillSwitch(supabase).catch(() => false);
+      if (killed) return NextResponse.json({ error: 'System temporarily paused' }, { status: 503 });
+      const { data } = await supabase.from('gyeol_agents').select('*').eq('id', agentId).single();
+      agent = data as Record<string, unknown> | null;
+    }
+
+    const personality = agent
+      ? {
+          warmth: (agent.warmth as number) ?? 50,
+          logic: (agent.logic as number) ?? 50,
+          creativity: (agent.creativity as number) ?? 50,
+          energy: (agent.energy as number) ?? 50,
+          humor: (agent.humor as number) ?? 50,
+        }
+      : defaultPersonality;
+
+    const systemPrompt = buildSystemPrompt(personality);
+
+    let chatMessages: ChatMessage[];
+    if (supabase) {
+      const { data: recentRows } = await supabase
+        .from('gyeol_conversations')
+        .select('role, content')
+        .eq('agent_id', agentId)
+        .order('created_at', { ascending: false })
+        .limit(CHAT_HISTORY_LIMIT);
+      const historyReversed = (recentRows ?? []).reverse();
+      chatMessages = [
+        ...historyReversed
+          .filter((r) => r.role === 'user' || r.role === 'assistant')
+          .map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content })),
+        { role: 'user' as const, content: userMessage },
+      ];
+    } else {
+      const localHist = getLocalHistory(agentId);
+      chatMessages = [...localHist, { role: 'user' as const, content: userMessage }];
+    }
+
+    let assistantContent = '';
+    let provider = 'builtin';
+
+    const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
     if (openclawUrl) {
       try {
         const gwRes = await fetch(`${openclawUrl.replace(/\/$/, '')}/api/chat`, {
@@ -138,9 +212,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!assistantContent) {
-      const userId = agent.user_id ?? DEMO_USER_ID;
-      const preferred = (agent.preferred_provider as string) || 'groq';
+    if (!assistantContent && supabase) {
+      const userId = (agent?.user_id as string) ?? DEMO_USER_ID;
+      const preferred = (agent?.preferred_provider as string) || 'groq';
       const situationProvider = suggestProviderForMessage(userMessage);
       const baseOrder = [preferred, ...BYOK_PROVIDER_ORDER.filter((p) => p !== preferred)];
       const providerOrder =
@@ -156,131 +230,130 @@ export async function POST(req: NextRequest) {
 
     if (!assistantContent && process.env.GROQ_API_KEY) {
       try {
-        const content = await callProviderWithMessages(
-          'groq',
-          process.env.GROQ_API_KEY,
-          systemPrompt,
-          chatMessages,
-        );
+        const content = await callProviderWithMessages('groq', process.env.GROQ_API_KEY, systemPrompt, chatMessages);
         if (content) {
           assistantContent = content;
           provider = 'groq';
         }
       } catch {
-        // fallback below
+        // fallback
       }
     }
-    if (
-      !assistantContent &&
-      process.env.CLOUDFLARE_ACCOUNT_ID &&
-      process.env.CLOUDFLARE_API_TOKEN
-    ) {
+
+    if (!assistantContent && process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN) {
       try {
-        const content = await callProviderWithMessages(
-          'cloudflare',
-          process.env.CLOUDFLARE_API_TOKEN,
-          systemPrompt,
-          chatMessages,
-        );
+        const content = await callProviderWithMessages('cloudflare', process.env.CLOUDFLARE_API_TOKEN, systemPrompt, chatMessages);
         if (content) {
           assistantContent = content;
           provider = 'cloudflare';
         }
       } catch {
-        // fallback below
+        // fallback
       }
     }
 
     if (!assistantContent) {
-      assistantContent =
-        '지금 서버가 잠시 바빠요. 조금만 기다렸다가 다시 말해줄래요?';
+      assistantContent = generateBuiltinResponse(userMessage);
+      provider = 'builtin';
     }
 
-    const outputFilter = contentFilterOn ? filterOutput(assistantContent) : { safe: true, filtered: assistantContent, warnings: [] as string[] };
+    const outputFilter = filterOutput(assistantContent);
     const finalContent = outputFilter.filtered;
-
-    await supabase.from('gyeol_conversations').insert([
-      { agent_id: agentId, role: 'user', content: inputFilter.filtered, channel: 'web' },
-      { agent_id: agentId, role: 'assistant', content: finalContent, channel: 'web', provider },
-    ]);
-
-    const totalConversations = (Number(agent.total_conversations) || 0) + 2;
-    await supabase
-      .from('gyeol_agents')
-      .update({ total_conversations: totalConversations, last_active: new Date().toISOString() })
-      .eq('id', agentId);
 
     let personalityChanged = false;
     let evolved = false;
-    let newVisualState = (agent.visual_state as Record<string, unknown>) ?? {};
-    let newGen = agent.gen;
+    let newGen: number | undefined;
+    let newVisualState: Record<string, unknown> | undefined;
 
-    if (totalConversations > 0 && totalConversations % EVOLUTION_INTERVAL === 0) {
-      const { data: recent } = await supabase
-        .from('gyeol_conversations')
-        .select('role, content')
-        .eq('agent_id', agentId)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
-      let usedProvider = provider;
-      let usedApiKey = process.env.GROQ_API_KEY ?? '';
-      if (provider === 'openclaw' || !usedApiKey) {
-        usedProvider = 'groq';
-        usedApiKey = process.env.GROQ_API_KEY ?? '';
-      }
-      const deltaFromLLM = usedApiKey
-        ? await analyzeConversationWithLLM(messages, usedProvider, usedApiKey)
-        : null;
-      const delta = deltaFromLLM ?? analyzeConversationSimple(messages);
-      const current = {
-        warmth: agent.warmth,
-        logic: agent.logic,
-        creativity: agent.creativity,
-        energy: agent.energy,
-        humor: agent.humor,
-      };
-      const next = applyPersonalityDelta(current, delta);
-      newVisualState = calculateVisualState(next);
+    if (supabase) {
+      await supabase.from('gyeol_conversations').insert([
+        { agent_id: agentId, role: 'user', content: userMessage, channel: 'web' },
+        { agent_id: agentId, role: 'assistant', content: finalContent, channel: 'web', provider },
+      ]).catch(() => {});
+
+      const totalConversations = (Number(agent?.total_conversations) || 0) + 2;
       await supabase
         .from('gyeol_agents')
-        .update({
-          warmth: next.warmth,
-          logic: next.logic,
-          creativity: next.creativity,
-          energy: next.energy,
-          humor: next.humor,
-          visual_state: newVisualState,
-          evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
-        })
-        .eq('id', agentId);
-      personalityChanged = true;
+        .update({ total_conversations: totalConversations, last_active: new Date().toISOString() })
+        .eq('id', agentId)
+        .catch(() => {});
 
-      const updatedAgent = {
-        ...agent,
-        total_conversations: totalConversations,
-        warmth: next.warmth,
-        logic: next.logic,
-        creativity: next.creativity,
-        energy: next.energy,
-        humor: next.humor,
-        evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
-      };
-      const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
-      if (evo.evolved && evo.newGen) {
-        await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
-        evolved = true;
-        newGen = evo.newGen;
+      if (agent && totalConversations > 0 && totalConversations % EVOLUTION_INTERVAL === 0) {
+        try {
+          const { data: recent } = await supabase
+            .from('gyeol_conversations')
+            .select('role, content')
+            .eq('agent_id', agentId)
+            .order('created_at', { ascending: false })
+            .limit(20);
+          const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
+          let usedProvider = provider;
+          let usedApiKey = process.env.GROQ_API_KEY ?? '';
+          if (provider === 'openclaw' || !usedApiKey) {
+            usedProvider = 'groq';
+            usedApiKey = process.env.GROQ_API_KEY ?? '';
+          }
+          const deltaFromLLM = usedApiKey
+            ? await analyzeConversationWithLLM(messages, usedProvider, usedApiKey)
+            : null;
+          const delta = deltaFromLLM ?? analyzeConversationSimple(messages);
+          const current = {
+            warmth: (agent.warmth as number) ?? 50,
+            logic: (agent.logic as number) ?? 50,
+            creativity: (agent.creativity as number) ?? 50,
+            energy: (agent.energy as number) ?? 50,
+            humor: (agent.humor as number) ?? 50,
+          };
+          const next = applyPersonalityDelta(current, delta);
+          newVisualState = calculateVisualState(next);
+          await supabase
+            .from('gyeol_agents')
+            .update({
+              warmth: next.warmth,
+              logic: next.logic,
+              creativity: next.creativity,
+              energy: next.energy,
+              humor: next.humor,
+              visual_state: newVisualState,
+              evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
+            })
+            .eq('id', agentId);
+          personalityChanged = true;
+
+          const updatedAgent = {
+            ...agent,
+            total_conversations: totalConversations,
+            warmth: next.warmth,
+            logic: next.logic,
+            creativity: next.creativity,
+            energy: next.energy,
+            humor: next.humor,
+            evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
+          };
+          const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
+          if (evo.evolved && evo.newGen) {
+            await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
+            evolved = true;
+            newGen = evo.newGen;
+          }
+        } catch {
+          // evolution analysis failed - non-critical
+        }
       }
-    }
 
-    await logAction(supabase, {
-      agentId,
-      activityType: 'skill_execution',
-      summary: 'Chat message processed',
-      details: { provider, evolutionInterval: EVOLUTION_INTERVAL },
-      wasSandboxed: true,
-    });
+      await logAction(supabase, {
+        agentId,
+        activityType: 'skill_execution',
+        summary: 'Chat message processed',
+        details: { provider, evolutionInterval: EVOLUTION_INTERVAL },
+        wasSandboxed: true,
+      }).catch(() => {});
+    } else {
+      pushLocalHistory(agentId, [
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: finalContent },
+      ]);
+    }
 
     return NextResponse.json({
       message: finalContent,

@@ -1,5 +1,6 @@
 /**
  * GYEOL 대화 목록 조회
+ * Supabase 없으면 빈 배열 반환
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,6 +12,10 @@ export async function GET(req: NextRequest) {
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
 
   const supabase = createGyeolServerClient();
+  if (!supabase) {
+    return NextResponse.json([]);
+  }
+
   const { data, error } = await supabase
     .from('gyeol_conversations')
     .select('*')
@@ -18,6 +23,6 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json([]);
   return NextResponse.json(data ?? []);
 }

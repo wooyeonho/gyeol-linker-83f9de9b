@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:vite": "vite",
     "build": "next build",
+    "build:dev": "vite build --mode development",
     "start": "next start",
+    "preview": "vite preview",
     "lint": "next lint",
     "openclaw:extract": "echo 'openclaw extract placeholder'"
   },

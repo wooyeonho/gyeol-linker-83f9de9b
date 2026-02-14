@@ -111,6 +111,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   subscribeToUpdates: (agentId) => {
     if (typeof window === 'undefined') return;
     const supabase = createClient();
+    if (!supabase) return;
     const channel = supabase
       .channel(`gyeol:${agentId}`)
       .on(
