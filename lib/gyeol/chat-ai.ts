@@ -24,6 +24,14 @@ export interface ChatMessage {
   content: string;
 }
 
+export function suggestProviderForMessage(userMessage: string): Provider | null {
+  const m = userMessage.toLowerCase().trim();
+  if (/\b분석해|코드\s*짜|논리|추론|설명해\b/.test(m)) return 'deepseek';
+  if (/\b이미지|그림|사진|보여|vision\b/.test(m)) return 'gemini';
+  if (/\b기분|감정|어때|심심|짧게\b/.test(m)) return 'cloudflare';
+  return null;
+}
+
 export async function callProvider(
   provider: Provider,
   apiKey: string,
@@ -31,11 +39,22 @@ export async function callProvider(
   userContent: string,
   history?: ChatMessage[],
 ): Promise<string> {
-  const messages: ChatMessage[] = [{ role: 'system', content: systemContent }];
+  const msgs: ChatMessage[] = [];
   if (history?.length) {
-    messages.push(...history.slice(-20));
+    msgs.push(...history.slice(-20));
   }
-  messages.push({ role: 'user', content: userContent });
+  msgs.push({ role: 'user', content: userContent });
+  return callProviderWithMessages(provider, apiKey, systemContent, msgs);
+}
+
+export async function callProviderWithMessages(
+  provider: Provider,
+  apiKey: string,
+  systemContent: string,
+  messages: ChatMessage[],
+): Promise<string> {
+
+  const apiMessages = [{ role: 'system' as const, content: systemContent }, ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))];
 
   if (OPENAI_COMPATIBLE.includes(provider as (typeof OPENAI_COMPATIBLE)[number])) {
     const url = ENDPOINTS[provider] ?? ENDPOINTS.openai;
@@ -46,7 +65,7 @@ export async function callProvider(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ model, messages, max_tokens: 1024 }),
+      body: JSON.stringify({ model, messages: apiMessages, max_tokens: 1024 }),
     });
     if (!res.ok) {
       const err = await res.text();
@@ -59,7 +78,6 @@ export async function callProvider(
   }
 
   if (provider === 'anthropic') {
-    const systemMsg = messages.find((m) => m.role === 'system')?.content ?? '';
     const nonSystem = messages.filter((m) => m.role !== 'system');
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -71,7 +89,7 @@ export async function callProvider(
       body: JSON.stringify({
         model: MODELS.anthropic,
         max_tokens: 1024,
-        system: systemMsg,
+        system: systemContent,
         messages: nonSystem.map((m) => ({ role: m.role, content: m.content })),
       }),
     });
@@ -86,20 +104,20 @@ export async function callProvider(
   }
 
   if (provider === 'gemini') {
-    const systemMsg = messages.find((m) => m.role === 'system')?.content ?? '';
-    const nonSystem = messages.filter((m) => m.role !== 'system');
-    const contents = nonSystem.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
+    const contents = messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      }));
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODELS.gemini}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODELS.gemini}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemMsg }] },
-          contents,
+          systemInstruction: { parts: [{ text: systemContent }] },
+          contents: contents.length > 0 ? contents : [{ role: 'user', parts: [{ text: '(안녕)' }] }],
           generationConfig: { maxOutputTokens: 1024 },
         }),
       },
@@ -126,7 +144,7 @@ export async function callProvider(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages: apiMessages.map((m) => ({ role: m.role, content: m.content })), max_tokens: 1024 }),
       },
     );
     if (!res.ok) {
@@ -147,7 +165,7 @@ export async function callProvider(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        messages: apiMessages.map((m) => ({ role: m.role, content: m.content })),
         stream: false,
       }),
     });
