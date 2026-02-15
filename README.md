@@ -89,7 +89,7 @@ npm install
 # Supabase (필수)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_SERVICE_KEY=your_service_role_key
 
 # BYOK 암호화 (필수)
 ENCRYPTION_SECRET=your_32char_encryption_secret
@@ -143,3 +143,5 @@ http://localhost:3000 에서 확인
 ## 라이선스
 
 비공개 프로젝트
+
+
