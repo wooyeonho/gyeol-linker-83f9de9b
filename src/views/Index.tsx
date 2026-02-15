@@ -77,9 +77,9 @@ export default function GyeolPage() {
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-blue-400/5 dark:bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-      {/* Top/Bottom fades */}
-      <div className="fixed top-0 left-0 w-full h-32 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-40" />
-      <div className="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-40" />
+      {/* Top/Bottom fades — below chat overlay */}
+      <div className="fixed top-0 left-0 w-full h-32 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-30" />
+      <div className="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-30" />
 
       {/* Pearl Spheres */}
       <div className="mb-8 flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function GyeolPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-x-0 bottom-28 top-20 z-45 flex flex-col px-4"
+            className="fixed inset-x-0 bottom-28 top-20 z-[60] flex flex-col px-4"
           >
             <div className="flex-1 max-w-2xl mx-auto w-full overflow-y-auto space-y-3 py-4 gyeol-scrollbar-hide">
               {messages.map((msg) => (
