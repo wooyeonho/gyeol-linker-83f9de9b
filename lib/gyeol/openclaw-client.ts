@@ -86,3 +86,46 @@ export async function listOpenClawSkills(): Promise<string[]> {
     return [];
   }
 }
+
+export interface OpenClawActivityLog {
+  id: string;
+  agent_id: string;
+  activity_type: string;
+  summary: string;
+  details: Record<string, unknown>;
+  was_sandboxed: boolean;
+  created_at: string;
+}
+
+export async function getOpenClawActivity(limit = 30): Promise<OpenClawActivityLog[]> {
+  if (!OPENCLAW_URL) return [];
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/activity`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (Array.isArray(data) ? data.slice(0, limit) : []) as OpenClawActivityLog[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getOpenClawMemory(): Promise<Record<string, unknown> | null> {
+  if (!OPENCLAW_URL) return null;
+
+  try {
+    const res = await fetch(`${OPENCLAW_URL.replace(/\/$/, '')}/api/memory`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
