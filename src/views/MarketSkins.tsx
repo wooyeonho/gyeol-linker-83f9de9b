@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { supabase } from '../integrations/supabase/client';
+import { BottomNav } from '../components/BottomNav';
 
 interface SkinItem {
   id: string;
@@ -9,7 +12,10 @@ interface SkinItem {
   preview_url: string | null;
   rating: number;
   downloads: number;
+  category: string | null;
 }
+
+const SKIN_COLORS = ['from-indigo-500/30 to-purple-500/20', 'from-amber-500/30 to-orange-500/20', 'from-cyan-500/30 to-blue-500/20', 'from-rose-500/30 to-pink-500/20'];
 
 export default function MarketSkinsPage() {
   const [skins, setSkins] = useState<SkinItem[]>([]);
@@ -18,50 +24,83 @@ export default function MarketSkinsPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await fetch('/api/market/skins');
-      if (res.ok) {
-        const data = await res.json();
-        setSkins(Array.isArray(data) ? data : []);
-      } else {
-        setSkins([
-          { id: '1', name: 'Cosmic Blue', description: '우주 느낌의 블루 글로우', price: 0, preview_url: null, rating: 4.5, downloads: 120 },
-          { id: '2', name: 'Amber Warm', description: '따뜻한 앰버 톤', price: 500, preview_url: null, rating: 4.8, downloads: 89 },
-        ]);
-      }
+      const { data } = await supabase
+        .from('gyeol_skins' as any)
+        .select('id, name, description, price, preview_url, rating, downloads, category')
+        .eq('is_approved', true)
+        .order('downloads', { ascending: false })
+        .limit(50);
+      setSkins((data as any[]) ?? []);
       setLoading(false);
     })();
   }, []);
 
   return (
-    <main className="min-h-screen bg-black text-[#E5E5E5] p-6 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
-        <header className="flex items-center gap-4">
-          <Link to="/" className="text-white/60 hover:text-white text-sm">← GYEOL</Link>
-          <h1 className="text-xl font-semibold">스킨 마켓</h1>
+    <main className="min-h-screen bg-black text-white/90 pb-24">
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <header>
+          <h1 className="text-2xl font-bold">마켓</h1>
+          <p className="text-sm text-white/50 mt-1">AI를 확장하는 스킬과 스킨</p>
         </header>
+
+        <div className="flex gap-2">
+          <Link
+            to="/market/skills"
+            className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium bg-white/5 text-white/40 border border-transparent transition"
+          >
+            스킬
+          </Link>
+          <Link
+            to="/market/skins"
+            className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition"
+          >
+            스킨
+          </Link>
+        </div>
+
         {loading ? (
-          <div className="text-center text-white/50 py-8">불러오는 중...</div>
+          <div className="flex flex-col items-center gap-2 py-12">
+            <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+          </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
-            {skins.map((s) => (
-              <div key={s.id} className="rounded-2xl bg-[#0A0A1A] border border-white/10 overflow-hidden">
-                <div className="aspect-square bg-indigo-500/20 flex items-center justify-center">
-                  <span className="text-4xl text-indigo-400">◆</span>
+          <div className="grid grid-cols-2 gap-3">
+            {skins.map((s, i) => (
+              <motion.div
+                key={s.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.06 }}
+                className="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden"
+              >
+                <div className={`aspect-square bg-gradient-to-br ${SKIN_COLORS[i % SKIN_COLORS.length]} flex items-center justify-center`}>
+                  <motion.div
+                    className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+                  />
                 </div>
-                <div className="p-3">
-                  <p className="font-medium text-white truncate">{s.name}</p>
-                  <p className="text-xs text-white/50 truncate">{s.description ?? '-'}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-indigo-400 text-sm">{s.price === 0 ? '무료' : `${s.price}P`}</span>
-                    <span className="text-xs text-white/50">★ {s.rating}</span>
+                <div className="p-3 space-y-1.5">
+                  <p className="font-medium text-white text-sm truncate">{s.name}</p>
+                  <p className="text-[10px] text-white/40 truncate">{s.description ?? '-'}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-indigo-400 text-xs font-medium">
+                      {s.price === 0 ? '무료' : `${s.price}P`}
+                    </span>
+                    <span className="text-[10px] text-white/30">★ {s.rating}</span>
                   </div>
-                  <button type="button" className="w-full mt-2 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium">사용</button>
+                  <button
+                    type="button"
+                    className="w-full py-2 rounded-xl bg-indigo-500/15 text-indigo-400 text-xs font-medium hover:bg-indigo-500/25 transition"
+                  >
+                    사용
+                  </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
+      <BottomNav />
     </main>
   );
 }
