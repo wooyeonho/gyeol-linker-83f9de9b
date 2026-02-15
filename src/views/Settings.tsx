@@ -60,85 +60,74 @@ export default function SettingsPage() {
   const labels = ['온기', '논리', '창의', '에너지', '유머'];
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20">
-      <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
+    <main className="min-h-screen bg-black font-display pb-16">
+      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-6">
         <header className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">설정</h1>
+          <h1 className="text-base font-semibold text-foreground/80">Settings</h1>
           <button type="button" onClick={signOut}
-            className="text-[10px] text-muted-foreground hover:text-foreground transition px-3 py-1.5 rounded-lg border border-border/50">
-            로그아웃
+            className="text-[10px] text-white/20 hover:text-white/50 transition">
+            Sign out
           </button>
         </header>
 
-        {/* Account */}
-        <section className="section-card !p-4">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">계정</p>
-          <p className="text-sm text-foreground">{user?.email}</p>
+        <section className="space-y-1">
+          <p className="text-[10px] text-white/20 uppercase tracking-widest mb-2">Account</p>
+          <p className="text-sm text-foreground/60">{user?.email}</p>
         </section>
 
-        {/* AI Profile */}
-        <section className="section-card !p-4 space-y-4">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">내 AI</p>
+        <section className="space-y-4">
+          <p className="text-[10px] text-white/20 uppercase tracking-widest">AI Profile</p>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-primary font-bold">G{agent?.gen ?? 1}</span>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+              <span className="text-primary text-xs font-bold">G{agent?.gen ?? 1}</span>
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-foreground">{agent?.name ?? 'GYEOL'}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 h-1 bg-border/30 rounded-full overflow-hidden">
-                  <motion.div className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full"
+              <p className="text-sm font-medium text-foreground/80">{agent?.name ?? 'GYEOL'}</p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex-1 h-[2px] bg-white/[0.04] rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-primary/50 rounded-full"
                     initial={{ width: 0 }} animate={{ width: `${Number(agent?.evolution_progress ?? 0)}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }} />
                 </div>
-                <span className="text-[9px] text-muted-foreground">{Number(agent?.evolution_progress ?? 0).toFixed(0)}%</span>
+                <span className="text-[9px] text-white/25">{Number(agent?.evolution_progress ?? 0).toFixed(0)}%</span>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-5 gap-1 text-center">
+          <div className="flex gap-1">
             {labels.map((label, i) => (
-              <div key={label}>
-                <div className="h-6 flex items-end justify-center">
-                  <motion.div className="w-3 rounded-t bg-primary/25"
+              <div key={label} className="flex-1 text-center">
+                <div className="h-8 flex items-end justify-center mb-1">
+                  <motion.div className="w-full max-w-[20px] rounded-sm bg-primary/15"
                     initial={{ height: 0 }} animate={{ height: `${(personality[i] / 100) * 100}%` }}
                     transition={{ duration: 0.8, delay: i * 0.1 }} />
                 </div>
-                <p className="text-[8px] text-muted-foreground mt-1">{label}</p>
-                <p className="text-[9px] text-primary">{personality[i]}</p>
+                <p className="text-[8px] text-white/25">{label}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Engine */}
-        <section className="section-card !p-4 space-y-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">AI 엔진</p>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-xs text-foreground">GYEOL Engine Active</p>
-          </div>
-        </section>
+        <div className="h-px bg-white/[0.04]" />
 
-        {/* Preferences */}
-        <section className="section-card !p-4 space-y-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">환경설정</p>
+        <section className="space-y-4">
+          <p className="text-[10px] text-white/20 uppercase tracking-widest">Preferences</p>
           {[
             { label: '자율성 수준', type: 'range' as const, value: autonomyLevel, onChange: setAutonomyLevel },
             { label: '콘텐츠 필터', type: 'toggle' as const, value: contentFilterOn, onChange: () => setContentFilterOn(!contentFilterOn) },
             { label: '활동 알림', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
           ].map((item) => (
             <div key={item.label} className="flex justify-between items-center">
-              <span className="text-xs text-foreground/70">{item.label}</span>
+              <span className="text-xs text-white/40">{item.label}</span>
               {item.type === 'range' ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground w-5 text-right">{item.value as number}</span>
+                  <span className="text-[10px] text-white/20 w-5 text-right">{item.value as number}</span>
                   <input type="range" min={0} max={100} value={item.value as number}
                     onChange={(e) => (item.onChange as (v: number) => void)(Number(e.target.value))}
                     className="w-20 accent-primary" />
                 </div>
               ) : (
                 <button type="button" onClick={item.onChange as () => void}
-                  className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-primary' : 'bg-border'}`}>
+                  className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
                   <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${item.value ? 'ml-[18px]' : 'ml-1'}`} />
                 </button>
               )}
@@ -146,32 +135,33 @@ export default function SettingsPage() {
           ))}
         </section>
 
-        {/* Advanced */}
-        <section className="section-card !p-0 overflow-hidden">
+        <div className="h-px bg-white/[0.04]" />
+
+        <section>
           <button type="button" onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full p-4 flex justify-between items-center text-left">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">고급 설정</p>
-            <span className="material-icons-round text-muted-foreground text-sm">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
+            className="w-full flex justify-between items-center py-1">
+            <p className="text-[10px] text-white/20 uppercase tracking-widest">Advanced</p>
+            <span className="material-icons-round text-white/15 text-sm">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
           </button>
           {showAdvanced && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="px-4 pb-4 space-y-4">
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="pt-4 space-y-4">
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Premium AI Models (BYOK)</p>
+                <p className="text-[10px] text-white/30">Premium AI Models (BYOK)</p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {BYOK_PROVIDERS.map((provider) => {
                     const isRegistered = byokList.some((x) => x.provider === provider);
                     return (
                       <div key={provider} className="flex flex-col gap-1">
                         <button type="button" onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
-                          className={`rounded-lg border py-1.5 text-xs capitalize transition ${isRegistered ? 'border-primary/30 text-primary bg-primary/5' : 'border-border/50 text-muted-foreground hover:bg-secondary/50'}`}>
+                          className={`rounded-lg border py-1.5 text-xs capitalize transition ${isRegistered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-white/[0.06] text-white/30 hover:bg-white/[0.03]'}`}>
                           {provider}
                         </button>
                         {byokOpen === provider && (
                           <div className="flex gap-1">
                             <input type="password" placeholder="API Key" value={byokKey} onChange={(e) => setByokKey(e.target.value)}
-                              className="flex-1 rounded-lg bg-secondary/50 border border-border/30 px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground outline-none" />
+                              className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1 text-xs text-foreground placeholder:text-white/20 outline-none" />
                             <button type="button" disabled={byokSaving || !byokKey.trim()} onClick={() => saveByok(provider)}
-                              className="rounded-lg bg-primary/10 text-primary px-2 py-1 text-xs disabled:opacity-40">
+                              className="rounded-lg bg-primary/10 text-primary/80 px-2 py-1 text-xs disabled:opacity-40">
                               Save
                             </button>
                           </div>
@@ -182,7 +172,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <button type="button" onClick={toggleKillSwitch}
-                className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/5 text-emerald-500/70 border-emerald-500/10' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
                 {killSwitchActive ? '시스템 재개' : '긴급 정지 (Kill Switch)'}
               </button>
             </motion.div>

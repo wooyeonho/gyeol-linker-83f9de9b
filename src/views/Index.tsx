@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
-import { PearlSpheres } from '@/src/components/PearlSpheres';
+import { VoidCore } from '@/src/components/PearlSpheres';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
 import { VoiceInput } from '@/components/VoiceInput';
@@ -13,19 +13,20 @@ function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === 'user';
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
     >
-      <div
-        className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-          isUser
-            ? 'bg-primary/20 text-foreground border border-primary/20'
-            : 'bg-secondary/60 text-foreground border border-border/30'
-        }`}
-      >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-      </div>
+      {isUser ? (
+        <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-md bg-primary/15 border border-primary/10">
+          <p className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">{msg.content}</p>
+        </div>
+      ) : (
+        <div className="max-w-[85%] px-4 py-2.5">
+          <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -60,56 +61,37 @@ export default function GyeolPage() {
     if (text.trim()) setInput((prev) => (prev ? prev + ' ' + text : text));
   };
 
-  const personality = agent
-    ? { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor }
-    : { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
-
   if (agentLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground text-sm animate-pulse">Loading GYEOL...</div>
+      <main className="h-[100dvh] bg-black flex items-center justify-center">
+        <div className="void-dot" />
       </main>
     );
   }
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative">
-      {/* Ambient background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[150px] animate-glow-pulse bg-primary/8" />
+    <main className="flex flex-col h-[100dvh] bg-black font-display overflow-hidden relative">
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px] ambient-glow" />
       </div>
 
-      {/* Top bar */}
-      <div className="relative z-20 flex items-center justify-between px-5 pt-5 pb-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary/15 flex items-center justify-center">
-            <span className="material-icons-round text-primary text-base">blur_on</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-foreground leading-none">{agent?.name ?? 'GYEOL'}</p>
-            <p className="text-[9px] text-muted-foreground tracking-[0.15em] uppercase">Gen {agent?.gen ?? 1}</p>
-          </div>
-        </div>
+      {/* Top bar - minimal */}
+      <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/50 border border-border/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] text-muted-foreground">Online</span>
-          </div>
-          <div className="text-[10px] text-muted-foreground/60 px-2">
-            {Number(agent?.evolution_progress ?? 0).toFixed(0)}%
-          </div>
+          <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-xs" />
+          <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agent?.name ?? 'GYEOL'}</span>
         </div>
-      </div>
-
-      {/* Evolution progress bar */}
-      <div className="relative z-10 px-5 pb-2">
-        <div className="h-0.5 bg-border/30 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${Number(agent?.evolution_progress ?? 0)}%` }}
-            transition={{ duration: 1.5, ease: 'easeOut' }}
-          />
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-muted-foreground">Gen {agent?.gen ?? 1}</span>
+          <div className="w-8 h-[2px] bg-border/30 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary/60 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${Number(agent?.evolution_progress ?? 0)}%` }}
+              transition={{ duration: 1.5, ease: 'easeOut' }}
+            />
+          </div>
         </div>
       </div>
 
@@ -117,83 +99,61 @@ export default function GyeolPage() {
       <div className="flex-1 flex flex-col min-h-0 relative z-10">
         <AnimatePresence mode="wait">
           {!chatExpanded ? (
-            /* Companion View */
             <motion.div
-              key="companion"
+              key="void"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="flex-1 flex flex-col items-center justify-center gap-6 px-6"
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+              className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
             >
-              <PearlSpheres personality={personality} isThinking={isLoading} />
+              <VoidCore isThinking={isLoading} />
 
-              <div className="text-center max-w-xs">
-                <h1 className="text-2xl font-bold text-foreground mb-2">
-                  {getGreeting()}, {user?.email?.split('@')[0] ?? 'Explorer'}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {agent?.total_conversations ?? 0}번의 대화 · Gen {agent?.gen ?? 1}
+              <div className="text-center space-y-2">
+                <p className="text-lg font-light text-foreground/60">
+                  {getGreeting()}
                 </p>
-              </div>
-
-              {/* Quick actions */}
-              <div className="flex gap-2 mt-2">
-                {[
-                  { icon: 'monitoring', label: '활동', to: '/activity' },
-                  { icon: 'group', label: '소셜', to: '/social' },
-                  { icon: 'extension', label: '마켓', to: '/market/skills' },
-                ].map((item) => (
-                  <a
-                    key={item.to}
-                    href={item.to}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:bg-secondary transition-all text-xs"
-                  >
-                    <span className="material-icons-round text-sm">{item.icon}</span>
-                    {item.label}
-                  </a>
-                ))}
+                <p className="text-[11px] text-muted-foreground/50">
+                  {agent?.total_conversations ?? 0}번의 대화
+                </p>
               </div>
             </motion.div>
           ) : (
-            /* Chat View */
             <motion.div
               key="chat"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               className="flex-1 flex flex-col min-h-0"
             >
-              {/* Chat header */}
               <button
                 onClick={() => setChatExpanded(false)}
-                className="flex items-center gap-2 px-5 py-2 text-xs text-muted-foreground hover:text-foreground transition"
+                className="flex items-center justify-center gap-1.5 py-2 text-muted-foreground/40 hover:text-muted-foreground transition"
               >
-                <span className="material-icons-round text-sm">expand_more</span>
-                대화 접기
+                <span className="w-8 h-[2px] rounded-full bg-border/40" />
               </button>
 
-              {/* Messages */}
               <div
                 ref={listRef}
-                className="flex-1 overflow-y-auto px-4 space-y-2.5 gyeol-scrollbar-hide"
+                className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-2"
               >
                 {messages.map((msg) => (
                   <MessageBubble key={msg.id} msg={msg} />
                 ))}
                 {error && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center py-2">
                     <button type="button" onClick={() => setError(null)}
-                      className="rounded-xl bg-destructive/10 border border-destructive/20 text-destructive px-4 py-2 text-xs">
-                      {error.message} (dismiss)
+                      className="text-[11px] text-destructive/70 hover:text-destructive transition">
+                      {error.message}
                     </button>
                   </motion.div>
                 )}
                 {isLoading && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                    <div className="rounded-2xl bg-secondary/60 border border-border/30 px-4 py-2.5 flex gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: '200ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: '400ms' }} />
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start px-4 py-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary/60 void-dot-thinking" />
+                      <span className="text-[11px] text-muted-foreground/40">thinking...</span>
                     </div>
                   </motion.div>
                 )}
@@ -204,8 +164,8 @@ export default function GyeolPage() {
       </div>
 
       {/* Input bar */}
-      <div className="relative z-[60] px-4 pb-20 pt-2">
-        <div className="flex items-center gap-2 rounded-2xl bg-secondary/50 border border-border/30 backdrop-blur-xl px-3 py-1.5">
+      <div className="relative z-[60] px-4 pb-[calc(56px+env(safe-area-inset-bottom,8px)+8px)] pt-2">
+        <div className="flex items-center gap-2 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-1">
           <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
           <input
             type="text"
@@ -213,16 +173,16 @@ export default function GyeolPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             onFocus={() => messages.length > 0 && setChatExpanded(true)}
-            placeholder="GYEOL에게 말하기..."
-            className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2.5 outline-none min-w-0"
+            placeholder="무엇이든 물어보세요..."
+            className="flex-1 bg-transparent text-foreground/90 placeholder:text-white/20 text-sm py-2.5 outline-none min-w-0"
           />
           <button
             type="button"
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-30 transition-all active:scale-95 shadow-glow-xs"
+            className="w-8 h-8 rounded-xl bg-primary/80 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95"
           >
-            <span className="material-icons-round text-lg">arrow_upward</span>
+            <span className="material-icons-round text-base">arrow_upward</span>
           </button>
         </div>
       </div>
@@ -235,7 +195,7 @@ export default function GyeolPage() {
 
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 6) return '좋은 밤이에요';
+  if (h < 6) return '고요한 밤이에요';
   if (h < 12) return '좋은 아침이에요';
   if (h < 18) return '좋은 오후에요';
   return '좋은 저녁이에요';
