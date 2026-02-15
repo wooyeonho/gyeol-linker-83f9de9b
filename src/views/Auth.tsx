@@ -169,7 +169,36 @@ export default function AuthPage() {
             <button type="button" className="text-muted-foreground hover:text-primary transition-colors">비밀번호 찾기</button>
           </div>
         </form>
+
+        {/* Social Login */}
+        <div className="mt-12 w-full border-t border-border pt-8 flex flex-col items-center">
+          <p className="text-xs text-muted-foreground mb-4 font-medium uppercase tracking-wider">Or continue with</p>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" /></svg>
+            </button>
+            <button
+              type="button"
+              className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
+            >
+              <span className="font-bold text-lg">A</span>
+            </button>
+          </div>
+        </div>
       </motion.main>
+
+      {/* Dark Mode Toggle */}
+      <button
+        type="button"
+        onClick={() => document.documentElement.classList.toggle('dark')}
+        className="fixed top-6 right-6 z-50 p-3 rounded-full bg-card shadow-lg text-foreground hover:bg-secondary transition-all border border-border"
+      >
+        <span className="material-icons-round dark:hidden">dark_mode</span>
+        <span className="material-icons-round hidden dark:block">light_mode</span>
+      </button>
     </div>
   );
 }
