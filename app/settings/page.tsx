@@ -23,6 +23,8 @@ export default function GyeolSettingsPage() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [openclawStatus, setOpenclawStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [telegramStatus, setTelegramStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [telegramBotUsername, setTelegramBotUsername] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
@@ -35,8 +37,15 @@ export default function GyeolSettingsPage() {
   useEffect(() => {
     fetch('/api/admin/status')
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => setOpenclawStatus(data?.openclaw ? 'connected' : 'disconnected'))
-      .catch(() => setOpenclawStatus('disconnected'));
+      .then((data) => {
+        setOpenclawStatus(data?.openclaw ? 'connected' : 'disconnected');
+        setTelegramStatus(data?.telegramConfigured ? 'connected' : 'disconnected');
+        if (data?.telegramBotUsername) setTelegramBotUsername(data.telegramBotUsername);
+      })
+      .catch(() => {
+        setOpenclawStatus('disconnected');
+        setTelegramStatus('disconnected');
+      });
   }, []);
 
   useEffect(() => {
@@ -336,7 +345,14 @@ export default function GyeolSettingsPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-white/50">Telegram 봇</span>
-                    <span className="text-xs text-white/40">서버에서 설정</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${telegramStatus === 'connected' ? 'bg-green-500' : telegramStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-white/20'}`} />
+                      {telegramStatus === 'connected' && telegramBotUsername ? (
+                        <a href={`https://t.me/${telegramBotUsername}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300">@{telegramBotUsername}</a>
+                      ) : (
+                        <span className="text-xs text-white/40">{telegramStatus === 'connected' ? '연결됨' : telegramStatus === 'checking' ? '확인 중' : '미연결'}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

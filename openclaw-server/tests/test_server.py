@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from httpx import AsyncClient, ASGITransport
 from app.main import app, memory_store
 
@@ -132,20 +133,22 @@ async def test_chat_with_user_id(transport):
 
 @pytest.mark.asyncio
 async def test_telegram_webhook_not_configured(transport):
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        r = await ac.post("/api/telegram/webhook", json={"update_id": 1, "message": {"chat": {"id": 123}, "text": "hi"}})
-    assert r.status_code == 200
-    data = r.json()
-    assert data.get("reason") == "Telegram not configured"
+    with patch("app.main.TELEGRAM_BOT_TOKEN", ""):
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            r = await ac.post("/api/telegram/webhook", json={"update_id": 1, "message": {"chat": {"id": 123}, "text": "hi"}})
+        assert r.status_code == 200
+        data = r.json()
+        assert data.get("reason") == "Telegram not configured"
 
 
 @pytest.mark.asyncio
 async def test_telegram_setup_not_configured(transport):
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        r = await ac.post("/api/telegram/setup", json={"webhookUrl": "https://example.com/webhook"})
-    assert r.status_code == 200
-    data = r.json()
-    assert data.get("error") == "TELEGRAM_BOT_TOKEN not set"
+    with patch("app.main.TELEGRAM_BOT_TOKEN", ""):
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            r = await ac.post("/api/telegram/setup", json={"webhookUrl": "https://example.com/webhook"})
+        assert r.status_code == 200
+        data = r.json()
+        assert data.get("error") == "TELEGRAM_BOT_TOKEN not set"
 
 
 @pytest.mark.asyncio
