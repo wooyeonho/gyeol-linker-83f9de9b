@@ -1,5 +1,5 @@
 /**
- * OpenClaw 서버 상태 조회 API
+ * GYEOL 서버 상태 조회 API
  * 프론트엔드 활동 페이지에서 서버 상태 표시용
  */
 
@@ -9,7 +9,7 @@ const OPENCLAW_URL = process.env.OPENCLAW_GATEWAY_URL || '';
 
 export async function GET() {
   if (!OPENCLAW_URL) {
-    return NextResponse.json({ connected: false, error: 'OpenClaw not configured' });
+    return NextResponse.json({ connected: false, error: 'GYEOL server not configured' });
   }
 
   try {

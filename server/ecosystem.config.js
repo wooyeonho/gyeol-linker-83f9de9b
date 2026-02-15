@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'gyeol-openclaw',
+      name: 'gyeol-server',
       cwd: './openclaw-server',
       script: 'poetry',
       args: 'run uvicorn app.main:app --host 0.0.0.0 --port 8000',
@@ -12,8 +12,8 @@ module.exports = {
       autorestart: true,
       watch: false,
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      error_file: './logs/openclaw-error.log',
-      out_file: './logs/openclaw-out.log',
+      error_file: './logs/gyeol-error.log',
+      out_file: './logs/gyeol-out.log',
       merge_logs: true,
     },
   ],

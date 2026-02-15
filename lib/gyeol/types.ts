@@ -1,5 +1,5 @@
 /**
- * GYEOL (결) — OpenClaw 기반 자율 AI 플랫폼 타입 정의
+ * GYEOL (결) — 자율 진화 AI 플랫폼 타입 정의
  */
 
 export interface VisualState {

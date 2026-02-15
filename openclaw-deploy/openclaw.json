@@ -1,0 +1,19 @@
+{
+  "agent": {
+    "model": "groq/llama-3.3-70b-versatile",
+    "systemPromptFile": "/data/workspace/AGENT.md",
+    "name": "GYEOL"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true
+    }
+  },
+  "agents": {
+    "defaults": {
+      "sandbox": {
+        "mode": "non-main"
+      }
+    }
+  }
+}
