@@ -4,7 +4,7 @@ import { ChatInterface } from '@/components/ChatInterface';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { DEMO_USER_ID } from '@/lib/gyeol/constants';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/src/lib/supabase';
 
 const VoidCanvas = dynamic(() => import('@/components/VoidCanvas'));
 
