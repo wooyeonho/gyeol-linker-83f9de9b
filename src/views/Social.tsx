@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGyeolStore } from '@/store/gyeol-store';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 
@@ -45,7 +45,7 @@ function CompatibilityRing({ score }: { score: number }) {
 }
 
 export default function SocialPage() {
-  const { agent } = useGyeolStore();
+  const { agent } = useInitAgent();
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);

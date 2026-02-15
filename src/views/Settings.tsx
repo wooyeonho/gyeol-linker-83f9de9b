@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useGyeolStore } from '@/store/gyeol-store';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { DEMO_USER_ID } from '@/lib/gyeol/constants';
@@ -8,7 +8,7 @@ import { DEMO_USER_ID } from '@/lib/gyeol/constants';
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
 
 export default function SettingsPage() {
-  const { agent } = useGyeolStore();
+  const { agent } = useInitAgent();
   const [autonomyLevel, setAutonomyLevel] = useState(50);
   const [contentFilterOn, setContentFilterOn] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);

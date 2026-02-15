@@ -1,52 +1,15 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect } from 'react';
 import dynamic from '@/lib/dynamic';
 import { ChatInterface } from '@/components/ChatInterface';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { useGyeolStore } from '@/store/gyeol-store';
-import { DEMO_USER_ID } from '@/lib/gyeol/constants';
-import { supabase } from '@/src/lib/supabase';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
 
 const VoidCanvas = dynamic(() => import('@/components/VoidCanvas'));
 
 export default function GyeolPage() {
-  const { agent, setAgent, setMessages, subscribeToUpdates, isLoading, isListening } = useGyeolStore();
-  const [agentLoading, setAgentLoading] = useState(true);
-
-  const initAgent = useCallback(async () => {
-    setAgentLoading(true);
-    try {
-      // Try to find existing agent
-      const { data: existing } = await supabase
-        .from('gyeol_agents' as any)
-        .select('*')
-        .eq('user_id', DEMO_USER_ID)
-        .maybeSingle();
-
-      if (existing) {
-        setAgent(existing as any);
-        // Load conversations
-        const { data: convs } = await supabase
-          .from('gyeol_conversations' as any)
-          .select('*')
-          .eq('agent_id', (existing as any).id)
-          .order('created_at', { ascending: true })
-          .limit(50);
-        setMessages((convs as any[]) ?? []);
-      } else {
-        // Create new agent
-        const { data: newAgent } = await supabase
-          .from('gyeol_agents' as any)
-          .insert({ user_id: DEMO_USER_ID, name: 'GYEOL' } as any)
-          .select()
-          .single();
-        if (newAgent) setAgent(newAgent as any);
-      }
-    } finally {
-      setAgentLoading(false);
-    }
-  }, [setAgent, setMessages]);
-
-  useEffect(() => { initAgent(); }, [initAgent]);
+  const { subscribeToUpdates, isLoading, isListening } = useGyeolStore();
+  const { agent, loading: agentLoading } = useInitAgent();
 
   useEffect(() => {
     if (!agent?.id) return;
