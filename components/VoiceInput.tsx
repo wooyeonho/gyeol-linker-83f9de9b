@@ -1,11 +1,6 @@
 'use client';
 
-/**
- * GYEOL 음성 인식 — Web Speech API, 한국어 기본
- */
-
 import { useRef, useState, useCallback, forwardRef } from 'react';
-import { motion } from 'framer-motion';
 
 export interface VoiceInputProps {
   onResult: (text: string) => void;
@@ -21,10 +16,7 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
     const SpeechRecognitionAPI =
       typeof window !== 'undefined' &&
       ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-    if (!SpeechRecognitionAPI) {
-      onResult('');
-      return;
-    }
+    if (!SpeechRecognitionAPI) { onResult(''); return; }
     const recognition = new SpeechRecognitionAPI();
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -42,36 +34,26 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
   }, [disabled, onResult]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
+    if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
     setIsListening(false);
   }, []);
 
   return (
-    <motion.button
+    <button
       type="button"
       onClick={isListening ? stopListening : startListening}
       disabled={disabled}
-      className={`rounded-full p-2 flex items-center justify-center transition ${
+      className={`p-2 rounded-full flex items-center justify-center transition ${
         isListening
-          ? 'bg-red-500/20 text-red-400'
-          : 'text-indigo-400 hover:bg-indigo-500/20'
+          ? 'bg-destructive/10 text-destructive'
+          : 'text-muted-foreground hover:bg-secondary'
       } disabled:opacity-40 disabled:pointer-events-none`}
       aria-label={isListening ? '녹음 중지' : '음성 입력'}
-      whileTap={{ scale: 0.95 }}
+      title={isListening ? 'Stop recording' : 'Voice input'}
     >
-      {isListening ? (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <rect x="6" y="6" width="12" height="12" rx="2" />
-        </svg>
-      ) : (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-        </svg>
-      )}
-    </motion.button>
+      <span className="material-icons-round text-[22px]">
+        {isListening ? 'stop' : 'mic'}
+      </span>
+    </button>
   );
 });

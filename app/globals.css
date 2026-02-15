@@ -3,67 +3,132 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-  /* Jade Green Primary Color */
-  --primary: #00A86B;
-  --primary-50: #E6F5F0;
-  --primary-100: #CCEBE1;
-  --primary-200: #99D7C3;
-  --primary-300: #66C3A5;
-  --primary-400: #33AF87;
-  --primary-500: #00A86B;
-  --primary-600: #008656;
-  --primary-700: #006441;
-  --primary-800: #00422B;
-  --primary-900: #002116;
+  --background: 210 14% 97%;
+  --foreground: 215 25% 27%;
+  --primary: 215 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 15% 92%;
+  --secondary-foreground: 215 25% 27%;
+  --muted: 215 14% 95%;
+  --muted-foreground: 215 10% 55%;
+  --accent: 215 83% 58%;
+  --accent-foreground: 0 0% 100%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 25% 27%;
+  --border: 215 15% 90%;
+  --ring: 215 83% 58%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --radius: 1rem;
+
+  --background-light: #f6f7f8;
+  --background-dark: #101822;
 }
 
-/* 다크모드 설정 */
 .dark {
-  /* 다크모드에서도 Jade Green이 잘 보이도록 설정 */
-  --primary: #00A86B;
-  --primary-500: #00A86B;
-  --primary-600: #33AF87; /* 다크모드에서 더 밝게 */
+  --background: 215 30% 9%;
+  --foreground: 210 20% 90%;
+  --primary: 215 83% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 20% 18%;
+  --secondary-foreground: 210 20% 90%;
+  --muted: 215 20% 15%;
+  --muted-foreground: 215 15% 55%;
+  --accent: 215 83% 58%;
+  --accent-foreground: 0 0% 100%;
+  --card: 215 25% 15%;
+  --card-foreground: 210 20% 90%;
+  --border: 215 20% 18%;
+  --ring: 215 83% 58%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-  /* 한글 단어 보호 및 텍스트 레이아웃 */
+  font-family: 'Manrope', sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   word-break: keep-all;
   overflow-wrap: break-word;
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* 제목 및 강조 텍스트 - Apple 스타일 밀도 */
 h1, h2, h3, h4, h5, h6,
 .font-bold, .font-semibold {
   letter-spacing: -0.02em;
 }
 
-/* 본문 - Toss 스타일 가독성 */
 p, .text-base, .text-sm, .text-lg {
-  line-height: 1.625; /* leading-relaxed */
+  line-height: 1.625;
 }
 
-/* GYEOL Void UI */
-.gyeol-void {
-  background: #000;
-  color: #e5e5e5;
+/* Glass Panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
-.gyeol-glow {
-  box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+.dark .glass-panel {
+  background: rgba(16, 24, 34, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
-@keyframes gyeol-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
+
+/* Status Card */
+.status-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(230, 230, 230, 1);
 }
+.dark .status-card {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Pearl Sphere */
+.pearl-sphere {
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95) 0%, rgba(240,246,255,0.5) 40%, rgba(57,133,239,0.15) 100%);
+  box-shadow: inset -10px -10px 20px rgba(57,133,239,0.15), 0 10px 40px rgba(57,133,239,0.25);
+}
+.dark .pearl-sphere {
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5) 0%, rgba(57,133,239,0.3) 40%, rgba(16,24,34,0.2) 100%);
+  box-shadow: inset -10px -10px 20px rgba(57,133,239,0.3), 0 0 50px rgba(57,133,239,0.2);
+}
+
+/* Sphere Animations */
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(15px, -25px) scale(1.05); }
+  66% { transform: translate(-10px, 10px) scale(0.95); }
+}
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-15px, 20px) scale(0.95); }
+  66% { transform: translate(10px, -15px) scale(1.02); }
+}
+@keyframes float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(0, -15px) scale(1.05); }
+}
+.sphere-1 { animation: float-1 12s ease-in-out infinite; }
+.sphere-2 { animation: float-2 15s ease-in-out infinite; }
+.sphere-3 { animation: float-3 10s ease-in-out infinite; }
+
+/* Section Card */
+.section-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 1.25rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6);
+}
+.dark .section-card {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar */
 .gyeol-scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -71,4 +136,3 @@ p, .text-base, .text-sm, .text-lg {
 .gyeol-scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
