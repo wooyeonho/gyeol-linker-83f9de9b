@@ -37,87 +37,119 @@ export default function AuthPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center px-6 font-display">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/5 dark:bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm space-y-8"
-      >
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-            <span className="material-icons-round text-primary-foreground text-3xl">blur_on</span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">GYEOL</h1>
-          <p className="text-sm text-muted-foreground">AI Companion That Evolves With You</p>
-        </div>
-
-        <div className="flex gap-2 section-card p-1 !rounded-xl">
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition ${
-              mode === 'login' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
-            }`}
-          >
-            로그인
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('signup'); setError(null); setSuccess(null); }}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition ${
-              mode === 'signup' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
-            }`}
-          >
-            회원가입
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일"
-              required
-              className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 (6자 이상)"
-              required
-              minLength={6}
-              className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition"
-            />
+    <div className="min-h-screen flex font-display">
+      {/* Left Panel — Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-background">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-[400px] space-y-8"
+        >
+          {/* Logo */}
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+            <span className="material-icons-round text-primary-foreground text-xl">blur_on</span>
           </div>
 
-          {error && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-2.5">
-              {error}
-            </motion.p>
-          )}
-          {success && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-sm text-green-600 dark:text-green-400 bg-green-500/10 rounded-xl px-4 py-2.5">
-              {success}
-            </motion.p>
-          )}
+          {/* Title */}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {mode === 'login' ? '로그인' : '회원가입'}
+            </h1>
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 shadow-lg shadow-primary/30 disabled:opacity-40 transition"
-          >
-            {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
-          </button>
-        </form>
-      </motion.div>
-    </main>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">이메일</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="이메일을 입력하세요"
+                required
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호 (6자 이상)"
+                required
+                minLength={6}
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
+              />
+            </div>
+
+            {error && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-2.5">
+                {error}
+              </motion.p>
+            )}
+            {success && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-sm text-green-600 dark:text-green-400 bg-green-500/10 rounded-lg px-4 py-2.5">
+                {success}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 rounded-lg bg-foreground text-background font-medium text-sm hover:opacity-90 disabled:opacity-40 transition"
+            >
+              {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
+            </button>
+          </form>
+
+          {/* Toggle */}
+          <p className="text-sm text-center text-muted-foreground">
+            {mode === 'login' ? (
+              <>아직 계정이 없으신가요?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setError(null); setSuccess(null); }}
+                  className="text-primary font-medium hover:underline"
+                >회원가입</button>
+              </>
+            ) : (
+              <>이미 계정이 있으신가요?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
+                  className="text-primary font-medium hover:underline"
+                >로그인</button>
+              </>
+            )}
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Right Panel — Visual */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden rounded-l-3xl">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(40,50%,92%)] via-[hsl(300,40%,85%)] to-[hsl(215,83%,70%)]" />
+
+        {/* Pearl spheres */}
+        <div className="absolute top-1/4 left-1/3 w-48 h-48 pearl-sphere rounded-full sphere-1 opacity-40" />
+        <div className="absolute bottom-1/3 right-1/4 w-32 h-32 pearl-sphere rounded-full sphere-2 opacity-30" />
+        <div className="absolute top-1/2 right-1/3 w-20 h-20 pearl-sphere rounded-full sphere-3 opacity-25" />
+
+        {/* Floating card */}
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[80%] max-w-sm">
+          <div className="glass-panel rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-glass">
+            <span className="text-sm text-muted-foreground flex-1">GYEOL에게 무엇이든 물어보세요</span>
+            <div className="w-8 h-8 rounded-full bg-foreground/80 flex items-center justify-center">
+              <span className="material-icons-round text-background text-base">arrow_upward</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
