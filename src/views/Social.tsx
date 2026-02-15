@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGyeolStore } from '@/store/gyeol-store';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 
 interface MatchCard {

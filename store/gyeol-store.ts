@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/src/lib/supabase';
 
 export type GyeolError = { message: string; code?: string } | null;
 
@@ -74,8 +74,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     };
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { supabaseUrl, supabaseKey } = await import('@/src/lib/supabase');
       const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
         method: 'POST',
         headers: {
@@ -115,8 +114,6 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   },
   subscribeToUpdates: (agentId) => {
     if (typeof window === 'undefined') return;
-    const supabase = createClient();
-    if (!supabase) return;
     const channel = supabase
       .channel(`gyeol:${agentId}`)
       .on(
