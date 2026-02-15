@@ -37,17 +37,19 @@ export async function GET() {
     } catch {}
   }
 
-  let killSwitchValue: { active?: boolean; reason?: string } = {};
+  let killSwitchActive = false;
+  let killSwitchReason: string | null = null;
   let activityCount = 0;
   let errorCount = 0;
   try {
     const supabase = createGyeolServerClient();
     const { data: killSwitch } = await supabase
       .from('gyeol_system_state')
-      .select('value')
-      .eq('key', 'kill_switch')
-      .single();
-    killSwitchValue = (killSwitch?.value as { active?: boolean; reason?: string }) ?? {};
+      .select('kill_switch, reason')
+      .eq('id', 'global')
+      .maybeSingle();
+    killSwitchActive = killSwitch?.kill_switch === true;
+    killSwitchReason = killSwitch?.reason ?? null;
 
     const { count: ac } = await supabase
       .from('gyeol_autonomous_logs')
@@ -68,8 +70,8 @@ export async function GET() {
     groqConfigured,
     telegramConfigured,
     telegramBotUsername,
-    killSwitch: killSwitchValue.active === true,
-    reason: killSwitchValue.reason ?? null,
+    killSwitch: killSwitchActive,
+    reason: killSwitchReason,
     last24hActivityCount: activityCount,
     last24hErrorCount: errorCount,
   });

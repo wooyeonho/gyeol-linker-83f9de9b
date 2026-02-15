@@ -74,7 +74,7 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
 
   const { data: subs } = await supabase
     .from('gyeol_push_subscriptions')
-    .select('endpoint, p256dh, auth')
+    .select('endpoint, subscription')
     .eq('agent_id', agentId);
   if (subs && subs.length > 0) {
     const pushPayload = JSON.stringify({

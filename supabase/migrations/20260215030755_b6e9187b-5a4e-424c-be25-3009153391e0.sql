@@ -16,6 +16,7 @@ CREATE TABLE public.gyeol_agents (
   skin_id TEXT,
   preferred_provider TEXT NOT NULL DEFAULT 'groq',
   openclaw_agent_id TEXT,
+  settings JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_active TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -180,3 +181,98 @@ INSERT INTO public.gyeol_skills (name, description, category, min_gen, price, do
   ('Moltbook 소셜', '다른 AI와 소셜 활동', '소셜', 2, 0, 150, 4.8, true),
   ('코드 리뷰', 'GitHub PR 자동 리뷰', '개발', 3, 1000, 45, 4.3, true),
   ('일기 분석', '감정 패턴 분석 및 리포트', '웰니스', 1, 0, 310, 4.6, true);
+
+-- GYEOL Agent Skills
+CREATE TABLE public.gyeol_agent_skills (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  skill_id UUID NOT NULL REFERENCES public.gyeol_skills(id) ON DELETE CASCADE,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  installed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(agent_id, skill_id)
+);
+ALTER TABLE public.gyeol_agent_skills ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read agent_skills" ON public.gyeol_agent_skills FOR SELECT USING (true);
+CREATE POLICY "Public insert agent_skills" ON public.gyeol_agent_skills FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update agent_skills" ON public.gyeol_agent_skills FOR UPDATE USING (true);
+
+-- GYEOL Agent Skins
+CREATE TABLE public.gyeol_agent_skins (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  skin_id UUID NOT NULL REFERENCES public.gyeol_skins(id) ON DELETE CASCADE,
+  is_equipped BOOLEAN NOT NULL DEFAULT false,
+  acquired_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(agent_id, skin_id)
+);
+ALTER TABLE public.gyeol_agent_skins ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read agent_skins" ON public.gyeol_agent_skins FOR SELECT USING (true);
+CREATE POLICY "Public insert agent_skins" ON public.gyeol_agent_skins FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update agent_skins" ON public.gyeol_agent_skins FOR UPDATE USING (true);
+
+-- GYEOL Learned Topics
+CREATE TABLE public.gyeol_learned_topics (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  source TEXT NOT NULL,
+  source_url TEXT,
+  summary TEXT,
+  learned_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.gyeol_learned_topics ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read learned_topics" ON public.gyeol_learned_topics FOR SELECT USING (true);
+CREATE POLICY "Public insert learned_topics" ON public.gyeol_learned_topics FOR INSERT WITH CHECK (true);
+
+-- GYEOL Proactive Messages
+CREATE TABLE public.gyeol_proactive_messages (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  trigger_reason TEXT,
+  was_sent BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.gyeol_proactive_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read proactive_messages" ON public.gyeol_proactive_messages FOR SELECT USING (true);
+CREATE POLICY "Public insert proactive_messages" ON public.gyeol_proactive_messages FOR INSERT WITH CHECK (true);
+
+-- GYEOL Reflections
+CREATE TABLE public.gyeol_reflections (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  topic TEXT NOT NULL,
+  reflection TEXT NOT NULL,
+  mood TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.gyeol_reflections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read reflections" ON public.gyeol_reflections FOR SELECT USING (true);
+CREATE POLICY "Public insert reflections" ON public.gyeol_reflections FOR INSERT WITH CHECK (true);
+
+-- GYEOL Telegram Links
+CREATE TABLE public.gyeol_telegram_links (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  telegram_chat_id TEXT NOT NULL UNIQUE,
+  agent_id UUID NOT NULL REFERENCES public.gyeol_agents(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  telegram_username TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.gyeol_telegram_links ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read telegram_links" ON public.gyeol_telegram_links FOR SELECT USING (true);
+CREATE POLICY "Public insert telegram_links" ON public.gyeol_telegram_links FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update telegram_links" ON public.gyeol_telegram_links FOR UPDATE USING (true);
+
+-- Indexes
+CREATE INDEX idx_gyeol_conversations_agent ON public.gyeol_conversations(agent_id);
+CREATE INDEX idx_gyeol_conversations_created ON public.gyeol_conversations(created_at DESC);
+CREATE INDEX idx_gyeol_autonomous_logs_agent ON public.gyeol_autonomous_logs(agent_id);
+CREATE INDEX idx_gyeol_autonomous_logs_created ON public.gyeol_autonomous_logs(created_at DESC);
+CREATE INDEX idx_gyeol_push_subs_agent ON public.gyeol_push_subscriptions(agent_id);
+CREATE INDEX idx_gyeol_agent_skills_agent ON public.gyeol_agent_skills(agent_id);
+CREATE INDEX idx_gyeol_agent_skins_agent ON public.gyeol_agent_skins(agent_id);
+CREATE INDEX idx_gyeol_learned_topics_agent ON public.gyeol_learned_topics(agent_id);
+CREATE INDEX idx_gyeol_proactive_messages_agent ON public.gyeol_proactive_messages(agent_id);
+CREATE INDEX idx_gyeol_reflections_agent ON public.gyeol_reflections(agent_id);
+CREATE INDEX idx_gyeol_telegram_links_chat_id ON public.gyeol_telegram_links(telegram_chat_id);

@@ -8,7 +8,6 @@ import { invalidateKillSwitchCache } from '@/lib/gyeol/security/kill-switch-chec
 
 const AUTH_HEADER = 'Authorization';
 const TOKEN_PREFIX = 'Bearer ';
-const KEY = 'kill_switch';
 
 function getToken(req: NextRequest): string | null {
   const v = req.headers.get(AUTH_HEADER);
@@ -34,22 +33,18 @@ export async function POST(req: NextRequest) {
   invalidateKillSwitchCache();
 
   if (action === 'activate') {
-    await supabase.from('gyeol_system_state').upsert({
-      key: KEY,
-      value: {
-        active: true,
-        reason: reason ?? 'Admin activated',
-        activated_at: new Date().toISOString(),
-      },
+    await supabase.from('gyeol_system_state').update({
+      kill_switch: true,
+      reason: reason ?? 'Admin activated',
       updated_at: new Date().toISOString(),
-    });
+    }).eq('id', 'global');
     return NextResponse.json({ ok: true, killSwitch: 'active' });
   }
 
-  await supabase.from('gyeol_system_state').upsert({
-    key: KEY,
-    value: { active: false, reason: null, activated_at: null },
+  await supabase.from('gyeol_system_state').update({
+    kill_switch: false,
+    reason: null,
     updated_at: new Date().toISOString(),
-  });
+  }).eq('id', 'global');
   return NextResponse.json({ ok: true, killSwitch: 'inactive' });
 }

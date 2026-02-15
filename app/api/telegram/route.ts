@@ -20,11 +20,10 @@ async function sendTelegramMessage(chatId: number | string, text: string) {
 async function resolveProvider(supabase: ReturnType<typeof createGyeolServerClient>, userId: string) {
   for (const provider of BYOK_PROVIDERS) {
     const { data: row } = await supabase
-      .from('gyeol_user_api_keys')
+      .from('gyeol_byok_keys')
       .select('encrypted_key')
       .eq('user_id', userId)
       .eq('provider', provider)
-      .eq('is_valid', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();

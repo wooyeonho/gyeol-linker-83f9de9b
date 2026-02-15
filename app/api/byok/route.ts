@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 import { encryptKey, maskKey, SUPPORTED_PROVIDERS } from '@/lib/gyeol/byok';
 
-const TABLE = 'gyeol_user_api_keys';
+const TABLE = 'gyeol_byok_keys';
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('userId');
@@ -16,17 +16,14 @@ export async function GET(req: NextRequest) {
   const supabase = createGyeolServerClient();
   const { data, error } = await supabase
     .from(TABLE)
-    .select('id, provider, is_valid, last_used, created_at')
-    .eq('user_id', userId)
-    .eq('is_valid', true);
+    .select('id, provider, created_at')
+    .eq('user_id', userId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const list = (data ?? []).map((r) => ({
     id: r.id,
     provider: r.provider,
-    masked: '****', // 실제 키는 서버에서만 복호화, 목록에는 마스킹만
-    is_valid: r.is_valid,
-    last_used: r.last_used,
+    masked: '****',
     created_at: r.created_at,
   }));
   return NextResponse.json(list);
@@ -45,10 +42,9 @@ export async function POST(req: NextRequest) {
   try {
     const encrypted = await encryptKey(apiKey);
     const supabase = createGyeolServerClient();
-    await supabase.from(TABLE).update({ is_valid: false }).eq('user_id', userId).eq('provider', provider);
     const { data, error } = await supabase
       .from(TABLE)
-      .insert({ user_id: userId, provider, encrypted_key: encrypted, is_valid: true })
+      .upsert({ user_id: userId, provider, encrypted_key: encrypted }, { onConflict: 'user_id,provider' })
       .select('id, provider')
       .single();
 
@@ -67,7 +63,7 @@ export async function DELETE(req: NextRequest) {
   const supabase = createGyeolServerClient();
   const { error } = await supabase
     .from(TABLE)
-    .update({ is_valid: false })
+    .delete()
     .eq('user_id', userId)
     .eq('provider', provider);
 
