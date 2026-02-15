@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
+import { lovable } from '@/src/integrations/lovable/index';
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -37,13 +38,21 @@ export default function AuthPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError(null);
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setError(error.message || 'Google 로그인에 실패했어요.');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display transition-colors duration-500 bg-[hsl(210,20%,98%)] dark:bg-[hsl(230,30%,6%)]">
       {/* Ambient background effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl opacity-60 animate-pulse bg-[radial-gradient(circle,hsl(215,83%,58%,0.15),transparent_60%)] dark:bg-[radial-gradient(circle,hsl(215,83%,58%,0.1),transparent_60%)]" />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2 bg-purple-100 dark:bg-indigo-900/20" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2 bg-blue-100 dark:bg-blue-900/20" />
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2 bg-[hsl(270,60%,95%)] dark:bg-[hsl(240,50%,20%,0.2)]" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2 bg-[hsl(215,60%,95%)] dark:bg-[hsl(215,50%,20%,0.2)]" />
       </div>
 
       <motion.main
@@ -79,7 +88,7 @@ export default function AuthPage() {
                 : 'text-muted-foreground border-transparent hover:text-foreground/70'
             }`}
           >
-            로그인
+            로그인 (Login)
           </button>
           <button
             type="button"
@@ -90,13 +99,12 @@ export default function AuthPage() {
                 : 'text-muted-foreground border-transparent hover:text-foreground/70'
             }`}
           >
-            회원가입
+            회원가입 (Sign Up)
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full space-y-5">
-          {/* Email */}
           <div className="group relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <span className="material-icons-round text-muted-foreground group-focus-within:text-primary transition-colors">email</span>
@@ -107,11 +115,10 @@ export default function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일 (Email)"
               required
-              className="w-full pl-12 pr-4 py-4 bg-white dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
+              className="w-full pl-12 pr-4 py-4 bg-card dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-card dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
             />
           </div>
 
-          {/* Password */}
           <div className="group relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <span className="material-icons-round text-muted-foreground group-focus-within:text-primary transition-colors">lock</span>
@@ -123,7 +130,7 @@ export default function AuthPage() {
               placeholder="비밀번호 (6자 이상)"
               required
               minLength={6}
-              className="w-full pl-12 pr-12 py-4 bg-white dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
+              className="w-full pl-12 pr-12 py-4 bg-card dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-card dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
             />
             <button
               type="button"
@@ -136,7 +143,6 @@ export default function AuthPage() {
             </button>
           </div>
 
-          {/* Error / Success */}
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="text-sm text-destructive bg-destructive/10 rounded-2xl px-4 py-3">
@@ -145,12 +151,11 @@ export default function AuthPage() {
           )}
           {success && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-sm text-green-600 dark:text-green-400 bg-green-500/10 rounded-2xl px-4 py-3">
+              className="text-sm text-[hsl(142,71%,45%)] dark:text-[hsl(142,71%,65%)] bg-[hsl(142,71%,45%,0.1)] rounded-2xl px-4 py-3">
               {success}
             </motion.p>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -162,7 +167,6 @@ export default function AuthPage() {
             )}
           </button>
 
-          {/* Links */}
           <div className="flex items-center justify-center mt-6 gap-4 text-sm">
             <button type="button" className="text-muted-foreground hover:text-primary transition-colors">아이디 찾기</button>
             <span className="w-px h-3 bg-border" />
@@ -170,23 +174,18 @@ export default function AuthPage() {
           </div>
         </form>
 
-        {/* Social Login */}
+        {/* Social Login - Google Only */}
         <div className="mt-12 w-full border-t border-border pt-8 flex flex-col items-center">
           <p className="text-xs text-muted-foreground mb-4 font-medium uppercase tracking-wider">Or continue with</p>
-          <div className="flex gap-4">
-            <button
-              type="button"
-              className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" /></svg>
-            </button>
-            <button
-              type="button"
-              className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
-            >
-              <span className="font-bold text-lg">A</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+            </svg>
+          </button>
         </div>
       </motion.main>
 
