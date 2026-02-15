@@ -4,7 +4,6 @@ import time
 import asyncio
 import json
 import logging
-import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -631,6 +630,16 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     logger.info("OpenClaw server v%s started. Heartbeat every %d min.", VERSION, HEARTBEAT_INTERVAL_MINUTES)
+    if TELEGRAM_BOT_TOKEN:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getMe")
+                if resp.status_code == 200:
+                    bot_info = resp.json().get("result", {})
+                    memory_store["telegram_bot_username"] = bot_info.get("username", "")
+                    logger.info("Telegram bot: @%s", memory_store["telegram_bot_username"])
+        except Exception as e:
+            logger.warning("Failed to fetch bot info: %s", e)
     asyncio.create_task(heartbeat_job())
     yield
     scheduler.shutdown()
@@ -692,6 +701,8 @@ async def get_status():
         "groq_configured": bool(GROQ_API_KEY),
         "supabase_configured": bool(SUPABASE_URL and SUPABASE_SERVICE_KEY),
         "telegram_configured": bool(TELEGRAM_BOT_TOKEN),
+        "telegram_bot_username": memory_store.get("telegram_bot_username", ""),
+        "telegram_chats_count": len(memory_store.get("telegram_chats", {})),
         "heartbeat_interval_minutes": HEARTBEAT_INTERVAL_MINUTES,
         "conversations_count": len(memory_store["conversations"]),
         "reflections_count": len(memory_store["reflections"]),
