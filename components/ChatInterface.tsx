@@ -83,7 +83,7 @@ export function ChatInterface() {
                 onClick={() => setError(null)}
                 className="rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-2 text-sm"
               >
-                {error.message} (닫기)
+                {error.message} (dismiss)
               </button>
             </motion.div>
           )}
@@ -110,7 +110,7 @@ export function ChatInterface() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="무엇이든 물어보세요..."
+              placeholder="Ask me anything..."
               className="flex-1 bg-transparent text-[#E5E5E5] placeholder:text-gray-500 text-sm py-2 outline-none min-w-0"
             />
             <button
@@ -118,7 +118,7 @@ export function ChatInterface() {
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
               className="rounded-full p-2 text-indigo-400 hover:bg-indigo-500/20 disabled:opacity-40 disabled:pointer-events-none transition"
-              aria-label="전송"
+              aria-label="Send"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

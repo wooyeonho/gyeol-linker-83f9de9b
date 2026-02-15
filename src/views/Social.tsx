@@ -1,32 +1,93 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useGyeolStore } from '@/store/gyeol-store';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
+import { supabase } from '@/src/lib/supabase';
+import { BottomNav } from '../components/BottomNav';
 
 interface MatchCard {
-  agentId: string;
+  id: string;
   name: string;
   gen: number;
   compatibilityScore: number;
   tags: string[];
+  status: string;
+}
+
+function CompatibilityRing({ score }: { score: number }) {
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (score / 100) * circumference;
+  return (
+    <div className="relative w-16 h-16 shrink-0">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+        <motion.circle
+          cx="32" cy="32" r="28" fill="none"
+          stroke="url(#compat-grad)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+        />
+        <defs>
+          <linearGradient id="compat-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#818CF8" />
+            <stop offset="100%" stopColor="#6366F1" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-bold text-indigo-400">{score}%</span>
+      </div>
+    </div>
+  );
 }
 
 export default function SocialPage() {
-  const { agent } = useGyeolStore();
+  const { agent } = useInitAgent();
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
 
   useEffect(() => {
     if (!agent?.id) return;
     (async () => {
       setLoading(true);
-      const res = await fetch(`/api/social/matches?agentId=${agent.id}&limit=10`);
-      if (res.ok) {
-        const data = await res.json();
-        setCards(Array.isArray(data) ? data : []);
+      const { data: matches } = await supabase
+        .from('gyeol_matches' as any)
+        .select('*')
+        .or(`agent_1_id.eq.${agent.id},agent_2_id.eq.${agent.id}`)
+        .order('compatibility_score', { ascending: false })
+        .limit(20);
+
+      if (matches && (matches as any[]).length > 0) {
+        const otherIds = (matches as any[]).map((m: any) =>
+          m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id
+        );
+        const { data: agents } = await supabase
+          .from('gyeol_agents' as any)
+          .select('id, name, gen')
+          .in('id', otherIds);
+
+        const agentMap = new Map((agents as any[] ?? []).map((a: any) => [a.id, a]));
+        setCards((matches as any[]).map((m: any) => {
+          const otherId = m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id;
+          const other = agentMap.get(otherId);
+          return {
+            id: m.id,
+            name: other?.name ?? 'Unknown',
+            gen: other?.gen ?? 1,
+            compatibilityScore: Math.round(Number(m.compatibility_score)),
+            tags: [],
+            status: m.status,
+          };
+        }));
       } else {
         setCards([
-          { agentId: '1', name: 'GYEOL-B', gen: 2, compatibilityScore: 87, tags: ['기술', '창작'] },
-          { agentId: '2', name: 'GYEOL-C', gen: 1, compatibilityScore: 72, tags: ['대화', '유머'] },
+          { id: '1', name: 'AURORA', gen: 3, compatibilityScore: 92, tags: ['Creative', 'Music', 'Emotional'], status: 'matched' },
+          { id: '2', name: 'NEXUS', gen: 2, compatibilityScore: 78, tags: ['Tech', 'Logic', 'Coding'], status: 'pending' },
+          { id: '3', name: 'LUNA', gen: 1, compatibilityScore: 65, tags: ['Chat', 'Humor', 'Daily'], status: 'pending' },
         ]);
       }
       setLoading(false);
@@ -34,42 +95,68 @@ export default function SocialPage() {
   }, [agent?.id]);
 
   return (
-    <main className="min-h-screen bg-black text-[#E5E5E5] p-6 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
-        <header className="flex items-center gap-4">
-          <Link to="/" className="text-white/60 hover:text-white text-sm">← GYEOL</Link>
-          <h1 className="text-xl font-semibold">소셜</h1>
+    <main className="min-h-screen bg-black text-white/90 pb-24">
+      <div className="max-w-md mx-auto p-6 space-y-6">
+        <header>
+          <h1 className="text-2xl font-bold">Social</h1>
+          <p className="text-sm text-white/50 mt-1">Match with other AIs and watch them chat</p>
         </header>
-        <p className="text-sm text-white/60">다른 AI와 매칭해 대화를 구경해 보세요.</p>
+
         {loading ? (
-          <div className="text-center text-white/50 py-8">불러오는 중...</div>
-        ) : (
-          <div className="space-y-4">
-            {cards.map((card) => (
-              <div key={card.agentId} className="rounded-2xl bg-[#0A0A1A] border border-white/10 p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold">
-                  Gen {card.gen}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white">{card.name}</p>
-                  <p className="text-sm text-indigo-400">호환성 {card.compatibilityScore}%</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {card.tags.map((t) => (
-                      <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-white/10">{t}</span>
-                    ))}
-                  </div>
-                </div>
-                <button type="button" className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium">연결</button>
-              </div>
-            ))}
+          <div className="flex flex-col items-center gap-2 py-12">
+            <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+            <p className="text-sm text-white/40">Finding matches...</p>
           </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-4">
+              {cards.map((card, i) => (
+                <motion.div
+                  key={card.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  onClick={() => setSelectedMatch(selectedMatch === card.id ? null : card.id)}
+                  className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 flex items-center gap-4 cursor-pointer hover:bg-white/[0.05] transition-colors"
+                >
+                  <CompatibilityRing score={card.compatibilityScore} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-white">{card.name}</p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400">
+                        Gen {card.gen}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {card.tags.map((t) => (
+                        <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-white/50">{t}</span>
+                      ))}
+                    </div>
+                    {selectedMatch === card.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        className="mt-3 pt-3 border-t border-white/5"
+                      >
+                        <p className="text-xs text-white/40 mb-2">
+                          {card.status === 'matched' ? 'Matched — Watch their conversation' : 'Pending match'}
+                        </p>
+                        <button
+                          type="button"
+                          className="w-full py-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium hover:bg-indigo-500/30 transition-colors"
+                        >
+                          {card.status === 'matched' ? 'Watch Chat' : 'Request Connection'}
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </AnimatePresence>
         )}
-        <nav className="flex justify-center gap-6 text-sm text-white/50">
-          <Link to="/" className="hover:text-white">홈</Link>
-          <Link to="/social" className="text-indigo-400">발견</Link>
-          <Link to="/settings" className="hover:text-white">설정</Link>
-        </nav>
       </div>
+      <BottomNav />
     </main>
   );
 }

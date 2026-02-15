@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/src/lib/supabase';
 
 export type GyeolError = { message: string; code?: string } | null;
 
@@ -74,9 +74,13 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     };
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
-      const res = await fetch('/api/chat', {
+      const { supabaseUrl, supabaseKey } = await import('@/src/lib/supabase');
+      const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabaseKey}`,
+        },
         body: JSON.stringify({ agentId: agent.id, message: text }),
       });
       const data = await res.json();
@@ -110,16 +114,16 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   },
   subscribeToUpdates: (agentId) => {
     if (typeof window === 'undefined') return;
-    const supabase = createClient();
-    if (!supabase) return;
+    // Subscribe to agent changes (personality, evolution) — NOT conversations
+    // Conversations are handled optimistically by sendMessage()
     const channel = supabase
       .channel(`gyeol:${agentId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'gyeol_conversations', filter: `agent_id=eq.${agentId}` },
-        (payload) => {
-          const row = payload.new as Message;
-          set((s) => ({ messages: [...s.messages, row] }));
+        { event: 'UPDATE', schema: 'public', table: 'gyeol_agents', filter: `id=eq.${agentId}` },
+        (payload: { new: any }) => {
+          const row = payload.new;
+          set({ agent: row as any });
         }
       )
       .subscribe();

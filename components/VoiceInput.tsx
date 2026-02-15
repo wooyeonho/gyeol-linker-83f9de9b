@@ -4,7 +4,7 @@
  * GYEOL 음성 인식 — Web Speech API, 한국어 기본
  */
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 
 export interface VoiceInputProps {
@@ -12,7 +12,7 @@ export interface VoiceInputProps {
   disabled?: boolean;
 }
 
-export function VoiceInput({ onResult, disabled }: VoiceInputProps) {
+export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(function VoiceInput({ onResult, disabled }, _ref) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
@@ -74,4 +74,4 @@ export function VoiceInput({ onResult, disabled }: VoiceInputProps) {
       )}
     </motion.button>
   );
-}
+});
