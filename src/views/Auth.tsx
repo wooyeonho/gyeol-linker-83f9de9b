@@ -45,33 +45,26 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display bg-background">
-      {/* Ambient glow */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display bg-black">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] animate-glow-pulse bg-primary/10" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30 bg-accent/10" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px] bg-primary/[0.04] ambient-glow" />
       </div>
 
       <motion.main
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-sm px-6 py-12 relative z-10 flex flex-col items-center"
       >
-        {/* Orb */}
-        <motion.div
-          className="w-20 h-20 rounded-full mb-10 glass-orb animate-float"
-          whileHover={{ scale: 1.08 }}
-        />
+        <div className="mb-10 flex flex-col items-center">
+          <div className="void-dot mb-6" />
+          <h1 className="text-2xl font-semibold text-foreground/90 tracking-tight">GYEOL</h1>
+          <p className="text-white/20 text-[10px] tracking-[0.2em] uppercase mt-2">
+            AI Companion That Evolves With You
+          </p>
+        </div>
 
-        {/* Title */}
-        <h1 className="text-3xl font-bold text-foreground mb-1 tracking-tight">GYEOL</h1>
-        <p className="text-muted-foreground text-xs tracking-[0.2em] uppercase mb-10">
-          AI Companion That Evolves With You
-        </p>
-
-        {/* Tabs */}
-        <div className="flex w-full mb-8 gap-1 bg-secondary/50 rounded-xl p-1">
+        <div className="flex w-full mb-8 gap-1 bg-white/[0.03] rounded-xl p-1">
           {(['login', 'signup'] as const).map((m) => (
             <button
               key={m}
@@ -79,8 +72,8 @@ export default function AuthPage() {
               onClick={() => { setMode(m); setError(null); setSuccess(null); }}
               className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 mode === m
-                  ? 'bg-primary text-primary-foreground shadow-glow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary/80 text-white'
+                  : 'text-white/25 hover:text-white/50'
               }`}
             >
               {m === 'login' ? '로그인' : '회원가입'}
@@ -88,55 +81,53 @@ export default function AuthPage() {
           ))}
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-3">
           <div className="relative">
-            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">email</span>
+            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-white/15 text-lg">email</span>
             <input
               type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일" required
-              className="w-full pl-12 pr-4 py-3.5 bg-secondary/50 ring-1 ring-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:bg-secondary transition-all outline-none text-sm"
+              className="w-full pl-12 pr-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-foreground/90 placeholder:text-white/20 focus:border-primary/30 transition-all outline-none text-sm"
             />
           </div>
 
           <div className="relative">
-            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
+            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-white/15 text-lg">lock</span>
             <input
               type={showPassword ? 'text' : 'password'}
               value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호 (6자 이상)" required minLength={6}
-              className="w-full pl-12 pr-12 py-3.5 bg-secondary/50 ring-1 ring-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:bg-secondary transition-all outline-none text-sm"
+              className="w-full pl-12 pr-12 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-foreground/90 placeholder:text-white/20 focus:border-primary/30 transition-all outline-none text-sm"
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40 transition-colors">
               <span className="material-icons-round text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
             </button>
           </div>
 
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-xs text-destructive bg-destructive/10 rounded-xl px-4 py-3">
+              className="text-xs text-destructive/80 bg-destructive/5 rounded-xl px-4 py-3">
               {error}
             </motion.p>
           )}
           {success && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-xs text-emerald-400 bg-emerald-500/10 rounded-xl px-4 py-3">
+              className="text-xs text-emerald-400/80 bg-emerald-500/5 rounded-xl px-4 py-3">
               {success}
             </motion.p>
           )}
 
           <button type="submit" disabled={loading}
-            className="w-full py-3.5 mt-2 bg-primary hover:brightness-110 text-primary-foreground font-semibold rounded-xl shadow-glow transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-sm">
+            className="w-full py-3.5 mt-2 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 text-sm">
             {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
           </button>
         </form>
 
-        {/* Google */}
         <div className="mt-10 w-full flex flex-col items-center">
-          <p className="text-[10px] text-muted-foreground mb-4 uppercase tracking-[0.15em]">Or continue with</p>
+          <p className="text-[10px] text-white/15 mb-4 uppercase tracking-[0.15em]">Or continue with</p>
           <button type="button" onClick={handleGoogleLogin}
-            className="w-11 h-11 rounded-full bg-secondary/50 border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary transition-colors">
+            className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
             </svg>
