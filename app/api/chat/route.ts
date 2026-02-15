@@ -193,6 +193,13 @@ export async function POST(req: NextRequest) {
     let provider = 'builtin';
 
     const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
+    console.log('[GYEOL] provider chain: openclaw=%s, supabase=%s, groq_key=%s, cf=%s',
+      openclawUrl ? 'yes' : 'no',
+      supabase ? 'yes' : 'no',
+      process.env.GROQ_API_KEY ? 'yes' : 'no',
+      process.env.CLOUDFLARE_ACCOUNT_ID ? 'yes' : 'no',
+    );
+
     if (openclawUrl) {
       try {
         const gwRes = await fetch(`${openclawUrl.replace(/\/$/, '')}/api/chat`, {
@@ -205,10 +212,11 @@ export async function POST(req: NextRequest) {
           if (typeof gwData.message === 'string') {
             assistantContent = gwData.message;
             provider = 'openclaw';
+            console.log('[GYEOL] openclaw responded');
           }
         }
-      } catch {
-        // fallback
+      } catch (err) {
+        console.warn('[GYEOL] openclaw failed:', err);
       }
     }
 
@@ -230,13 +238,15 @@ export async function POST(req: NextRequest) {
 
     if (!assistantContent && process.env.GROQ_API_KEY) {
       try {
+        console.log('[GYEOL] trying server GROQ_API_KEY...');
         const content = await callProviderWithMessages('groq', process.env.GROQ_API_KEY, systemPrompt, chatMessages);
         if (content) {
           assistantContent = content;
           provider = 'groq';
+          console.log('[GYEOL] groq responded');
         }
-      } catch {
-        // fallback
+      } catch (err) {
+        console.warn('[GYEOL] groq failed:', err);
       }
     }
 
@@ -253,6 +263,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!assistantContent) {
+      console.log('[GYEOL] all providers failed, using builtin response');
       assistantContent = generateBuiltinResponse(userMessage);
       provider = 'builtin';
     }
