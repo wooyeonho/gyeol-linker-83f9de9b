@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -354,16 +354,19 @@ async def run_learn_rss():
     }
 
 
+KST = timezone(timedelta(hours=9))
+
+
 def is_night_time() -> bool:
-    """Check if current time is between 23:00 and 07:00 (night ban for proactive messages)"""
-    now = datetime.now(timezone.utc)
+    """Check if current time is between 23:00 and 07:00 KST (night ban for proactive messages)"""
+    now = datetime.now(KST)
     hour = now.hour
     return hour >= 23 or hour < 7
 
 
 def get_daily_proactive_count() -> int:
     """Count proactive messages sent today"""
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(KST).date().isoformat()
     count = 0
     for msg in memory_store.get("proactive_messages", []):
         ts = msg.get("timestamp", "")
