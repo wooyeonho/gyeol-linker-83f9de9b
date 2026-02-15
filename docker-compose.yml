@@ -1,21 +1,37 @@
-version: '3.8'
+version: "3.8"
 
 services:
   openclaw:
-    image: ghcr.io/openclaw/openclaw:latest # Assuming official image, will verify
-    container_name: openclaw_agent
+    image: coollabsio/openclaw:latest
+    container_name: gyeol-openclaw
     restart: unless-stopped
     ports:
-      - "18789:18789" # Web UI / API
+      - "8080:8080"
     volumes:
-      - ./config.json:/app/config.json
+      - ./server/workspace:/app/workspace
       - ./system_prompt.md:/app/system_prompt.md
-      - ./data:/app/data
-      - ./skills:/app/skills
+      - openclaw-data:/data
     environment:
-      - NODE_ENV=production
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway" # Open for local access if needed
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-gyeol2025}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      # Telegram — OpenClaw 내장 채널
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # Supabase — 스킬에서 사용
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      # Heartbeat 간격 (초)
+      - HEARTBEAT_INTERVAL=1800
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
-  data:
+  openclaw-data:
