@@ -1,6 +1,6 @@
 /**
  * GYEOL 자율 활동 로그 조회
- * Supabase → OpenClaw → 빈 배열 폴백
+ * Supabase → GYEOL 서버 → 빈 배열 폴백
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(data);
       }
     } catch {
-      // fallback to OpenClaw
+      // fallback to GYEOL server
     }
   }
 

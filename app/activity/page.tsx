@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * GYEOL 활동 피드 — OpenClaw 서버 자율 활동 로그
+ * GYEOL 활동 피드 — 자율 활동 로그
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -121,7 +121,7 @@ export default function GyeolActivityPage() {
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${status.connected ? 'bg-green-500' : 'bg-red-500'}`} />
               <span className="text-sm text-white/70">
-                OpenClaw {status.version || ''} {status.connected ? '연결됨' : '연결 안 됨'}
+                GYEOL 서버 {status.version || ''} {status.connected ? '연결됨' : '연결 안 됨'}
               </span>
               {status.uptime_seconds != null && (
                 <span className="text-xs text-white/40 ml-auto">
@@ -192,7 +192,7 @@ export default function GyeolActivityPage() {
           <div className="text-center py-8 space-y-2">
             <p className="text-white/50">아직 활동 기록이 없어요.</p>
             <p className="text-xs text-white/30">
-              OpenClaw 서버가 30분마다 자동으로 활동합니다
+              GYEOL 서버가 30분마다 자동으로 활동합니다
             </p>
           </div>
         )}

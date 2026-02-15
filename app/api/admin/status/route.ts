@@ -1,5 +1,5 @@
 /**
- * GYEOL 시스템 상태 — OpenClaw 연결, Telegram, Kill Switch
+ * GYEOL 시스템 상태 — 서버 연결, Telegram, Kill Switch
  */
 
 import { NextResponse } from 'next/server';
@@ -8,7 +8,7 @@ import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 const OPENCLAW_URL = process.env.OPENCLAW_GATEWAY_URL || '';
 
 export async function GET() {
-  let openclaw = false;
+  let serverConnected = false;
   let telegramConfigured = false;
   let telegramBotUsername = '';
   let groqConfigured = false;
@@ -19,7 +19,7 @@ export async function GET() {
     });
     if (res.ok) {
       const data = await res.json();
-      openclaw = true;
+      serverConnected = true;
       telegramConfigured = data.checks?.telegram === 'configured';
       groqConfigured = data.checks?.groq === 'configured';
     }
@@ -37,19 +37,17 @@ export async function GET() {
     } catch {}
   }
 
-  let killSwitchActive = false;
-  let killSwitchReason: string | null = null;
+  let killSwitchValue: { active?: boolean; reason?: string } = {};
   let activityCount = 0;
   let errorCount = 0;
   try {
     const supabase = createGyeolServerClient();
     const { data: killSwitch } = await supabase
       .from('gyeol_system_state')
-      .select('kill_switch, reason')
-      .eq('id', 'global')
-      .maybeSingle();
-    killSwitchActive = killSwitch?.kill_switch === true;
-    killSwitchReason = killSwitch?.reason ?? null;
+      .select('value')
+      .eq('key', 'kill_switch')
+      .single();
+    killSwitchValue = (killSwitch?.value as { active?: boolean; reason?: string }) ?? {};
 
     const { count: ac } = await supabase
       .from('gyeol_autonomous_logs')
@@ -66,12 +64,12 @@ export async function GET() {
   } catch {}
 
   return NextResponse.json({
-    openclaw,
+    serverConnected,
     groqConfigured,
     telegramConfigured,
     telegramBotUsername,
-    killSwitch: killSwitchActive,
-    reason: killSwitchReason,
+    killSwitch: killSwitchValue.active === true,
+    reason: killSwitchValue.reason ?? null,
     last24hActivityCount: activityCount,
     last24hErrorCount: errorCount,
   });

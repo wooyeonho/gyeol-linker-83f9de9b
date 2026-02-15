@@ -1,5 +1,5 @@
 /**
- * GYEOL 채팅 API — OpenClaw → BYOK → env GROQ → 내장 응답 폴백
+ * GYEOL 채팅 API — 서버 → BYOK → env GROQ → 내장 응답 폴백
  * Supabase 없어도 동작 (인메모리 히스토리)
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -97,10 +97,11 @@ async function tryByok(
   for (const provider of providerOrder) {
     if (!BYOK_PROVIDER_ORDER.includes(provider as typeof BYOK_PROVIDER_ORDER[number])) continue;
     const { data: row } = await supabase
-      .from('gyeol_byok_keys')
+      .from('gyeol_user_api_keys')
       .select('id, encrypted_key')
       .eq('user_id', userId)
       .eq('provider', provider)
+      .eq('is_valid', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -114,6 +115,12 @@ async function tryByok(
         chatMessages,
       );
       if (content) {
+        if (row.id) {
+          await supabase
+            .from('gyeol_user_api_keys')
+            .update({ last_used: new Date().toISOString() })
+            .eq('id', row.id);
+        }
         return { content, provider };
       }
     } catch (err) {
@@ -204,7 +211,7 @@ export async function POST(req: NextRequest) {
           const gwData = await gwRes.json();
           if (typeof gwData.message === 'string') {
             assistantContent = gwData.message;
-            provider = 'openclaw';
+            provider = 'gyeol-server';
             console.log('[GYEOL] openclaw responded');
           }
         }
@@ -293,7 +300,7 @@ export async function POST(req: NextRequest) {
           const messages = (recent ?? []).map((r) => ({ role: r.role, content: r.content })) as { role: string; content: string }[];
           let usedProvider = provider;
           let usedApiKey = process.env.GROQ_API_KEY ?? '';
-          if (provider === 'openclaw' || !usedApiKey) {
+          if (provider === 'gyeol-server' || !usedApiKey) {
             usedProvider = 'groq';
             usedApiKey = process.env.GROQ_API_KEY ?? '';
           }

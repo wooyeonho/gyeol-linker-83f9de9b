@@ -22,7 +22,7 @@ export default function GyeolSettingsPage() {
   const [killSwitchLoading, setKillSwitchLoading] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
-  const [openclawStatus, setOpenclawStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [serverStatus, setServerStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [telegramStatus, setTelegramStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [telegramBotUsername, setTelegramBotUsername] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -38,12 +38,12 @@ export default function GyeolSettingsPage() {
     fetch('/api/admin/status')
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
-        setOpenclawStatus(data?.openclaw ? 'connected' : 'disconnected');
+        setServerStatus(data?.serverConnected ? 'connected' : 'disconnected');
         setTelegramStatus(data?.telegramConfigured ? 'connected' : 'disconnected');
         if (data?.telegramBotUsername) setTelegramBotUsername(data.telegramBotUsername);
       })
       .catch(() => {
-        setOpenclawStatus('disconnected');
+        setServerStatus('disconnected');
         setTelegramStatus('disconnected');
       });
   }, []);
@@ -165,11 +165,11 @@ export default function GyeolSettingsPage() {
               <p className="text-xs text-white/40">별도 설정 없이 바로 대화 가능</p>
             </div>
           </div>
-          {openclawStatus === 'connected' && (
+          {serverStatus === 'connected' && (
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
               <div>
-                <p className="text-sm text-white">OpenClaw 서버 연결됨</p>
+                <p className="text-sm text-white">GYEOL 서버 연결됨</p>
                 <p className="text-xs text-white/40">자율 에이전트 활성</p>
               </div>
             </div>
@@ -327,11 +327,11 @@ export default function GyeolSettingsPage() {
                 <p className="text-sm text-white/70">서버 연결</p>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-white/50">OpenClaw</span>
+                    <span className="text-xs text-white/50">GYEOL 서버</span>
                     <div className="flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full ${openclawStatus === 'connected' ? 'bg-green-500' : openclawStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-white/20'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${serverStatus === 'connected' ? 'bg-green-500' : serverStatus === 'checking' ? 'bg-yellow-500 animate-pulse' : 'bg-white/20'}`} />
                       <span className="text-xs text-white/40">
-                        {openclawStatus === 'connected' ? '연결됨' : openclawStatus === 'checking' ? '확인 중' : '미연결'}
+                        {serverStatus === 'connected' ? '연결됨' : serverStatus === 'checking' ? '확인 중' : '미연결'}
                       </span>
                     </div>
                   </div>
