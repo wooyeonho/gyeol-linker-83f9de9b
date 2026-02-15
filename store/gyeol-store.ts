@@ -74,9 +74,14 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     };
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
-      const res = await fetch('/api/chat', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabaseKey}`,
+        },
         body: JSON.stringify({ agentId: agent.id, message: text }),
       });
       const data = await res.json();
