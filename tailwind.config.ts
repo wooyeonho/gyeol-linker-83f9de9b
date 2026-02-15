@@ -11,8 +11,8 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#3985ef',
-          foreground: '#ffffff',
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -38,6 +38,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        surface: 'hsl(var(--surface))',
       },
       fontFamily: {
         display: ['Manrope', 'sans-serif'],
@@ -49,10 +50,11 @@ const config: Config = {
         '2xl': '2.5rem',
       },
       boxShadow: {
-        glass: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        glow: '0 0 60px -15px rgba(57, 133, 239, 0.5)',
-        'glow-soft': '0 0 40px -10px rgba(57, 133, 239, 0.3)',
-        card: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        glass: '0 8px 32px 0 hsl(250 70% 65% / 0.07)',
+        glow: '0 0 60px -15px hsl(250 70% 65% / 0.5)',
+        'glow-soft': '0 0 40px -10px hsl(250 70% 65% / 0.3)',
+        'glow-xs': '0 0 20px -5px hsl(250 70% 65% / 0.2)',
+        card: '0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06)',
       },
     },
   },

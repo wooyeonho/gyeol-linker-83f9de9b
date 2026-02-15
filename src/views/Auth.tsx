@@ -17,12 +17,10 @@ export default function AuthPage() {
     setError(null);
     setSuccess(null);
     setLoading(true);
-
     try {
       if (mode === 'signup') {
         const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
+          email, password,
           options: { emailRedirectTo: window.location.origin },
         });
         if (signUpError) throw signUpError;
@@ -32,7 +30,7 @@ export default function AuthPage() {
         if (signInError) throw signInError;
       }
     } catch (err: any) {
-      setError(err.message || '문제가 발생했어요. 다시 시도해 주세요.');
+      setError(err.message || '문제가 발생했어요.');
     } finally {
       setLoading(false);
     }
@@ -47,157 +45,104 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display transition-colors duration-500 bg-[hsl(210,20%,98%)] dark:bg-[hsl(230,30%,6%)]">
-      {/* Ambient background effects */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display bg-background">
+      {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl opacity-60 animate-pulse bg-[radial-gradient(circle,hsl(215,83%,58%,0.15),transparent_60%)] dark:bg-[radial-gradient(circle,hsl(215,83%,58%,0.1),transparent_60%)]" />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2 bg-[hsl(270,60%,95%)] dark:bg-[hsl(240,50%,20%,0.2)]" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2 bg-[hsl(215,60%,95%)] dark:bg-[hsl(215,50%,20%,0.2)]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] animate-glow-pulse bg-primary/10" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30 bg-accent/10" />
       </div>
 
       <motion.main
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md px-6 py-12 relative z-10 flex flex-col items-center"
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="w-full max-w-sm px-6 py-12 relative z-10 flex flex-col items-center"
       >
-        {/* Glass Orb */}
-        <div className="w-24 h-24 rounded-full mb-8 flex items-center justify-center relative cursor-pointer transition-transform hover:scale-105 glass-orb animate-float">
-          <div className="absolute w-full h-full rounded-full opacity-60 bg-gradient-to-tr from-transparent via-white/30 to-transparent pointer-events-none" />
-          <div className="grid grid-cols-3 gap-1 opacity-40 dark:opacity-60 mix-blend-overlay">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="w-1 h-1 bg-white rounded-full" />
-            ))}
-          </div>
-        </div>
+        {/* Orb */}
+        <motion.div
+          className="w-20 h-20 rounded-full mb-10 glass-orb animate-float"
+          whileHover={{ scale: 1.08 }}
+        />
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-foreground mb-3 tracking-tight">GYEOL</h1>
-        <p className="text-muted-foreground text-center mb-10 text-sm font-medium tracking-wide">
+        <h1 className="text-3xl font-bold text-foreground mb-1 tracking-tight">GYEOL</h1>
+        <p className="text-muted-foreground text-xs tracking-[0.2em] uppercase mb-10">
           AI Companion That Evolves With You
         </p>
 
-        {/* Mode Tabs */}
-        <div className="flex w-full mb-8 justify-between px-10">
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
-            className={`font-semibold pb-2 border-b-2 transition-colors ${
-              mode === 'login'
-                ? 'text-foreground border-primary'
-                : 'text-muted-foreground border-transparent hover:text-foreground/70'
-            }`}
-          >
-            로그인 (Login)
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('signup'); setError(null); setSuccess(null); }}
-            className={`font-medium pb-2 border-b-2 transition-colors ${
-              mode === 'signup'
-                ? 'text-foreground border-primary'
-                : 'text-muted-foreground border-transparent hover:text-foreground/70'
-            }`}
-          >
-            회원가입 (Sign Up)
-          </button>
+        {/* Tabs */}
+        <div className="flex w-full mb-8 gap-1 bg-secondary/50 rounded-xl p-1">
+          {(['login', 'signup'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); setError(null); setSuccess(null); }}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                mode === m
+                  ? 'bg-primary text-primary-foreground shadow-glow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {m === 'login' ? '로그인' : '회원가입'}
+            </button>
+          ))}
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
-          <div className="group relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="material-icons-round text-muted-foreground group-focus-within:text-primary transition-colors">email</span>
-            </div>
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <div className="relative">
+            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">email</span>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일 (Email)"
-              required
-              className="w-full pl-12 pr-4 py-4 bg-card dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-card dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
+              type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일" required
+              className="w-full pl-12 pr-4 py-3.5 bg-secondary/50 ring-1 ring-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:bg-secondary transition-all outline-none text-sm"
             />
           </div>
 
-          <div className="group relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="material-icons-round text-muted-foreground group-focus-within:text-primary transition-colors">lock</span>
-            </div>
+          <div className="relative">
+            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
             <input
               type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 (6자 이상)"
-              required
-              minLength={6}
-              className="w-full pl-12 pr-12 py-4 bg-card dark:bg-white/5 border-0 ring-1 ring-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:bg-card dark:focus:bg-white/10 transition-all duration-300 shadow-sm dark:shadow-none outline-none"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호 (6자 이상)" required minLength={6}
+              className="w-full pl-12 pr-12 py-3.5 bg-secondary/50 ring-1 ring-border/50 rounded-xl text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus:bg-secondary transition-all outline-none text-sm"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <span className="material-icons-round text-lg">
-                {showPassword ? 'visibility' : 'visibility_off'}
-              </span>
+            <button type="button" onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <span className="material-icons-round text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
             </button>
           </div>
 
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-sm text-destructive bg-destructive/10 rounded-2xl px-4 py-3">
+              className="text-xs text-destructive bg-destructive/10 rounded-xl px-4 py-3">
               {error}
             </motion.p>
           )}
           {success && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-sm text-[hsl(142,71%,45%)] dark:text-[hsl(142,71%,65%)] bg-[hsl(142,71%,45%,0.1)] rounded-2xl px-4 py-3">
+              className="text-xs text-emerald-400 bg-emerald-500/10 rounded-xl px-4 py-3">
               {success}
             </motion.p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 mt-4 bg-primary hover:brightness-110 text-primary-foreground font-semibold rounded-2xl shadow-glow transform transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 group disabled:opacity-40"
-          >
-            <span>{loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}</span>
-            {!loading && (
-              <span className="material-icons-round text-sm opacity-70 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-            )}
+          <button type="submit" disabled={loading}
+            className="w-full py-3.5 mt-2 bg-primary hover:brightness-110 text-primary-foreground font-semibold rounded-xl shadow-glow transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-sm">
+            {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
           </button>
-
-          <div className="flex items-center justify-center mt-6 gap-4 text-sm">
-            <button type="button" className="text-muted-foreground hover:text-primary transition-colors">아이디 찾기</button>
-            <span className="w-px h-3 bg-border" />
-            <button type="button" className="text-muted-foreground hover:text-primary transition-colors">비밀번호 찾기</button>
-          </div>
         </form>
 
-        {/* Social Login - Google Only */}
-        <div className="mt-12 w-full border-t border-border pt-8 flex flex-col items-center">
-          <p className="text-xs text-muted-foreground mb-4 font-medium uppercase tracking-wider">Or continue with</p>
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-sm"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        {/* Google */}
+        <div className="mt-10 w-full flex flex-col items-center">
+          <p className="text-[10px] text-muted-foreground mb-4 uppercase tracking-[0.15em]">Or continue with</p>
+          <button type="button" onClick={handleGoogleLogin}
+            className="w-11 h-11 rounded-full bg-secondary/50 border border-border/50 flex items-center justify-center text-foreground hover:bg-secondary transition-colors">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
             </svg>
           </button>
         </div>
       </motion.main>
-
-      {/* Dark Mode Toggle */}
-      <button
-        type="button"
-        onClick={() => document.documentElement.classList.toggle('dark')}
-        className="fixed top-6 right-6 z-50 p-3 rounded-full bg-card shadow-lg text-foreground hover:bg-secondary transition-all border border-border"
-      >
-        <span className="material-icons-round dark:hidden">dark_mode</span>
-        <span className="material-icons-round hidden dark:block">light_mode</span>
-      </button>
     </div>
   );
 }
