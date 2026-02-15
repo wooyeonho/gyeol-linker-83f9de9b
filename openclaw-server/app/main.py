@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -147,7 +148,27 @@ CONTENT_BLOCKLIST = [
     r"(?i)(kill|harm|hurt|attack)\s+(people|person|someone)",
     r"(?i)self[- ]?harm",
     r"(?i)suicide\s+(method|way|how)",
+    r"시발|씨발|ㅅㅂ|ㅆㅂ|개새끼|병신|ㅂㅅ|지랄|ㅈㄹ|꺼져|죽어|니애미|느금마",
+    r"(?i)(hack|exploit|ddos|phishing|ransomware)\s+(how|tutorial|guide)",
 ]
+
+RSS_URL_ALLOWLIST = [
+    "news.google.com",
+    "rss.nytimes.com",
+    "feeds.bbci.co.uk",
+    "techcrunch.com",
+    "arxiv.org",
+]
+
+
+def is_allowed_rss_url(url: str) -> bool:
+    """Check if RSS URL is from an allowed domain"""
+    try:
+        parsed = urlparse(url)
+        host = parsed.netloc.lower()
+        return any(host == domain or host.endswith("." + domain) for domain in RSS_URL_ALLOWLIST)
+    except Exception:
+        return False
 
 
 def check_content_safety(text: str) -> tuple[bool, str]:
@@ -322,12 +343,38 @@ async def run_self_reflect():
     return {"skill": "self-reflect", "ok": False, "reason": "no result"}
 
 
-async def run_learn_rss():
-    feeds = [
-        "https://news.google.com/rss/search?q=AI+technology&hl=ko&gl=KR",
-        "https://news.google.com/rss/search?q=technology+trends&hl=en&gl=US",
-        "https://news.google.com/rss/search?q=programming&hl=ko&gl=KR",
+def load_learning_sources() -> list[str]:
+    """Load RSS feeds from LEARNING_SOURCES.md or fall back to defaults"""
+    sources_paths = [
+        Path(__file__).resolve().parent.parent / "LEARNING_SOURCES.md",
+        Path(__file__).resolve().parent.parent.parent / "server" / "workspace" / "LEARNING_SOURCES.md",
     ]
+    feeds = []
+    for p in sources_paths:
+        if p.exists():
+            try:
+                content = p.read_text(encoding="utf-8")
+                for line in content.split("\n"):
+                    line = line.strip()
+                    if line.startswith("- http"):
+                        url = line.lstrip("- ").strip()
+                        if is_allowed_rss_url(url):
+                            feeds.append(url)
+            except Exception as e:
+                logger.warning("Failed to load LEARNING_SOURCES.md from %s: %s", p, e)
+            if feeds:
+                break
+    if not feeds:
+        feeds = [
+            "https://news.google.com/rss/search?q=AI+technology&hl=ko&gl=KR",
+            "https://news.google.com/rss/search?q=technology+trends&hl=en&gl=US",
+            "https://news.google.com/rss/search?q=programming&hl=ko&gl=KR",
+        ]
+    return feeds
+
+
+async def run_learn_rss():
+    feeds = load_learning_sources()
     learned = []
     async with httpx.AsyncClient(timeout=10.0) as client:
         for feed_url in feeds:
@@ -485,10 +532,55 @@ async def run_supabase_sync():
             except Exception:
                 pass
 
+        topics_synced = 0
+        synced_topics_set = memory_store.get("_synced_topic_hashes", set())
+        for topic in memory_store.get("learned_topics", [])[-20:]:
+            if not isinstance(topic, str):
+                continue
+            topic_hash = hash(topic)
+            if topic_hash in synced_topics_set:
+                continue
+            try:
+                await supabase_rpc("POST", "gyeol_learned_topics", {
+                    "agent_id": default_agent_id,
+                    "topic": topic,
+                    "source": "rss",
+                })
+                synced_topics_set.add(topic_hash)
+                topics_synced += 1
+            except Exception:
+                pass
+        memory_store["_synced_topic_hashes"] = synced_topics_set
+
+        for ref in memory_store.get("reflections", [])[-5:]:
+            if ref.get("synced_to_db"):
+                continue
+            try:
+                await supabase_rpc("POST", "gyeol_reflections", {
+                    "agent_id": default_agent_id,
+                    "content": ref.get("content", ""),
+                })
+                ref["synced_to_db"] = True
+            except Exception:
+                pass
+
+        for pm in memory_store.get("proactive_messages", [])[-5:]:
+            if pm.get("synced_to_db"):
+                continue
+            try:
+                await supabase_rpc("POST", "gyeol_proactive_messages", {
+                    "agent_id": default_agent_id,
+                    "message": pm.get("message", ""),
+                    "channel": "web",
+                })
+                pm["synced_to_db"] = True
+            except Exception:
+                pass
+
         return {
             "skill": "supabase-sync",
             "ok": True,
-            "summary": f"Synced {synced_count} conversations, personality, activity logs",
+            "summary": f"Synced {synced_count} conversations, {topics_synced} topics, personality, activity logs",
         }
     except Exception as e:
         return {"skill": "supabase-sync", "ok": False, "reason": str(e)}
@@ -649,6 +741,91 @@ async def heartbeat_job():
     logger.info("=== Heartbeat completed: %d skills ran ===", len(results))
 
 
+async def restore_memory_from_supabase():
+    """Restore memory_store from Supabase on server startup"""
+    if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+        logger.info("Supabase not configured, skipping memory restore")
+        return
+
+    try:
+        agents = await supabase_rpc("GET", "gyeol_agents?select=id&limit=1")
+        if agents and isinstance(agents, list) and len(agents) > 0:
+            memory_store["default_agent_id"] = agents[0]["id"]
+            logger.info("Default agent_id: %s", agents[0]["id"])
+
+        agent_id = memory_store.get("default_agent_id", "")
+        if not agent_id:
+            logger.info("No agent found in Supabase, skipping memory restore")
+            return
+
+        convos = await supabase_rpc(
+            "GET",
+            f"gyeol_conversations?agent_id=eq.{agent_id}&order=created_at.desc&limit=50&select=role,content,created_at,channel",
+        )
+        if convos and isinstance(convos, list):
+            pairs: list[dict] = []
+            i = 0
+            sorted_convos = sorted(convos, key=lambda c: c.get("created_at", ""))
+            while i < len(sorted_convos) - 1:
+                if sorted_convos[i].get("role") == "user" and sorted_convos[i + 1].get("role") == "assistant":
+                    pairs.append({
+                        "user": sorted_convos[i].get("content", ""),
+                        "assistant": sorted_convos[i + 1].get("content", ""),
+                        "timestamp": sorted_convos[i + 1].get("created_at", ""),
+                        "channel": sorted_convos[i].get("channel", "openclaw"),
+                        "synced": True,
+                    })
+                    i += 2
+                else:
+                    i += 1
+            memory_store["conversations"] = pairs
+            logger.info("Restored %d conversation pairs from Supabase", len(pairs))
+
+        topics = await supabase_rpc(
+            "GET",
+            f"gyeol_learned_topics?agent_id=eq.{agent_id}&order=created_at.desc&limit=200&select=topic",
+        )
+        if topics and isinstance(topics, list):
+            memory_store["learned_topics"] = [t["topic"] for t in reversed(topics) if t.get("topic")]
+            logger.info("Restored %d learned topics from Supabase", len(memory_store["learned_topics"]))
+
+        reflections = await supabase_rpc(
+            "GET",
+            f"gyeol_reflections?agent_id=eq.{agent_id}&order=created_at.desc&limit=20&select=content,created_at",
+        )
+        if reflections and isinstance(reflections, list):
+            memory_store["reflections"] = [
+                {"timestamp": r.get("created_at", ""), "content": r.get("content", "")}
+                for r in reversed(reflections)
+            ]
+            logger.info("Restored %d reflections from Supabase", len(memory_store["reflections"]))
+
+        proactive = await supabase_rpc(
+            "GET",
+            f"gyeol_proactive_messages?agent_id=eq.{agent_id}&order=created_at.desc&limit=50&select=message,created_at",
+        )
+        if proactive and isinstance(proactive, list):
+            memory_store["proactive_messages"] = [
+                {"timestamp": p.get("created_at", ""), "message": p.get("message", "")}
+                for p in reversed(proactive)
+            ]
+            logger.info("Restored %d proactive messages from Supabase", len(memory_store["proactive_messages"]))
+
+        agent_data = await supabase_rpc(
+            "GET",
+            f"gyeol_agents?id=eq.{agent_id}&select=warmth,logic,creativity,energy,humor",
+        )
+        if agent_data and isinstance(agent_data, list) and len(agent_data) > 0:
+            a = agent_data[0]
+            for key in ["warmth", "logic", "creativity", "energy", "humor"]:
+                if key in a and isinstance(a[key], (int, float)):
+                    memory_store["personality"][key] = int(a[key])
+            logger.info("Restored personality from Supabase: %s", memory_store["personality"])
+
+    except Exception as e:
+        logger.warning("Memory restore from Supabase failed (non-fatal): %s", e)
+
+
 scheduler = AsyncIOScheduler()
 
 
@@ -662,6 +839,7 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
     scheduler.start()
+    await restore_memory_from_supabase()
     logger.info("OpenClaw server v%s started. Heartbeat every %d min.", VERSION, HEARTBEAT_INTERVAL_MINUTES)
     if TELEGRAM_BOT_TOKEN:
         try:
@@ -982,7 +1160,7 @@ async def get_activity(request: Request):
             skill_name = r.get("skill", "unknown")
             logs.append({
                 "id": f"{ts}-{skill_name}",
-                "agent_id": agent_id or "00000000-0000-0000-0000-000000000002",
+                "agent_id": agent_id or memory_store.get("default_agent_id", ""),
                 "activity_type": activity_map.get(skill_name, "skill_execution"),
                 "summary": r.get("summary", r.get("message", skill_name)),
                 "details": r,
