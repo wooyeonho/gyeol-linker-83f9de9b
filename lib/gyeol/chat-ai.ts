@@ -205,13 +205,13 @@ export function buildSystemPrompt(personality: {
   const entries = Object.entries(personality) as [string, number][];
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
   const traitDesc: Record<string, string> = {
-    warmth: '따뜻하고 공감적인',
-    logic: '논리적이고 분석적인',
-    creativity: '창의적이고 상상력 풍부한',
-    energy: '활발하고 에너지 넘치는',
-    humor: '유머러스하고 재치있는',
+    warmth: 'warm and empathetic',
+    logic: 'logical and analytical',
+    creativity: 'creative and imaginative',
+    energy: 'energetic and lively',
+    humor: 'humorous and witty',
   };
-  const style = traitDesc[dominant] ?? '자연스러운';
+  const style = traitDesc[dominant] ?? 'natural';
 
   return `You are GYEOL, a digital companion and friend who grows with the user.
 
