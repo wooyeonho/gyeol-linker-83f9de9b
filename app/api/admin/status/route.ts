@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 
-const OPENCLAW_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://gyeol-openclaw-server-oqirunfo.fly.dev';
+const OPENCLAW_URL = process.env.OPENCLAW_GATEWAY_URL || '';
 
 export async function GET() {
   let openclaw = false;

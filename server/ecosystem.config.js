@@ -3,12 +3,9 @@ module.exports = {
     {
       name: 'gyeol-openclaw',
       cwd: './openclaw-server',
-      script: '.venv/bin/uvicorn',
-      args: 'app.main:app --host 0.0.0.0 --port 8000',
+      script: 'poetry',
+      args: 'run uvicorn app.main:app --host 0.0.0.0 --port 8000',
       interpreter: 'none',
-      env: {
-        PATH: `${process.cwd()}/openclaw-server/.venv/bin:${process.env.PATH}`,
-      },
       max_memory_restart: '256M',
       restart_delay: 5000,
       max_restarts: 10,
