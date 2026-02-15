@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -354,7 +354,37 @@ async def run_learn_rss():
     }
 
 
+KST = timezone(timedelta(hours=9))
+
+
+def is_night_time() -> bool:
+    """Check if current time is between 23:00 and 07:00 KST (night ban for proactive messages)"""
+    now = datetime.now(KST)
+    hour = now.hour
+    return hour >= 23 or hour < 7
+
+
+def get_daily_proactive_count() -> int:
+    """Count proactive messages sent today"""
+    today = datetime.now(KST).date().isoformat()
+    count = 0
+    for msg in memory_store.get("proactive_messages", []):
+        ts = msg.get("timestamp", "")
+        if ts.startswith(today):
+            count += 1
+    return count
+
+
+MAX_DAILY_PROACTIVE = 2
+
+
 async def run_proactive_message():
+    if is_night_time():
+        return {"skill": "proactive-message", "ok": True, "summary": "night time - skipping proactive message"}
+
+    if get_daily_proactive_count() >= MAX_DAILY_PROACTIVE:
+        return {"skill": "proactive-message", "ok": True, "summary": f"daily limit ({MAX_DAILY_PROACTIVE}) reached"}
+
     recent_topics = memory_store["learned_topics"][-5:]
     if not recent_topics:
         return {"skill": "proactive-message", "ok": True, "summary": "no topics to share"}
@@ -416,14 +446,15 @@ async def run_supabase_sync():
         synced_count = 0
         for conv in unsynced[-20:]:
             try:
+                agent_id = conv.get("agent_id") or memory_store.get("default_agent_id") or "00000000-0000-0000-0000-000000000002"
                 await supabase_rpc("POST", "gyeol_conversations", {
-                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "agent_id": agent_id,
                     "role": "user",
                     "content": conv.get("user", ""),
                     "channel": conv.get("channel", "openclaw"),
                 })
                 await supabase_rpc("POST", "gyeol_conversations", {
-                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "agent_id": agent_id,
                     "role": "assistant",
                     "content": conv.get("assistant", ""),
                     "channel": conv.get("channel", "openclaw"),
@@ -435,14 +466,16 @@ async def run_supabase_sync():
                 pass
 
         p = memory_store["personality"]
-        await sync_personality_to_supabase("00000000-0000-0000-0000-000000000002", p)
+        default_agent_id = memory_store.get("default_agent_id") or "00000000-0000-0000-0000-000000000002"
+        await sync_personality_to_supabase(default_agent_id, p)
 
         for log_entry in memory_store["skills_log"][-5:]:
             if log_entry.get("synced_to_db"):
                 continue
             try:
+                log_agent_id = memory_store.get("default_agent_id") or "00000000-0000-0000-0000-000000000002"
                 await supabase_rpc("POST", "gyeol_autonomous_logs", {
-                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "agent_id": log_agent_id,
                     "activity_type": "skill_execution",
                     "summary": f"Heartbeat: {len(log_entry.get('results', []))} skills ran",
                     "details": {"results": log_entry.get("results", [])},

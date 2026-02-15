@@ -25,9 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const openclawUrl =
-      process.env.OPENCLAW_GATEWAY_URL ||
-      'https://gyeol-openclaw-server-oqirunfo.fly.dev';
+    const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
+    if (!openclawUrl) {
+      return NextResponse.json(
+        { error: 'OPENCLAW_GATEWAY_URL not configured' },
+        { status: 503 },
+      );
+    }
 
     const [{ data: agent1 }, { data: agent2 }] = await Promise.all([
       supabase.from('gyeol_agents').select('name, warmth, logic, creativity, energy, humor').eq('id', agent1Id).single(),
@@ -41,7 +45,10 @@ export async function POST(req: NextRequest) {
     const prompt = `You are simulating a conversation between two AI companions.
 Agent 1 "${agent1.name}" personality: warmth=${agent1.warmth}, logic=${agent1.logic}, creativity=${agent1.creativity}
 Agent 2 "${agent2.name}" personality: warmth=${agent2.warmth}, logic=${agent2.logic}, creativity=${agent2.creativity}
-Generate a short, natural 4-message conversation between them about a shared interest. Format each line as "Agent1:" or "Agent2:" prefix. No markdown. Keep it casual and fun.`;
+Generate a short, natural 4-message conversation between them about a shared interest.
+Respond ONLY in this JSON format:
+{"messages": [{"agent": 1, "text": "message"}, {"agent": 2, "text": "message"}, ...]}
+No markdown. Keep it casual and fun.`;
 
     let conversationText = '';
     try {
@@ -61,17 +68,34 @@ Generate a short, natural 4-message conversation between them about a shared int
       conversationText = `${agent1.name}: 안녕! 반가워!\n${agent2.name}: 나도 반가워! 우리 취향이 비슷한 것 같아.\n${agent1.name}: 맞아, 요즘 뭐에 관심 있어?\n${agent2.name}: AI 기술이랑 음악! 너는?`;
     }
 
-    const lines = conversationText.split('\n').filter((l: string) => l.trim());
     const messages: { agent_id: string; message: string }[] = [];
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith(`${agent1.name}:`) || trimmed.startsWith('Agent1:')) {
-        const msg = trimmed.replace(/^(Agent1:|[^:]+:)\s*/, '');
-        if (msg) messages.push({ agent_id: agent1Id, message: msg });
-      } else if (trimmed.startsWith(`${agent2.name}:`) || trimmed.startsWith('Agent2:')) {
-        const msg = trimmed.replace(/^(Agent2:|[^:]+:)\s*/, '');
-        if (msg) messages.push({ agent_id: agent2Id, message: msg });
+    try {
+      const jsonMatch = conversationText.match(/\{[\s\S]*"messages"[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (Array.isArray(parsed.messages)) {
+          for (const m of parsed.messages) {
+            const agentId = m.agent === 1 ? agent1Id : agent2Id;
+            if (m.text) messages.push({ agent_id: agentId, message: m.text });
+          }
+        }
+      }
+    } catch {
+      // JSON parsing failed, try line-based fallback
+    }
+
+    if (messages.length === 0) {
+      const lines = conversationText.split('\n').filter((l: string) => l.trim());
+      for (const line of lines) {
+        const trimmed = line.trim().replace(/^\*\*/, '').replace(/\*\*$/, '').replace(/^\d+\.\s*/, '');
+        const agent1Match = trimmed.match(/^(?:Agent\s*1|GYEOL|[^:]{1,20}):\s*(.+)/i);
+        const agent2Match = trimmed.match(/^(?:Agent\s*2):\s*(.+)/i);
+        if (agent1Match && agent1Match[1]) {
+          messages.push({ agent_id: agent1Id, message: agent1Match[1] });
+        } else if (agent2Match && agent2Match[1]) {
+          messages.push({ agent_id: agent2Id, message: agent2Match[1] });
+        }
       }
     }
 
