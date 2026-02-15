@@ -1,14 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
+import { useAuth } from '@/src/hooks/useAuth';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
-import { DEMO_USER_ID } from '@/lib/gyeol/constants';
 
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
 
 export default function SettingsPage() {
   const { agent } = useInitAgent();
+  const { user, signOut } = useAuth();
   const [autonomyLevel, setAutonomyLevel] = useState(50);
   const [contentFilterOn, setContentFilterOn] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
@@ -20,11 +21,12 @@ export default function SettingsPage() {
   const [killSwitchActive, setKillSwitchActive] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
     (async () => {
       const { data } = await supabase
         .from('gyeol_byok_keys' as any)
         .select('provider, encrypted_key')
-        .eq('user_id', DEMO_USER_ID);
+        .eq('user_id', user.id);
       if (data) {
         setByokList((data as any[]).map((x: any) => ({
           provider: x.provider,
@@ -32,7 +34,7 @@ export default function SettingsPage() {
         })));
       }
     })();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     (async () => {
@@ -46,12 +48,12 @@ export default function SettingsPage() {
   }, []);
 
   const saveByok = async (provider: string) => {
-    if (!byokKey.trim()) return;
+    if (!byokKey.trim() || !user) return;
     setByokSaving(true);
     try {
       await supabase
         .from('gyeol_byok_keys' as any)
-        .upsert({ user_id: DEMO_USER_ID, provider, encrypted_key: byokKey.trim() } as any, { onConflict: 'user_id,provider' });
+        .upsert({ user_id: user.id, provider, encrypted_key: byokKey.trim() } as any, { onConflict: 'user_id,provider' });
       setByokList((prev) => [
         ...prev.filter((x) => x.provider !== provider),
         { provider, masked: '****' + byokKey.trim().slice(-4) },
@@ -80,9 +82,22 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
-        <header>
+        <header className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Settings</h1>
+          <button
+            type="button"
+            onClick={signOut}
+            className="text-xs text-white/40 hover:text-white/60 transition px-3 py-1.5 rounded-lg border border-white/10"
+          >
+            로그아웃
+          </button>
         </header>
+
+        {/* Account */}
+        <section className="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+          <h2 className="text-sm font-medium text-white/60 mb-2">Account</h2>
+          <p className="text-sm text-white/80">{user?.email}</p>
+        </section>
 
         {/* AI Profile */}
         <section className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-4">
