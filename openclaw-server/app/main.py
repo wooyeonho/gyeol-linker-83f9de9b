@@ -4,6 +4,7 @@ import time
 import asyncio
 import json
 import logging
+import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -18,6 +19,7 @@ if env_path.exists():
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -46,6 +48,7 @@ memory_store: dict = {
     "proactive_messages": [],
     "security_log": [],
     "telegram_chats": {},
+    "telegram_links": {},
     "personality": {
         "warmth": 50,
         "logic": 50,
@@ -54,6 +57,8 @@ memory_store: dict = {
         "humor": 50,
     },
 }
+
+activity_subscribers: list[asyncio.Queue] = []
 
 
 def detect_language(text: str) -> str:
@@ -592,14 +597,23 @@ async def heartbeat_job():
     sync_result = await run_supabase_sync()
     results.append(sync_result)
 
-    memory_store["skills_log"].append({
+    log_entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "results": results,
-    })
-
+    }
+    memory_store["skills_log"].append(log_entry)
+    
     if len(memory_store["skills_log"]) > 50:
         memory_store["skills_log"] = memory_store["skills_log"][-50:]
-
+    
+    for r in results:
+        broadcast_activity({
+            "id": f"{log_entry['timestamp']}-{r.get('skill', 'unknown')}",
+            "activity_type": r.get("skill", "unknown"),
+            "summary": r.get("summary", r.get("message", "")),
+            "created_at": log_entry["timestamp"],
+        })
+    
     logger.info("=== Heartbeat completed: %d skills ran ===", len(results))
 
 
@@ -635,6 +649,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     agentId: str = ""
+    userId: str = ""
     message: str
     channel: str = "web"
 
@@ -643,9 +658,28 @@ class HeartbeatRequest(BaseModel):
     agentId: str = ""
 
 
+class TelegramSetupRequest(BaseModel):
+    webhookUrl: str
+    secret: str = ""
+
+
+class TelegramLinkRequest(BaseModel):
+    chatId: str
+    agentId: str
+    userId: str = ""
+
+
 class TelegramUpdate(BaseModel):
     update_id: int
     message: Optional[dict] = None
+
+
+def broadcast_activity(log_entry: dict):
+    for q in activity_subscribers:
+        try:
+            q.put_nowait(log_entry)
+        except asyncio.QueueFull:
+            pass
 
 
 @app.get("/api/status")
@@ -736,6 +770,36 @@ async def chat(req: ChatRequest):
     return {"message": fallback_messages.get(lang, fallback_messages["en"]), "model": "fallback"}
 
 
+@app.post("/api/telegram/setup")
+async def telegram_setup(req: TelegramSetupRequest):
+    if not TELEGRAM_BOT_TOKEN:
+        return {"ok": False, "error": "TELEGRAM_BOT_TOKEN not set"}
+    params: dict = {"url": req.webhookUrl}
+    if req.secret:
+        params["secret_token"] = req.secret
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook",
+            json=params,
+        )
+        return resp.json()
+
+
+@app.post("/api/telegram/link")
+async def telegram_link(req: TelegramLinkRequest):
+    memory_store["telegram_links"][req.chatId] = {
+        "agent_id": req.agentId,
+        "user_id": req.userId,
+        "linked_at": datetime.now(timezone.utc).isoformat(),
+    }
+    return {"ok": True, "chatId": req.chatId, "agentId": req.agentId}
+
+
+@app.get("/api/telegram/links")
+async def telegram_links():
+    return memory_store["telegram_links"]
+
+
 @app.post("/api/telegram/webhook")
 async def telegram_webhook(request: Request):
     if not TELEGRAM_BOT_TOKEN:
@@ -750,15 +814,20 @@ async def telegram_webhook(request: Request):
     user_text = msg["text"]
     user_name = msg.get("from", {}).get("first_name", "User")
 
+    link = memory_store["telegram_links"].get(chat_id, {})
+    linked_agent_id = link.get("agent_id", "")
+
     if user_text == "/start":
         memory_store["telegram_chats"][chat_id] = {
             "user_name": user_name,
             "joined_at": datetime.now(timezone.utc).isoformat(),
         }
-        await send_telegram_message(
-            chat_id,
-            f"Hi {user_name}! I'm GYEOL, your AI companion. Talk to me anytime!"
-        )
+        lang = detect_language(user_name)
+        if lang == "ko":
+            greeting = f"{user_name}님 안녕! 나는 GYEOL이야. 언제든 말 걸어줘!"
+        else:
+            greeting = f"Hi {user_name}! I'm GYEOL, your AI companion. Talk to me anytime!"
+        await send_telegram_message(chat_id, greeting)
         return {"ok": True}
 
     if user_text == "/status":
@@ -771,7 +840,22 @@ async def telegram_webhook(request: Request):
             f"Learned topics: {topics}\n"
             f"Personality: W{p['warmth']} L{p['logic']} C{p['creativity']} E{p['energy']} H{p['humor']}"
         )
+        if linked_agent_id:
+            status_text += f"\nLinked agent: {linked_agent_id[:8]}..."
         await send_telegram_message(chat_id, status_text)
+        return {"ok": True}
+
+    if user_text.startswith("/link "):
+        parts = user_text.split(" ", 1)
+        if len(parts) == 2 and len(parts[1]) > 8:
+            memory_store["telegram_links"][chat_id] = {
+                "agent_id": parts[1].strip(),
+                "user_id": "",
+                "linked_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await send_telegram_message(chat_id, "Agent linked! Your web and Telegram chats are now synced.")
+        else:
+            await send_telegram_message(chat_id, "Usage: /link <agent_id>")
         return {"ok": True}
 
     memory_store["telegram_chats"].setdefault(chat_id, {
@@ -779,7 +863,11 @@ async def telegram_webhook(request: Request):
         "joined_at": datetime.now(timezone.utc).isoformat(),
     })
 
-    chat_req = ChatRequest(agentId="", message=user_text, channel="telegram")
+    chat_req = ChatRequest(
+        agentId=linked_agent_id,
+        message=user_text,
+        channel="telegram",
+    )
     result = await chat(chat_req)
     await send_telegram_message(chat_id, result["message"])
     return {"ok": True}
@@ -830,32 +918,60 @@ async def health():
 
 
 @app.get("/api/activity")
-async def get_activity():
+async def get_activity(request: Request):
+    agent_id = request.query_params.get("agentId", "")
+    limit = min(int(request.query_params.get("limit", "50")), 100)
     logs = []
+    activity_map = {
+        "self-reflect": "reflection",
+        "learn-rss": "learning",
+        "proactive-message": "proactive_message",
+        "security-scan": "skill_execution",
+        "supabase-sync": "skill_execution",
+        "personality-evolve": "skill_execution",
+        "topic-research": "learning",
+        "telegram-broadcast": "social",
+    }
     for entry in reversed(memory_store.get("skills_log", [])):
         ts = entry.get("timestamp", "")
         for r in entry.get("results", []):
             skill_name = r.get("skill", "unknown")
-            activity_map = {
-                "self-reflect": "reflection",
-                "learn-rss": "learning",
-                "proactive-message": "proactive_message",
-                "security-scan": "skill_execution",
-                "supabase-sync": "skill_execution",
-                "personality-evolve": "skill_execution",
-                "topic-research": "learning",
-                "telegram-broadcast": "social",
-            }
             logs.append({
                 "id": f"{ts}-{skill_name}",
-                "agent_id": "00000000-0000-0000-0000-000000000002",
+                "agent_id": agent_id or "00000000-0000-0000-0000-000000000002",
                 "activity_type": activity_map.get(skill_name, "skill_execution"),
                 "summary": r.get("summary", r.get("message", skill_name)),
                 "details": r,
                 "was_sandboxed": True,
                 "created_at": ts,
             })
-    return logs[:50]
+    return logs[:limit]
+
+
+@app.get("/api/activity/stream")
+async def activity_stream():
+    queue: asyncio.Queue = asyncio.Queue(maxsize=50)
+    activity_subscribers.append(queue)
+
+    async def event_generator():
+        try:
+            while True:
+                try:
+                    data = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    yield f"data: {json.dumps(data)}\n\n"
+                except asyncio.TimeoutError:
+                    yield f"data: {json.dumps({'type': 'ping'})}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            if queue in activity_subscribers:
+                activity_subscribers.remove(queue)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/")

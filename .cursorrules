@@ -121,7 +121,7 @@ interface VisualState {
 ```
 NEXT_PUBLIC_SUPABASE_URL      # Supabase URL (필수)
 NEXT_PUBLIC_SUPABASE_ANON_KEY # Supabase Anon Key (필수)
-SUPABASE_SERVICE_ROLE_KEY     # Service Role Key (필수)
+SUPABASE_SERVICE_KEY          # Service Role Key (필수)
 ENCRYPTION_SECRET             # BYOK 암호화 키 (필수)
 GROQ_API_KEY                  # Groq 폴백 (선택)
 OPENCLAW_GATEWAY_URL          # OpenClaw (선택)
