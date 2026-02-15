@@ -89,10 +89,10 @@ export default function GyeolPage() {
       {/* Greeting */}
       <div className="text-center z-30 mb-8 max-w-2xl">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2 text-foreground">
-          {greeting}
+          {greeting}, {user?.email?.split('@')[0] ?? 'Explorer'}
         </h1>
         <p className="text-muted-foreground font-medium">
-          {agent?.total_conversations ?? 0} conversations · {Number(agent?.evolution_progress ?? 0).toFixed(0)}% evolution
+          OpenClaw Core Active
         </p>
       </div>
 
@@ -100,13 +100,12 @@ export default function GyeolPage() {
       <div className="w-full max-w-lg mb-12 z-30">
         <div className="status-card rounded-2xl p-6 shadow-card flex items-center justify-between backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center relative">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse absolute" />
-              <span className="material-icons-round text-green-600 dark:text-green-400 text-2xl">power_settings_new</span>
+            <div className="w-12 h-12 rounded-full bg-[hsl(142,71%,45%,0.1)] flex items-center justify-center relative">
+              <span className="material-icons-round text-[hsl(142,71%,45%)] text-2xl">power_settings_new</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide">System Status</span>
-              <span className="text-lg font-bold text-foreground">Online · Gen {agent?.gen ?? 1}</span>
+              <span className="text-lg font-bold text-foreground">Online (OpenClaw)</span>
             </div>
           </div>
           <Link to="/activity" className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors text-muted-foreground">
@@ -118,22 +117,22 @@ export default function GyeolPage() {
       {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl mb-12 z-30 px-2">
         <Link to="/activity" className="section-card p-6 text-left hover:-translate-y-1 transition-all duration-300 shadow-sm group block">
-          <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-2xl">monitoring</span>
+          <div className="w-12 h-12 rounded-xl bg-[hsl(215,83%,93%)] dark:bg-[hsl(215,50%,20%,0.3)] text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span className="material-icons-round text-2xl">monitoring</span>
           </div>
           <h3 className="text-lg font-bold text-foreground mb-1">Daily Evolution</h3>
           <p className="text-sm text-muted-foreground">Check growth metrics</p>
         </Link>
         <Link to="/social" className="section-card p-6 text-left hover:-translate-y-1 transition-all duration-300 shadow-sm group block">
-          <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-2xl">shield</span>
+          <div className="w-12 h-12 rounded-xl bg-[hsl(270,60%,93%)] dark:bg-[hsl(270,50%,20%,0.3)] text-[hsl(270,60%,50%)] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span className="material-icons-round text-2xl">shield</span>
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-1">Social Match</h3>
-          <p className="text-sm text-muted-foreground">Meet other AIs</p>
+          <h3 className="text-lg font-bold text-foreground mb-1">Safety Audit</h3>
+          <p className="text-sm text-muted-foreground">Review core protocols</p>
         </Link>
         <Link to="/market/skills" className="section-card p-6 text-left hover:-translate-y-1 transition-all duration-300 shadow-sm group block">
-          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-2xl">extension</span>
+          <div className="w-12 h-12 rounded-xl bg-[hsl(30,80%,93%)] dark:bg-[hsl(30,50%,20%,0.3)] text-[hsl(30,80%,50%)] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span className="material-icons-round text-2xl">extension</span>
           </div>
           <h3 className="text-lg font-bold text-foreground mb-1">New Skills</h3>
           <p className="text-sm text-muted-foreground">Explore capabilities</p>
@@ -187,8 +186,9 @@ export default function GyeolPage() {
         <div className="w-full max-w-2xl relative group">
           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
           <div className="relative flex items-center glass-panel rounded-full p-2 shadow-glass transition-shadow duration-300 focus-within:shadow-glow-soft bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/40 dark:border-white/10">
-            <div className="pl-5 pr-2 text-muted-foreground">
-              <span className="material-icons-round">chat_bubble_outline</span>
+            <div className="pl-4 pr-1 flex items-center gap-2 text-muted-foreground">
+              <span className="material-icons-round text-xl">search</span>
+              <span className="material-icons-round text-xl">pets</span>
             </div>
             <input
               type="text"
@@ -196,7 +196,7 @@ export default function GyeolPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               onFocus={() => messages.length > 0 && setChatOpen(true)}
-              placeholder="Ask GYEOL anything..."
+              placeholder="Ask OpenClaw anything..."
               className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-foreground placeholder:text-muted-foreground text-lg py-3 px-2 font-medium"
             />
             <div className="flex items-center gap-2 pr-2">
