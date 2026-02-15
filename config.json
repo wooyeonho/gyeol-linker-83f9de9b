@@ -1,34 +1,37 @@
 {
   "agent": {
-    "name": "OpenClaw Living Agent",
-    "description": "A proactive, living AI assistant.",
+    "name": "GYEOL",
+    "description": "GYEOL — AI companion that grows through conversation. 대화하면서 성장하는 AI 동반자.",
     "systemPromptFile": "/app/system_prompt.md",
     "model": {
-      "provider": "openai",
-      "model": "gpt-4-turbo",
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
       "temperature": 0.7
     }
   },
   "server": {
-    "port": 18789
+    "port": 8080
   },
   "channels": {
     "telegram": {
       "enabled": true,
-      "token": "${TELEGRAM_BOT_TOKEN}" 
-    },
-    "discord": {
-      "enabled": false,
-      "token": "${DISCORD_BOT_TOKEN}"
+      "token": "${TELEGRAM_BOT_TOKEN}"
     }
+  },
+  "heartbeat": {
+    "enabled": true,
+    "intervalSeconds": 1800
   },
   "sandbox": {
     "enabled": true,
-    "workDir": "/app/data/workspace"
+    "workDir": "/app/workspace"
   },
   "skills": [
-    "web-search",
-    "file-ops",
-    "shell"
+    "gyeol-learner",
+    "gyeol-reflection",
+    "gyeol-personality-sync",
+    "gyeol-proactive",
+    "gyeol-security",
+    "gyeol-supabase"
   ]
 }
