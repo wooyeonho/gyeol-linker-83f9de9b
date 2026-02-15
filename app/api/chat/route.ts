@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
     let assistantContent = '';
     let provider = 'builtin';
 
-    const openclawUrl = process.env.OPENCLAW_GATEWAY_URL;
+    const openclawUrl = process.env.OPENCLAW_GATEWAY_URL || 'https://gyeol-openclaw-server-oqirunfo.fly.dev';
     console.log('[GYEOL] provider chain: openclaw=%s, supabase=%s, groq_key=%s, cf=%s',
       openclawUrl ? 'yes' : 'no',
       supabase ? 'yes' : 'no',
