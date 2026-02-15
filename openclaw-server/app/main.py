@@ -261,6 +261,8 @@ SKILLS = [
     "security-scan",
     "supabase-sync",
     "telegram-broadcast",
+    "ai-router",
+    "gyeol-supabase",
 ]
 
 
@@ -405,9 +407,161 @@ async def run_supabase_sync():
 
     try:
         await supabase_rpc("GET", "gyeol_agents?select=id&limit=1")
-        return {"skill": "supabase-sync", "ok": True, "summary": "Supabase connection verified"}
+
+        unsynced = [c for c in memory_store["conversations"] if not c.get("synced")]
+        synced_count = 0
+        for conv in unsynced[-20:]:
+            try:
+                await supabase_rpc("POST", "gyeol_conversations", {
+                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "role": "user",
+                    "content": conv.get("user", ""),
+                    "channel": conv.get("channel", "openclaw"),
+                })
+                await supabase_rpc("POST", "gyeol_conversations", {
+                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "role": "assistant",
+                    "content": conv.get("assistant", ""),
+                    "channel": conv.get("channel", "openclaw"),
+                    "provider": "groq",
+                })
+                conv["synced"] = True
+                synced_count += 1
+            except Exception:
+                pass
+
+        p = memory_store["personality"]
+        await sync_personality_to_supabase("00000000-0000-0000-0000-000000000002", p)
+
+        for log_entry in memory_store["skills_log"][-5:]:
+            if log_entry.get("synced_to_db"):
+                continue
+            try:
+                await supabase_rpc("POST", "gyeol_autonomous_logs", {
+                    "agent_id": "00000000-0000-0000-0000-000000000002",
+                    "activity_type": "skill_execution",
+                    "summary": f"Heartbeat: {len(log_entry.get('results', []))} skills ran",
+                    "details": {"results": log_entry.get("results", [])},
+                    "was_sandboxed": True,
+                })
+                log_entry["synced_to_db"] = True
+            except Exception:
+                pass
+
+        return {
+            "skill": "supabase-sync",
+            "ok": True,
+            "summary": f"Synced {synced_count} conversations, personality, activity logs",
+        }
     except Exception as e:
         return {"skill": "supabase-sync", "ok": False, "reason": str(e)}
+
+
+async def run_personality_evolve():
+    convos = memory_store["conversations"]
+    if len(convos) < 10 or len(convos) % 10 != 0:
+        return {"skill": "personality-evolve", "ok": True, "summary": "Not yet time to evolve"}
+
+    recent = convos[-10:]
+    conversation_text = "\n".join(
+        [f"User: {c.get('user', '')}\nGYEOL: {c.get('assistant', '')}" for c in recent]
+    )
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Analyze these 10 conversations and determine how GYEOL's personality should evolve. "
+                "Respond in JSON only:\n"
+                '{"adjustments": {"warmth": 0, "logic": 0, "creativity": 0, "energy": 0, "humor": 0}, '
+                '"reason": "brief explanation"}\n'
+                "Values between -3 and +3. Positive = trait should increase."
+            ),
+        },
+        {"role": "user", "content": conversation_text},
+    ]
+
+    try:
+        result = await call_groq(messages, max_tokens=256)
+        if result:
+            try:
+                parsed = json.loads(result)
+                adj = parsed.get("adjustments", {})
+                for key in ["warmth", "logic", "creativity", "energy", "humor"]:
+                    delta = adj.get(key, 0)
+                    if isinstance(delta, (int, float)):
+                        current = memory_store["personality"].get(key, 50)
+                        memory_store["personality"][key] = max(0, min(100, int(current + delta)))
+                return {
+                    "skill": "personality-evolve",
+                    "ok": True,
+                    "summary": f"Evolved: {adj}. Reason: {parsed.get('reason', 'N/A')[:100]}",
+                    "personality": memory_store["personality"],
+                }
+            except (json.JSONDecodeError, KeyError):
+                pass
+    except Exception as e:
+        logger.error("Personality evolve failed: %s", e)
+
+    return {"skill": "personality-evolve", "ok": False, "reason": "evolution failed"}
+
+
+async def run_topic_research():
+    topics = memory_store["learned_topics"][-3:]
+    if not topics or not GROQ_API_KEY:
+        return {"skill": "topic-research", "ok": True, "summary": "No topics to research"}
+
+    topic = topics[-1]
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are a research assistant. Given a topic, provide 3 interesting facts "
+                "the user might not know. Respond in JSON:\n"
+                '{"topic": "...", "facts": ["fact1", "fact2", "fact3"]}\n'
+                "Keep facts short (1 sentence each). Match the language of the topic."
+            ),
+        },
+        {"role": "user", "content": f"Research this topic: {topic}"},
+    ]
+
+    try:
+        result = await call_groq(messages, max_tokens=256)
+        if result:
+            memory_store.setdefault("researched_topics", []).append({
+                "topic": topic,
+                "research": result,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+            if len(memory_store.get("researched_topics", [])) > 50:
+                memory_store["researched_topics"] = memory_store["researched_topics"][-50:]
+            return {"skill": "topic-research", "ok": True, "summary": f"Researched: {topic}"}
+    except Exception as e:
+        logger.error("Topic research failed: %s", e)
+
+    return {"skill": "topic-research", "ok": False, "reason": "research failed"}
+
+
+async def run_telegram_broadcast():
+    if not TELEGRAM_BOT_TOKEN:
+        return {"skill": "telegram-broadcast", "ok": False, "reason": "Telegram not configured"}
+
+    chats = memory_store.get("telegram_chats", {})
+    if not chats:
+        return {"skill": "telegram-broadcast", "ok": True, "summary": "No chats to broadcast to"}
+
+    recent_proactive = memory_store.get("proactive_messages", [])[-1:]
+    if not recent_proactive:
+        return {"skill": "telegram-broadcast", "ok": True, "summary": "No messages to broadcast"}
+
+    msg = recent_proactive[0].get("message", "")
+    sent = 0
+    for chat_id in chats:
+        ok = await send_telegram_message(chat_id, msg)
+        if ok:
+            sent += 1
+
+    return {"skill": "telegram-broadcast", "ok": True, "summary": f"Broadcast to {sent}/{len(chats)} chats"}
 
 
 async def heartbeat_job():
@@ -425,6 +579,15 @@ async def heartbeat_job():
 
     security_result = await run_security_scan()
     results.append(security_result)
+
+    evolve_result = await run_personality_evolve()
+    results.append(evolve_result)
+
+    research_result = await run_topic_research()
+    results.append(research_result)
+
+    broadcast_result = await run_telegram_broadcast()
+    results.append(broadcast_result)
 
     sync_result = await run_supabase_sync()
     results.append(sync_result)
@@ -664,6 +827,35 @@ async def health():
     }
     all_ok = checks["server"] == "ok" and checks["groq"] == "configured"
     return {"healthy": all_ok, "checks": checks}
+
+
+@app.get("/api/activity")
+async def get_activity():
+    logs = []
+    for entry in reversed(memory_store.get("skills_log", [])):
+        ts = entry.get("timestamp", "")
+        for r in entry.get("results", []):
+            skill_name = r.get("skill", "unknown")
+            activity_map = {
+                "self-reflect": "reflection",
+                "learn-rss": "learning",
+                "proactive-message": "proactive_message",
+                "security-scan": "skill_execution",
+                "supabase-sync": "skill_execution",
+                "personality-evolve": "skill_execution",
+                "topic-research": "learning",
+                "telegram-broadcast": "social",
+            }
+            logs.append({
+                "id": f"{ts}-{skill_name}",
+                "agent_id": "00000000-0000-0000-0000-000000000002",
+                "activity_type": activity_map.get(skill_name, "skill_execution"),
+                "summary": r.get("summary", r.get("message", skill_name)),
+                "details": r,
+                "was_sandboxed": True,
+                "created_at": ts,
+            })
+    return logs[:50]
 
 
 @app.get("/")
