@@ -19,7 +19,6 @@ export default function SettingsPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [killSwitchActive, setKillSwitchActive] = useState(false);
 
-  // Load BYOK keys
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -35,7 +34,6 @@ export default function SettingsPage() {
     })();
   }, []);
 
-  // Load system state
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -77,13 +75,13 @@ export default function SettingsPage() {
   const personality = agent
     ? [agent.warmth, agent.logic, agent.creativity, agent.energy, agent.humor]
     : [50, 50, 50, 50, 50];
-  const labels = ['따뜻함', '논리', '창의', '에너지', '유머'];
+  const labels = ['Warmth', 'Logic', 'Creative', 'Energy', 'Humor'];
 
   return (
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-bold">설정</h1>
+          <h1 className="text-2xl font-bold">Settings</h1>
         </header>
 
         {/* AI Profile */}
@@ -128,19 +126,19 @@ export default function SettingsPage() {
 
         {/* Engine Status */}
         <section className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-3">
-          <h2 className="text-sm font-medium text-white/60">AI 엔진</h2>
+          <h2 className="text-sm font-medium text-white/60">AI Engine</h2>
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <div>
-              <p className="text-sm text-white">GYEOL 엔진 활성</p>
-              <p className="text-[11px] text-white/40">Groq → Lovable AI → 내장 응답</p>
+              <p className="text-sm text-white">GYEOL Engine Active</p>
+              <p className="text-[11px] text-white/40">Groq → Lovable AI → Built-in</p>
             </div>
           </div>
           {byokList.length > 0 && (
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-purple-500" />
               <div>
-                <p className="text-sm text-white">프리미엄 모델</p>
+                <p className="text-sm text-white">Premium Models</p>
                 <p className="text-[11px] text-white/40">{byokList.map((x) => x.provider).join(', ')}</p>
               </div>
             </div>
@@ -149,11 +147,11 @@ export default function SettingsPage() {
 
         {/* Settings Toggles */}
         <section className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-4">
-          <h2 className="text-sm font-medium text-white/60">설정</h2>
+          <h2 className="text-sm font-medium text-white/60">Preferences</h2>
           {[
-            { label: '자율 수준', type: 'range' as const, value: autonomyLevel, onChange: setAutonomyLevel },
-            { label: '콘텐츠 필터', type: 'toggle' as const, value: contentFilterOn, onChange: () => setContentFilterOn(!contentFilterOn) },
-            { label: '활동 알림', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
+            { label: 'Autonomy Level', type: 'range' as const, value: autonomyLevel, onChange: setAutonomyLevel },
+            { label: 'Content Filter', type: 'toggle' as const, value: contentFilterOn, onChange: () => setContentFilterOn(!contentFilterOn) },
+            { label: 'Activity Alerts', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
           ].map((item) => (
             <div key={item.label} className="flex justify-between items-center">
               <span className="text-sm text-white/80">{item.label}</span>
@@ -187,8 +185,8 @@ export default function SettingsPage() {
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full p-5 flex justify-between items-center text-left"
           >
-            <h2 className="text-sm font-medium text-white/60">고급 설정</h2>
-            <span className="text-xs text-white/30">{showAdvanced ? '접기' : '펼치기'}</span>
+            <h2 className="text-sm font-medium text-white/60">Advanced</h2>
+            <span className="text-xs text-white/30">{showAdvanced ? 'Collapse' : 'Expand'}</span>
           </button>
           {showAdvanced && (
             <motion.div
@@ -197,7 +195,7 @@ export default function SettingsPage() {
               className="px-5 pb-5 space-y-6"
             >
               <div className="space-y-3">
-                <p className="text-sm text-white/60">프리미엄 AI 모델 (BYOK)</p>
+                <p className="text-sm text-white/60">Premium AI Models (BYOK)</p>
                 <div className="grid grid-cols-2 gap-2">
                   {BYOK_PROVIDERS.map((provider) => {
                     const isRegistered = byokList.some((x) => x.provider === provider);
@@ -229,7 +227,7 @@ export default function SettingsPage() {
                               onClick={() => saveByok(provider)}
                               className="rounded-lg bg-indigo-500/20 text-indigo-300 px-3 py-1 text-sm disabled:opacity-40"
                             >
-                              저장
+                              Save
                             </button>
                           </div>
                         )}
@@ -247,7 +245,7 @@ export default function SettingsPage() {
                     : 'bg-red-500/10 text-red-400 border-red-500/20'
                 }`}
               >
-                {killSwitchActive ? '시스템 재개' : '비상 정지 (Kill Switch)'}
+                {killSwitchActive ? 'Resume System' : 'Emergency Stop (Kill Switch)'}
               </button>
             </motion.div>
           )}

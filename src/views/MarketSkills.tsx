@@ -38,11 +38,10 @@ export default function MarketSkillsPage() {
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-bold">마켓</h1>
-          <p className="text-sm text-white/50 mt-1">AI를 확장하는 스킬과 스킨</p>
+          <h1 className="text-2xl font-bold">Market</h1>
+          <p className="text-sm text-white/50 mt-1">Expand your AI with skills and skins</p>
         </header>
 
-        {/* Tabs */}
         <div className="flex gap-2">
           <Link
             to="/market/skills"
@@ -51,7 +50,7 @@ export default function MarketSkillsPage() {
             }`}
             onClick={() => setTab('skills')}
           >
-            스킬
+            Skills
           </Link>
           <Link
             to="/market/skins"
@@ -60,7 +59,7 @@ export default function MarketSkillsPage() {
             }`}
             onClick={() => setTab('skins')}
           >
-            스킨
+            Skins
           </Link>
         </div>
 
@@ -92,15 +91,15 @@ export default function MarketSkillsPage() {
                   </div>
                   <p className="text-xs text-white/40 line-clamp-1 mt-0.5">{s.description ?? '-'}</p>
                   <div className="flex items-center gap-3 mt-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-white/40">{s.category ?? '기타'}</span>
-                    <span className="text-[10px] text-white/30">★ {s.rating} · {s.downloads}회</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-white/40">{s.category ?? 'Other'}</span>
+                    <span className="text-[10px] text-white/30">★ {s.rating} · {s.downloads}x</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   className="rounded-xl bg-indigo-500/15 text-indigo-400 px-4 py-2 text-sm font-medium hover:bg-indigo-500/25 transition shrink-0"
                 >
-                  {s.price === 0 ? '설치' : `${s.price}P`}
+                  {s.price === 0 ? 'Install' : `${s.price}P`}
                 </button>
               </motion.div>
             ))}

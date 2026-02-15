@@ -4,8 +4,8 @@ import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { format, isToday, isYesterday } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import type { AutonomousLog } from '@/lib/gyeol/types';
+
 const TYPE_ICON: Record<string, string> = {
   learning: '📚',
   reflection: '💭',
@@ -16,12 +16,12 @@ const TYPE_ICON: Record<string, string> = {
 };
 
 const TYPE_LABEL: Record<string, string> = {
-  learning: '학습',
-  reflection: '사색',
-  social: '소셜',
-  proactive_message: '먼저 말걸기',
-  skill_execution: '스킬 실행',
-  error: '보안',
+  learning: 'Learning',
+  reflection: 'Reflection',
+  social: 'Social',
+  proactive_message: 'Proactive',
+  skill_execution: 'Skill',
+  error: 'Security',
 };
 
 const TYPE_COLOR: Record<string, string> = {
@@ -35,9 +35,9 @@ const TYPE_COLOR: Record<string, string> = {
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
-  if (isToday(d)) return '오늘';
-  if (isYesterday(d)) return '어제';
-  return format(d, 'M월 d일', { locale: ko });
+  if (isToday(d)) return 'Today';
+  if (isYesterday(d)) return 'Yesterday';
+  return format(d, 'MMM d');
 }
 
 export default function ActivityPage() {
@@ -59,7 +59,6 @@ export default function ActivityPage() {
       setLoading(false);
     })();
 
-    // Realtime subscription
     const channel = supabase
       .channel(`activity:${agent.id}`)
       .on(
@@ -80,7 +79,6 @@ export default function ActivityPage() {
     reflection: logs.filter((l) => l.activity_type === 'reflection').length,
   };
 
-  // Group by date
   const grouped = logs.reduce<Record<string, AutonomousLog[]>>((acc, log) => {
     const key = formatDate(log.created_at);
     (acc[key] ??= []).push(log);
@@ -91,16 +89,15 @@ export default function ActivityPage() {
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-bold">활동 피드</h1>
-          <p className="text-sm text-white/50 mt-1">오늘 AI가 한 일</p>
+          <h1 className="text-2xl font-bold">Activity Feed</h1>
+          <p className="text-sm text-white/50 mt-1">What your AI did today</p>
         </header>
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: '전체', value: summary.total, color: 'text-indigo-400' },
-            { label: '학습', value: summary.learning, color: 'text-blue-400' },
-            { label: '사색', value: summary.reflection, color: 'text-purple-400' },
+            { label: 'Total', value: summary.total, color: 'text-indigo-400' },
+            { label: 'Learned', value: summary.learning, color: 'text-blue-400' },
+            { label: 'Reflected', value: summary.reflection, color: 'text-purple-400' },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl bg-white/5 border border-white/5 p-3 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -112,13 +109,13 @@ export default function ActivityPage() {
         {loading ? (
           <div className="flex flex-col items-center gap-2 py-12">
             <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-sm text-white/40">불러오는 중...</p>
+            <p className="text-sm text-white/40">Loading...</p>
           </div>
         ) : logs.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">🌙</p>
-            <p className="text-white/50">아직 활동 기록이 없어요</p>
-            <p className="text-xs text-white/30 mt-1">AI가 자율적으로 활동하면 여기에 표시돼요</p>
+            <p className="text-white/50">No activity yet</p>
+            <p className="text-xs text-white/30 mt-1">Autonomous AI actions will appear here</p>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -137,16 +134,16 @@ export default function ActivityPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-white/40">
-                          {format(new Date(log.created_at), 'HH:mm', { locale: ko })}
+                          {format(new Date(log.created_at), 'HH:mm')}
                         </span>
                         <span className="text-xs text-white/50 font-medium">
                           {TYPE_LABEL[log.activity_type] ?? log.activity_type}
                         </span>
                         {log.was_sandboxed && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400">샌드박스</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400">Sandboxed</span>
                         )}
                       </div>
-                      <p className="text-sm text-white/80 mt-1">{log.summary ?? '(내용 없음)'}</p>
+                      <p className="text-sm text-white/80 mt-1">{log.summary ?? '(no details)'}</p>
                     </div>
                   </motion.div>
                 ))}

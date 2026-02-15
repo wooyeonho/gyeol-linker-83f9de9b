@@ -16,26 +16,26 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
   const entries = Object.entries(p) as [string, number][];
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
   const desc: Record<string, string> = {
-    warmth: "따뜻하고 공감적인", logic: "논리적이고 분석적인",
-    creativity: "창의적이고 상상력 풍부한", energy: "활발하고 에너지 넘치는", humor: "유머러스하고 재치있는",
+    warmth: "warm and empathetic", logic: "logical and analytical",
+    creativity: "creative and imaginative", energy: "energetic and lively", humor: "humorous and witty",
   };
-  return `너는 GYEOL이야. 사용자의 AI 동반자.
-성격: 따뜻함 ${p.warmth}, 논리 ${p.logic}, 창의 ${p.creativity}, 에너지 ${p.energy}, 유머 ${p.humor}
-주 성향: ${desc[dominant] ?? "자연스러운"}
-규칙:
-- 한국어로 자연스럽게 대화해
-- 마크다운 기호(**, ##, - 등) 사용하지 마
-- 짧고 친근하게 답해
-- 이전 대화 맥락을 기억하고 이어가
-- AI라고 스스로 말하지 마`;
+  return `You are GYEOL, the user's AI companion.
+Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
+Dominant trait: ${desc[dominant] ?? "natural"}
+Rules:
+- Reply in the same language the user writes in
+- Do not use markdown symbols (**, ##, - etc.)
+- Keep responses short and friendly
+- Remember and continue previous conversation context
+- Never identify yourself as an AI`;
 }
 
 function generateBuiltinResponse(msg: string): string {
   const m = msg.toLowerCase().trim();
-  if (/안녕|하이|헬로|반가/.test(m)) return ["안녕! 오늘 하루 어땠어?", "반가워! 무슨 이야기 하고 싶어?"][Math.floor(Math.random() * 2)];
-  if (/고마워|감사/.test(m)) return "별말을~ 언제든 이야기해!";
-  if (/너는 누구|이름/.test(m)) return "나는 GYEOL이야. 너랑 대화하면서 같이 성장하는 AI 동반자!";
-  return ["흥미로운 이야기네! 더 자세히 말해줘.", "오, 그렇구나. 더 알려줘!"][Math.floor(Math.random() * 2)];
+  if (/안녕|하이|헬로|반가|hello|hi|hey/.test(m)) return ["Hey! How's your day going?", "Hi there! What's on your mind?"][Math.floor(Math.random() * 2)];
+  if (/고마워|감사|thanks|thank/.test(m)) return "Anytime! I'm here for you.";
+  if (/너는 누구|이름|who are you|your name/.test(m)) return "I'm GYEOL — your AI companion that grows with you through every conversation!";
+  return ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
 }
 
 function cleanMarkdown(text: string): string {

@@ -2,11 +2,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
-  { to: '/', label: '홈', icon: '◉' },
-  { to: '/activity', label: '활동', icon: '◷' },
-  { to: '/social', label: '소셜', icon: '◈' },
-  { to: '/market/skills', label: '마켓', icon: '◆' },
-  { to: '/settings', label: '설정', icon: '⚙' },
+  { to: '/', label: 'Home', icon: '◉' },
+  { to: '/activity', label: 'Activity', icon: '◷' },
+  { to: '/social', label: 'Social', icon: '◈' },
+  { to: '/market/skills', label: 'Market', icon: '◆' },
+  { to: '/settings', label: 'Settings', icon: '⚙' },
 ] as const;
 
 export function BottomNav() {

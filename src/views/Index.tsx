@@ -24,7 +24,7 @@ export default function GyeolPage() {
   if (agentLoading) {
     return (
       <main className="relative w-full h-[100dvh] overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/50 text-sm animate-pulse">GYEOL을 불러오는 중...</div>
+        <div className="text-white/50 text-sm animate-pulse">Loading GYEOL...</div>
       </main>
     );
   }
@@ -41,7 +41,7 @@ export default function GyeolPage() {
       <ChatInterface />
       <EvolutionCeremony />
       <div className="absolute top-4 right-4 text-[10px] text-white/40 pointer-events-none select-none">
-        Gen {agent?.gen ?? 1} · {agent?.total_conversations ?? 0} 대화 · {Number(agent?.evolution_progress ?? 0).toFixed(0)}%
+        Gen {agent?.gen ?? 1} · {agent?.total_conversations ?? 0} chats · {Number(agent?.evolution_progress ?? 0).toFixed(0)}%
       </div>
     </main>
   );
