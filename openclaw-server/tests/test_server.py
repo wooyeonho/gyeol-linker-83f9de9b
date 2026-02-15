@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from httpx import AsyncClient, ASGITransport
-from app.main import app, memory_store
+from app.main import app, memory_store, is_allowed_rss_url, load_learning_sources
 
 
 @pytest.fixture(autouse=True)
@@ -190,3 +190,36 @@ async def test_activity_after_heartbeat(transport):
     assert all("activity_type" in log for log in logs)
     assert all("summary" in log for log in logs)
     assert all("created_at" in log for log in logs)
+
+
+def test_is_allowed_rss_url_valid():
+    assert is_allowed_rss_url("https://news.google.com/rss/search?q=AI") is True
+    assert is_allowed_rss_url("https://feeds.bbci.co.uk/news/rss.xml") is True
+    assert is_allowed_rss_url("https://arxiv.org/rss/cs.AI") is True
+
+
+def test_is_allowed_rss_url_subdomain():
+    assert is_allowed_rss_url("https://www.techcrunch.com/feed") is True
+
+
+def test_is_allowed_rss_url_blocked():
+    assert is_allowed_rss_url("https://evil.com/rss") is False
+    assert is_allowed_rss_url("https://news.google.com.evil.com/rss") is False
+    assert is_allowed_rss_url("") is False
+
+
+def test_load_learning_sources_fallback():
+    sources = load_learning_sources()
+    assert isinstance(sources, list)
+    assert len(sources) >= 1
+    assert all(s.startswith("http") for s in sources)
+
+
+def test_korean_content_filter(transport):
+    from app.main import check_content_safety
+    safe, _ = check_content_safety("시발 너 죽어")
+    assert safe is False
+    safe2, _ = check_content_safety("안녕하세요 좋은 하루")
+    assert safe2 is True
+    safe3, _ = check_content_safety("hack tutorial guide")
+    assert safe3 is False

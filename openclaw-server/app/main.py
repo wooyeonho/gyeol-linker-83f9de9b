@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from contextlib import asynccontextmanager
 from typing import Optional
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -163,9 +164,9 @@ RSS_URL_ALLOWLIST = [
 def is_allowed_rss_url(url: str) -> bool:
     """Check if RSS URL is from an allowed domain"""
     try:
-        from urllib.parse import urlparse
         parsed = urlparse(url)
-        return any(domain in parsed.netloc for domain in RSS_URL_ALLOWLIST)
+        host = parsed.netloc.lower()
+        return any(host == domain or host.endswith("." + domain) for domain in RSS_URL_ALLOWLIST)
     except Exception:
         return False
 
@@ -532,17 +533,24 @@ async def run_supabase_sync():
                 pass
 
         topics_synced = 0
+        synced_topics_set = memory_store.get("_synced_topic_hashes", set())
         for topic in memory_store.get("learned_topics", [])[-20:]:
-            if isinstance(topic, str) and not topic.startswith("__synced__"):
-                try:
-                    await supabase_rpc("POST", "gyeol_learned_topics", {
-                        "agent_id": default_agent_id,
-                        "topic": topic,
-                        "source": "rss",
-                    })
-                    topics_synced += 1
-                except Exception:
-                    pass
+            if not isinstance(topic, str):
+                continue
+            topic_hash = hash(topic)
+            if topic_hash in synced_topics_set:
+                continue
+            try:
+                await supabase_rpc("POST", "gyeol_learned_topics", {
+                    "agent_id": default_agent_id,
+                    "topic": topic,
+                    "source": "rss",
+                })
+                synced_topics_set.add(topic_hash)
+                topics_synced += 1
+            except Exception:
+                pass
+        memory_store["_synced_topic_hashes"] = synced_topics_set
 
         for ref in memory_store.get("reflections", [])[-5:]:
             if ref.get("synced_to_db"):
