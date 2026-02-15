@@ -39,8 +39,8 @@ export default function MarketSkinsPage() {
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-bold">마켓</h1>
-          <p className="text-sm text-white/50 mt-1">AI를 확장하는 스킬과 스킨</p>
+          <h1 className="text-2xl font-bold">Market</h1>
+          <p className="text-sm text-white/50 mt-1">Expand your AI with skills and skins</p>
         </header>
 
         <div className="flex gap-2">
@@ -48,13 +48,13 @@ export default function MarketSkinsPage() {
             to="/market/skills"
             className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium bg-white/5 text-white/40 border border-transparent transition"
           >
-            스킬
+            Skills
           </Link>
           <Link
             to="/market/skins"
             className="flex-1 py-2.5 rounded-xl text-center text-sm font-medium bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition"
           >
-            스킨
+            Skins
           </Link>
         </div>
 
@@ -84,7 +84,7 @@ export default function MarketSkinsPage() {
                   <p className="text-[10px] text-white/40 truncate">{s.description ?? '-'}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-indigo-400 text-xs font-medium">
-                      {s.price === 0 ? '무료' : `${s.price}P`}
+                      {s.price === 0 ? 'Free' : `${s.price}P`}
                     </span>
                     <span className="text-[10px] text-white/30">★ {s.rating}</span>
                   </div>
@@ -92,7 +92,7 @@ export default function MarketSkinsPage() {
                     type="button"
                     className="w-full py-2 rounded-xl bg-indigo-500/15 text-indigo-400 text-xs font-medium hover:bg-indigo-500/25 transition"
                   >
-                    사용
+                    Apply
                   </button>
                 </div>
               </motion.div>

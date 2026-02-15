@@ -84,11 +84,10 @@ export default function SocialPage() {
           };
         }));
       } else {
-        // Demo data
         setCards([
-          { id: '1', name: 'AURORA', gen: 3, compatibilityScore: 92, tags: ['창작', '음악', '감성'], status: 'matched' },
-          { id: '2', name: 'NEXUS', gen: 2, compatibilityScore: 78, tags: ['기술', '논리', '코딩'], status: 'pending' },
-          { id: '3', name: 'LUNA', gen: 1, compatibilityScore: 65, tags: ['대화', '유머', '일상'], status: 'pending' },
+          { id: '1', name: 'AURORA', gen: 3, compatibilityScore: 92, tags: ['Creative', 'Music', 'Emotional'], status: 'matched' },
+          { id: '2', name: 'NEXUS', gen: 2, compatibilityScore: 78, tags: ['Tech', 'Logic', 'Coding'], status: 'pending' },
+          { id: '3', name: 'LUNA', gen: 1, compatibilityScore: 65, tags: ['Chat', 'Humor', 'Daily'], status: 'pending' },
         ]);
       }
       setLoading(false);
@@ -99,14 +98,14 @@ export default function SocialPage() {
     <main className="min-h-screen bg-black text-white/90 pb-24">
       <div className="max-w-md mx-auto p-6 space-y-6">
         <header>
-          <h1 className="text-2xl font-bold">소셜</h1>
-          <p className="text-sm text-white/50 mt-1">다른 AI와 매칭해 대화를 구경해 보세요</p>
+          <h1 className="text-2xl font-bold">Social</h1>
+          <p className="text-sm text-white/50 mt-1">Match with other AIs and watch them chat</p>
         </header>
 
         {loading ? (
           <div className="flex flex-col items-center gap-2 py-12">
             <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <p className="text-sm text-white/40">매칭 탐색 중...</p>
+            <p className="text-sm text-white/40">Finding matches...</p>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -140,13 +139,13 @@ export default function SocialPage() {
                         className="mt-3 pt-3 border-t border-white/5"
                       >
                         <p className="text-xs text-white/40 mb-2">
-                          {card.status === 'matched' ? '매칭됨 — 대화를 구경할 수 있어요' : '매칭 대기 중'}
+                          {card.status === 'matched' ? 'Matched — Watch their conversation' : 'Pending match'}
                         </p>
                         <button
                           type="button"
                           className="w-full py-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium hover:bg-indigo-500/30 transition-colors"
                         >
-                          {card.status === 'matched' ? '대화 구경하기' : '연결 요청'}
+                          {card.status === 'matched' ? 'Watch Chat' : 'Request Connection'}
                         </button>
                       </motion.div>
                     )}

@@ -13,11 +13,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'GYEOL',
+    default: 'GYEOL — AI Companion That Evolves With You',
     template: '%s | GYEOL',
   },
-  description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
-  keywords: ['AI 동반자', 'AI companion', 'GYEOL', 'digital companion', '인공지능'],
+  description: 'Your personal AI companion that grows, evolves, and learns through every conversation. Watch it transform from a single point of light into a unique being.',
+  keywords: ['AI companion', 'digital companion', 'GYEOL', 'evolving AI', 'personal AI', 'AI chat', 'AI 동반자'],
   authors: [{ name: 'GYEOL' }],
   creator: 'GYEOL',
   publisher: 'GYEOL',
@@ -32,16 +32,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'ko_KR',
+    locale: 'en_US',
     url: '/',
     siteName: 'GYEOL',
-    title: 'GYEOL',
-    description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
+    title: 'GYEOL — AI Companion That Evolves With You',
+    description: 'Your personal AI companion that grows, evolves, and learns through every conversation.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'GYEOL',
-    description: 'AI 디지털 동반자 — 대화할수록 성장하고 진화하는 나만의 AI',
+    title: 'GYEOL — AI Companion That Evolves With You',
+    description: 'Your personal AI companion that grows, evolves, and learns through every conversation.',
   },
   robots: {
     index: true,
@@ -62,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className="dark" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

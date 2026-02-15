@@ -34,7 +34,7 @@ tools:
 ## 환경 변수
 
 - `SUPABASE_URL`: Supabase 프로젝트 URL
-- `SUPABASE_SERVICE_KEY`: 서비스 롤 키 (서버 전용)
+- `SUPABASE_SERVICE_ROLE_KEY`: 서비스 롤 키 (서버 전용)
 
 ## 사용 예
 
