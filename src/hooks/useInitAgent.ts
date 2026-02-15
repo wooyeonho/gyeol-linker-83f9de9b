@@ -1,24 +1,26 @@
 /**
- * 모든 페이지에서 에이전트를 초기화하는 공유 훅
+ * 인증된 사용자의 에이전트를 초기화하는 공유 훅
  */
 import { useEffect, useState } from 'react';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { supabase } from '@/src/lib/supabase';
-import { DEMO_USER_ID } from '@/lib/gyeol/constants';
+import { useAuth } from './useAuth';
 
 export function useInitAgent() {
+  const { user } = useAuth();
   const { agent, setAgent, setMessages } = useGyeolStore();
   const [loading, setLoading] = useState(!agent);
 
   useEffect(() => {
-    if (agent) { setLoading(false); return; }
+    if (!user) { setLoading(false); return; }
+    if (agent && agent.user_id === user.id) { setLoading(false); return; }
 
     (async () => {
       try {
         const { data: existing } = await supabase
           .from('gyeol_agents' as any)
           .select('*')
-          .eq('user_id', DEMO_USER_ID)
+          .eq('user_id', user.id)
           .maybeSingle();
 
         if (existing) {
@@ -33,7 +35,7 @@ export function useInitAgent() {
         } else {
           const { data: newAgent } = await supabase
             .from('gyeol_agents' as any)
-            .insert({ user_id: DEMO_USER_ID, name: 'GYEOL' } as any)
+            .insert({ user_id: user.id, name: 'GYEOL' } as any)
             .select()
             .single();
           if (newAgent) setAgent(newAgent as any);
@@ -42,7 +44,7 @@ export function useInitAgent() {
         setLoading(false);
       }
     })();
-  }, [agent, setAgent, setMessages]);
+  }, [user, agent, setAgent, setMessages]);
 
   return { agent, loading };
 }
