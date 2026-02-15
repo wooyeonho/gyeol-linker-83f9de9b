@@ -114,14 +114,16 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   },
   subscribeToUpdates: (agentId) => {
     if (typeof window === 'undefined') return;
+    // Subscribe to agent changes (personality, evolution) — NOT conversations
+    // Conversations are handled optimistically by sendMessage()
     const channel = supabase
       .channel(`gyeol:${agentId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'gyeol_conversations', filter: `agent_id=eq.${agentId}` },
-        (payload: { new: Message }) => {
-          const row = payload.new as Message;
-          set((s) => ({ messages: [...s.messages, row] }));
+        { event: 'UPDATE', schema: 'public', table: 'gyeol_agents', filter: `id=eq.${agentId}` },
+        (payload: { new: any }) => {
+          const row = payload.new;
+          set({ agent: row as any });
         }
       )
       .subscribe();

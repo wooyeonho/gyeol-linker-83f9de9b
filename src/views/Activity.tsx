@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGyeolStore } from '@/store/gyeol-store';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import type { AutonomousLog } from '@/lib/gyeol/types';
-
 const TYPE_ICON: Record<string, string> = {
   learning: '📚',
   reflection: '💭',
@@ -42,7 +41,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function ActivityPage() {
-  const { agent } = useGyeolStore();
+  const { agent } = useInitAgent();
   const [logs, setLogs] = useState<AutonomousLog[]>([]);
   const [loading, setLoading] = useState(true);
 
