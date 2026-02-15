@@ -23,11 +23,10 @@ async function resolveProvider(
 ): Promise<{ provider: string; apiKey: string } | null> {
   for (const provider of BYOK_PROVIDERS) {
     const { data: row } = await supabase
-      .from('gyeol_user_api_keys')
+      .from('gyeol_byok_keys')
       .select('encrypted_key')
       .eq('user_id', userId)
       .eq('provider', provider)
-      .eq('is_valid', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -68,7 +67,7 @@ export async function runHeartbeat(
 
   const { data: agent } = await supabase
     .from('gyeol_agents')
-    .select('user_id')
+    .select('user_id, settings')
     .eq('id', agentId)
     .single();
 
@@ -78,13 +77,8 @@ export async function runHeartbeat(
 
   const resolved = await resolveProvider(supabase, agent.user_id);
 
-  const { data: settings } = await supabase
-    .from('gyeol_system_state')
-    .select('value')
-    .eq('key', `settings:${agentId}`)
-    .single();
-
-  const autonomyLevel = (settings?.value as Record<string, unknown>)?.autonomyLevel as number ?? 50;
+  const settings = (agent.settings as Record<string, unknown>) ?? {};
+  const autonomyLevel = (typeof settings.autonomyLevel === 'number' ? settings.autonomyLevel : 50);
 
   const ctx: SkillContext = {
     supabase,

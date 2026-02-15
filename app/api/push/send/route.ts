@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const supabase = createGyeolServerClient();
     const { data: subs } = await supabase
       .from('gyeol_push_subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, subscription')
       .eq('agent_id', agentId);
 
     if (!subs || subs.length === 0) {

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 
-const STATE_TABLE = 'gyeol_system_state';
+const AGENTS_TABLE = 'gyeol_agents';
+
+const DEFAULTS = {
+  autonomyLevel: 50,
+  contentFilterOn: true,
+  notificationsOn: true,
+};
 
 export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
@@ -11,22 +17,16 @@ export async function GET(req: NextRequest) {
 
   const supabase = createGyeolServerClient();
   const { data } = await supabase
-    .from(STATE_TABLE)
-    .select('value')
-    .eq('key', `settings:${agentId}`)
+    .from(AGENTS_TABLE)
+    .select('settings')
+    .eq('id', agentId)
     .single();
 
-  const defaults = {
-    autonomyLevel: 50,
-    contentFilterOn: true,
-    notificationsOn: true,
-  };
-
-  if (!data?.value) {
-    return NextResponse.json(defaults);
+  if (!data?.settings) {
+    return NextResponse.json(DEFAULTS);
   }
 
-  return NextResponse.json({ ...defaults, ...(data.value as Record<string, unknown>) });
+  return NextResponse.json({ ...DEFAULTS, ...(data.settings as Record<string, unknown>) });
 }
 
 export async function POST(req: NextRequest) {
@@ -45,12 +45,12 @@ export async function POST(req: NextRequest) {
   const supabase = createGyeolServerClient();
 
   const { data: existing } = await supabase
-    .from(STATE_TABLE)
-    .select('value')
-    .eq('key', `settings:${agentId}`)
+    .from(AGENTS_TABLE)
+    .select('settings')
+    .eq('id', agentId)
     .single();
 
-  const current = (existing?.value as Record<string, unknown>) ?? {};
+  const current = (existing?.settings as Record<string, unknown>) ?? {};
   const updated = {
     ...current,
     ...(typeof autonomyLevel === 'number' ? { autonomyLevel: Math.max(0, Math.min(100, autonomyLevel)) } : {}),
@@ -58,11 +58,9 @@ export async function POST(req: NextRequest) {
     ...(typeof notificationsOn === 'boolean' ? { notificationsOn } : {}),
   };
 
-  await supabase.from(STATE_TABLE).upsert({
-    key: `settings:${agentId}`,
-    value: updated,
-    updated_at: new Date().toISOString(),
-  });
+  await supabase.from(AGENTS_TABLE).update({
+    settings: updated,
+  }).eq('id', agentId);
 
   return NextResponse.json({ ok: true, settings: updated });
 }

@@ -97,11 +97,10 @@ async function tryByok(
   for (const provider of providerOrder) {
     if (!BYOK_PROVIDER_ORDER.includes(provider as typeof BYOK_PROVIDER_ORDER[number])) continue;
     const { data: row } = await supabase
-      .from('gyeol_user_api_keys')
+      .from('gyeol_byok_keys')
       .select('id, encrypted_key')
       .eq('user_id', userId)
       .eq('provider', provider)
-      .eq('is_valid', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -115,12 +114,6 @@ async function tryByok(
         chatMessages,
       );
       if (content) {
-        if (row.id) {
-          await supabase
-            .from('gyeol_user_api_keys')
-            .update({ last_used: new Date().toISOString() })
-            .eq('id', row.id);
-        }
         return { content, provider };
       }
     } catch (err) {
