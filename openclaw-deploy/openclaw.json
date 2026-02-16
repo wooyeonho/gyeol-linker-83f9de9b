@@ -1,8 +1,11 @@
 {
+  "identity": {
+    "name": "GYEOL",
+    "emoji": "🌙"
+  },
   "agents": {
     "defaults": {
-      "name": "GYEOL",
-      "systemPromptFile": "/data/workspace/AGENT.md",
+      "workspace": "/data/workspace",
       "model": {
         "primary": "groq/llama-3.3-70b-versatile"
       },
