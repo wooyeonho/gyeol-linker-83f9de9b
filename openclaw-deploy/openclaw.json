@@ -1,8 +1,4 @@
 {
-  "identity": {
-    "name": "GYEOL",
-    "emoji": "🌙"
-  },
   "agents": {
     "defaults": {
       "workspace": "/data/workspace",
@@ -12,7 +8,17 @@
       "sandbox": {
         "mode": "non-main"
       }
-    }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "identity": {
+          "name": "GYEOL",
+          "emoji": "🌙"
+        }
+      }
+    ]
   },
   "channels": {
     "telegram": {
