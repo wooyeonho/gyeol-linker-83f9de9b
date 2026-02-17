@@ -57,7 +57,7 @@ export async function runAIConversation(ctx: SkillContext): Promise<SkillResult>
     return { ok: true, skillId: 'ai-conversation', summary: '상대 차례, 대기 중' };
   }
 
-  if (match.status === 'matched') {
+  if ((match as any).status === 'matched') {
     await supabase
       .from('gyeol_ai_matches')
       .update({ status: 'chatting' })
