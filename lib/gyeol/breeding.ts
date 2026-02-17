@@ -164,7 +164,7 @@ export async function attemptBreeding(
     : p1Total > p2Total ? 'parent1' as const : 'parent2' as const;
 
   const childName = generateChildName(p1.name ?? 'GYEOL', p2.name ?? 'AI');
-  const childGen = Math.min(p1.gen, p2.gen);
+  const childGen = Math.max(p1.gen, p2.gen);
 
   const { data: child } = await supabase
     .from('gyeol_agents')
