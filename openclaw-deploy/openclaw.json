@@ -1,19 +1,31 @@
 {
-  "agent": {
-    "model": "groq/llama-3.3-70b-versatile",
-    "systemPromptFile": "/data/workspace/AGENT.md",
-    "name": "GYEOL"
+  "agents": {
+    "defaults": {
+      "workspace": "/data/workspace",
+      "model": {
+        "primary": "groq/llama-3.3-70b-versatile"
+      },
+      "sandbox": {
+        "mode": "non-main"
+      },
+      "memorySearch": {
+        "enabled": false
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "identity": {
+          "name": "GYEOL",
+          "emoji": "🌙"
+        }
+      }
+    ]
   },
   "channels": {
     "telegram": {
       "enabled": true
-    }
-  },
-  "agents": {
-    "defaults": {
-      "sandbox": {
-        "mode": "non-main"
-      }
     }
   }
 }
