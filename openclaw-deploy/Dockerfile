@@ -1,9 +1,10 @@
 FROM coollabsio/openclaw:latest
 
-# Copy GYEOL custom config (merged on top of defaults)
 COPY openclaw.json /app/config/openclaw.json
-
-# Copy GYEOL workspace (skills, system prompt, learning sources)
 COPY workspace/ /data/workspace/
+COPY startup.sh /app/scripts/startup.sh
+RUN chmod +x /app/scripts/startup.sh
 
 EXPOSE 8080
+
+ENTRYPOINT ["/app/scripts/startup.sh"]
