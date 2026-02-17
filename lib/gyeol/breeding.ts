@@ -151,9 +151,10 @@ export async function attemptBreeding(
   let mutatedTrait: string | null = null;
   if (Math.random() * 100 < MUTATION_CHANCE) {
     const traitKeys = ['warmth', 'logic', 'creativity', 'energy', 'humor'] as const;
-    mutatedTrait = traitKeys[Math.floor(Math.random() * traitKeys.length)];
+    const key = traitKeys[Math.floor(Math.random() * traitKeys.length)];
+    mutatedTrait = key;
     const boost = 15 + Math.floor(Math.random() * 20);
-    traits[mutatedTrait] = Math.min(100, traits[mutatedTrait] + boost);
+    traits[key] = Math.min(100, traits[key] + boost);
     mutationOccurred = true;
   }
 
