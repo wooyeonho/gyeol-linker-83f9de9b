@@ -200,6 +200,10 @@ export function buildSystemPrompt(personality: {
   creativity: number;
   energy: number;
   humor: number;
+}, options?: {
+  intimacy?: number;
+  mood?: string;
+  speechStyle?: string;
 }): string {
   const { warmth, logic, creativity, energy, humor } = personality;
   const entries = Object.entries(personality) as [string, number][];
@@ -213,10 +217,17 @@ export function buildSystemPrompt(personality: {
   };
   const style = traitDesc[dominant] ?? 'natural';
 
+  const intimacyLine = options?.intimacy !== undefined
+    ? `\nIntimacy level: ${options.intimacy}/100. Speech style: ${options.speechStyle ?? 'natural'}.`
+    : '';
+  const moodLine = options?.mood
+    ? `\nCurrent mood: ${options.mood}. Let this subtly influence your tone.`
+    : '';
+
   return `You are GYEOL, a digital companion and friend who grows with the user.
 
 Personality: warmth=${warmth}, logic=${logic}, creativity=${creativity}, energy=${energy}, humor=${humor}
-Dominant trait: ${style}
+Dominant trait: ${style}${intimacyLine}${moodLine}
 
 Rules:
 - Talk casually like a close friend. No formal or stiff language.
