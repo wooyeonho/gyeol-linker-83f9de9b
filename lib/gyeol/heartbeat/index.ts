@@ -3,6 +3,11 @@ import type { SkillContext, SkillResult, HeartbeatResult, SkillId } from './type
 import { runLearnRss } from './skills/learn-rss';
 import { runSelfReflect } from './skills/self-reflect';
 import { runProactiveMessage } from './skills/proactive-message';
+import { runWebBrowse } from './skills/web-browse';
+import { runMoltbookSocial } from './skills/moltbook-social';
+import { runMoltMatch } from './skills/moltmatch';
+import { runAIConversation } from './skills/ai-conversation';
+import { runCommunityActivity } from './skills/community-activity';
 import { checkKillSwitch } from '../security/kill-switch-check';
 import { detectAnomaly } from '../security/audit-logger';
 import { decryptKey } from '../byok';
@@ -11,9 +16,23 @@ const SKILL_RUNNERS: Record<SkillId, (ctx: SkillContext) => Promise<SkillResult>
   'learn-rss': runLearnRss,
   'self-reflect': runSelfReflect,
   'proactive-message': runProactiveMessage,
+  'web-browse': runWebBrowse,
+  'moltbook-social': runMoltbookSocial,
+  'moltmatch': runMoltMatch,
+  'ai-conversation': runAIConversation,
+  'community-activity': runCommunityActivity,
 };
 
-const SKILL_ORDER: SkillId[] = ['learn-rss', 'self-reflect', 'proactive-message'];
+const SKILL_ORDER: SkillId[] = [
+  'learn-rss',
+  'web-browse',
+  'self-reflect',
+  'moltmatch',
+  'ai-conversation',
+  'moltbook-social',
+  'community-activity',
+  'proactive-message',
+];
 
 const BYOK_PROVIDERS = ['groq', 'openai', 'deepseek', 'anthropic'] as const;
 

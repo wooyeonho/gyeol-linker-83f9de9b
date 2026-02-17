@@ -2,6 +2,9 @@
   "channels": {
     "telegram": {
       "enabled": true
+    },
+    "moltbook": {
+      "enabled": true
     }
   }
 }

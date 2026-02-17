@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export type SkillId = 'learn-rss' | 'self-reflect' | 'proactive-message';
+export type SkillId = 'learn-rss' | 'self-reflect' | 'proactive-message' | 'web-browse' | 'moltbook-social' | 'moltmatch' | 'ai-conversation' | 'community-activity';
 
 export interface SkillContext {
   supabase: SupabaseClient;
