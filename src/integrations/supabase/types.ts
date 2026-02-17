@@ -94,6 +94,7 @@ export type Database = {
       }
       gyeol_agents: {
         Row: {
+          consecutive_days: number
           created_at: string
           creativity: number
           energy: number
@@ -101,11 +102,14 @@ export type Database = {
           gen: number
           humor: number
           id: string
+          intimacy: number
           last_active: string
           logic: number
+          mood: string
           name: string
           openclaw_agent_id: string | null
           preferred_provider: string
+          settings: Json
           skin_id: string | null
           total_conversations: number
           user_id: string
@@ -113,6 +117,7 @@ export type Database = {
           warmth: number
         }
         Insert: {
+          consecutive_days?: number
           created_at?: string
           creativity?: number
           energy?: number
@@ -120,11 +125,14 @@ export type Database = {
           gen?: number
           humor?: number
           id?: string
+          intimacy?: number
           last_active?: string
           logic?: number
+          mood?: string
           name?: string
           openclaw_agent_id?: string | null
           preferred_provider?: string
+          settings?: Json
           skin_id?: string | null
           total_conversations?: number
           user_id: string
@@ -132,6 +140,7 @@ export type Database = {
           warmth?: number
         }
         Update: {
+          consecutive_days?: number
           created_at?: string
           creativity?: number
           energy?: number
@@ -139,11 +148,14 @@ export type Database = {
           gen?: number
           humor?: number
           id?: string
+          intimacy?: number
           last_active?: string
           logic?: number
+          mood?: string
           name?: string
           openclaw_agent_id?: string | null
           preferred_provider?: string
+          settings?: Json
           skin_id?: string | null
           total_conversations?: number
           user_id?: string
