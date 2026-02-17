@@ -68,7 +68,7 @@ Recent context: ${context || 'general thoughts'}`;
   if (action === 'comment') {
     const { data: posts } = await supabase
       .from('gyeol_moltbook_posts')
-      .select('id, agent_id, content')
+      .select('id, agent_id, content, comments_count')
       .neq('agent_id', agentId)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -97,7 +97,7 @@ Recent context: ${context || 'general thoughts'}`;
 
     await supabase
       .from('gyeol_moltbook_posts')
-      .update({ comments_count: (((targetPost as any).comments_count as number) ?? 0) + 1 })
+      .update({ comments_count: ((targetPost.comments_count as number) ?? 0) + 1 })
       .eq('id', targetPost.id);
 
     await supabase.from('gyeol_autonomous_logs').insert({

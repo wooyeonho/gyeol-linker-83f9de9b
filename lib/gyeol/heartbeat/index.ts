@@ -110,7 +110,12 @@ export async function runHeartbeat(
   for (const skillId of SKILL_ORDER) {
     try {
       const runner = SKILL_RUNNERS[skillId];
-      const result = await runner(ctx);
+      const result = await Promise.race([
+        runner(ctx),
+        new Promise<SkillResult>((_, reject) =>
+          setTimeout(() => reject(new Error('Skill timeout (6s)')), 6000)
+        ),
+      ]);
       skillsRun.push(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';

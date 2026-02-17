@@ -12,7 +12,7 @@ export async function runAIConversation(ctx: SkillContext): Promise<SkillResult>
 
   const { data: match } = await supabase
     .from('gyeol_ai_matches')
-    .select('id, agent_1_id, agent_2_id, compatibility_score')
+    .select('id, agent_1_id, agent_2_id, compatibility_score, status')
     .or(`agent_1_id.eq.${agentId},agent_2_id.eq.${agentId}`)
     .in('status', ['matched', 'chatting'])
     .order('created_at', { ascending: false })
@@ -57,7 +57,7 @@ export async function runAIConversation(ctx: SkillContext): Promise<SkillResult>
     return { ok: true, skillId: 'ai-conversation', summary: '상대 차례, 대기 중' };
   }
 
-  if ((match as any).status === 'matched') {
+  if (match.status === 'matched') {
     await supabase
       .from('gyeol_ai_matches')
       .update({ status: 'chatting' })

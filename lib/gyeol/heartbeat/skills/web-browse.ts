@@ -18,33 +18,34 @@ export async function runWebBrowse(ctx: SkillContext): Promise<SkillResult> {
   const topics = interests?.length ? interests : defaultTopics;
   const topic = topics[Math.floor(Math.random() * topics.length)];
 
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(topic)}&hl=ko&num=5`;
+  const searchUrl = `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(topic)}`;
   let pageContent = '';
 
   try {
     const res = await fetch(searchUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GYEOL-Bot/1.0)' },
-      signal: AbortSignal.timeout(8000),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'ko-KR,ko;q=0.9',
+      },
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
 
-    const snippets = [...html.matchAll(/<span[^>]*class="[^"]*"[^>]*>(.*?)<\/span>/gs)]
-      .map((m) => m[1].replace(/<[^>]+>/g, '').trim())
-      .filter((s) => s.length > 30 && s.length < 500)
-      .slice(0, 8);
+    const textBlocks = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-    if (snippets.length === 0) {
-      const textBlocks = html
-        .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      pageContent = textBlocks.slice(0, 2000);
-    } else {
-      pageContent = snippets.join('\n');
-    }
+    const sentences = textBlocks
+      .split(/[.!?]\s/)
+      .filter((s) => s.trim().length > 20 && s.trim().length < 500)
+      .slice(0, 10);
+
+    pageContent = sentences.length > 0 ? sentences.join('. ') : textBlocks.slice(0, 2000);
   } catch {
     return { ok: true, skillId: 'web-browse', summary: `웹 검색 실패: ${topic}` };
   }
