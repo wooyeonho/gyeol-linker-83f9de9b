@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "gyeol-gateway"
+version = "1.0.0"
+description = "GYEOL AI Gateway - lightweight FastAPI backend"
+authors = ["wooyeonho"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["standard"], version = "^0.115.0"}
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+httpx = "^0.28.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
