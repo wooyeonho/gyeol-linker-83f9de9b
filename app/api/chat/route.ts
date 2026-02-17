@@ -11,9 +11,11 @@ import {
   analyzeConversationWithLLM,
   applyPersonalityDelta,
   calculateVisualState,
-  checkEvolution,
+  attemptEvolution,
+  checkCriticalLearning,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
+import { calculateIntimacyGain, determineMood, getSpeechStyle } from '@/lib/gyeol/intimacy';
 import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeol/constants';
 import { decryptKey } from '@/lib/gyeol/byok';
 import { callProviderWithMessages, buildSystemPrompt, suggestProviderForMessage, type ChatMessage } from '@/lib/gyeol/chat-ai';
@@ -167,7 +169,10 @@ export async function POST(req: NextRequest) {
         }
       : defaultPersonality;
 
-    const systemPrompt = buildSystemPrompt(personality);
+    const agentIntimacy = Number(agent?.intimacy) || 0;
+    const agentMood = (agent?.mood as string) || 'neutral';
+    const speechStyle = getSpeechStyle(agentIntimacy);
+    const systemPrompt = buildSystemPrompt(personality, { intimacy: agentIntimacy, mood: agentMood, speechStyle });
 
     let chatMessages: ChatMessage[];
     if (supabase) {
@@ -317,6 +322,12 @@ export async function POST(req: NextRequest) {
           };
           const next = applyPersonalityDelta(current, delta);
           newVisualState = calculateVisualState(next);
+          personalityChanged = true;
+
+          const critical = checkCriticalLearning();
+          const progressGain = 5 * critical.multiplier;
+          const newProgress = Math.min(100, Number(agent.evolution_progress) + progressGain);
+
           await supabase
             .from('gyeol_agents')
             .update({
@@ -326,30 +337,54 @@ export async function POST(req: NextRequest) {
               energy: next.energy,
               humor: next.humor,
               visual_state: newVisualState,
-              evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
+              evolution_progress: newProgress,
             })
             .eq('id', agentId);
-          personalityChanged = true;
 
           const updatedAgent = {
-            ...agent,
+            gen: Number(agent.gen) || 1,
             total_conversations: totalConversations,
             warmth: next.warmth,
             logic: next.logic,
             creativity: next.creativity,
             energy: next.energy,
             humor: next.humor,
-            evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
+            evolution_progress: newProgress,
           };
-          const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
-          if (evo.evolved && evo.newGen) {
-            await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
+          const evoResult = attemptEvolution(updatedAgent);
+          if (evoResult.success) {
+            await supabase.from('gyeol_agents').update({
+              gen: evoResult.newGen,
+              evolution_progress: 0,
+            }).eq('id', agentId);
             evolved = true;
-            newGen = evo.newGen;
+            newGen = evoResult.newGen;
+            if (evoResult.isMutation) {
+              console.log('[GYEOL] mutation!', evoResult.mutationType);
+            }
+          } else if (newProgress >= 100) {
+            await supabase.from('gyeol_agents').update({ evolution_progress: 80 }).eq('id', agentId);
           }
         } catch {
           // evolution analysis failed - non-critical
         }
+      }
+
+      if (agent) {
+        const isPositive = /좋아|고마|감사|최고|사랑|멋져|대박/.test(userMessage);
+        const intimacyGain = calculateIntimacyGain(userMessage, isPositive);
+        const currentIntimacy = Number(agent.intimacy) || 0;
+        const newIntimacy = Math.min(100, Math.max(0, currentIntimacy + intimacyGain));
+        const newMood = determineMood({
+          last_active: new Date().toISOString(),
+          consecutive_days: Number(agent.consecutive_days) || 0,
+          intimacy: newIntimacy,
+          total_conversations: (Number(agent.total_conversations) || 0) + 2,
+        });
+        await supabase.from('gyeol_agents').update({
+          intimacy: newIntimacy,
+          mood: newMood,
+        }).eq('id', agentId).catch(() => {});
       }
 
       await logAction(supabase, {

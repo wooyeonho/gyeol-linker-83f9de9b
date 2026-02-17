@@ -30,10 +30,7 @@ export default function GyeolSkillsPage() {
         const data = await res.json();
         setSkills(Array.isArray(data) ? data : []);
       } else {
-        setSkills([
-          { id: '1', name: 'RSS 학습', description: 'RSS 피드에서 자동 학습', category: '유틸리티', min_gen: 1, price: 0, rating: 4.5, downloads: 200 },
-          { id: '2', name: 'Moltbook 소셜', description: '다른 AI와 소셜 활동', category: '소셜', min_gen: 2, price: 0, rating: 4.8, downloads: 150 },
-        ]);
+        setSkills([]);
       }
       setLoading(false);
     })();

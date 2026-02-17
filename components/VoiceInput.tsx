@@ -9,25 +9,44 @@ export interface VoiceInputProps {
 
 export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(function VoiceInput({ onResult, disabled }, _ref) {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const [interim, setInterim] = useState('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const startListening = useCallback(() => {
     if (disabled) return;
     const SpeechRecognitionAPI =
       typeof window !== 'undefined' &&
-      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+      (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRecognitionAPI) { onResult(''); return; }
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.lang = 'ko-KR';
-    recognition.onresult = (e: any) => {
-      const result = e.results[e.results.length - 1];
-      const text = result[0].transcript;
-      if (text) onResult(text);
+    recognition.onresult = (e: SpeechRecognitionEvent) => {
+      let finalText = '';
+      let interimText = '';
+      for (let i = 0; i < e.results.length; i++) {
+        const result = e.results[i];
+        if (result.isFinal) {
+          finalText += result[0].transcript;
+        } else {
+          interimText += result[0].transcript;
+        }
+      }
+      setInterim(interimText);
+      if (finalText) {
+        onResult(finalText);
+        setInterim('');
+      }
     };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterim('');
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      setInterim('');
+    };
     recognition.start();
     recognitionRef.current = recognition;
     setIsListening(true);
@@ -36,24 +55,30 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
   const stopListening = useCallback(() => {
     if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
     setIsListening(false);
+    setInterim('');
   }, []);
 
   return (
-    <button
-      type="button"
-      onClick={isListening ? stopListening : startListening}
-      disabled={disabled}
-      className={`p-2 rounded-full flex items-center justify-center transition ${
-        isListening
-          ? 'bg-destructive/10 text-destructive'
-          : 'text-muted-foreground hover:bg-secondary'
-      } disabled:opacity-40 disabled:pointer-events-none`}
-      aria-label={isListening ? '녹음 중지' : '음성 입력'}
-      title={isListening ? 'Stop recording' : 'Voice input'}
-    >
-      <span className="material-icons-round text-[22px]">
-        {isListening ? 'stop' : 'mic'}
-      </span>
-    </button>
+    <div className="flex items-center gap-2">
+      {isListening && interim && (
+        <span className="text-xs text-white/40 max-w-[120px] truncate">{interim}</span>
+      )}
+      <button
+        type="button"
+        onClick={isListening ? stopListening : startListening}
+        disabled={disabled}
+        className={`p-2 rounded-full flex items-center justify-center transition ${
+          isListening
+            ? 'bg-red-500/20 text-red-400 animate-pulse'
+            : 'text-white/40 hover:bg-white/10'
+        } disabled:opacity-40 disabled:pointer-events-none`}
+        aria-label={isListening ? 'Stop' : 'Voice'}
+        title={isListening ? 'Stop recording' : 'Voice input'}
+      >
+        <span className="material-icons-round text-[22px]">
+          {isListening ? 'stop' : 'mic'}
+        </span>
+      </button>
+    </div>
   );
 });

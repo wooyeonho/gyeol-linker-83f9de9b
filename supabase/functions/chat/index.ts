@@ -144,14 +144,23 @@ serve(async (req) => {
         last_active: new Date().toISOString(),
       };
 
-      // Check evolution
+      const BASE_RATES: Record<number, number> = { 1: 60, 2: 40, 3: 20, 4: 5 };
       let evolved = false;
       let newGen = agent.gen;
       if (newProgress >= 100) {
-        newGen = agent.gen + 1;
-        updates.gen = newGen;
-        updates.evolution_progress = 0;
-        evolved = true;
+        const baseRate = BASE_RATES[agent.gen] ?? 0;
+        const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
+        const bonus = Math.floor(avg / 20) + Math.min(10, Math.floor(newTotal / 50));
+        const probability = Math.min(95, Math.floor((baseRate + bonus) * (newProgress / 100)));
+        const roll = Math.random() * 100;
+        if (roll < probability) {
+          newGen = agent.gen + 1;
+          updates.gen = newGen;
+          updates.evolution_progress = 0;
+          evolved = true;
+        } else {
+          updates.evolution_progress = 80;
+        }
       }
 
       await db.from("gyeol_agents").update(updates).eq("id", agentId);

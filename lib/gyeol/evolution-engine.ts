@@ -1,17 +1,30 @@
-/**
- * GYEOL 성격 진화 엔진
- * 대화 분석 → 성격 파라미터 업데이트 → 비주얼 상태 계산
- */
-
 import type { Agent, Message, PersonalityParams, VisualState } from './types';
 import { callProvider } from './chat-ai';
 
-const EVOLUTION_THRESHOLDS = [
-  { gen: 2, conversations: 20, progress: 100 },
-  { gen: 3, conversations: 50, progress: 100 },
-  { gen: 4, conversations: 100, progress: 100 },
-  { gen: 5, conversations: 200, progress: 100 },
+const BASE_EVOLUTION_RATES: Record<number, number> = {
+  1: 60,
+  2: 40,
+  3: 20,
+  4: 5,
+};
+
+const MUTATION_RATES: Record<number, number> = {
+  2: 5,
+  3: 3,
+  4: 2,
+  5: 1,
+};
+
+const MUTATION_TYPES = [
+  'empathy_master',
+  'logic_genius',
+  'creative_burst',
+  'energy_overflow',
+  'humor_king',
+  'balanced_sage',
 ] as const;
+
+type MutationType = (typeof MUTATION_TYPES)[number];
 
 const PERSONALITY_COLORS: Record<keyof PersonalityParams, string> = {
   warmth: '#F59E0B',
@@ -29,9 +42,6 @@ const DEFAULT_VISUAL: VisualState = {
   form: 'point',
 };
 
-/**
- * 성격 파라미터 → 비주얼 상태 변환
- */
 export function calculateVisualState(personality: PersonalityParams): VisualState {
   const dominant = (Object.entries(personality) as [keyof PersonalityParams, number][]).sort(
     (a, b) => b[1] - a[1]
@@ -54,22 +64,102 @@ export function calculateVisualState(personality: PersonalityParams): VisualStat
   };
 }
 
-/**
- * 레벨업 조건 확인
- */
-export function checkEvolution(agent: Agent): { evolved: boolean; newGen?: number } {
-  const current = EVOLUTION_THRESHOLDS.find((t) => t.gen === agent.gen + 1);
-  if (!current) return { evolved: false };
-  const ok =
-    agent.total_conversations >= current.conversations &&
-    Number(agent.evolution_progress) >= current.progress;
-  return ok ? { evolved: true, newGen: current.gen } : { evolved: false };
+export function calculateEvolutionProbability(agent: {
+  gen: number;
+  warmth: number;
+  logic: number;
+  creativity: number;
+  energy: number;
+  humor: number;
+  total_conversations: number;
+  evolution_progress: number;
+}): number {
+  const baseRate = BASE_EVOLUTION_RATES[agent.gen] ?? 0;
+  if (baseRate === 0) return 0;
+  const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
+  const personalityBonus = Math.floor(avg / 20);
+  const conversationBonus = Math.min(10, Math.floor(agent.total_conversations / 50));
+  const progressMultiplier = Math.min(1, agent.evolution_progress / 100);
+  return Math.min(95, Math.floor((baseRate + personalityBonus + conversationBonus) * progressMultiplier));
 }
 
-/**
- * 대화 분석 결과로 성격 변화값 계산 (서버에서 Groq 등 호출 후 사용)
- * 클라이언트에서는 delta만 적용하는 용도로 사용 가능
- */
+export interface EvolutionResult {
+  success: boolean;
+  newGen: number;
+  probability: number;
+  isMutation: boolean;
+  mutationType: MutationType | null;
+  personalityBonus: number;
+  message: string;
+}
+
+export function attemptEvolution(agent: {
+  gen: number;
+  warmth: number;
+  logic: number;
+  creativity: number;
+  energy: number;
+  humor: number;
+  total_conversations: number;
+  evolution_progress: number;
+}): EvolutionResult {
+  const probability = calculateEvolutionProbability(agent);
+  const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
+  const personalityBonus = Math.floor(avg / 20);
+
+  if (agent.evolution_progress < 100) {
+    return {
+      success: false,
+      newGen: agent.gen,
+      probability,
+      isMutation: false,
+      mutationType: null,
+      personalityBonus,
+      message: `진화 진행도 부족 (${agent.evolution_progress}/100)`,
+    };
+  }
+
+  const roll = Math.random() * 100;
+  const success = roll < probability;
+
+  let isMutation = false;
+  let mutationType: MutationType | null = null;
+
+  if (success) {
+    const mutationRate = MUTATION_RATES[agent.gen + 1] ?? 0;
+    if (Math.random() * 100 < mutationRate) {
+      isMutation = true;
+      mutationType = MUTATION_TYPES[Math.floor(Math.random() * MUTATION_TYPES.length)];
+    }
+  }
+
+  const newGen = success ? agent.gen + 1 : agent.gen;
+  const message = success
+    ? isMutation
+      ? `돌연변이 진화! Gen ${newGen} (${mutationType}) - 확률 ${probability}%`
+      : `진화 성공! Gen ${newGen} - 확률 ${probability}%`
+    : `진화 실패 (${Math.floor(roll)}/${probability}) - 다음에 다시 도전!`;
+
+  return { success, newGen, probability, isMutation, mutationType, personalityBonus, message };
+}
+
+export function checkCriticalLearning(): { isCritical: boolean; multiplier: number } {
+  const roll = Math.random() * 100;
+  if (roll < 1) return { isCritical: true, multiplier: 10 };
+  if (roll < 5) return { isCritical: true, multiplier: 3 };
+  return { isCritical: false, multiplier: 1 };
+}
+
+export type DailyEventType = 'none' | 'exp_double' | 'evolution_boost' | 'rare_ticket';
+
+export function rollDailyEvent(): DailyEventType {
+  const roll = Math.random() * 100;
+  if (roll < 85) return 'none';
+  if (roll < 93) return 'exp_double';
+  if (roll < 98) return 'evolution_boost';
+  return 'rare_ticket';
+}
+
 export function applyPersonalityDelta(
   current: PersonalityParams,
   delta: Partial<PersonalityParams>
@@ -128,9 +218,9 @@ Positive = trait exercised. Negative = trait lacking. 0 = neutral.`;
       };
     }
   } catch {
-    // fallback to simple analysis
+    // fallback
   }
   return analyzeConversationSimple(messages);
 }
 
-export { EVOLUTION_THRESHOLDS, PERSONALITY_COLORS, DEFAULT_VISUAL };
+export { PERSONALITY_COLORS, DEFAULT_VISUAL, BASE_EVOLUTION_RATES, MUTATION_RATES, MUTATION_TYPES };

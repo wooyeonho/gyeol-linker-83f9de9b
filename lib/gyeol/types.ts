@@ -10,6 +10,8 @@ export interface VisualState {
   form: 'point' | 'sphere' | 'orb' | 'complex' | 'abstract';
 }
 
+export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'lonely' | 'tired';
+
 export interface Agent {
   id: string;
   user_id: string;
@@ -26,6 +28,9 @@ export interface Agent {
   skin_id: string | null;
   preferred_provider: string;
   openclaw_agent_id: string | null;
+  intimacy: number;
+  mood: MoodType;
+  consecutive_days: number;
   created_at: string;
   last_active: string;
 }
