@@ -11,7 +11,8 @@ import {
   analyzeConversationWithLLM,
   applyPersonalityDelta,
   calculateVisualState,
-  checkEvolution,
+  attemptEvolution,
+  checkCriticalLearning,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
 import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeol/constants';
@@ -331,21 +332,46 @@ export async function POST(req: NextRequest) {
             .eq('id', agentId);
           personalityChanged = true;
 
+          const critical = checkCriticalLearning();
+          const progressGain = 5 * critical.multiplier;
+          const newProgress = Math.min(100, Number(agent.evolution_progress) + progressGain);
+
+          await supabase
+            .from('gyeol_agents')
+            .update({
+              warmth: next.warmth,
+              logic: next.logic,
+              creativity: next.creativity,
+              energy: next.energy,
+              humor: next.humor,
+              visual_state: newVisualState,
+              evolution_progress: newProgress,
+            })
+            .eq('id', agentId);
+
           const updatedAgent = {
-            ...agent,
+            gen: Number(agent.gen) || 1,
             total_conversations: totalConversations,
             warmth: next.warmth,
             logic: next.logic,
             creativity: next.creativity,
             energy: next.energy,
             humor: next.humor,
-            evolution_progress: Math.min(100, Number(agent.evolution_progress) + 5),
+            evolution_progress: newProgress,
           };
-          const evo = checkEvolution(updatedAgent as { gen: number; total_conversations: number; evolution_progress: number });
-          if (evo.evolved && evo.newGen) {
-            await supabase.from('gyeol_agents').update({ gen: evo.newGen }).eq('id', agentId);
+          const evoResult = attemptEvolution(updatedAgent);
+          if (evoResult.success) {
+            await supabase.from('gyeol_agents').update({
+              gen: evoResult.newGen,
+              evolution_progress: 0,
+            }).eq('id', agentId);
             evolved = true;
-            newGen = evo.newGen;
+            newGen = evoResult.newGen;
+            if (evoResult.isMutation) {
+              console.log('[GYEOL] mutation!', evoResult.mutationType);
+            }
+          } else if (newProgress >= 100) {
+            await supabase.from('gyeol_agents').update({ evolution_progress: 80 }).eq('id', agentId);
           }
         } catch {
           // evolution analysis failed - non-critical
