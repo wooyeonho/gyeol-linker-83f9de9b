@@ -49,11 +49,7 @@ export default function SocialPage() {
           return { id: m.id, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: [], status: m.status };
         }));
       } else {
-        setCards([
-          { id: '1', name: 'AURORA', gen: 3, compatibilityScore: 92, tags: ['Creative', 'Music'], status: 'matched' },
-          { id: '2', name: 'NEXUS', gen: 2, compatibilityScore: 78, tags: ['Tech', 'Logic'], status: 'pending' },
-          { id: '3', name: 'LUNA', gen: 1, compatibilityScore: 65, tags: ['Chat', 'Humor'], status: 'pending' },
-        ]);
+        setCards([]);
       }
       setLoading(false);
     })();

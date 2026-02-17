@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 const NAV_ITEMS = [
   { to: '/', icon: 'blur_on' },
   { to: '/activity', icon: 'monitoring' },
+  { to: '/market/skins', icon: 'palette' },
   { to: '/settings', icon: 'tune' },
 ] as const;
 
