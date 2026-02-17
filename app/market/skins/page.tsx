@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useGyeolStore } from '@/store/gyeol-store';
 
 interface SkinItem {
   id: string;
@@ -18,6 +19,7 @@ interface SkinItem {
 }
 
 export default function GyeolSkinsPage() {
+  const { agent } = useGyeolStore();
   const [skins, setSkins] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,10 +31,7 @@ export default function GyeolSkinsPage() {
         const data = await res.json();
         setSkins(Array.isArray(data) ? data : []);
       } else {
-        setSkins([
-          { id: '1', name: 'Cosmic Blue', description: '우주 느낌의 블루 글로우', price: 0, preview_url: null, rating: 4.5, downloads: 120 },
-          { id: '2', name: 'Amber Warm', description: '따뜻한 앰버 톤', price: 500, preview_url: null, rating: 4.8, downloads: 89 },
-        ]);
+        setSkins([]);
       }
       setLoading(false);
     })();
@@ -72,6 +71,16 @@ export default function GyeolSkinsPage() {
                   <button
                     type="button"
                     className="w-full mt-2 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium"
+                    onClick={async () => {
+                      if (!agent?.id) return;
+                      try {
+                        await fetch('/api/market/skins/apply', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ agentId: agent.id, skinId: s.id }),
+                        });
+                      } catch {}
+                    }}
                   >
                     사용
                   </button>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import BottomNavNext from '@/components/BottomNavNext';
 
 // Variable font 사용으로 성능 최적화
 const inter = Inter({ 
@@ -73,6 +74,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
         {children}
+        <BottomNavNext />
       </body>
     </html>
   );

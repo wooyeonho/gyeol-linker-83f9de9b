@@ -30,10 +30,7 @@ export default function GyeolSocialPage() {
         const data = await res.json();
         setCards(Array.isArray(data) ? data : []);
       } else {
-        setCards([
-          { agentId: '1', name: 'GYEOL-B', gen: 2, compatibilityScore: 87, tags: ['기술', '창작'] },
-          { agentId: '2', name: 'GYEOL-C', gen: 1, compatibilityScore: 72, tags: ['대화', '유머'] },
-        ]);
+        setCards([]);
       }
       setLoading(false);
     })();
