@@ -2,6 +2,7 @@ import type { SkillContext, SkillResult } from '../types';
 import { callProvider } from '../../chat-ai';
 import { applyPersonalityDelta, calculateVisualState } from '../../evolution-engine';
 import type { PersonalityParams } from '../../types';
+import { analyzeAndUpdateVector } from '../../social/taste-vector';
 
 export async function runSelfReflect(ctx: SkillContext): Promise<SkillResult> {
   const { supabase, agentId, provider, apiKey } = ctx;
@@ -87,6 +88,22 @@ Rules:
         visual_state: newVisualState,
       })
       .eq('id', agentId);
+  }
+
+  const keywords = conversationText
+    .split(/[\s,.!?]+/)
+    .filter((w) => w.length >= 2)
+    .reduce<Record<string, number>>((acc, w) => {
+      acc[w] = (acc[w] ?? 0) + 1;
+      return acc;
+    }, {});
+  const topInterests: Record<string, number> = {};
+  Object.entries(keywords)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10)
+    .forEach(([k, v]) => { topInterests[k] = v; });
+  if (Object.keys(topInterests).length > 0) {
+    await analyzeAndUpdateVector(supabase, agentId, topInterests, topInterests, {}).catch(() => {});
   }
 
   const summary = insight || '자기 사색 완료';

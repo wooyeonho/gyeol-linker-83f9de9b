@@ -96,6 +96,27 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
     }
   }
 
+  const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (telegramToken) {
+    try {
+      const { data: tgLink } = await supabase
+        .from('gyeol_telegram_links')
+        .select('chat_id')
+        .eq('agent_id', agentId)
+        .limit(1)
+        .maybeSingle();
+      if (tgLink?.chat_id) {
+        await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: tgLink.chat_id, text: cleaned }),
+        }).catch(() => {});
+      }
+    } catch {
+      // telegram send failed silently
+    }
+  }
+
   await supabase.from('gyeol_autonomous_logs').insert({
     agent_id: agentId,
     activity_type: 'proactive_message',
