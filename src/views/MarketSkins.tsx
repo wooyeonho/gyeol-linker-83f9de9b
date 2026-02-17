@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/src/lib/supabase';
+import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { BottomNav } from '../components/BottomNav';
 
 interface SkinItem {
@@ -12,6 +13,7 @@ interface SkinItem {
 export default function MarketSkinsPage() {
   const [skins, setSkins] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { agent } = useInitAgent();
 
   useEffect(() => {
     (async () => {
@@ -63,7 +65,17 @@ export default function MarketSkinsPage() {
                     <span className="text-primary text-[10px] font-medium">{s.price === 0 ? 'Free' : `${s.price}P`}</span>
                     <span className="text-[9px] text-muted-foreground">★ {s.rating}</span>
                   </div>
-                  <button type="button" className="w-full py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium hover:brightness-110 transition shadow-glow-xs">
+                  <button type="button" onClick={async () => {
+                    if (!agent?.id) return;
+                    await supabase.from('gyeol_agents' as any)
+                      .update({ skin_id: s.id } as any)
+                      .eq('id', agent.id);
+                    await supabase.from('gyeol_agent_skins' as any)
+                      .upsert({ agent_id: agent.id, skin_id: s.id, is_equipped: true } as any,
+                        { onConflict: 'agent_id,skin_id' });
+                    alert('스킨이 적용되었습니다!');
+                  }}
+                    className="w-full py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium hover:brightness-110 transition shadow-glow-xs">
                     Apply
                   </button>
                 </div>

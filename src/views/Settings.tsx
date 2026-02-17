@@ -13,6 +13,8 @@ export default function SettingsPage() {
   const [autonomyLevel, setAutonomyLevel] = useState(50);
   const [contentFilterOn, setContentFilterOn] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
+  const [autoTTS, setAutoTTS] = useState(false);
+  const [ttsSpeed, setTtsSpeed] = useState(0.95);
   const [byokList, setByokList] = useState<{ provider: string; masked: string }[]>([]);
   const [byokOpen, setByokOpen] = useState<string | null>(null);
   const [byokKey, setByokKey] = useState('');
@@ -36,6 +38,13 @@ export default function SettingsPage() {
       if (data) setKillSwitchActive((data as any).kill_switch);
     })();
   }, []);
+
+  useEffect(() => {
+    if (!agent) return;
+    const s = (agent as any).settings ?? {};
+    if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
+    if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
+  }, [agent]);
 
   const saveByok = async (provider: string) => {
     if (!byokKey.trim() || !user) return;
@@ -133,6 +142,41 @@ export default function SettingsPage() {
               )}
             </div>
           ))}
+
+          {/* 자동 읽어주기 */}
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="text-xs text-white/40">자동 읽어주기</span>
+              <p className="text-[9px] text-white/20">AI 응답을 자동으로 읽어줍니다</p>
+            </div>
+            <button type="button" onClick={() => {
+              const next = !autoTTS;
+              setAutoTTS(next);
+              if (agent) supabase.from('gyeol_agents' as any)
+                .update({ settings: { ...(agent as any).settings, autoTTS: next } } as any)
+                .eq('id', agent.id);
+            }}
+              className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
+              <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${autoTTS ? 'ml-[18px]' : 'ml-1'}`} />
+            </button>
+          </div>
+
+          {/* 읽기 속도 */}
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-white/40">읽기 속도</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/20">{ttsSpeed.toFixed(1)}x</span>
+              <input type="range" min={0.5} max={1.5} step={0.1} value={ttsSpeed}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setTtsSpeed(v);
+                  if (agent) supabase.from('gyeol_agents' as any)
+                    .update({ settings: { ...(agent as any).settings, ttsSpeed: v } } as any)
+                    .eq('id', agent.id);
+                }}
+                className="w-20 accent-primary" />
+            </div>
+          </div>
         </section>
 
         <div className="h-px bg-white/[0.04]" />

@@ -7,10 +7,18 @@ import { VoidCore } from '@/src/components/PearlSpheres';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
 import { VoiceInput } from '@/components/VoiceInput';
+import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === 'user';
+  const [reading, setReading] = useState(false);
+
+  const handleSpeak = () => {
+    if (reading) { stopSpeaking(); setReading(false); }
+    else { setReading(true); speakText(msg.content, 0.95, () => setReading(false)); }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -24,7 +32,20 @@ function MessageBubble({ msg }: { msg: Message }) {
         </div>
       ) : (
         <div className="max-w-[85%] px-4 py-2.5">
+          {(msg as any).metadata?.criticalLearning && (
+            <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
+              ⚡ 크리티컬 학습! x{(msg as any).metadata.criticalMultiplier}
+            </span>
+          )}
           <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
+          <button type="button" onClick={handleSpeak}
+            className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
+            aria-label={reading ? '읽기 중지' : '읽어주기'}>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+            </svg>
+          </button>
         </div>
       )}
     </motion.div>
@@ -76,7 +97,7 @@ export default function GyeolPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px] ambient-glow" />
       </div>
 
-      {/* Top bar - minimal */}
+      {/* Top bar */}
       <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-xs" />
@@ -116,6 +137,54 @@ export default function GyeolPage() {
                 <p className="text-[11px] text-muted-foreground/50">
                   {agent?.total_conversations ?? 0}번의 대화
                 </p>
+
+                {/* 친밀도 + 감정 + 연속 접속 */}
+                {agent && (
+                  <div className="flex items-center justify-center gap-3 text-[9px] text-white/25 mt-1">
+                    <span>
+                      {(agent as any).intimacy >= 80 ? '💜' :
+                       (agent as any).intimacy >= 60 ? '💙' :
+                       (agent as any).intimacy >= 40 ? '💚' :
+                       (agent as any).intimacy >= 20 ? '🤍' : '⚪'}
+                      {' '}{(agent as any).intimacy ?? 0}%
+                    </span>
+                    <span>
+                      {(agent as any).mood === 'happy' ? '😊' :
+                       (agent as any).mood === 'excited' ? '🤩' :
+                       (agent as any).mood === 'sad' ? '😢' :
+                       (agent as any).mood === 'lonely' ? '🥺' :
+                       (agent as any).mood === 'tired' ? '😴' : '🙂'}
+                    </span>
+                    {(agent as any).consecutive_days > 0 && (
+                      <span>🔥 {(agent as any).consecutive_days}일</span>
+                    )}
+                  </div>
+                )}
+
+                {/* 진화 시도 버튼 */}
+                {agent && Number((agent as any).evolution_progress) >= 100 && (agent as any).gen < 5 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/evolution/attempt', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ agentId: agent.id }),
+                        });
+                        const data = await res.json();
+                        if (!data.evolved) {
+                          alert(data.message || '진화 실패... 다시 도전해보세요!');
+                        }
+                      } catch {
+                        alert('진화 시도 중 오류가 발생했습니다.');
+                      }
+                    }}
+                    className="mt-2 px-4 py-2 rounded-xl bg-primary/20 border border-primary/30 text-primary text-xs font-medium animate-pulse hover:bg-primary/30 transition"
+                  >
+                    ✨ 진화 시도! (Gen {(agent as any).gen} → {(agent as any).gen + 1})
+                  </button>
+                )}
               </div>
             </motion.div>
           ) : (
