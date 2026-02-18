@@ -1,0 +1,1 @@
+ALTER TABLE public.gyeol_autonomous_logs ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'nextjs';
