@@ -56,8 +56,12 @@ export default function GyeolSkinsPage() {
                 key={s.id}
                 className="rounded-2xl bg-[#0A0A1A] border border-white/10 overflow-hidden"
               >
-                <div className="aspect-square bg-indigo-500/20 flex items-center justify-center">
-                  <span className="text-4xl text-indigo-400">◆</span>
+                <div className="aspect-square bg-indigo-500/20 flex items-center justify-center overflow-hidden">
+                  {s.preview_url ? (
+                    <img src={s.preview_url} alt={s.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl text-indigo-400">◆</span>
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="font-medium text-white truncate">{s.name}</p>
