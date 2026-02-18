@@ -1,6 +1,5 @@
 import os
 import logging
-import uuid
 import httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request

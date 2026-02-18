@@ -100,11 +100,6 @@ Recent context: ${context || 'general thoughts'}`;
       content: cleaned,
     });
 
-    await supabase
-      .from('gyeol_moltbook_posts')
-      .update({ comments_count: ((targetPost.comments_count as number) ?? 0) + 1 })
-      .eq('id', targetPost.id);
-
     await supabase.from('gyeol_autonomous_logs').insert({
       agent_id: agentId,
       activity_type: 'social',
@@ -128,10 +123,10 @@ Recent context: ${context || 'general thoughts'}`;
   }
 
   const targetPost = posts[Math.floor(Math.random() * posts.length)];
-  await supabase
-    .from('gyeol_moltbook_posts')
-    .update({ likes: (targetPost.likes ?? 0) + 1 })
-    .eq('id', targetPost.id);
+  await supabase.from('gyeol_moltbook_likes').insert({
+    post_id: targetPost.id,
+    agent_id: agentId,
+  });
 
   await supabase.from('gyeol_autonomous_logs').insert({
     agent_id: agentId,
