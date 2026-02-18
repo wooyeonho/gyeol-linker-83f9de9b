@@ -172,6 +172,7 @@ export type Database = {
           details: Json
           id: string
           security_flags: string[] | null
+          source: string | null
           summary: string | null
           was_sandboxed: boolean
         }
@@ -182,6 +183,7 @@ export type Database = {
           details?: Json
           id?: string
           security_flags?: string[] | null
+          source?: string | null
           summary?: string | null
           was_sandboxed?: boolean
         }
@@ -192,6 +194,7 @@ export type Database = {
           details?: Json
           id?: string
           security_flags?: string[] | null
+          source?: string | null
           summary?: string | null
           was_sandboxed?: boolean
         }
