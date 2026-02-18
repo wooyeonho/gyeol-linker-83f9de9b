@@ -9,6 +9,11 @@ import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
 import { VoiceInput } from '@/components/VoiceInput';
 import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
+import { GenBadge } from '@/src/components/GenBadge';
+import { MemoryDashboard } from '@/src/components/MemoryDashboard';
+import { EvolutionProgress } from '@/src/components/EvolutionProgress';
+import { InsightCard } from '@/src/components/InsightCard';
+import { BreedingResult } from '@/src/components/BreedingResult';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -59,6 +64,10 @@ export default function GyeolPage() {
   const { user } = useAuth();
   const [input, setInput] = useState('');
   const [chatExpanded, setChatExpanded] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [evoOpen, setEvoOpen] = useState(false);
+  const [breedingOpen, setBreedingOpen] = useState(false);
+  const [insight, setInsight] = useState<{ topics: string[]; emotionArc: string; whatWorked: string; whatToImprove: string; personalityChanged: boolean; changes: Record<string, number> } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -109,7 +118,7 @@ export default function GyeolPage() {
           <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agent?.name ?? 'GYEOL'}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-muted-foreground">Gen {agent?.gen ?? 1}</span>
+          <GenBadge gen={agent?.gen ?? 1} size="sm" />
           <div className="w-8 h-[2px] bg-border/30 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-primary/60 rounded-full"
@@ -118,6 +127,9 @@ export default function GyeolPage() {
               transition={{ duration: 1.5, ease: 'easeOut' }}
             />
           </div>
+          <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition">
+            <span className="material-icons-round text-[14px]">trending_up</span>
+          </button>
         </div>
       </div>
 
@@ -142,6 +154,24 @@ export default function GyeolPage() {
                 <p className="text-[11px] text-muted-foreground/50">
                   {agent?.total_conversations ?? 0} conversations
                 </p>
+
+                {/* Quick action buttons */}
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setMemoryOpen(true)}
+                    className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10 text-primary/70 text-[10px] font-medium hover:bg-primary/20 transition flex items-center gap-1"
+                  >
+                    <span className="text-xs">🧠</span> AI의 기억
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEvoOpen(true)}
+                    className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10 text-primary/70 text-[10px] font-medium hover:bg-primary/20 transition flex items-center gap-1"
+                  >
+                    <span className="text-xs">🧬</span> 진화 현황
+                  </button>
+                </div>
 
                 {/* 친밀도 + 감정 + 연속 접속 */}
                 {agent && (
@@ -263,6 +293,27 @@ export default function GyeolPage() {
 
       <BottomNav />
       <EvolutionCeremony />
+      <MemoryDashboard isOpen={memoryOpen} onClose={() => setMemoryOpen(false)} />
+      <EvolutionProgress
+        isOpen={evoOpen}
+        onClose={() => setEvoOpen(false)}
+        currentGen={agent?.gen ?? 1}
+        onEvolve={async () => {
+          if (!agent?.id) return;
+          try {
+            const res = await fetch('/api/evolution/attempt', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ agentId: agent.id }),
+            });
+            const data = await res.json();
+            if (!data.evolved) alert(data.message || 'Evolution failed...');
+            setEvoOpen(false);
+          } catch { alert('진화 시도 중 오류가 발생했어요.'); }
+        }}
+      />
+      <InsightCard insight={insight} onDismiss={() => setInsight(null)} />
+      <BreedingResult isOpen={breedingOpen} onClose={() => setBreedingOpen(false)} />
     </main>
   );
 }
