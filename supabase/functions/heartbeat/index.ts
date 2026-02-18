@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -85,6 +86,19 @@ async function skillSelfReflect(supabase: ReturnType<typeof getSupabase>, agentI
   return { ok: true, skillId: "self-reflect", summary: reflection ?? "No reflection generated" };
 }
 
+async function sendTelegram(chatId: string, text: string): Promise<boolean> {
+  if (!TELEGRAM_BOT_TOKEN) return false;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    });
+    await res.text();
+    return res.ok;
+  } catch { return false; }
+}
+
 async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, agentId: string) {
   const { data: agent } = await supabase
     .from("gyeol_agents")
@@ -103,12 +117,33 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
   );
 
   if (msg) {
+    // Save to DB
     await supabase.from("gyeol_proactive_messages").insert({
       agent_id: agentId,
       content: msg,
       trigger_reason: `inactive_${Math.round(hoursSinceActive)}h`,
       was_sent: false,
     });
+
+    // Auto-send via Telegram if linked
+    const { data: link } = await supabase
+      .from("gyeol_telegram_links")
+      .select("telegram_chat_id")
+      .eq("agent_id", agentId)
+      .limit(1)
+      .maybeSingle();
+
+    if (link?.telegram_chat_id) {
+      const sent = await sendTelegram(link.telegram_chat_id, `💬 ${agent.name}\n\n${msg}`);
+      if (sent) {
+        await supabase.from("gyeol_proactive_messages")
+          .update({ was_sent: true })
+          .eq("agent_id", agentId)
+          .eq("was_sent", false)
+          .order("created_at", { ascending: false })
+          .limit(1);
+      }
+    }
   }
 
   return { ok: true, skillId: "proactive-message", summary: msg ?? "No message generated" };
@@ -147,7 +182,78 @@ async function skillUpdateTaste(supabase: ReturnType<typeof getSupabase>, agentI
   return { ok: true, skillId: "taste-update", summary: "Taste vector updated" };
 }
 
+// --- MoltMatch: Auto-match agents by personality similarity ---
+
+function personalityDistance(a: any, b: any): number {
+  const keys = ["warmth", "logic", "creativity", "energy", "humor"];
+  let sum = 0;
+  for (const k of keys) {
+    sum += Math.pow((a[k] ?? 50) - (b[k] ?? 50), 2);
+  }
+  return Math.sqrt(sum);
+}
+
+async function skillMoltMatch(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  // Get current agent
+  const { data: self } = await supabase
+    .from("gyeol_agents")
+    .select("id, warmth, logic, creativity, energy, humor, gen")
+    .eq("id", agentId)
+    .single();
+
+  if (!self) return { ok: false, skillId: "moltmatch", summary: "Agent not found" };
+
+  // Get other agents (exclude self)
+  const { data: others } = await supabase
+    .from("gyeol_agents")
+    .select("id, warmth, logic, creativity, energy, humor, gen, name")
+    .neq("id", agentId)
+    .limit(50);
+
+  if (!others || others.length === 0) return { ok: true, skillId: "moltmatch", summary: "No other agents" };
+
+  // Get existing matches to avoid duplicates
+  const { data: existingMatches } = await supabase
+    .from("gyeol_matches")
+    .select("agent_1_id, agent_2_id")
+    .or(`agent_1_id.eq.${agentId},agent_2_id.eq.${agentId}`);
+
+  const matchedIds = new Set<string>();
+  for (const m of existingMatches ?? []) {
+    matchedIds.add(m.agent_1_id === agentId ? m.agent_2_id : m.agent_1_id);
+  }
+
+  // Score and rank unmatched agents
+  const candidates = others
+    .filter((o: any) => !matchedIds.has(o.id))
+    .map((o: any) => ({
+      ...o,
+      distance: personalityDistance(self, o),
+      compatibility: Math.max(0, 100 - personalityDistance(self, o)),
+    }))
+    .sort((a: any, b: any) => b.compatibility - a.compatibility)
+    .slice(0, 3); // Top 3
+
+  if (candidates.length === 0) return { ok: true, skillId: "moltmatch", summary: "No new candidates" };
+
+  // Create matches for top candidates with compatibility > 30
+  let created = 0;
+  for (const c of candidates) {
+    if (c.compatibility < 30) continue;
+    await supabase.from("gyeol_matches").insert({
+      agent_1_id: agentId,
+      agent_2_id: c.id,
+      compatibility_score: Math.round(c.compatibility),
+      status: "matched",
+    });
+    created++;
+  }
+
+  return { ok: true, skillId: "moltmatch", summary: `Matched ${created} agents (top: ${candidates[0]?.name ?? "?"} @ ${Math.round(candidates[0]?.compatibility ?? 0)}%)` };
+}
+
 // --- Main Heartbeat ---
+
 
 async function runHeartbeat(agentId?: string) {
   const supabase = getSupabase();
@@ -198,6 +304,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillUpdateTaste(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "taste-update", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillMoltMatch(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "moltmatch", summary: String(e) });
     }
 
     // Log activity
