@@ -373,6 +373,53 @@ export type Database = {
           },
         ]
       }
+      gyeol_conversation_insights: {
+        Row: {
+          agent_id: string
+          created_at: string
+          emotion_arc: string
+          id: string
+          next_hint: string | null
+          personality_delta: Json
+          topics: Json
+          underlying_need: string | null
+          what_to_improve: string | null
+          what_worked: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          emotion_arc?: string
+          id?: string
+          next_hint?: string | null
+          personality_delta?: Json
+          topics?: Json
+          underlying_need?: string | null
+          what_to_improve?: string | null
+          what_worked?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          emotion_arc?: string
+          id?: string
+          next_hint?: string | null
+          personality_delta?: Json
+          topics?: Json
+          underlying_need?: string | null
+          what_to_improve?: string | null
+          what_worked?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_conversation_insights_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_conversations: {
         Row: {
           agent_id: string
@@ -953,6 +1000,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "gyeol_user_keywords_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_user_memories: {
+        Row: {
+          agent_id: string
+          category: string
+          confidence: number
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          agent_id: string
+          category: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          agent_id?: string
+          category?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_user_memories_agent_id_fkey"
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"

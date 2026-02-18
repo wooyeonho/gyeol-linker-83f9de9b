@@ -155,12 +155,12 @@ async def _skill_learner() -> str:
                     )
                 except Exception:
                     summary = title
-                await _supabase_upsert("gyeol_learned_topics", {
+                await _supabase_post("gyeol_learned_topics", {
                     "agent_id": AGENT_ID,
-                    "topic": title[:100],
-                    "summary": summary[:300],
+                    "title": title[:200],
+                    "summary": summary[:500],
                     "source": "rss",
-                    "source_url": link[:500] if link else "",
+                    "source_url": link[:500] if link else None,
                 })
                 topics_saved += 1
         except Exception as e:
