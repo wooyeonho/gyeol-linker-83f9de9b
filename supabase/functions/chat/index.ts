@@ -93,6 +93,51 @@ function sanitizeOutput(text: string): string {
   return cleaned;
 }
 
+function extractTopics(messages: string[]): string[] {
+  const topicPatterns: [RegExp, string][] = [
+    [/주식|투자|코인|비트코인|나스닥/, "투자"],
+    [/AI|인공지능|머신러닝|딥러닝|GPT|LLM/, "AI 기술"],
+    [/코딩|프로그래밍|개발|코드|앱/, "프로그래밍"],
+    [/음악|노래|앨범/, "음악"],
+    [/영화|드라마|넷플릭스/, "영화/드라마"],
+    [/게임|플레이/, "게임"],
+    [/운동|헬스|달리기/, "운동"],
+    [/음식|맛집|요리|밥/, "음식"],
+    [/여행|관광/, "여행"],
+    [/공부|학교|시험|대학/, "학업"],
+    [/일|회사|직장|업무/, "직장"],
+    [/꿈|목표|계획|미래/, "목표/계획"],
+  ];
+  const all = messages.join(" ");
+  const found = topicPatterns.filter(([re]) => re.test(all)).map(([, label]) => label);
+  return found.length > 0 ? found.slice(0, 3) : ["일상 대화"];
+}
+
+function detectEmotionArc(messages: string[]): string {
+  const all = messages.join(" ");
+  const positive = /좋|행복|기쁘|감사|사랑|재밌|ㅋㅋ|ㅎㅎ|최고|대박/.test(all);
+  const negative = /슬프|힘들|짜증|화나|걱정|불안|싫|지침/.test(all);
+  if (positive && negative) return "mixed";
+  if (positive) return "positive";
+  if (negative) return "negative";
+  return "neutral";
+}
+
+function generateWhatWorked(messages: string[]): string {
+  const all = messages.join(" ");
+  if (/감정|기분|느낌/.test(all)) return "감정적 공감이 효과적이었어요";
+  if (/분석|데이터|논리/.test(all)) return "논리적인 분석이 도움이 됐어요";
+  if (/아이디어|창작/.test(all)) return "창의적인 아이디어 교환이 좋았어요";
+  return "자연스러운 대화 흐름이 좋았어요";
+}
+
+function generateWhatToImprove(messages: string[]): string {
+  const all = messages.join(" ");
+  if (all.length < 50) return "더 자세한 이야기를 나눠보면 좋겠어요";
+  if (!/왜|이유|어떻게/.test(all)) return "더 깊이 있는 질문을 해보면 좋겠어요";
+  return "다양한 주제로 대화를 넓혀보면 좋겠어요";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -205,6 +250,53 @@ serve(async (req) => {
       channel: "web", provider, response_time_ms: responseTime,
     });
 
+    // Generate conversationInsight every 5 conversations
+    let conversationInsight = null;
+    if (agent) {
+      const convCount = (agent.total_conversations ?? 0) + 1;
+      if (convCount % 5 === 0 && provider !== "builtin") {
+        // Analyze recent conversations for insight
+        const { data: recentConvs } = await db.from("gyeol_conversations")
+          .select("role, content").eq("agent_id", agentId)
+          .order("created_at", { ascending: false }).limit(10);
+
+        if (recentConvs && recentConvs.length >= 4) {
+          const userMsgs = recentConvs.filter((c: any) => c.role === "user").map((c: any) => c.content);
+          const topics = extractTopics(userMsgs);
+          const emotionArc = detectEmotionArc(userMsgs);
+
+          // Calculate personality deltas based on conversation patterns
+          const changes: Record<string, number> = {};
+          const allText = userMsgs.join(" ");
+          if (/감정|기분|느낌|마음|슬프|기쁘|행복|사랑/.test(allText)) changes.warmth = Math.floor(Math.random() * 3) + 1;
+          if (/분석|데이터|논리|이유|왜|계산|비교/.test(allText)) changes.logic = Math.floor(Math.random() * 3) + 1;
+          if (/아이디어|상상|창작|만들|디자인|새로운/.test(allText)) changes.creativity = Math.floor(Math.random() * 3) + 1;
+          if (/재밌|웃기|농담|ㅋㅋ|ㅎㅎ|장난/.test(allText)) changes.humor = Math.floor(Math.random() * 2) + 1;
+
+          const hasChanges = Object.keys(changes).length > 0;
+
+          // Apply personality changes to agent
+          if (hasChanges) {
+            const personalityUpdates: Record<string, number> = {};
+            for (const [key, delta] of Object.entries(changes)) {
+              const current = (agent as any)[key] ?? 50;
+              personalityUpdates[key] = Math.min(100, Math.max(0, current + delta));
+            }
+            await db.from("gyeol_agents").update(personalityUpdates).eq("id", agentId);
+          }
+
+          conversationInsight = {
+            topics,
+            emotionArc,
+            whatWorked: generateWhatWorked(userMsgs),
+            whatToImprove: generateWhatToImprove(userMsgs),
+            personalityChanged: hasChanges,
+            changes,
+          };
+        }
+      }
+    }
+
     // Update agent stats
     if (agent) {
       const newTotal = (agent.total_conversations ?? 0) + 1;
@@ -237,13 +329,17 @@ serve(async (req) => {
       await db.from("gyeol_agents").update(updates).eq("id", agentId);
 
       return new Response(
-        JSON.stringify({ message: assistantContent, provider, evolved, newGen: evolved ? newGen : undefined }),
+        JSON.stringify({
+          message: assistantContent, provider, evolved,
+          newGen: evolved ? newGen : undefined,
+          conversationInsight,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
-      JSON.stringify({ message: assistantContent, provider }),
+      JSON.stringify({ message: assistantContent, provider, conversationInsight }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
