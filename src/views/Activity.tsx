@@ -11,15 +11,15 @@ const TYPE_ICON: Record<string, string> = {
   proactive_message: 'mail', skill_execution: 'build', error: 'shield',
 };
 const TYPE_LABEL: Record<string, string> = {
-  learning: '학습', reflection: '성찰', social: '소셜',
-  proactive_message: '자율 메시지', skill_execution: '스킬', error: '보안',
+  learning: 'Learning', reflection: 'Reflection', social: 'Social',
+  proactive_message: 'Proactive', skill_execution: 'Skill', error: 'Security',
 };
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
-  if (isToday(d)) return '오늘';
-  if (isYesterday(d)) return '어제';
-  return format(d, 'M월 d일');
+  if (isToday(d)) return 'Today';
+  if (isYesterday(d)) return 'Yesterday';
+  return format(d, 'MMM d');
 }
 
 export default function ActivityPage() {

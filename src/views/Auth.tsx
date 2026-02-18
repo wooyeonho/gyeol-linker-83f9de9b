@@ -24,13 +24,13 @@ export default function AuthPage() {
           options: { emailRedirectTo: window.location.origin },
         });
         if (signUpError) throw signUpError;
-        setSuccess('확인 메일을 전송했어요. 메일함을 확인해 주세요!');
+        setSuccess('Verification email sent. Please check your inbox!');
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
       }
     } catch (err: any) {
-      setError(err.message || '문제가 발생했어요.');
+      setError(err.message || 'Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function AuthPage() {
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (error) setError(error.message || 'Google 로그인에 실패했어요.');
+    if (error) setError(error.message || 'Google sign-in failed.');
   };
 
   return (
@@ -76,7 +76,7 @@ export default function AuthPage() {
                   : 'text-white/25 hover:text-white/50'
               }`}
             >
-              {m === 'login' ? '로그인' : '회원가입'}
+              {m === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
           ))}
         </div>
@@ -86,7 +86,7 @@ export default function AuthPage() {
             <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-white/15 text-lg">email</span>
             <input
               type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일" required
+              placeholder="Email" required
               className="w-full pl-12 pr-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-foreground/90 placeholder:text-white/20 focus:border-primary/30 transition-all outline-none text-sm"
             />
           </div>
@@ -96,7 +96,7 @@ export default function AuthPage() {
             <input
               type={showPassword ? 'text' : 'password'}
               value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 (6자 이상)" required minLength={6}
+              placeholder="Password (min 6 chars)" required minLength={6}
               className="w-full pl-12 pr-12 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-foreground/90 placeholder:text-white/20 focus:border-primary/30 transition-all outline-none text-sm"
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -120,7 +120,7 @@ export default function AuthPage() {
 
           <button type="submit" disabled={loading}
             className="w-full py-3.5 mt-2 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 text-sm">
-            {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
+            {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
