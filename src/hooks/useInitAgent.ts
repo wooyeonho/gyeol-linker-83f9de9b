@@ -33,12 +33,19 @@ export function useInitAgent() {
             .limit(50);
           setMessages((convs as any[]) ?? []);
         } else {
-          const { data: newAgent } = await supabase
+          const { data: newAgent, error: insertErr } = await supabase
             .from('gyeol_agents' as any)
-            .insert({ user_id: user.id, name: 'GYEOL' } as any)
+            .upsert({ user_id: user.id, name: 'GYEOL' } as any, { onConflict: 'user_id', ignoreDuplicates: true })
             .select()
             .single();
-          if (newAgent) setAgent(newAgent as any);
+          if (insertErr) {
+            // Race condition: another tab already created, re-fetch
+            const { data: refetch } = await supabase
+              .from('gyeol_agents' as any).select('*').eq('user_id', user.id).maybeSingle();
+            if (refetch) setAgent(refetch as any);
+          } else if (newAgent) {
+            setAgent(newAgent as any);
+          }
         }
       } finally {
         setLoading(false);
