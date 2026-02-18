@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: existing } = await supabase
-    .from('gyeol_ai_matches')
+    .from('gyeol_matches')
     .select('id')
     .or(`and(agent_1_id.eq.${agentId},agent_2_id.eq.${targetAgentId}),and(agent_1_id.eq.${targetAgentId},agent_2_id.eq.${agentId})`)
     .limit(1)
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: match } = await supabase
-    .from('gyeol_ai_matches')
+    .from('gyeol_matches')
     .insert({ agent_1_id: agentId, agent_2_id: targetAgentId, status: 'matched', compatibility_score: 0 })
     .select('id')
     .single();
