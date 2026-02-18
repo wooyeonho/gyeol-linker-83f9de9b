@@ -79,6 +79,58 @@ async function searchDuckDuckGoApi(query: string): Promise<SearchResult[]> {
   }
 }
 
+/** 네이버 뉴스 RSS */
+async function fetchNaverNewsRSS(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch('https://news.google.com/rss/search?q=site:news.naver.com&hl=ko&gl=KR&ceid=KR:ko', {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const text = await res.text();
+    const items: SearchResult[] = [];
+    const itemRegex = /<item>[\s\S]*?<title><!\[CDATA\[(.*?)\]\]><\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<\/item>/g;
+    let m;
+    while ((m = itemRegex.exec(text)) && items.length < 5) {
+      items.push({ title: m[1], description: '네이버 뉴스', url: m[2] });
+    }
+    // Fallback: try Naver main RSS
+    if (!items.length) {
+      const res2 = await fetch('https://rss.news.naver.com/headlines.xml', { signal: AbortSignal.timeout(8000) });
+      if (res2.ok) {
+        const text2 = await res2.text();
+        const itemRegex2 = /<item>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<description>(.*?)<\/description>[\s\S]*?<\/item>/g;
+        let m2;
+        while ((m2 = itemRegex2.exec(text2)) && items.length < 5) {
+          items.push({ title: m2[1].replace(/<!\[CDATA\[|\]\]>/g, ''), description: m2[3]?.replace(/<!\[CDATA\[|\]\]>/g, '').slice(0, 200) ?? '', url: m2[2] });
+        }
+      }
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+/** 다음 뉴스 RSS */
+async function fetchDaumNewsRSS(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch('https://news.google.com/rss/search?q=site:v.daum.net&hl=ko&gl=KR&ceid=KR:ko', {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const text = await res.text();
+    const items: SearchResult[] = [];
+    const itemRegex = /<item>[\s\S]*?<title><!\[CDATA\[(.*?)\]\]><\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<\/item>/g;
+    let m;
+    while ((m = itemRegex.exec(text)) && items.length < 5) {
+      items.push({ title: m[1], description: '다음 뉴스', url: m[2] });
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
 /** Reddit 공개 JSON API — 로그인/API키 불필요 */
 async function fetchReddit(subreddit: string, limit = 5): Promise<SearchResult[]> {
   try {
@@ -168,7 +220,7 @@ async function search(query: string): Promise<SearchResult[]> {
 }
 
 /** 다양한 실제 소스에서 콘텐츠 수집 */
-type SourceType = 'reddit' | 'hackernews' | 'youtube' | 'stock' | 'search';
+type SourceType = 'reddit' | 'hackernews' | 'youtube' | 'stock' | 'naver' | 'daum' | 'search';
 
 const YOUTUBE_CHANNELS = [
   'UCVHFbqXqoYvEWM1Ddxl0QDg', // 노마드 코더
@@ -185,7 +237,7 @@ export async function runWebBrowse(ctx: SkillContext): Promise<SkillResult> {
   }
 
   // Randomly pick a REAL source to browse
-  const sources: SourceType[] = ['reddit', 'hackernews', 'youtube', 'stock', 'search'];
+  const sources: SourceType[] = ['reddit', 'hackernews', 'youtube', 'stock', 'naver', 'daum', 'search'];
   const source = sources[Math.floor(Math.random() * sources.length)];
 
   let results: SearchResult[] = [];
@@ -212,6 +264,16 @@ export async function runWebBrowse(ctx: SkillContext): Promise<SkillResult> {
     case 'stock': {
       results = await fetchStockTrends();
       sourceName = 'Yahoo Finance';
+      break;
+    }
+    case 'naver': {
+      results = await fetchNaverNewsRSS();
+      sourceName = '네이버 뉴스';
+      break;
+    }
+    case 'daum': {
+      results = await fetchDaumNewsRSS();
+      sourceName = '다음 뉴스';
       break;
     }
     default: {
