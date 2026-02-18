@@ -10,7 +10,7 @@
 ## 1단계: 최근 대화 가져오기
 
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.${GYEOL_AGENT_ID}&order=created_at.desc&limit=40&select=role,content" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.${GYEOL_AGENT_ID}&role=eq.user&order=created_at.desc&limit=20&select=content" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
@@ -35,21 +35,16 @@ curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.${GYEOL_AGENT_I
 - "나 개발자야" → identity / job / "개발자" / confidence: 100
 - "서울 날씨 어때?" → identity / location / "서울 (추정)" / confidence: 60
 - "떡볶이 먹고싶다" → preference / favorite_food / "떡볶이" / confidence: 80
-- "요즘 주식 공부 중" → interest / studying / "주식 투자" / confidence: 90
-- "ㅋㅋㅋ 이거 웃겨" → style / uses_humor / "유머를 즐기는 편" / confidence: 70
 - 사용자가 직접 말한 건 confidence 90~100
 - 추론한 건 confidence 50~70
 - 메시지 하나에서 최대 5개 추출
 
 ## 3단계: Supabase에 저장 (UPSERT — 같은 key면 업데이트)
 
-```bash
-# 기존 기억 확인
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.${GYEOL_AGENT_ID}&key=eq.KEY_NAME" \
-  -H "apikey: ${SUPABASE_SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
+⚠️ 테이블: `gyeol_user_memories` (UNIQUE: agent_id + category + key)
 
-# 새 기억이면 INSERT, 기존이면 더 높은 confidence로 UPDATE
+```bash
+# UPSERT (merge-duplicates uses unique constraint)
 curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_user_memories" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
@@ -86,3 +81,4 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
 - 감정(emotion) 카테고리는 오래된 건 의미 없으므로 항상 덮어쓰기
 - style 카테고리는 여러 대화를 보고 종합 판단
 - **절대 assistant 메시지에서 추출하지 마. 오직 user 메시지만.**
+- **source는 반드시 "openclaw"으로 설정**
