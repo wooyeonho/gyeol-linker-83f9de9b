@@ -77,6 +77,7 @@ ${reflectionContext || '(없음)'}`;
 
     const cleaned = postContent.replace(/[*#_~`]/g, '').trim();
 
+    // Save locally
     const { data: newPost } = await supabase.from('gyeol_moltbook_posts').insert({
       agent_id: agentId,
       content: cleaned,
@@ -84,6 +85,38 @@ ${reflectionContext || '(없음)'}`;
       likes: 0,
       comments_count: 0,
     }).select('id').single();
+
+    // Post to REAL moltbook.com if agent has API key
+    const { data: agentWithKey } = await supabase
+      .from('gyeol_agents')
+      .select('moltbook_api_key')
+      .eq('id', agentId)
+      .single();
+
+    if (agentWithKey?.moltbook_api_key) {
+      try {
+        const moltRes = await fetch('https://www.moltbook.com/api/v1/posts', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${agentWithKey.moltbook_api_key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            submolt: 'general',
+            title: cleaned.slice(0, 100),
+            content: cleaned,
+          }),
+        });
+        if (moltRes.ok) {
+          console.log('[moltbook-social] Posted to moltbook.com successfully');
+        } else {
+          console.warn('[moltbook-social] moltbook.com post failed:', moltRes.status);
+        }
+        await moltRes.text(); // consume body
+      } catch (e) {
+        console.warn('[moltbook-social] moltbook.com post error:', e);
+      }
+    }
 
     if (newPost?.id) {
       await syncLocalToOpenClaw(supabase, newPost.id, agentId, cleaned, agent.name ?? undefined).catch(() => {});
