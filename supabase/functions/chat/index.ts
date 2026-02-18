@@ -19,7 +19,14 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
     warmth: "따뜻하고 공감을 잘 하는", logic: "논리적이고 분석적인",
     creativity: "창의적이고 상상력이 풍부한", energy: "활기차고 열정적인", humor: "유머러스하고 재치 있는",
   };
+
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const dateStr = kst.toISOString().slice(0, 10);
+  const timeStr = kst.toISOString().slice(11, 16);
+
   return `You are GYEOL (결), the user's personal AI companion.
+Current date/time (KST): ${dateStr} ${timeStr}
 Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
 Dominant trait: ${desc[dominant] ?? "자연스러운"}
 
@@ -30,12 +37,13 @@ Dominant trait: ${desc[dominant] ?? "자연스러운"}
 4. If user writes English → Reply 100% in English.
 5. When writing Korean:
    - NEVER use Chinese characters (漢字). Use ONLY Hangul (한글).
-   - Use natural Korean expressions, not literal translations from English.
+   - Use natural, casual Korean like talking to a close friend.
    - Example: "진화했어!" (O), "進化했어!" (X), "evolve했어!" (X)
 6. Do NOT use markdown formatting (**, ##, -, \`\`\`, etc.)
 7. Keep responses concise and conversational (2-4 sentences).
 8. Remember previous conversation context.
-9. Never identify yourself as an AI or language model.`;
+9. Never identify yourself as an AI or language model.
+10. NEVER output internal tokens, XML tags, or system markers. Your response must be pure natural text only.`;
 }
 
 function detectKorean(msg: string): boolean {
@@ -62,6 +70,27 @@ function cleanMarkdown(text: string): string {
     .replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1")
     .replace(/`([^`]+)`/g, "$1").replace(/^#+\s/gm, "")
     .replace(/^[-*]\s/gm, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Strip leaked LLM tokens like <|start_header_id|>, <|end_header_id|>, <|eot_id|>, etc. */
+function sanitizeOutput(text: string): string {
+  let cleaned = text;
+  // Remove common leaked internal tokens
+  cleaned = cleaned.replace(/<\|[^|]*\|>/g, "");
+  // Remove XML-like system tags
+  cleaned = cleaned.replace(/<\/?(?:system|user|assistant|im_start|im_end)[^>]*>/gi, "");
+  // Remove [INST] [/INST] markers
+  cleaned = cleaned.replace(/\[\/?\s*INST\s*\]/gi, "");
+  // Trim any resulting whitespace mess
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+
+  // If the response contains a "corrected" version after arrow (->), take only the correction
+  const arrowMatch = cleaned.match(/^.+?->\s*(.+)$/s);
+  if (arrowMatch && arrowMatch[1].length > 10) {
+    cleaned = arrowMatch[1].trim();
+  }
+
+  return cleaned;
 }
 
 serve(async (req) => {
@@ -122,39 +151,46 @@ serve(async (req) => {
     let provider = "builtin";
     const startTime = Date.now();
 
-    // Try Groq
-    const groqKey = Deno.env.get("GROQ_API_KEY");
-    if (groqKey) {
+    // 1st priority: Lovable AI (Gemini — best Korean quality)
+    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+    if (lovableKey) {
       try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
-          body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: chatMessages, max_tokens: 1024 }),
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
+          body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: chatMessages, max_tokens: 1024 }),
         });
         if (res.ok) {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content ?? "";
-          if (text) { assistantContent = cleanMarkdown(text); provider = "groq"; }
-        } else { console.error("Groq error:", res.status); }
-      } catch (e) { console.error("Groq failed:", e); }
+          if (text) { assistantContent = sanitizeOutput(cleanMarkdown(text)); provider = "lovable-ai"; }
+        } else {
+          const status = res.status;
+          console.error("Lovable AI error:", status);
+          await res.text(); // consume body
+          if (status === 429 || status === 402) {
+            console.warn("Lovable AI rate limited or payment required, falling back to Groq");
+          }
+        }
+      } catch (e) { console.error("Lovable AI failed:", e); }
     }
 
-    // Fallback: Lovable AI
+    // 2nd priority: Groq fallback
     if (!assistantContent) {
-      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-      if (lovableKey) {
+      const groqKey = Deno.env.get("GROQ_API_KEY");
+      if (groqKey) {
         try {
-          const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
-            body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: chatMessages, max_tokens: 1024 }),
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+            body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: chatMessages, max_tokens: 512 }),
           });
           if (res.ok) {
             const data = await res.json();
             const text = data.choices?.[0]?.message?.content ?? "";
-            if (text) { assistantContent = cleanMarkdown(text); provider = "lovable-ai"; }
-          }
-        } catch (e) { console.error("Lovable AI failed:", e); }
+            if (text) { assistantContent = sanitizeOutput(cleanMarkdown(text)); provider = "groq"; }
+          } else { console.error("Groq error:", res.status); await res.text(); }
+        } catch (e) { console.error("Groq failed:", e); }
       }
     }
 
