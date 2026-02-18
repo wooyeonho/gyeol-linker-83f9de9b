@@ -117,15 +117,7 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
   );
 
   if (msg) {
-    // Save to DB
-    await supabase.from("gyeol_proactive_messages").insert({
-      agent_id: agentId,
-      content: msg,
-      trigger_reason: `inactive_${Math.round(hoursSinceActive)}h`,
-      was_sent: false,
-    });
-
-    // Auto-send via Telegram if linked
+    // Check Telegram link first to determine was_sent
     const { data: link } = await supabase
       .from("gyeol_telegram_links")
       .select("telegram_chat_id")
@@ -133,16 +125,28 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
       .limit(1)
       .maybeSingle();
 
+    let wasSent = false;
     if (link?.telegram_chat_id) {
-      const sent = await sendTelegram(link.telegram_chat_id, `💬 ${agent.name}\n\n${msg}`);
-      if (sent) {
-        await supabase.from("gyeol_proactive_messages")
-          .update({ was_sent: true })
-          .eq("agent_id", agentId)
-          .eq("was_sent", false)
-          .order("created_at", { ascending: false })
-          .limit(1);
-      }
+      wasSent = await sendTelegram(link.telegram_chat_id, `💬 ${agent.name}\n\n${msg}`);
+    }
+
+    // Save to DB with correct was_sent status
+    await supabase.from("gyeol_proactive_messages").insert({
+      agent_id: agentId,
+      content: msg,
+      trigger_reason: `inactive_${Math.round(hoursSinceActive)}h`,
+      was_sent: wasSent,
+    });
+
+    // Also save as conversation so it appears in chat history
+    if (wasSent) {
+      await supabase.from("gyeol_conversations").insert({
+        agent_id: agentId,
+        role: "assistant",
+        content: msg,
+        channel: "telegram",
+        provider: "heartbeat",
+      });
     }
   }
 
