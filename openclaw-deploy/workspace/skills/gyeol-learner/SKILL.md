@@ -1,44 +1,30 @@
-# GYEOL Autonomous Learner (보조 모드)
+# GYEOL Learner — Reader Mode (보조)
 
-> ⚠️ 메인 학습은 Edge Function의 skillWebBrowse (15개 소스)가 담당.
-> OpenClaw의 learner는 **보조 역할**로 TechCrunch, HN만 담당.
+> ⚠️ 직접 웹 브라우징 금지! Edge Function의 skillWebBrowse(15개 소스)가 메인 수집 담당.
+> OpenClaw learner는 **Edge가 수집한 데이터를 읽어서 소화**하는 Reader 역할만 수행.
 
-## 학습 소스 (보조)
-- TechCrunch: https://feeds.feedburner.com/TechCrunch
-- Hacker News: https://hnrss.org/frontpage?count=5
-
-## Edge Function이 이미 담당하는 소스 (건드리지 마)
-- Reddit (7개 서브), YouTube, 네이버 뉴스, 다음 뉴스
-- Yahoo Finance, Twitter/X, TikTok, Instagram
-- arXiv (5개 카테고리), Wikipedia, GitHub Trending
-- PubMed, Medium, 세계 뉴스, HackerNews
+## 역할: Reader (소화기)
+Edge Function이 `gyeol_learned_topics`에 저장한 최신 학습 데이터를 읽고,
+이를 기반으로 **인사이트 생성** 및 **대화 소재 준비**를 수행합니다.
 
 ## 실행 방법
-1. RSS 피드 URL을 curl로 가져오기
-2. 새 글 제목과 요약 추출 (최대 3개)
-3. 각 글에서 핵심 인사이트를 한국어로 정리 (1-2문장)
-4. **gyeol_learned_topics 테이블에 저장**
-5. **gyeol_autonomous_logs에 활동 기록**
 
-## Supabase 저장 — learned_topics
-
-⚠️ 컬럼명 주의: `title` (NOT `topic`)
+### Step 1: 최근 학습 주제 읽기 (최대 10개)
 
 ```bash
-curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_learned_topics" \
+curl -X GET "${SUPABASE_URL}/rest/v1/gyeol_learned_topics?agent_id=eq.${GYEOL_AGENT_ID}&order=learned_at.desc&limit=10" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent_id": "'${GYEOL_AGENT_ID}'",
-    "title": "학습 주제 (짧게)",
-    "summary": "핵심 요약 (1-2문장, 한국어)",
-    "source": "rss",
-    "source_url": "원본 URL"
-  }'
+  -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
 
-## Supabase 저장 — autonomous_logs
+### Step 2: 읽은 주제에서 인사이트 추출
+
+읽은 학습 주제들을 분석하여:
+1. 사용자가 관심 가질 만한 주제 3개 선별
+2. 각 주제에 대해 대화 소재(한국어, 1-2문장) 생성
+3. 주제 간 연결고리가 있으면 통합 인사이트 작성
+
+### Step 3: 활동 로그 기록
 
 ```bash
 curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
@@ -48,15 +34,17 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
   -d '{
     "agent_id": "'${GYEOL_AGENT_ID}'",
     "activity_type": "learning",
-    "summary": "오늘 배운 것: (요약)",
-    "details": {"topics": ["주제1", "주제2"], "source_count": 3},
+    "summary": "Edge 수집 데이터 소화: (요약)",
+    "details": {"mode": "reader", "topics_read": 10, "insights_generated": 3},
     "was_sandboxed": true,
     "source": "openclaw"
   }'
 ```
 
 ## 규칙
-- Heartbeat당 최대 3개 글 읽기 (Edge가 메인이므로 적게)
-- 요약은 반드시 한국어로
-- **source는 반드시 "openclaw"으로 설정** (Edge Function과 구분)
-- 에러 발생 시 스킵하고 다음 소스로
+- **절대 직접 RSS/웹 브라우징 금지** — Edge Function과 중복됨
+- 읽기 전용: `gyeol_learned_topics` SELECT만 수행
+- 쓰기는 `gyeol_autonomous_logs`에만 (source: "openclaw")
+- Heartbeat당 최대 10개 주제 읽기
+- 인사이트는 반드시 한국어로
+- 에러 발생 시 스킵하고 다음 사이클로
