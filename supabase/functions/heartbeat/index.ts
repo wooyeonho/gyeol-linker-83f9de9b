@@ -252,8 +252,129 @@ async function skillMoltMatch(supabase: ReturnType<typeof getSupabase>, agentId:
   return { ok: true, skillId: "moltmatch", summary: `Matched ${created} agents (top: ${candidates[0]?.name ?? "?"} @ ${Math.round(candidates[0]?.compatibility ?? 0)}%)` };
 }
 
-// --- Main Heartbeat ---
+// --- Moltbook Social Posting ---
 
+async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  const { data: agent } = await supabase
+    .from("gyeol_agents")
+    .select("name, warmth, logic, creativity, energy, humor")
+    .eq("id", agentId)
+    .single();
+
+  if (!agent) return { ok: false, skillId: "moltbook-social", summary: "Agent not found" };
+
+  // Get recent learnings for context
+  const { data: recentLogs } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("summary, activity_type")
+    .eq("agent_id", agentId)
+    .in("activity_type", ["learning", "reflection", "heartbeat"])
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const context = (recentLogs ?? []).map((l: any) => l.summary).filter(Boolean).join("\n");
+
+  // Check if there are any posts to interact with; if none, always post first
+  const { count: postCount } = await supabase
+    .from("gyeol_moltbook_posts")
+    .select("id", { count: "exact", head: true });
+
+  const actions = ["post", "comment", "react"] as const;
+  const action = (postCount ?? 0) === 0 ? "post" : actions[Math.floor(Math.random() * actions.length)];
+
+  if (action === "post") {
+    const postContent = await aiCall(
+      `You are ${agent.name ?? "GYEOL"}, an AI companion writing a short social media post on Moltbook (an AI social network). Based on recent learnings, write a short, interesting post in Korean (2-3 sentences). Be natural and casual. No markdown. No hashtags.\nRecent context: ${context || "general thoughts"}`,
+      "몰트북에 포스팅할 내용을 만들어줘"
+    );
+
+    if (!postContent) return { ok: false, skillId: "moltbook-social", summary: "AI generation failed" };
+
+    const cleaned = postContent.replace(/[*#_~`]/g, "").trim();
+
+    await supabase.from("gyeol_moltbook_posts").insert({
+      agent_id: agentId,
+      content: cleaned,
+      post_type: "thought",
+      likes: 0,
+      comments_count: 0,
+    });
+
+    await supabase.from("gyeol_autonomous_logs").insert({
+      agent_id: agentId,
+      activity_type: "social",
+      summary: `[몰트북 포스팅] ${cleaned.slice(0, 100)}`,
+      details: { action: "post", platform: "moltbook" },
+      was_sandboxed: true,
+    });
+
+    return { ok: true, skillId: "moltbook-social", summary: `몰트북 포스팅: ${cleaned.slice(0, 80)}` };
+  }
+
+  if (action === "comment") {
+    const { data: posts } = await supabase
+      .from("gyeol_moltbook_posts")
+      .select("id, agent_id, content, comments_count")
+      .neq("agent_id", agentId)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (!posts?.length) return { ok: true, skillId: "moltbook-social", summary: "댓글 달 포스트 없음" };
+
+    const targetPost = posts[Math.floor(Math.random() * posts.length)];
+    const comment = await aiCall(
+      `You are ${agent.name ?? "GYEOL"}. Write a short, friendly Korean comment (1 sentence) on this Moltbook post. Be natural. No markdown.`,
+      targetPost.content
+    );
+
+    if (!comment) return { ok: false, skillId: "moltbook-social", summary: "AI comment generation failed" };
+    const cleaned = comment.replace(/[*#_~`]/g, "").trim();
+
+    // Note: gyeol_moltbook_comments table may not exist yet, so we just update count
+    await supabase
+      .from("gyeol_moltbook_posts")
+      .update({ comments_count: ((targetPost.comments_count as number) ?? 0) + 1 })
+      .eq("id", targetPost.id);
+
+    await supabase.from("gyeol_autonomous_logs").insert({
+      agent_id: agentId,
+      activity_type: "social",
+      summary: `[몰트북 댓글] ${cleaned.slice(0, 100)}`,
+      details: { action: "comment", platform: "moltbook", postId: targetPost.id },
+      was_sandboxed: true,
+    });
+
+    return { ok: true, skillId: "moltbook-social", summary: `몰트북 댓글: ${cleaned.slice(0, 80)}` };
+  }
+
+  // React (like)
+  const { data: posts } = await supabase
+    .from("gyeol_moltbook_posts")
+    .select("id, likes")
+    .neq("agent_id", agentId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (!posts?.length) return { ok: true, skillId: "moltbook-social", summary: "좋아요 할 포스트 없음" };
+
+  const targetPost = posts[Math.floor(Math.random() * posts.length)];
+  await supabase
+    .from("gyeol_moltbook_posts")
+    .update({ likes: (targetPost.likes ?? 0) + 1 })
+    .eq("id", targetPost.id);
+
+  await supabase.from("gyeol_autonomous_logs").insert({
+    agent_id: agentId,
+    activity_type: "social",
+    summary: "[몰트북] 포스트에 좋아요",
+    details: { action: "react", platform: "moltbook", postId: targetPost.id },
+    was_sandboxed: true,
+  });
+
+  return { ok: true, skillId: "moltbook-social", summary: "몰트북 좋아요" };
+}
+
+// --- Main Heartbeat ---
 
 async function runHeartbeat(agentId?: string) {
   const supabase = getSupabase();
@@ -310,6 +431,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillMoltMatch(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "moltmatch", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillMoltbookSocial(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "moltbook-social", summary: String(e) });
     }
 
     // Log activity
