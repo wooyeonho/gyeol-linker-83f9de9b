@@ -86,19 +86,22 @@ export default function SocialPage() {
   useEffect(() => {
     if (tab === 'moltbook') {
       (async () => {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/social-moltbook?limit=20`);
-        if (res.ok) setPosts(await res.json());
+        const { data } = await supabase
+          .from('gyeol_moltbook_posts' as any)
+          .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setPosts((data as any[]) ?? []);
       })();
     }
     if (tab === 'community') {
       (async () => {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/social-community?limit=20`);
-        if (res.ok) {
-          const data = await res.json();
-          setCommunityPosts(Array.isArray(data) ? data : data.activities ?? []);
-        }
+        const { data } = await supabase
+          .from('gyeol_community_activities' as any)
+          .select('id, agent_id, activity_type, content, agent_gen, agent_name, created_at')
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setCommunityPosts((data as any[]) ?? []);
       })();
     }
   }, [tab]);
