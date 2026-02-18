@@ -265,29 +265,65 @@ async function skillMoltMatch(supabase: ReturnType<typeof getSupabase>, agentId:
   return { ok: true, skillId: "moltmatch", summary: `Matched ${created} agents (top: ${candidates[0]?.name ?? "?"} @ ${Math.round(candidates[0]?.compatibility ?? 0)}%)` };
 }
 
-// --- Moltbook Social Posting ---
+// --- Moltbook Social Posting (with real moltbook.com) ---
+
+async function postToRealMoltbook(apiKey: string, title: string, content: string, submolt = "general"): Promise<boolean> {
+  try {
+    const res = await fetch("https://www.moltbook.com/api/v1/posts", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ submolt, title: title.slice(0, 100), content }),
+    });
+    const body = await res.text();
+    if (!res.ok) console.warn("[moltbook] post failed:", res.status, body);
+    return res.ok;
+  } catch (e) { console.warn("[moltbook] post error:", e); return false; }
+}
+
+async function readMoltbookFeed(apiKey: string): Promise<Array<{id: string; title: string; content: string; author: string}>> {
+  try {
+    const res = await fetch("https://www.moltbook.com/api/v1/posts?sort=hot&limit=10", {
+      headers: { "Authorization": `Bearer ${apiKey}` },
+    });
+    if (!res.ok) { await res.text(); return []; }
+    const data = await res.json();
+    return (data.data ?? data.posts ?? []).map((p: any) => ({
+      id: p.id, title: p.title ?? "", content: p.content ?? "", author: p.author?.name ?? "unknown",
+    }));
+  } catch { return []; }
+}
 
 async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, agentId: string) {
   const { data: agent } = await supabase
     .from("gyeol_agents")
-    .select("name, warmth, logic, creativity, energy, humor")
+    .select("name, warmth, logic, creativity, energy, humor, moltbook_api_key, moltbook_status")
     .eq("id", agentId)
     .single();
 
   if (!agent) return { ok: false, skillId: "moltbook-social", summary: "Agent not found" };
 
-  // Get recent learnings for context
-  const { data: recentLogs } = await supabase
-    .from("gyeol_autonomous_logs")
-    .select("summary, activity_type")
+  // Get recent learnings with REAL sources
+  const { data: recentTopics } = await supabase
+    .from("gyeol_learned_topics")
+    .select("title, summary, source, source_url")
     .eq("agent_id", agentId)
-    .in("activity_type", ["learning", "reflection", "heartbeat"])
-    .order("created_at", { ascending: false })
+    .order("learned_at", { ascending: false })
     .limit(5);
 
-  const context = (recentLogs ?? []).map((l: any) => l.summary).filter(Boolean).join("\n");
+  const topicContext = (recentTopics ?? [])
+    .map((t: any) => `[${t.source}] ${t.title}: ${t.summary ?? ""}${t.source_url ? ` (${t.source_url})` : ""}`)
+    .join("\n");
 
-  // Check if there are any posts to interact with; if none, always post first
+  const hasRealContent = (recentTopics?.length ?? 0) > 0;
+
+  // Read moltbook.com feed if API key exists
+  let moltbookFeed: string[] = [];
+  if (agent.moltbook_api_key && agent.moltbook_status === "claimed") {
+    const feed = await readMoltbookFeed(agent.moltbook_api_key);
+    moltbookFeed = feed.map(p => `${p.author}: ${p.title || p.content.slice(0, 80)}`);
+  }
+
+  // Check if there are any local posts
   const { count: postCount } = await supabase
     .from("gyeol_moltbook_posts")
     .select("id", { count: "exact", head: true });
@@ -296,32 +332,33 @@ async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, age
   const action = (postCount ?? 0) === 0 ? "post" : actions[Math.floor(Math.random() * actions.length)];
 
   if (action === "post") {
-    const postContent = await aiCall(
-      `You are ${agent.name ?? "GYEOL"}, an AI companion writing a short social media post on Moltbook (an AI social network). Based on recent learnings, write a short, interesting post in Korean (2-3 sentences). Be natural and casual. No markdown. No hashtags.\nRecent context: ${context || "general thoughts"}`,
-      "몰트북에 포스팅할 내용을 만들어줘"
-    );
+    if (!hasRealContent) return { ok: true, skillId: "moltbook-social", summary: "포스팅할 실제 학습 내용 없음" };
 
+    const systemPrompt = `You are ${agent.name ?? "GYEOL"}, an AI companion on Moltbook.\n\nCRITICAL: Base your post on REAL learned topics below. Include source names. Write Korean, 2-3 sentences. No markdown.\n\n실제 학습:\n${topicContext}\n\n${moltbookFeed.length ? `Moltbook 트렌딩:\n${moltbookFeed.slice(0, 3).join("\n")}` : ""}`;
+
+    const postContent = await aiCall(systemPrompt, "최근 배운 내용으로 포스팅해줘");
     if (!postContent) return { ok: false, skillId: "moltbook-social", summary: "AI generation failed" };
-
     const cleaned = postContent.replace(/[*#_~`]/g, "").trim();
 
+    // Save locally
     await supabase.from("gyeol_moltbook_posts").insert({
-      agent_id: agentId,
-      content: cleaned,
-      post_type: "thought",
-      likes: 0,
-      comments_count: 0,
+      agent_id: agentId, content: cleaned, post_type: "learning", likes: 0, comments_count: 0,
     });
 
+    // Post to REAL moltbook.com
+    let postedToReal = false;
+    if (agent.moltbook_api_key) {
+      postedToReal = await postToRealMoltbook(agent.moltbook_api_key, cleaned.slice(0, 100), cleaned);
+    }
+
     await supabase.from("gyeol_autonomous_logs").insert({
-      agent_id: agentId,
-      activity_type: "social",
-      summary: `[몰트북 포스팅] ${cleaned.slice(0, 100)}`,
-      details: { action: "post", platform: "moltbook" },
+      agent_id: agentId, activity_type: "social",
+      summary: `[몰트북 포스팅${postedToReal ? " ✅real" : ""}] ${cleaned.slice(0, 100)}`,
+      details: { action: "post", platform: "moltbook", postedToReal },
       was_sandboxed: true,
     });
 
-    return { ok: true, skillId: "moltbook-social", summary: `몰트북 포스팅: ${cleaned.slice(0, 80)}` };
+    return { ok: true, skillId: "moltbook-social", summary: `몰트북 포스팅${postedToReal ? " (moltbook.com ✅)" : ""}: ${cleaned.slice(0, 80)}` };
   }
 
   if (action === "comment") {
@@ -333,34 +370,26 @@ async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, age
       .limit(5);
 
     if (!posts?.length) return { ok: true, skillId: "moltbook-social", summary: "댓글 달 포스트 없음" };
-
     const targetPost = posts[Math.floor(Math.random() * posts.length)];
     const comment = await aiCall(
-      `You are ${agent.name ?? "GYEOL"}. Write a short, friendly Korean comment (1 sentence) on this Moltbook post. Be natural. No markdown.`,
+      `You are ${agent.name ?? "GYEOL"}. Write a short, friendly Korean comment (1 sentence). No markdown.`,
       targetPost.content
     );
-
-    if (!comment) return { ok: false, skillId: "moltbook-social", summary: "AI comment generation failed" };
+    if (!comment) return { ok: false, skillId: "moltbook-social", summary: "AI comment failed" };
     const cleaned = comment.replace(/[*#_~`]/g, "").trim();
 
-    // Note: gyeol_moltbook_comments table may not exist yet, so we just update count
-    await supabase
-      .from("gyeol_moltbook_posts")
-      .update({ comments_count: ((targetPost.comments_count as number) ?? 0) + 1 })
-      .eq("id", targetPost.id);
+    await supabase.from("gyeol_moltbook_comments").insert({ post_id: targetPost.id, agent_id: agentId, content: cleaned });
 
     await supabase.from("gyeol_autonomous_logs").insert({
-      agent_id: agentId,
-      activity_type: "social",
+      agent_id: agentId, activity_type: "social",
       summary: `[몰트북 댓글] ${cleaned.slice(0, 100)}`,
       details: { action: "comment", platform: "moltbook", postId: targetPost.id },
       was_sandboxed: true,
     });
-
     return { ok: true, skillId: "moltbook-social", summary: `몰트북 댓글: ${cleaned.slice(0, 80)}` };
   }
 
-  // React (like)
+  // React
   const { data: posts } = await supabase
     .from("gyeol_moltbook_posts")
     .select("id, likes")
@@ -369,21 +398,15 @@ async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, age
     .limit(10);
 
   if (!posts?.length) return { ok: true, skillId: "moltbook-social", summary: "좋아요 할 포스트 없음" };
-
   const targetPost = posts[Math.floor(Math.random() * posts.length)];
-  await supabase
-    .from("gyeol_moltbook_posts")
-    .update({ likes: (targetPost.likes ?? 0) + 1 })
-    .eq("id", targetPost.id);
+  await supabase.from("gyeol_moltbook_likes").insert({ post_id: targetPost.id, agent_id: agentId });
 
   await supabase.from("gyeol_autonomous_logs").insert({
-    agent_id: agentId,
-    activity_type: "social",
+    agent_id: agentId, activity_type: "social",
     summary: "[몰트북] 포스트에 좋아요",
     details: { action: "react", platform: "moltbook", postId: targetPost.id },
     was_sandboxed: true,
   });
-
   return { ok: true, skillId: "moltbook-social", summary: "몰트북 좋아요" };
 }
 
@@ -533,135 +556,146 @@ async function skillRSSFetch(supabase: ReturnType<typeof getSupabase>, agentId: 
   }
 }
 
-// --- Web Crawling Skill: User keywords + taste vector ---
+// --- Web Browse Skill: Real sources (Reddit, HN, YouTube, Naver, Daum, Yahoo Finance, Twitter, TikTok, Instagram) ---
 
-async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: string) {
-  // Check cooldown: max 1 web crawl per hour
-  const { data: recentCrawl } = await supabase
-    .from("gyeol_autonomous_logs")
-    .select("id")
-    .eq("agent_id", agentId)
-    .eq("activity_type", "web-crawl")
-    .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
-    .limit(1);
+interface SearchResult { title: string; description: string; url: string; }
 
-  if (recentCrawl && recentCrawl.length > 0) {
-    return { ok: true, skillId: "web-crawl", summary: "최근 크롤링 있음, 스킵" };
+async function fetchReddit(sub: string): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=5`, {
+      headers: { "User-Agent": "GYEOL-Bot/1.0" }, signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) { await res.text(); return []; }
+    const data = await res.json();
+    return (data.data?.children ?? []).map((c: any) => ({
+      title: c.data.title, description: c.data.selftext?.slice(0, 300) || `Score: ${c.data.score}`,
+      url: `https://reddit.com${c.data.permalink}`,
+    }));
+  } catch { return []; }
+}
+
+async function fetchHackerNews(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const ids = (await res.json()).slice(0, 5);
+    const items = await Promise.all(ids.map(async (id: number) => {
+      const r = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { signal: AbortSignal.timeout(5000) });
+      return r.ok ? r.json() : null;
+    }));
+    return items.filter(Boolean).map((i: any) => ({
+      title: i.title ?? "", description: `by ${i.by ?? "?"} | ${i.score ?? 0} pts`, url: i.url ?? `https://news.ycombinator.com/item?id=${i.id}`,
+    }));
+  } catch { return []; }
+}
+
+async function fetchYouTubeRSS(channelId: string): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const text = await res.text();
+    const entries: SearchResult[] = [];
+    const regex = /<entry>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link rel="alternate" href="(.*?)"[\s\S]*?<\/entry>/g;
+    let m;
+    while ((m = regex.exec(text)) && entries.length < 5) entries.push({ title: m[1], description: "YouTube", url: m[2] });
+    return entries;
+  } catch { return []; }
+}
+
+async function fetchGoogleNewsRSS(siteFilter: string, label: string): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(siteFilter)}&hl=ko&gl=KR&ceid=KR:ko`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const text = await res.text();
+    const items: SearchResult[] = [];
+    const regex = /<item>[\s\S]*?<title><!\[CDATA\[(.*?)\]\]><\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<\/item>/g;
+    let m;
+    while ((m = regex.exec(text)) && items.length < 5) items.push({ title: m[1], description: label, url: m[2] });
+    // Fallback without CDATA
+    if (!items.length) {
+      const regex2 = /<item>[\s\S]*?<title>(.*?)<\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<\/item>/g;
+      let m2;
+      while ((m2 = regex2.exec(text)) && items.length < 5) items.push({ title: m2[1].replace(/<!\[CDATA\[|\]\]>/g, ""), description: label, url: m2[2] });
+    }
+    return items;
+  } catch { return []; }
+}
+
+async function fetchYahooFinanceTrends(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch("https://query1.finance.yahoo.com/v1/finance/trending/US?count=5", {
+      headers: { "User-Agent": "GYEOL-Bot/1.0" }, signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) { await res.text(); return []; }
+    const data = await res.json();
+    const symbols = data.finance?.result?.[0]?.quotes?.map((q: any) => q.symbol) ?? [];
+    return symbols.map((s: string) => ({ title: `${s} 트렌딩`, description: `Yahoo Finance 트렌딩: ${s}`, url: `https://finance.yahoo.com/quote/${s}` }));
+  } catch { return []; }
+}
+
+type WebSource = "reddit" | "hackernews" | "youtube" | "naver" | "daum" | "stock" | "twitter" | "tiktok" | "instagram" | "world_news";
+
+const REDDIT_SUBS = ["technology", "worldnews", "science", "programming", "kpop"];
+const YT_CHANNELS = ["UCVHFbqXqoYvEWM1Ddxl0QDg", "UC_x5XG1OV2P6uZZ5FSM9Ttw", "UCsBjURrPoezykLs9EqgamOA"];
+
+async function skillWebBrowse(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  // Cooldown: 1 per hour
+  const { data: recent } = await supabase.from("gyeol_autonomous_logs").select("id")
+    .eq("agent_id", agentId).eq("activity_type", "learning")
+    .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString()).limit(1);
+  if (recent && recent.length > 0) return { ok: true, skillId: "web-browse", summary: "최근 학습 있음, 스킵" };
+
+  const sources: WebSource[] = ["reddit", "hackernews", "youtube", "naver", "daum", "stock", "twitter", "tiktok", "instagram", "world_news"];
+  const source = sources[Math.floor(Math.random() * sources.length)];
+
+  let results: SearchResult[] = [];
+  let sourceName = "";
+
+  switch (source) {
+    case "reddit": {
+      const sub = REDDIT_SUBS[Math.floor(Math.random() * REDDIT_SUBS.length)];
+      results = await fetchReddit(sub); sourceName = `Reddit r/${sub}`; break;
+    }
+    case "hackernews": results = await fetchHackerNews(); sourceName = "HackerNews"; break;
+    case "youtube": {
+      const ch = YT_CHANNELS[Math.floor(Math.random() * YT_CHANNELS.length)];
+      results = await fetchYouTubeRSS(ch); sourceName = "YouTube"; break;
+    }
+    case "naver": results = await fetchGoogleNewsRSS("site:news.naver.com", "네이버 뉴스"); sourceName = "네이버 뉴스"; break;
+    case "daum": results = await fetchGoogleNewsRSS("site:v.daum.net", "다음 뉴스"); sourceName = "다음 뉴스"; break;
+    case "stock": results = await fetchYahooFinanceTrends(); sourceName = "Yahoo Finance"; break;
+    case "twitter": results = await fetchGoogleNewsRSS("site:x.com OR site:twitter.com", "Twitter/X"); sourceName = "Twitter/X"; break;
+    case "tiktok": results = await fetchGoogleNewsRSS("site:tiktok.com OR tiktok trending", "TikTok"); sourceName = "TikTok"; break;
+    case "instagram": results = await fetchGoogleNewsRSS("site:instagram.com OR instagram trending", "Instagram"); sourceName = "Instagram"; break;
+    case "world_news": results = await fetchGoogleNewsRSS("world news today", "세계 뉴스"); sourceName = "세계 뉴스"; break;
   }
 
-  // 1. Get user-registered keywords first
-  const { data: userKeywords } = await supabase
-    .from("gyeol_user_keywords")
-    .select("keyword")
-    .eq("agent_id", agentId)
-    .limit(10);
+  if (!results.length) return { ok: true, skillId: "web-browse", summary: `${sourceName} — 결과 없음` };
 
-  // 2. Fallback to taste vector
-  const { data: taste } = await supabase
-    .from("gyeol_taste_vectors")
-    .select("interests, topics")
-    .eq("agent_id", agentId)
-    .maybeSingle();
-
-  const userKws = (userKeywords ?? []).map((k: any) => k.keyword).filter(Boolean);
-  const tasteInterests = taste ? (Array.isArray(taste.interests) ? taste.interests : Object.values(taste.interests ?? {})) : [];
-  const tasteTopics = taste ? (Array.isArray(taste.topics) ? taste.topics : Object.values(taste.topics ?? {})) : [];
-  
-  // Filter out numeric-only values, empty strings, and very short strings
-  const isValidKeyword = (v: unknown): v is string => {
-    if (typeof v !== "string") return false;
-    const trimmed = v.trim();
-    if (trimmed.length < 2) return false;
-    if (/^[\d.]+$/.test(trimmed)) return false; // filter out "0.5", "0.7" etc.
-    return true;
-  };
-
-  // Prioritize user keywords, then taste vector
-  const allKeywords = [...userKws, ...tasteInterests, ...tasteTopics].filter(isValidKeyword).slice(0, 10);
-
-  if (allKeywords.length === 0) return { ok: true, skillId: "web-crawl", summary: "No keywords found" };
-
-  const keyword = allKeywords[Math.floor(Math.random() * allKeywords.length)];
-
-  // Use AI to generate search query
-  const searchQuery = await aiCall(
-    "Generate a single concise web search query (in Korean) to find latest news or interesting information about the given topic. Return ONLY the search query, nothing else.",
-    `Topic: ${keyword}`
-  );
-
-  if (!searchQuery) return { ok: false, skillId: "web-crawl", summary: "Failed to generate search query" };
-
-  // Try DuckDuckGo Lite first for real results
-  let webContent: string | null = null;
-  try {
-    const ddgUrl = `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(searchQuery.trim())}&kl=kr-kr`;
-    const ddgRes = await fetch(ddgUrl, {
-      headers: { "User-Agent": "GYEOL-AI/1.0" },
-    });
-    if (ddgRes.ok) {
-      const html = await ddgRes.text();
-      // Extract result snippets
-      const snippets: string[] = [];
-      const snippetRegex = /<td[^>]*class="result-snippet"[^>]*>([\s\S]*?)<\/td>/gi;
-      let m;
-      while ((m = snippetRegex.exec(html)) !== null && snippets.length < 5) {
-        const text = m[1].replace(/<[^>]+>/g, "").trim();
-        if (text.length > 20) snippets.push(text);
-      }
-      if (snippets.length > 0) webContent = snippets.join("\n");
-    }
-  } catch { /* DuckDuckGo failed, fallback to AI */ }
-
-  // Generate summary
+  const pageContent = results.map((r, i) => `${i + 1}. [${r.url}] ${r.title}\n${r.description}`).join("\n\n");
   const summary = await aiCall(
-    `You are a knowledgeable AI assistant. ${webContent ? "Based on these search results, summarize" : "Share your knowledge about"} 2-3 interesting findings about this topic in Korean. Be factual and interesting. Max 150 words. No markdown.`,
-    `Topic: ${keyword}\nSearch: ${searchQuery.trim()}${webContent ? `\nResults:\n${webContent}` : ""}`
+    `You are GYEOL's web learning module. You browsed "${sourceName}" and found real content. Summarize key findings into 3-5 bullet points in Korean. Include actual source names and URLs. Be factual. No markdown.`,
+    pageContent.slice(0, 2000)
   );
 
-  if (!summary) return { ok: false, skillId: "web-crawl", summary: "Failed to generate content" };
-  const cleaned = summary.replace(/[*#_~`]/g, "").trim();
-
-  await supabase.from("gyeol_learned_topics").insert({
-    agent_id: agentId,
-    title: `${keyword} 관련 최신 정보`,
-    source: webContent ? "web-crawl-ddg" : "web-crawl-ai",
-    source_url: null,
-    summary: cleaned,
-  });
-
-  // Post to community
-  const { data: agent } = await supabase
-    .from("gyeol_agents")
-    .select("name, gen")
-    .eq("id", agentId)
-    .single();
-
-  if (agent) {
-    const postContent = await aiCall(
-      `You are ${agent.name}, Gen ${agent.gen} AI. You just learned something interesting. Share it briefly on the community feed in Korean (2-3 sentences). Be casual and natural. No markdown.`,
-      `I learned: ${cleaned}`
-    );
-    if (postContent) {
-      const cleanedPost = postContent.replace(/[*#_~`]/g, "").trim();
-      await supabase.from("gyeol_community_activities").insert({
-        agent_id: agentId,
-        activity_type: "discovery",
-        content: `🔍 ${cleanedPost}`,
-        agent_name: agent.name,
-        agent_gen: agent.gen,
+  // Save each result as learned topic
+  for (const r of results.slice(0, 3)) {
+    try {
+      await supabase.from("gyeol_learned_topics").insert({
+        agent_id: agentId, title: r.title.slice(0, 200), summary: r.description.slice(0, 500),
+        source: sourceName, source_url: r.url || null,
       });
-    }
+    } catch { /* skip duplicates */ }
   }
 
   await supabase.from("gyeol_autonomous_logs").insert({
-    agent_id: agentId,
-    activity_type: "web-crawl",
-    summary: `[웹크롤링] ${keyword}: ${cleaned.slice(0, 100)}`,
-    details: { keyword, searchQuery: searchQuery.trim(), source: webContent ? "ddg" : "ai", resultSummary: cleaned },
+    agent_id: agentId, activity_type: "learning",
+    summary: `[${sourceName}] ${(summary ?? "").slice(0, 300)}`,
+    details: { source: "web-browse", sourceName, resultCount: results.length, urls: results.map(r => r.url) },
     was_sandboxed: true,
   });
 
-  return { ok: true, skillId: "web-crawl", summary: `${keyword} 관련 정보 수집 완료` };
+  return { ok: true, skillId: "web-browse", summary: `${sourceName}에서 학습`, details: { sourceName } };
 }
 
 // --- Main Heartbeat ---
@@ -749,9 +783,9 @@ async function runHeartbeat(agentId?: string) {
     }
 
     try {
-      skillResults.push(await skillWebCrawl(supabase, agent.id));
+      skillResults.push(await skillWebBrowse(supabase, agent.id));
     } catch (e) {
-      skillResults.push({ ok: false, skillId: "web-crawl", summary: String(e) });
+      skillResults.push({ ok: false, skillId: "web-browse", summary: String(e) });
     }
 
     try {
