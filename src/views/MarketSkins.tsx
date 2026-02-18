@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/src/lib/supabase';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
+import { useAuth } from '@/src/hooks/useAuth';
 import { BottomNav } from '../components/BottomNav';
 
 interface SkinItem {
@@ -10,12 +11,22 @@ interface SkinItem {
   preview_url: string | null; rating: number; downloads: number; category: string | null;
 }
 
+const SKIN_CATEGORIES = ['Abstract', 'Nature', 'Cyberpunk', 'Minimal', 'Anime', 'Other'] as const;
+
 export default function MarketSkinsPage() {
   const [skins, setSkins] = useState<SkinItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState<string | null>(null);
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const { agent } = useInitAgent();
+  const { user } = useAuth();
+
+  // Upload form
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadName, setUploadName] = useState('');
+  const [uploadDesc, setUploadDesc] = useState('');
+  const [uploadCategory, setUploadCategory] = useState('Other');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (agent?.skin_id) setAppliedId(agent.skin_id as string);
@@ -47,13 +58,69 @@ export default function MarketSkinsPage() {
     setApplying(null);
   };
 
+  const handleUpload = async () => {
+    if (!user || !uploadName.trim() || uploading) return;
+    setUploading(true);
+    try {
+      await supabase.from('gyeol_skins' as any).insert({
+        name: uploadName.trim(),
+        description: uploadDesc.trim() || null,
+        category: uploadCategory,
+        creator_id: user.id,
+        is_approved: false,
+        price: 0,
+      } as any);
+      setUploadName('');
+      setUploadDesc('');
+      setShowUpload(false);
+    } catch { /* ignore */ }
+    setUploading(false);
+  };
+
   return (
     <main className="min-h-screen bg-background font-display pb-20">
       <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
-        <header>
-          <h1 className="text-xl font-bold text-foreground">Market</h1>
-          <p className="text-xs text-muted-foreground mt-1">Customize your AI's appearance</p>
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Market</h1>
+            <p className="text-xs text-muted-foreground mt-1">Customize your AI's appearance</p>
+          </div>
+          {user && (
+            <button type="button" onClick={() => setShowUpload(!showUpload)}
+              className="flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition">
+              <span className="material-icons-round text-sm">add</span>
+              Submit
+            </button>
+          )}
         </header>
+
+        {/* Upload Form */}
+        <AnimatePresence>
+          {showUpload && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden">
+              <div className="section-card !p-4 space-y-3">
+                <p className="text-xs font-medium text-foreground/70">Submit a Skin</p>
+                <input type="text" placeholder="Skin name" value={uploadName} onChange={e => setUploadName(e.target.value)} maxLength={50}
+                  className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
+                <textarea placeholder="Description (optional)" value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} maxLength={200} rows={2}
+                  className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40 resize-none" />
+                <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)}
+                  className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground outline-none">
+                  {SKIN_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setShowUpload(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition">Cancel</button>
+                  <button type="button" onClick={handleUpload} disabled={!uploadName.trim() || uploading}
+                    className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-40 transition">
+                    {uploading ? 'Submitting...' : 'Submit for Review'}
+                  </button>
+                </div>
+                <p className="text-[9px] text-muted-foreground text-center">Submitted skins will be reviewed before appearing in the market</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
           <Link to="/market/skills"
