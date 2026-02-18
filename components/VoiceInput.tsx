@@ -11,6 +11,7 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
   const [isListening, setIsListening] = useState(false);
   const [interim, setInterim] = useState('');
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const processedIndexRef = useRef(0);
 
   const startListening = useCallback(() => {
     if (disabled) return;
@@ -19,33 +20,36 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
       (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRecognitionAPI) { onResult(''); return; }
     const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'ko-KR';
+    processedIndexRef.current = 0;
+
     recognition.onresult = (e: SpeechRecognitionEvent) => {
-      let finalText = '';
       let interimText = '';
-      for (let i = 0; i < e.results.length; i++) {
+      for (let i = processedIndexRef.current; i < e.results.length; i++) {
         const result = e.results[i];
         if (result.isFinal) {
-          finalText += result[0].transcript;
+          const finalText = result[0].transcript.trim();
+          if (finalText) {
+            onResult(finalText);
+          }
+          processedIndexRef.current = i + 1;
         } else {
           interimText += result[0].transcript;
         }
       }
       setInterim(interimText);
-      if (finalText) {
-        onResult(finalText);
-        setInterim('');
-      }
     };
     recognition.onend = () => {
       setIsListening(false);
       setInterim('');
+      processedIndexRef.current = 0;
     };
     recognition.onerror = () => {
       setIsListening(false);
       setInterim('');
+      processedIndexRef.current = 0;
     };
     recognition.start();
     recognitionRef.current = recognition;
@@ -56,6 +60,7 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
     if (recognitionRef.current) { recognitionRef.current.stop(); recognitionRef.current = null; }
     setIsListening(false);
     setInterim('');
+    processedIndexRef.current = 0;
   }, []);
 
   return (
