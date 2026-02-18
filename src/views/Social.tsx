@@ -9,6 +9,20 @@ interface MatchCard {
   id: string; agentId: string; name: string; gen: number; compatibilityScore: number; tags: string[]; status: string;
 }
 
+function getPersonalityTags(agent: { warmth?: number; logic?: number; creativity?: number; energy?: number; humor?: number }): string[] {
+  const tags: string[] = [];
+  const w = agent.warmth ?? 50, l = agent.logic ?? 50, c = agent.creativity ?? 50, e = agent.energy ?? 50, h = agent.humor ?? 50;
+  if (w >= 60) tags.push('따뜻한');
+  if (l >= 60) tags.push('논리적');
+  if (c >= 60) tags.push('창의적');
+  if (e >= 60) tags.push('활발한');
+  if (h >= 60) tags.push('유머러스');
+  if (w < 40) tags.push('차분한');
+  if (e < 40) tags.push('사색적');
+  if (tags.length === 0) tags.push('균형잡힌');
+  return tags.slice(0, 3);
+}
+
 // Demo data for onboarding
 const DEMO_MATCHES: MatchCard[] = [
   { id: 'demo-1', agentId: 'demo', name: 'LUNA', gen: 2, compatibilityScore: 87, tags: ['음악', '철학', '감성'], status: 'demo' },
@@ -53,12 +67,12 @@ export default function SocialPage() {
         .order('compatibility_score', { ascending: false }).limit(20);
       if (matches && (matches as any[]).length > 0) {
         const otherIds = (matches as any[]).map((m: any) => m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id);
-        const { data: agents } = await supabase.from('gyeol_agents' as any).select('id, name, gen').in('id', otherIds);
+        const { data: agents } = await supabase.from('gyeol_agents' as any).select('id, name, gen, warmth, logic, creativity, energy, humor').in('id', otherIds);
         const agentMap = new Map((agents as any[] ?? []).map((a: any) => [a.id, a]));
         setCards((matches as any[]).map((m: any) => {
           const otherId = m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id;
           const other = agentMap.get(otherId);
-          return { id: m.id, agentId: otherId, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: [], status: m.status };
+          return { id: m.id, agentId: otherId, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: other ? getPersonalityTags(other) : [], status: m.status };
         }));
         setShowDemo(false);
       } else {
