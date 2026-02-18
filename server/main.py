@@ -355,11 +355,85 @@ async def telegram_webhook(request: Request):
         await _send_reply("사용법:\n/memory — 기억 목록\n/memory list — 기억 목록\n/memory delete <번호> — 기억 삭제")
         return {"ok": True}
 
+    # /evolve command — show personality evolution history
+    if text.strip().startswith("/evolve"):
+        if not agent_id:
+            await _send_reply("먼저 /start <코드>로 에이전트를 연결해주세요!")
+            return {"ok": True}
+
+        # Get agent current stats
+        agent_data = await _supabase_get("gyeol_agents", {
+            "select": "name,gen,warmth,logic,creativity,energy,humor,evolution_progress",
+            "id": f"eq.{agent_id}",
+        })
+        if not agent_data or not isinstance(agent_data, list) or len(agent_data) == 0:
+            await _send_reply("에이전트 정보를 불러올 수 없어요.")
+            return {"ok": True}
+        a = agent_data[0]
+
+        # Get recent personality insights (change history)
+        insights = await _supabase_get("gyeol_conversation_insights", {
+            "select": "emotion_arc,personality_delta,created_at",
+            "agent_id": f"eq.{agent_id}",
+            "order": "created_at.desc",
+            "limit": "10",
+        })
+
+        # Build personality bars
+        def bar(val, label, width=10):
+            filled = val // (100 // width)
+            empty = width - filled
+            return f"{label}: {'▓' * filled}{'░' * empty} {val}"
+
+        evo = a.get("evolution_progress", 0)
+        evo_filled = evo // 10
+        evo_bar = f"{'▓' * evo_filled}{'░' * (10 - evo_filled)} {evo}%"
+
+        lines = [
+            f"[ {a.get('name', 'GYEOL')} 진화 현황 ]",
+            f"━━━━━━━━━━━━━━━",
+            f"세대: Gen {a.get('gen', 1)}",
+            f"진화 진행: {evo_bar}",
+            "",
+            "[ 현재 성격 ]",
+            bar(a.get("warmth", 50), "따뜻함"),
+            bar(a.get("logic", 50), "논리력"),
+            bar(a.get("creativity", 50), "창의성"),
+            bar(a.get("energy", 50), "에너지"),
+            bar(a.get("humor", 50), "유머  "),
+        ]
+
+        if insights and isinstance(insights, list) and len(insights) > 0:
+            lines.append("")
+            lines.append("[ 최근 성격 변화 ]")
+            for ins in insights[:5]:
+                delta = ins.get("personality_delta", {})
+                if not delta:
+                    continue
+                changes = []
+                trait_names = {"warmth": "따뜻함", "logic": "논리", "creativity": "창의", "energy": "에너지", "humor": "유머"}
+                for k, v in delta.items():
+                    if isinstance(v, (int, float)) and v != 0:
+                        sign = "+" if v > 0 else ""
+                        changes.append(f"{trait_names.get(k, k)} {sign}{v}")
+                if changes:
+                    date_str = ins.get("created_at", "")[:10]
+                    emotion = ins.get("emotion_arc", "")
+                    lines.append(f"  {date_str} ({emotion}): {', '.join(changes)}")
+
+        if not insights or not isinstance(insights, list) or len(insights) == 0:
+            lines.append("")
+            lines.append("아직 성격 변화 기록이 없어요.")
+
+        await _send_reply("\n".join(lines))
+        return {"ok": True}
+
     # /help command
     if text.strip() == "/help":
         await _send_reply(
             "/start <코드> — 에이전트 연결\n"
             "/status — 에이전트 상태 보기\n"
+            "/evolve — 진화 현황 보기\n"
             "/search <키워드> — 웹 검색\n"
             "/memory — 기억 관리\n"
             "/help — 도움말\n\n"
@@ -404,14 +478,27 @@ async def telegram_webhook(request: Request):
     if agent_data and isinstance(agent_data, list) and len(agent_data) > 0:
         system_prompt = _build_personality_prompt(agent_data[0])
 
+    # Load conversation history (exclude heartbeat-generated messages for better context)
     conv_data = await _supabase_get("gyeol_conversations", {
         "select": "role,content",
         "agent_id": f"eq.{agent_id}",
+        "provider": "not.eq.heartbeat",
         "order": "created_at.desc",
         "limit": "10",
     })
     if conv_data and isinstance(conv_data, list):
         history = [{"role": r["role"], "content": r["content"]} for r in reversed(conv_data)]
+
+    # Load user memories for context
+    mem_data = await _supabase_get("gyeol_user_memories", {
+        "select": "category,key,value",
+        "agent_id": f"eq.{agent_id}",
+        "order": "confidence.desc",
+        "limit": "10",
+    })
+    if mem_data and isinstance(mem_data, list) and len(mem_data) > 0:
+        mem_lines = "\n".join([f"- [{m.get('category','')}] {m.get('key','')}: {m.get('value','')}" for m in mem_data])
+        system_prompt += f"\n\n사용자에 대해 기억하고 있는 것:\n{mem_lines}\n이 정보를 자연스럽게 활용해서 대화해."
 
     # Auto web search routing: ask AI if search is needed
     search_context = ""
