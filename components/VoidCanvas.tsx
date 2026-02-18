@@ -9,6 +9,7 @@ export interface VoidCanvasProps {
   visualState?: VisualState | null;
   isThinking?: boolean;
   isListening?: boolean;
+  skinColors?: { primary: string; secondary: string; glowIntensity: number } | null;
 }
 
 const defaultPersonality: PersonalityParams = {
@@ -31,11 +32,21 @@ interface VoidParticle {
   delay: number;
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace('#', '');
+  return {
+    r: parseInt(h.substring(0, 2), 16) || 79,
+    g: parseInt(h.substring(2, 4), 16) || 70,
+    b: parseInt(h.substring(4, 6), 16) || 229,
+  };
+}
+
 function VoidCanvas({
   gen = 1,
   personality = defaultPersonality,
   isThinking = false,
   isListening = false,
+  skinColors = null,
 }: VoidCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
@@ -50,9 +61,16 @@ function VoidCanvas({
   const totalTraits = Object.values(personality).reduce((a, b) => a + b, 0);
   const particleCount = Math.min(80, 20 + Math.floor((totalTraits / 500) * 60));
   const coreRadius = gen <= 1 ? 8 : gen === 2 ? 25 : gen === 3 ? 40 : gen === 4 ? 50 : 60;
-  const pR = Math.round(79 + (176 * (1 - (creativity + humor) / 2)));
-  const pG = Math.round(70 + (185 * (1 - (creativity + humor) / 2)));
-  const pB = 229;
+
+  let pR: number, pG: number, pB: number;
+  if (skinColors?.primary) {
+    const rgb = hexToRgb(skinColors.primary);
+    pR = rgb.r; pG = rgb.g; pB = rgb.b;
+  } else {
+    pR = Math.round(79 + (176 * (1 - (creativity + humor) / 2)));
+    pG = Math.round(70 + (185 * (1 - (creativity + humor) / 2)));
+    pB = 229;
+  }
 
   const initParticles = useCallback((w: number, h: number) => {
     const cx = w / 2;
