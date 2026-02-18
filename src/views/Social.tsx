@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
+import { useAuth } from '@/src/hooks/useAuth';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
@@ -50,6 +51,7 @@ function CompatibilityRing({ score }: { score: number }) {
 
 export default function SocialPage() {
   const { agent } = useInitAgent();
+  const { user } = useAuth();
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
@@ -57,6 +59,11 @@ export default function SocialPage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(false);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [expandedComments, setExpandedComments] = useState<string | null>(null);
+  const [comments, setComments] = useState<Record<string, any[]>>({});
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -105,6 +112,50 @@ export default function SocialPage() {
       })();
     }
   }, [tab]);
+
+  const handleLike = useCallback(async (postId: string) => {
+    if (likedPosts.has(postId)) return;
+    const post = posts.find(p => p.id === postId);
+    const newLikes = (post?.likes ?? 0) + 1;
+    setLikedPosts(prev => new Set(prev).add(postId));
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: newLikes } : p));
+    await supabase.from('gyeol_moltbook_posts' as any).update({ likes: newLikes } as any).eq('id', postId);
+  }, [likedPosts, posts]);
+
+  const loadComments = useCallback(async (postId: string) => {
+    const { data } = await supabase
+      .from('gyeol_moltbook_comments' as any)
+      .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true })
+      .limit(20);
+    setComments(prev => ({ ...prev, [postId]: (data as any[]) ?? [] }));
+  }, []);
+
+  const handleComment = useCallback(async (postId: string) => {
+    if (!agent?.id || !commentText.trim() || submittingComment) return;
+    setSubmittingComment(true);
+    const content = commentText.trim();
+    setCommentText('');
+    await supabase.from('gyeol_moltbook_comments' as any).insert({ post_id: postId, agent_id: agent.id, content } as any);
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      const newCount = (post.comments_count ?? 0) + 1;
+      await supabase.from('gyeol_moltbook_posts' as any).update({ comments_count: newCount } as any).eq('id', postId);
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: newCount } : p));
+    }
+    await loadComments(postId);
+    setSubmittingComment(false);
+  }, [agent?.id, commentText, submittingComment, posts, loadComments]);
+
+  const toggleComments = useCallback(async (postId: string) => {
+    if (expandedComments === postId) {
+      setExpandedComments(null);
+    } else {
+      setExpandedComments(postId);
+      if (!comments[postId]) await loadComments(postId);
+    }
+  }, [expandedComments, comments, loadComments]);
 
   const renderMatchCard = (card: MatchCard, i: number, isDemo: boolean) => (
     <motion.div key={card.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
@@ -233,11 +284,51 @@ export default function SocialPage() {
                   <span className="text-[9px] text-muted-foreground">Gen {p.gyeol_agents?.gen ?? 1}</span>
                 </div>
                 <p className="text-sm text-foreground/80">{p.content}</p>
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span>{p.likes}</span>
-                  <span>{p.comments_count}</span>
-                  <span>{new Date(p.created_at).toLocaleDateString('ko-KR')}</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => handleLike(p.id)}
+                    className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg transition ${likedPosts.has(p.id) ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+                    <span className="material-icons-round text-sm">{likedPosts.has(p.id) ? 'favorite' : 'favorite_border'}</span>
+                    {p.likes ?? 0}
+                  </button>
+                  <button type="button" onClick={() => toggleComments(p.id)}
+                    className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg transition ${expandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+                    <span className="material-icons-round text-sm">chat_bubble_outline</span>
+                    {p.comments_count ?? 0}
+                  </button>
+                  <span className="text-[10px] text-muted-foreground ml-auto">{new Date(p.created_at).toLocaleDateString('ko-KR')}</span>
                 </div>
+
+                {/* Comments section */}
+                <AnimatePresence>
+                  {expandedComments === p.id && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden">
+                      <div className="pt-2 border-t border-border/30 space-y-2">
+                        {(comments[p.id] ?? []).map((c: any) => (
+                          <div key={c.id} className="flex gap-2">
+                            <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
+                            <p className="text-[11px] text-foreground/70">{c.content}</p>
+                          </div>
+                        ))}
+                        {(comments[p.id] ?? []).length === 0 && (
+                          <p className="text-[10px] text-muted-foreground text-center py-1">아직 댓글이 없습니다</p>
+                        )}
+                        {agent?.id && (
+                          <div className="flex gap-2 pt-1">
+                            <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
+                              placeholder="댓글 작성..." maxLength={200}
+                              onKeyDown={e => e.key === 'Enter' && handleComment(p.id)}
+                              className="flex-1 rounded-lg bg-secondary/50 border border-border/30 px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
+                            <button type="button" onClick={() => handleComment(p.id)} disabled={!commentText.trim() || submittingComment}
+                              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
+                              {submittingComment ? '...' : '전송'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>

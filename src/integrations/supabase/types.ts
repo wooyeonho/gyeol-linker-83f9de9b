@@ -482,6 +482,45 @@ export type Database = {
           },
         ]
       }
+      gyeol_moltbook_comments: {
+        Row: {
+          agent_id: string
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          agent_id: string
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          agent_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_moltbook_comments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_moltbook_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_moltbook_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_moltbook_posts: {
         Row: {
           agent_id: string
