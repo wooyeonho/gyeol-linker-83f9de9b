@@ -116,9 +116,16 @@ async function sendTelegram(chatId: string, text: string): Promise<boolean> {
 }
 
 async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  // Quiet hours check: KST 23:00 ~ 07:00
+  const now = new Date();
+  const kstHour = (now.getUTCHours() + 9) % 24;
+  if (kstHour >= 23 || kstHour < 7) {
+    return { ok: true, skillId: "proactive-message", summary: `Quiet hours (KST ${kstHour}시), skipping` };
+  }
+
   const { data: agent } = await supabase
     .from("gyeol_agents")
-    .select("name, warmth, humor, creativity, energy, last_active")
+    .select("name, warmth, humor, creativity, energy, last_active, created_at")
     .eq("id", agentId)
     .single();
 
@@ -127,6 +134,17 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
   const hoursSinceActive = (Date.now() - new Date(agent.last_active).getTime()) / 3600000;
   if (hoursSinceActive < 6) return { ok: true, skillId: "proactive-message", summary: "User active recently, skipping" };
 
+  // Dedup: skip if a proactive message was sent in the last 4 hours
+  const fourHoursAgo = new Date(Date.now() - 4 * 3600000).toISOString();
+  const { data: recentProactive } = await supabase
+    .from("gyeol_proactive_messages")
+    .select("id")
+    .eq("agent_id", agentId)
+    .gte("created_at", fourHoursAgo)
+    .limit(1);
+  if (recentProactive && recentProactive.length > 0) {
+    return { ok: true, skillId: "proactive-message", summary: "Proactive message sent recently, skipping" };
+  }
   // Load user memories for personalized messages
   const { data: memories } = await supabase
     .from("gyeol_user_memories")
@@ -165,8 +183,6 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
     : "";
 
   // Determine trigger reason
-  const now = new Date();
-  const kstHour = (now.getUTCHours() + 9) % 24;
   const createdAt = agent.created_at ? new Date(agent.created_at) : now;
   const daysTogether = Math.floor((now.getTime() - createdAt.getTime()) / 86400000);
   const isAnniversary = [7, 14, 30, 50, 100, 365].includes(daysTogether);
