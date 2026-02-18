@@ -68,15 +68,23 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
             </div>
           </div>
 
-          {/* Personality changes */}
+          {/* Personality changes with bar graph */}
           {insight.personalityChanged && Object.keys(insight.changes).length > 0 && (
             <div className="pt-2 border-t border-border/20">
-              <p className="text-[9px] text-muted-foreground/50 mb-1.5">📊 성격 변화</p>
-              <div className="flex gap-3">
+              <p className="text-[9px] text-muted-foreground/50 mb-2">📊 성격 변화</p>
+              <div className="space-y-1.5">
                 {Object.entries(insight.changes).map(([key, val]) => (
-                  <div key={key} className="flex items-center gap-1">
-                    <span className="text-[10px] text-foreground/60">{STAT_LABELS[key] ?? key}</span>
-                    <span className={`text-[10px] font-bold ${val > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="text-[9px] text-foreground/50 w-10 text-right shrink-0">{STAT_LABELS[key] ?? key}</span>
+                    <div className="flex-1 h-2 rounded-full bg-border/20 overflow-hidden relative">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, Math.abs(val) * 20)}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                        className={`h-full rounded-full ${val > 0 ? 'bg-green-400/70' : 'bg-red-400/70'}`}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-bold w-6 shrink-0 ${val > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {val > 0 ? `+${val}` : val}
                     </span>
                   </div>
