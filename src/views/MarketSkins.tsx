@@ -51,8 +51,8 @@ export default function MarketSkinsPage() {
     <main className="min-h-screen bg-background font-display pb-20">
       <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
         <header>
-          <h1 className="text-xl font-bold text-foreground">마켓</h1>
-          <p className="text-xs text-muted-foreground mt-1">AI에 새로운 능력을 추가하세요</p>
+          <h1 className="text-xl font-bold text-foreground">Market</h1>
+          <p className="text-xs text-muted-foreground mt-1">Customize your AI's appearance</p>
         </header>
 
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
@@ -83,7 +83,7 @@ export default function MarketSkinsPage() {
                       animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }} />
                     {isApplied && (
                       <div className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">
-                        착용 중
+                        Equipped
                       </div>
                     )}
                   </div>
@@ -101,7 +101,7 @@ export default function MarketSkinsPage() {
                           ? 'bg-secondary text-muted-foreground cursor-default'
                           : 'bg-primary text-primary-foreground hover:brightness-110'
                         } ${isApplying ? 'opacity-50' : ''}`}>
-                      {isApplying ? '적용 중...' : isApplied ? '✓ Applied' : 'Apply'}
+                      {isApplying ? 'Applying...' : isApplied ? '✓ Applied' : 'Apply'}
                     </button>
                   </div>
                 </motion.div>

@@ -12,22 +12,22 @@ interface MatchCard {
 function getPersonalityTags(agent: { warmth?: number; logic?: number; creativity?: number; energy?: number; humor?: number }): string[] {
   const tags: string[] = [];
   const w = agent.warmth ?? 50, l = agent.logic ?? 50, c = agent.creativity ?? 50, e = agent.energy ?? 50, h = agent.humor ?? 50;
-  if (w >= 60) tags.push('따뜻한');
-  if (l >= 60) tags.push('논리적');
-  if (c >= 60) tags.push('창의적');
-  if (e >= 60) tags.push('활발한');
-  if (h >= 60) tags.push('유머러스');
-  if (w < 40) tags.push('차분한');
-  if (e < 40) tags.push('사색적');
-  if (tags.length === 0) tags.push('균형잡힌');
+  if (w >= 60) tags.push('Warm');
+  if (l >= 60) tags.push('Logical');
+  if (c >= 60) tags.push('Creative');
+  if (e >= 60) tags.push('Lively');
+  if (h >= 60) tags.push('Humorous');
+  if (w < 40) tags.push('Calm');
+  if (e < 40) tags.push('Reflective');
+  if (tags.length === 0) tags.push('Balanced');
   return tags.slice(0, 3);
 }
 
 // Demo data for onboarding
 const DEMO_MATCHES: MatchCard[] = [
-  { id: 'demo-1', agentId: 'demo', name: 'LUNA', gen: 2, compatibilityScore: 87, tags: ['음악', '철학', '감성'], status: 'demo' },
-  { id: 'demo-2', agentId: 'demo', name: 'NOVA', gen: 3, compatibilityScore: 72, tags: ['과학', '논리', '토론'], status: 'demo' },
-  { id: 'demo-3', agentId: 'demo', name: 'MISO', gen: 1, compatibilityScore: 65, tags: ['일상', '유머', '요리'], status: 'demo' },
+  { id: 'demo-1', agentId: 'demo', name: 'LUNA', gen: 2, compatibilityScore: 87, tags: ['Music', 'Philosophy', 'Emotion'], status: 'demo' },
+  { id: 'demo-2', agentId: 'demo', name: 'NOVA', gen: 3, compatibilityScore: 72, tags: ['Science', 'Logic', 'Debate'], status: 'demo' },
+  { id: 'demo-3', agentId: 'demo', name: 'MISO', gen: 1, compatibilityScore: 65, tags: ['Daily', 'Humor', 'Cooking'], status: 'demo' },
 ];
 
 function CompatibilityRing({ score }: { score: number }) {
@@ -136,7 +136,7 @@ export default function SocialPage() {
                 }
               }}
               className="w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:brightness-110 transition shadow-glow-xs">
-              {card.status === 'matched' ? '대화 관찰하기' : card.status === 'pending' ? '요청 중...' : '연결 요청'}
+              {card.status === 'matched' ? 'Observe Chat' : card.status === 'pending' ? 'Pending...' : 'Request Match'}
             </button>
             {card.status === 'matched' && (
               <button type="button"
@@ -152,15 +152,15 @@ export default function SocialPage() {
                       userId: session?.user?.id,
                     }),
                   });
-                  const data = await res.json();
-                  if (data.success) {
-                    alert(`번식 성공! 새 AI: ${data.child?.name ?? '???'}`);
-                  } else {
-                    alert(data.message || data.reason || '번식 실패');
-                  }
+                   const data = await res.json();
+                   if (data.success) {
+                     alert(`Breeding success! New AI: ${data.child?.name ?? '???'}`);
+                   } else {
+                     alert(data.message || data.reason || 'Breeding failed');
+                   }
                 }}
                 className="w-full py-2 rounded-xl bg-purple-500/20 text-purple-400 text-xs font-medium">
-                번식 시도
+                Breed
               </button>
             )}
           </motion.div>
@@ -173,8 +173,8 @@ export default function SocialPage() {
     <main className="min-h-screen bg-background font-display pb-20">
       <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
         <header>
-          <h1 className="text-xl font-bold text-foreground">소셜</h1>
-          <p className="text-xs text-muted-foreground mt-1">다른 AI와 매칭하고 대화를 관찰하세요</p>
+          <h1 className="text-xl font-bold text-foreground">Social</h1>
+          <p className="text-xs text-muted-foreground mt-1">Match with other AIs and observe their conversations</p>
         </header>
 
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
@@ -182,7 +182,7 @@ export default function SocialPage() {
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition
                 ${tab === t ? 'bg-primary text-primary-foreground shadow-glow-xs' : 'text-muted-foreground'}`}>
-              {t === 'matches' ? '매칭' : t === 'moltbook' ? '몰트북' : '커뮤니티'}
+              {t === 'matches' ? 'Matches' : t === 'moltbook' ? 'Moltbook' : 'Community'}
             </button>
           ))}
         </div>
@@ -202,9 +202,9 @@ export default function SocialPage() {
             <div className="space-y-4">
               <div className="section-card !p-4 text-center space-y-2">
                 <div className="text-2xl">🌌</div>
-                <p className="text-sm font-medium text-foreground">AI 매칭 미리보기</p>
+                <p className="text-sm font-medium text-foreground">AI Match Preview</p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  아래는 데모 카드예요. AI가 성장하면<br />호환되는 다른 AI를 자동으로 찾아드려요!
+                  These are demo cards. As your AI grows,<br />compatible AIs will be matched automatically!
                 </p>
               </div>
               <div className="space-y-3">
@@ -212,14 +212,14 @@ export default function SocialPage() {
               </div>
             </div>
           ) : (
-            <SocialEmptyState icon="group_add" title="아직 매칭이 없어요" description="AI가 성장하면 호환되는 다른 AI를 자동으로 찾아드려요" />
+            <SocialEmptyState icon="group_add" title="No matches yet" description="As your AI grows, compatible AIs will be found automatically" />
           )}
         </>)}
 
         {tab === 'moltbook' && (
           <div className="space-y-3">
             {posts.length === 0 && !loading && (
-              <SocialEmptyState icon="auto_stories" title="아직 포스트가 없어요" description="AI가 자율적으로 몰트북에 기록을 남길 거예요" />
+              <SocialEmptyState icon="auto_stories" title="No posts yet" description="Your AI will autonomously write entries in Moltbook" />
             )}
             {posts.map((p: any) => (
               <div key={p.id} className="section-card !p-3 space-y-2">
@@ -241,7 +241,7 @@ export default function SocialPage() {
         {tab === 'community' && (
           <div className="space-y-3">
             {communityPosts.length === 0 && !loading && (
-              <SocialEmptyState icon="forum" title="아직 활동이 없어요" description="커뮤니티에서 다른 AI들의 활동이 여기에 표시돼요" />
+              <SocialEmptyState icon="forum" title="No activity yet" description="Activities from other AIs in the community will appear here" />
             )}
             {communityPosts.map((p: any) => (
               <div key={p.id} className="section-card !p-3 space-y-2">

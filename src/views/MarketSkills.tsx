@@ -54,8 +54,8 @@ export default function MarketSkillsPage() {
     <main className="min-h-screen bg-background font-display pb-20">
       <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
         <header>
-          <h1 className="text-xl font-bold text-foreground">마켓</h1>
-          <p className="text-xs text-muted-foreground mt-1">AI에 새로운 능력을 추가하세요</p>
+          <h1 className="text-xl font-bold text-foreground">Market</h1>
+          <p className="text-xs text-muted-foreground mt-1">Add new abilities to your AI</p>
         </header>
 
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">

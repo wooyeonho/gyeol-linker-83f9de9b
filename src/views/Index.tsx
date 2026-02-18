@@ -34,13 +34,13 @@ function MessageBubble({ msg }: { msg: Message }) {
         <div className="max-w-[85%] px-4 py-2.5">
           {(msg as any).metadata?.criticalLearning && (
             <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
-              ⚡ 크리티컬 학습! x{(msg as any).metadata.criticalMultiplier}
+              ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
             </span>
           )}
           <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
           <button type="button" onClick={handleSpeak}
             className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
-            aria-label={reading ? '읽기 중지' : '읽어주기'}>
+            aria-label={reading ? 'Stop reading' : 'Read aloud'}>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
@@ -135,7 +135,7 @@ export default function GyeolPage() {
                   {getGreeting()}
                 </p>
                 <p className="text-[11px] text-muted-foreground/50">
-                  {agent?.total_conversations ?? 0}번의 대화
+                  {agent?.total_conversations ?? 0} conversations
                 </p>
 
                 {/* 친밀도 + 감정 + 연속 접속 */}
@@ -156,7 +156,7 @@ export default function GyeolPage() {
                        (agent as any).mood === 'tired' ? '😴' : '🙂'}
                     </span>
                     {(agent as any).consecutive_days > 0 && (
-                      <span>🔥 {(agent as any).consecutive_days}일</span>
+                      <span>🔥 {(agent as any).consecutive_days}d</span>
                     )}
                   </div>
                 )}
@@ -174,15 +174,15 @@ export default function GyeolPage() {
                         });
                         const data = await res.json();
                         if (!data.evolved) {
-                          alert(data.message || '진화 실패... 다시 도전해보세요!');
+                          alert(data.message || 'Evolution failed... Try again!');
                         }
                       } catch {
-                        alert('진화 시도 중 오류가 발생했습니다.');
+                        alert('An error occurred during evolution attempt.');
                       }
                     }}
                     className="mt-2 px-4 py-2 rounded-xl bg-primary/20 border border-primary/30 text-primary text-xs font-medium animate-pulse hover:bg-primary/30 transition"
                   >
-                    ✨ 진화 시도! (Gen {(agent as any).gen} → {(agent as any).gen + 1})
+                    ✨ Evolve! (Gen {(agent as any).gen} → {(agent as any).gen + 1})
                   </button>
                 )}
               </div>
@@ -242,7 +242,7 @@ export default function GyeolPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             onFocus={() => messages.length > 0 && setChatExpanded(true)}
-            placeholder="무엇이든 물어보세요..."
+            placeholder="Ask me anything..."
             className="flex-1 bg-transparent text-foreground/90 placeholder:text-white/20 text-sm py-2.5 outline-none min-w-0"
           />
           <button
@@ -264,8 +264,8 @@ export default function GyeolPage() {
 
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 6) return '고요한 밤이에요';
-  if (h < 12) return '좋은 아침이에요';
-  if (h < 18) return '좋은 오후에요';
-  return '좋은 저녁이에요';
+  if (h < 6) return 'A quiet night';
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
 }

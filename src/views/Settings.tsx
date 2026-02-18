@@ -74,7 +74,7 @@ export default function SettingsPage() {
   };
 
   const personality = agent ? [agent.warmth, agent.logic, agent.creativity, agent.energy, agent.humor] : [50, 50, 50, 50, 50];
-  const labels = ['온기', '논리', '창의', '에너지', '유머'];
+  const labels = ['Warm', 'Logic', 'Create', 'Energy', 'Humor'];
 
   return (
     <main className="min-h-screen bg-black font-display pb-16">
@@ -129,9 +129,9 @@ export default function SettingsPage() {
         <section className="space-y-4">
           <p className="text-[10px] text-white/20 uppercase tracking-widest">Preferences</p>
           {[
-            { label: '자율성 수준', type: 'range' as const, value: autonomyLevel, onChange: setAutonomyLevel },
-            { label: '콘텐츠 필터', type: 'toggle' as const, value: contentFilterOn, onChange: () => setContentFilterOn(!contentFilterOn) },
-            { label: '활동 알림', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
+            { label: 'Autonomy Level', type: 'range' as const, value: autonomyLevel, onChange: setAutonomyLevel },
+            { label: 'Content Filter', type: 'toggle' as const, value: contentFilterOn, onChange: () => setContentFilterOn(!contentFilterOn) },
+            { label: 'Notifications', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
           ].map((item) => (
             <div key={item.label} className="flex justify-between items-center">
               <span className="text-xs text-white/40">{item.label}</span>
@@ -154,8 +154,8 @@ export default function SettingsPage() {
           {/* 자동 읽어주기 */}
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-xs text-white/40">자동 읽어주기</span>
-              <p className="text-[9px] text-white/20">AI 응답을 자동으로 읽어줍니다</p>
+              <span className="text-xs text-white/40">Auto Read Aloud</span>
+              <p className="text-[9px] text-white/20">Automatically read AI responses</p>
             </div>
             <button type="button" onClick={() => {
               const next = !autoTTS;
@@ -171,7 +171,7 @@ export default function SettingsPage() {
 
           {/* 읽기 속도 */}
           <div className="flex justify-between items-center">
-            <span className="text-xs text-white/40">읽기 속도</span>
+            <span className="text-xs text-white/40">Read Speed</span>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-white/20">{ttsSpeed.toFixed(1)}x</span>
               <input type="range" min={0.5} max={1.5} step={0.1} value={ttsSpeed}
@@ -194,12 +194,12 @@ export default function SettingsPage() {
           {telegramLinked ? (
             <div className="flex items-center gap-2 text-emerald-400/70">
               <span className="material-icons-round text-sm">check_circle</span>
-              <span className="text-xs">텔레그램 연결됨</span>
+              <span className="text-xs">Telegram Connected</span>
             </div>
           ) : (
             <div className="space-y-2">
               <p className="text-[11px] text-white/40 leading-relaxed">
-                텔레그램에서 GYEOL 봇에게 아래 코드를 보내세요:
+                Send this code to the GYEOL bot on Telegram:
               </p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
@@ -208,7 +208,7 @@ export default function SettingsPage() {
                 <button type="button" onClick={() => {
                   navigator.clipboard.writeText(`/start ${telegramCode}`);
                 }} className="rounded-lg bg-primary/10 text-primary/80 px-3 py-2 text-xs">
-                  복사
+                  Copy
                 </button>
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function SettingsPage() {
               </div>
               <button type="button" onClick={toggleKillSwitch}
                 className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/5 text-emerald-500/70 border-emerald-500/10' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
-                {killSwitchActive ? '시스템 재개' : '긴급 정지 (Kill Switch)'}
+                {killSwitchActive ? 'Resume System' : 'Emergency Stop (Kill Switch)'}
               </button>
             </motion.div>
           )}

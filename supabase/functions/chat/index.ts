@@ -23,7 +23,7 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
 Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
 Dominant trait: ${desc[dominant] ?? "natural"}
 Rules:
-- Reply in the same language the user writes in
+- CRITICAL: Always detect the user's language and reply in that SAME language. If they write in English, reply in English. If Korean, reply in Korean. If Japanese, reply in Japanese. Etc.
 - When writing Korean, NEVER use Chinese characters (漢字/한자). Use only Hangul (한글)
 - Do not use markdown symbols (**, ##, - etc.)
 - Keep responses short and friendly
