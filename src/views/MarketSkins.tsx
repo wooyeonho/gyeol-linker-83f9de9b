@@ -58,10 +58,32 @@ export default function MarketSkinsPage() {
     setApplying(null);
   };
 
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPreviewFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
   const handleUpload = async () => {
     if (!user || !uploadName.trim() || uploading) return;
     setUploading(true);
     try {
+      let uploadedUrl: string | null = null;
+      if (previewFile) {
+        const ext = previewFile.name.split('.').pop() ?? 'png';
+        const path = `${user.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('skin-previews')
+          .upload(path, previewFile, { contentType: previewFile.type });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('skin-previews').getPublicUrl(path);
+          uploadedUrl = urlData?.publicUrl ?? null;
+        }
+      }
       await supabase.from('gyeol_skins' as any).insert({
         name: uploadName.trim(),
         description: uploadDesc.trim() || null,
@@ -69,9 +91,12 @@ export default function MarketSkinsPage() {
         creator_id: user.id,
         is_approved: false,
         price: 0,
+        preview_url: uploadedUrl,
       } as any);
       setUploadName('');
       setUploadDesc('');
+      setPreviewFile(null);
+      setPreviewUrl(null);
       setShowUpload(false);
     } catch { /* ignore */ }
     setUploading(false);
@@ -109,6 +134,14 @@ export default function MarketSkinsPage() {
                   className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground outline-none">
                   {SKIN_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-muted-foreground">Preview Image (optional)</label>
+                  <input type="file" accept="image/*" onChange={handleFileChange}
+                    className="w-full text-xs text-muted-foreground file:mr-2 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:px-3 file:py-1.5 file:text-xs file:font-medium" />
+                  {previewUrl && (
+                    <img src={previewUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border/30" />
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setShowUpload(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition">Cancel</button>
                   <button type="button" onClick={handleUpload} disabled={!uploadName.trim() || uploading}
@@ -145,9 +178,13 @@ export default function MarketSkinsPage() {
               return (
                 <motion.div key={s.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
                   className="section-card !p-0 overflow-hidden">
-                  <div className="aspect-square bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center relative">
-                    <motion.div className="w-10 h-10 rounded-full pearl-sphere"
-                      animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }} />
+                  <div className="aspect-square bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center relative overflow-hidden">
+                    {s.preview_url ? (
+                      <img src={s.preview_url} alt={s.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <motion.div className="w-10 h-10 rounded-full pearl-sphere"
+                        animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }} />
+                    )}
                     {isApplied && (
                       <div className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">
                         Equipped

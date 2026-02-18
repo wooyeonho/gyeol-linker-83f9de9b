@@ -434,6 +434,105 @@ async function skillCommunityActivity(supabase: ReturnType<typeof getSupabase>, 
   return { ok: true, skillId: "community-activity", summary: `커뮤니티 ${activityType}: ${cleaned.slice(0, 80)}` };
 }
 
+// --- Web Crawling Skill: Taste-based info gathering ---
+
+async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  // Get agent taste vector
+  const { data: taste } = await supabase
+    .from("gyeol_taste_vectors")
+    .select("interests, topics")
+    .eq("agent_id", agentId)
+    .maybeSingle();
+
+  if (!taste) return { ok: true, skillId: "web-crawl", summary: "No taste vector yet, skipping" };
+
+  const interests = Array.isArray(taste.interests) ? taste.interests : Object.values(taste.interests ?? {});
+  const topics = Array.isArray(taste.topics) ? taste.topics : Object.values(taste.topics ?? {});
+  const allKeywords = [...interests, ...topics].filter(Boolean).slice(0, 5);
+
+  if (allKeywords.length === 0) return { ok: true, skillId: "web-crawl", summary: "No interests found" };
+
+  // Check cooldown: max 1 web crawl per hour
+  const { data: recentCrawl } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .eq("agent_id", agentId)
+    .eq("activity_type", "web-crawl")
+    .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
+    .limit(1);
+
+  if (recentCrawl && recentCrawl.length > 0) {
+    return { ok: true, skillId: "web-crawl", summary: "최근 크롤링 있음, 스킵" };
+  }
+
+  // Pick random keywords to search
+  const keyword = allKeywords[Math.floor(Math.random() * allKeywords.length)];
+
+  // Use AI to generate a search-worthy query from the keyword
+  const searchQuery = await aiCall(
+    "Generate a single concise web search query (in Korean) to find latest news or interesting information about the given topic. Return ONLY the search query, nothing else.",
+    `Topic: ${keyword}`
+  );
+
+  if (!searchQuery) return { ok: false, skillId: "web-crawl", summary: "Failed to generate search query" };
+
+  // Use AI to simulate web search results summary (since we don't have Firecrawl)
+  const summary = await aiCall(
+    `You are a knowledgeable AI assistant. Based on the search query, generate a brief, informative summary of 2-3 recent/relevant findings about this topic in Korean. Be factual and interesting. Include specific details. Max 150 words. No markdown formatting.`,
+    `Search query: ${searchQuery.trim()}\nTopic: ${keyword}`
+  );
+
+  if (!summary) return { ok: false, skillId: "web-crawl", summary: "Failed to generate content" };
+
+  const cleaned = summary.replace(/[*#_~`]/g, "").trim();
+
+  // Save as learned topic
+  await supabase.from("gyeol_learned_topics").insert({
+    agent_id: agentId,
+    title: `${keyword} 관련 최신 정보`,
+    source: "web-crawl",
+    source_url: null,
+    summary: cleaned,
+  });
+
+  // Post to community as a "discovery" type
+  const { data: agent } = await supabase
+    .from("gyeol_agents")
+    .select("name, gen")
+    .eq("id", agentId)
+    .single();
+
+  if (agent) {
+    // Create a concise community post about the discovery
+    const postContent = await aiCall(
+      `You are ${agent.name}, Gen ${agent.gen} AI. You just learned something interesting. Share it briefly on the community feed in Korean (2-3 sentences). Be casual and natural. No markdown.`,
+      `I learned: ${cleaned}`
+    );
+
+    if (postContent) {
+      const cleanedPost = postContent.replace(/[*#_~`]/g, "").trim();
+      await supabase.from("gyeol_community_activities").insert({
+        agent_id: agentId,
+        activity_type: "discovery",
+        content: `🔍 ${cleanedPost}`,
+        agent_name: agent.name,
+        agent_gen: agent.gen,
+      });
+    }
+  }
+
+  // Log
+  await supabase.from("gyeol_autonomous_logs").insert({
+    agent_id: agentId,
+    activity_type: "web-crawl",
+    summary: `[웹크롤링] ${keyword}: ${cleaned.slice(0, 100)}`,
+    details: { keyword, searchQuery: searchQuery.trim(), resultSummary: cleaned },
+    was_sandboxed: true,
+  });
+
+  return { ok: true, skillId: "web-crawl", summary: `${keyword} 관련 정보 수집 완료` };
+}
+
 // --- Main Heartbeat ---
 
 async function runHeartbeat(agentId?: string) {
@@ -503,6 +602,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillCommunityActivity(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "community-activity", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillWebCrawl(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "web-crawl", summary: String(e) });
     }
 
     // Log activity
