@@ -46,7 +46,6 @@ export default function SettingsPage() {
     const s = (agent as any).settings ?? {};
     if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
-    // Check telegram link
     setTelegramCode(agent.id);
     (async () => {
       const { data } = await supabase.from('gyeol_telegram_links' as any)
@@ -191,11 +190,11 @@ export default function SettingsPage() {
         <div className="h-px bg-white/[0.04]" />
 
         <section className="space-y-3">
-          <p className="text-[10px] text-white/20 uppercase tracking-widest">Telegram 연결</p>
+          <p className="text-[10px] text-white/20 uppercase tracking-widest">Telegram</p>
           {telegramLinked ? (
-            <div className="flex items-center gap-2">
-              <span className="material-icons-round text-emerald-500/70 text-sm">check_circle</span>
-              <span className="text-xs text-emerald-500/70">텔레그램 연결됨</span>
+            <div className="flex items-center gap-2 text-emerald-400/70">
+              <span className="material-icons-round text-sm">check_circle</span>
+              <span className="text-xs">텔레그램 연결됨</span>
             </div>
           ) : (
             <div className="space-y-2">
@@ -203,7 +202,7 @@ export default function SettingsPage() {
                 텔레그램에서 GYEOL 봇에게 아래 코드를 보내세요:
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
+                <code className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
                   /start {telegramCode}
                 </code>
                 <button type="button" onClick={() => {
