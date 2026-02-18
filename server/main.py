@@ -500,21 +500,49 @@ async def telegram_webhook(request: Request):
         mem_lines = "\n".join([f"- [{m.get('category','')}] {m.get('key','')}: {m.get('value','')}" for m in mem_data])
         system_prompt += f"\n\n사용자에 대해 기억하고 있는 것:\n{mem_lines}\n이 정보를 자연스럽게 활용해서 대화해."
 
-    # Auto web search routing: ask AI if search is needed
+    # Load learned topics for context
+    topic_data = await _supabase_get("gyeol_learned_topics", {
+        "select": "title,summary",
+        "agent_id": f"eq.{agent_id}",
+        "order": "learned_at.desc",
+        "limit": "10",
+    })
+    if topic_data and isinstance(topic_data, list) and len(topic_data) > 0:
+        topic_lines = "\n".join([f"- {t.get('title','')}: {t.get('summary','')}" for t in topic_data])
+        system_prompt += f"\n\n최근 학습한 주제:\n{topic_lines}"
+
+    # Load latest conversation insight
+    insight_data = await _supabase_get("gyeol_conversation_insights", {
+        "select": "next_hint,what_to_improve",
+        "agent_id": f"eq.{agent_id}",
+        "order": "created_at.desc",
+        "limit": "1",
+    })
+    if insight_data and isinstance(insight_data, list) and len(insight_data) > 0:
+        hint = insight_data[0].get("next_hint", "")
+        if hint:
+            system_prompt += f"\n\n다음 대화 힌트: {hint}"
+
+    # P2: Auto web search routing — regex pre-filter before LLM call
+    import re as _re
+    SEARCH_TRIGGERS = _re.compile(
+        r"날씨|뉴스|최신|현재|오늘|어제|속보|주가|환율|검색|최근|실시간|지금|트렌드|업데이트"
+    )
     search_context = ""
-    try:
-        need_search = await _call_groq(
-            f"사용자 메시지: {text}\n\n이 메시지에 답하려면 최신 정보나 웹검색이 필요한가요? 뉴스, 날씨, 최신 트렌드, 특정 사실 확인 등이 필요하면 YES와 검색 키워드를 반환하세요.\n형식: YES: <검색키워드> 또는 NO",
-            "You are a search router. Determine if a user message requires web search for up-to-date info. Respond ONLY with 'YES: <search query>' or 'NO'. Nothing else.",
-        )
-        if need_search and need_search.strip().upper().startswith("YES:"):
-            search_query = need_search.strip()[4:].strip()
-            if search_query:
-                search_results = await _web_search(search_query)
-                if search_results:
-                    search_context = f"\n\n[웹 검색 결과 ({search_query})]\n{search_results}"
-    except Exception as e:
-        logger.warning(f"Auto search routing error: {e}")
+    if SEARCH_TRIGGERS.search(text):
+        try:
+            need_search = await _call_groq(
+                f"사용자 메시지: {text}\n\n이 메시지에 답하려면 최신 정보나 웹검색이 필요한가요? YES와 검색 키워드를 반환하세요.\n형식: YES: <검색키워드> 또는 NO",
+                "You are a search router. Determine if a user message requires web search for up-to-date info. Respond ONLY with 'YES: <search query>' or 'NO'. Nothing else.",
+            )
+            if need_search and need_search.strip().upper().startswith("YES:"):
+                search_query = need_search.strip()[4:].strip()
+                if search_query:
+                    search_results = await _web_search(search_query)
+                    if search_results:
+                        search_context = f"\n\n[웹 검색 결과 ({search_query})]\n{search_results}"
+        except Exception as e:
+            logger.warning(f"Auto search routing error: {e}")
 
     # Augment system prompt with search results if available
     final_system = system_prompt

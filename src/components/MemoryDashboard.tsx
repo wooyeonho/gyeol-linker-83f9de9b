@@ -35,41 +35,6 @@ interface MemoryDashboardProps {
   agentId?: string;
 }
 
-/** Extract memories from conversation history */
-function extractMemoriesFromConversations(conversations: any[]): MemoryItem[] {
-  const memories: MemoryItem[] = [];
-  const userMsgs = conversations.filter((c) => c.role === 'user').map((c) => c.content);
-  const seen = new Set<string>();
-
-  const patterns: [RegExp, string, string][] = [
-    [/내 이름은\s*(.+?)(?:이야|야|입니다|이에요|예요|요|$)/i, 'identity', 'name'],
-    [/나는?\s*(.+?)(?:에 살|에서 살|에 있|거주)/i, 'identity', 'location'],
-    [/(?:직업|일)(?:은|이)\s*(.+?)(?:이야|야|입니다|이에요|$)/i, 'identity', 'occupation'],
-    [/(.+?)(?:를|을)\s*좋아해|좋아하는\s*(?:건|것은?|게)\s*(.+)/i, 'preference', 'likes'],
-    [/(.+?)에?\s*관심|관심(?:사|이)\s*(.+)/i, 'interest', 'interest'],
-    [/꿈(?:은|이)\s*(.+)|(.+?)(?:이|가)\s*꿈/i, 'goal', 'dream'],
-  ];
-
-  for (const msg of userMsgs) {
-    for (const [re, cat, key] of patterns) {
-      const m = msg.match(re);
-      if (m) {
-        const val = (m[1] || m[2] || '').trim();
-        if (val && val.length > 1 && !seen.has(`${cat}:${key}`)) {
-          seen.add(`${cat}:${key}`);
-          memories.push({
-            id: crypto.randomUUID(),
-            category: cat, key, value: val,
-            confidence: 85,
-            updated_at: new Date().toISOString(),
-          });
-        }
-      }
-    }
-  }
-  return memories;
-}
-
 export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardProps) {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,57 +47,44 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
     (async () => {
       const allMemories: MemoryItem[] = [];
 
-      // 1. Load learned topics
+      // 1. Load real AI-extracted memories from gyeol_user_memories
+      const { data: userMems } = await supabase
+        .from('gyeol_user_memories' as any)
+        .select('id, category, key, value, confidence, updated_at')
+        .eq('agent_id', agentId)
+        .order('confidence', { ascending: false })
+        .limit(30);
+
+      if (userMems) {
+        for (const m of userMems as any[]) {
+          allMemories.push({
+            id: m.id,
+            category: m.category,
+            key: m.key,
+            value: m.value,
+            confidence: m.confidence ?? 50,
+            updated_at: m.updated_at,
+          });
+        }
+      }
+
+      // 2. Load learned topics as separate category
       const { data: topics } = await supabase
         .from('gyeol_learned_topics' as any)
-        .select('*')
+        .select('id, title, summary, source, learned_at')
         .eq('agent_id', agentId)
         .order('learned_at', { ascending: false })
-        .limit(20);
+        .limit(15);
 
       if (topics) {
         for (const t of topics as any[]) {
           allMemories.push({
             id: t.id,
             category: 'learning',
-            key: t.source,
+            key: t.source ?? 'rss',
             value: t.title + (t.summary ? ` — ${t.summary.slice(0, 60)}` : ''),
             confidence: 90,
             updated_at: t.learned_at,
-          });
-        }
-      }
-
-      // 2. Extract memories from conversations
-      const { data: convs } = await supabase
-        .from('gyeol_conversations' as any)
-        .select('role, content')
-        .eq('agent_id', agentId)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (convs) {
-        const extracted = extractMemoriesFromConversations(convs as any[]);
-        allMemories.push(...extracted);
-      }
-
-      // 3. Load reflections as emotion memories
-      const { data: reflections } = await supabase
-        .from('gyeol_reflections' as any)
-        .select('*')
-        .eq('agent_id', agentId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (reflections) {
-        for (const r of reflections as any[]) {
-          allMemories.push({
-            id: r.id,
-            category: 'emotion',
-            key: r.topic,
-            value: r.reflection.slice(0, 80),
-            confidence: 75,
-            updated_at: r.created_at,
           });
         }
       }
