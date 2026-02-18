@@ -6,6 +6,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 import { findTopMatches } from '@/lib/gyeol/social/taste-vector';
 
+export async function POST(req: NextRequest) {
+  const supabase = createGyeolServerClient();
+  const { agentId, targetAgentId } = await req.json();
+  if (!agentId || !targetAgentId) {
+    return NextResponse.json({ error: 'agentId, targetAgentId required' }, { status: 400 });
+  }
+
+  const { data: existing } = await supabase
+    .from('gyeol_ai_matches')
+    .select('id')
+    .or(`and(agent_1_id.eq.${agentId},agent_2_id.eq.${targetAgentId}),and(agent_1_id.eq.${targetAgentId},agent_2_id.eq.${agentId})`)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json({ message: '이미 매칭됨', matchId: existing.id });
+  }
+
+  const { data: match } = await supabase
+    .from('gyeol_ai_matches')
+    .insert({ agent_1_id: agentId, agent_2_id: targetAgentId, status: 'matched', compatibility_score: 0 })
+    .select('id')
+    .single();
+
+  return NextResponse.json({ message: '매칭 성공', matchId: match?.id });
+}
+
 export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit')) || 10, 20);

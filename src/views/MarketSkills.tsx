@@ -67,7 +67,19 @@ export default function MarketSkillsPage() {
                     <span className="text-[9px] text-muted-foreground">★ {s.rating} · {s.downloads}x</span>
                   </div>
                 </div>
-                <button type="button" className="rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:brightness-110 transition shrink-0 shadow-glow-xs">
+                <button type="button"
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return;
+                    const { data: agentData } = await supabase.from('gyeol_agents' as any)
+                      .select('id').eq('user_id', user.id).limit(1).maybeSingle();
+                    if (!agentData) return;
+                    await supabase.from('gyeol_agent_skills' as any)
+                      .upsert({ agent_id: (agentData as any).id, skill_id: s.id, is_active: true } as any,
+                        { onConflict: 'agent_id,skill_id' });
+                    alert(`${s.name} 설치 완료!`);
+                  }}
+                  className="rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:brightness-110 transition shrink-0 shadow-glow-xs">
                   {s.price === 0 ? 'Install' : `${s.price}P`}
                 </button>
               </motion.div>
