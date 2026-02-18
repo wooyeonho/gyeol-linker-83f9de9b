@@ -113,6 +113,42 @@ Your personality traits (0-100): warmth={warmth}, logic={logic}, creativity={cre
 You remember context from the conversation and grow with the user."""
 
 
+async def _web_search(query: str, max_results: int = 5) -> str:
+    """Search the web using DuckDuckGo HTML (no API key needed)."""
+    try:
+        search_url = "https://html.duckduckgo.com/html/"
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.post(
+                search_url,
+                data={"q": query},
+                headers={"User-Agent": "Mozilla/5.0 (compatible; GyeolBot/1.0)"},
+            )
+        if resp.status_code != 200:
+            return ""
+        html = resp.text
+        # Parse results from HTML
+        results = []
+        import re
+        # Extract result snippets
+        snippets = re.findall(r'class="result__snippet"[^>]*>(.*?)</a>', html, re.DOTALL)
+        urls = re.findall(r'class="result__url"[^>]*href="([^"]*)"', html)
+        titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', html, re.DOTALL)
+        for i in range(min(max_results, len(snippets))):
+            title = re.sub(r'<[^>]+>', '', titles[i]).strip() if i < len(titles) else ""
+            snippet = re.sub(r'<[^>]+>', '', snippets[i]).strip()
+            url = urls[i] if i < len(urls) else ""
+            if url.startswith("//duckduckgo.com/l/?"):
+                # Extract actual URL from DDG redirect
+                actual = re.search(r'uddg=([^&]+)', url)
+                if actual:
+                    from urllib.parse import unquote
+                    url = unquote(actual.group(1))
+            results.append(f"{i+1}. {title}\n   {snippet}\n   출처: {url}")
+        return "\n\n".join(results) if results else ""
+    except Exception as e:
+        logger.error(f"Web search error: {e}")
+        return ""
+
 
 @app.get("/health")
 @app.get("/healthz")
@@ -177,6 +213,15 @@ async def telegram_webhook(request: Request):
     if not chat_id or not text:
         return {"ok": True}
 
+    # Helper to send telegram message
+    async def _send_reply(reply_text: str):
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.post(
+                f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+                json={"chat_id": chat_id, "text": reply_text},
+            )
+
+    # /start command
     if text.startswith("/start"):
         parts = text.split(maxsplit=1)
         if len(parts) > 1 and len(parts[1]) > 10:
@@ -186,43 +231,122 @@ async def telegram_webhook(request: Request):
                 "agent_id": agent_id,
                 "user_id": "telegram-auto",
             })
-            reply = "GYEOL과 연결됐어요! 이제 메시지를 보내보세요."
+            await _send_reply("GYEOL과 연결됐어요! 이제 메시지를 보내보세요.")
         else:
-            reply = "GYEOL AI예요. 웹 설정에서 텔레그램 연결 코드를 확인한 후 /start <코드>로 연결해주세요!"
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            await client.post(
-                f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
-                json={"chat_id": chat_id, "text": reply},
-            )
+            await _send_reply("GYEOL AI예요. 웹 설정에서 텔레그램 연결 코드를 확인한 후 /start <코드>로 연결해주세요!")
         return {"ok": True}
 
-    system_prompt = DEFAULT_SYSTEM_PROMPT
-    history: list = []
-    agent_id = None
-
+    # Resolve agent link
     link = await _supabase_get("gyeol_telegram_links", {
         "select": "agent_id,user_id",
         "telegram_chat_id": f"eq.{chat_id}",
     })
+    agent_id = None
     if link and isinstance(link, list) and len(link) > 0:
         agent_id = link[0].get("agent_id")
 
-    if agent_id:
+    # /status command — show full agent status
+    if text.strip() == "/status":
+        if not agent_id:
+            await _send_reply("아직 에이전트가 연결되지 않았어요.\n/start <코드>로 연결해주세요.")
+            return {"ok": True}
         agent_data = await _supabase_get("gyeol_agents", {
-            "select": "warmth,logic,creativity,energy,humor",
+            "select": "name,gen,warmth,logic,creativity,energy,humor,intimacy,mood,total_conversations,consecutive_days,evolution_progress,last_active",
             "id": f"eq.{agent_id}",
         })
         if agent_data and isinstance(agent_data, list) and len(agent_data) > 0:
-            system_prompt = _build_personality_prompt(agent_data[0])
+            a = agent_data[0]
+            # Count learned topics
+            topics = await _supabase_get("gyeol_learned_topics", {
+                "select": "id",
+                "agent_id": f"eq.{agent_id}",
+            })
+            topic_count = len(topics) if isinstance(topics, list) else 0
+            # Count memories
+            memories = await _supabase_get("gyeol_user_memories", {
+                "select": "id",
+                "agent_id": f"eq.{agent_id}",
+            })
+            memory_count = len(memories) if isinstance(memories, list) else 0
 
-        conv_data = await _supabase_get("gyeol_conversations", {
-            "select": "role,content",
-            "agent_id": f"eq.{agent_id}",
-            "order": "created_at.desc",
-            "limit": "10",
-        })
-        if conv_data and isinstance(conv_data, list):
-            history = [{"role": r["role"], "content": r["content"]} for r in reversed(conv_data)]
+            mood_emoji = {"happy": "😊", "neutral": "😐", "sad": "😢", "excited": "🤩", "tired": "😴"}.get(a.get("mood", "neutral"), "🌟")
+            status_text = (
+                f"[ {a.get('name', 'GYEOL')} 상태 ]\n"
+                f"━━━━━━━━━━━━━━━\n"
+                f"세대: Gen {a.get('gen', 1)}  |  기분: {mood_emoji} {a.get('mood', 'neutral')}\n"
+                f"친밀도: {'❤️' * min(5, a.get('intimacy', 0) // 20)}{'🤍' * (5 - min(5, a.get('intimacy', 0) // 20))} {a.get('intimacy', 0)}%\n"
+                f"진화: {'▓' * (a.get('evolution_progress', 0) // 10)}{'░' * (10 - a.get('evolution_progress', 0) // 10)} {a.get('evolution_progress', 0)}%\n\n"
+                f"[ 성격 ]\n"
+                f"따뜻함: {a.get('warmth', 50)}  |  논리: {a.get('logic', 50)}\n"
+                f"창의성: {a.get('creativity', 50)}  |  에너지: {a.get('energy', 50)}\n"
+                f"유머: {a.get('humor', 50)}\n\n"
+                f"[ 활동 ]\n"
+                f"대화: {a.get('total_conversations', 0)}회\n"
+                f"연속 접속: {a.get('consecutive_days', 0)}일\n"
+                f"학습한 주제: {topic_count}개\n"
+                f"기억한 정보: {memory_count}개"
+            )
+            await _send_reply(status_text)
+        else:
+            await _send_reply("에이전트 정보를 불러올 수 없어요.")
+        return {"ok": True}
+
+    # /help command
+    if text.strip() == "/help":
+        await _send_reply(
+            "/start <코드> — 에이전트 연결\n"
+            "/status — 에이전트 상태 보기\n"
+            "/search <키워드> — 웹 검색\n"
+            "/help — 도움말\n\n"
+            "그 외 메시지는 AI가 답변해요!"
+        )
+        return {"ok": True}
+
+    # /search command — web search via DuckDuckGo
+    if text.strip().startswith("/search"):
+        query = text.strip()[7:].strip()
+        if not query:
+            await _send_reply("검색어를 입력해주세요.\n예: /search AI 최신 뉴스")
+            return {"ok": True}
+        try:
+            search_results = await _web_search(query)
+            if search_results:
+                # Use AI to summarize search results
+                summary = await _call_groq(
+                    f"다음 검색 결과를 바탕으로 '{query}'에 대해 한국어로 간결하게 요약해줘. 출처도 포함해.\n\n{search_results}",
+                    "You are a helpful search assistant. Summarize web search results concisely in Korean. Include source URLs. No markdown formatting.",
+                )
+                await _send_reply(f"🔍 '{query}' 검색 결과\n\n{summary}")
+            else:
+                await _send_reply(f"'{query}'에 대한 검색 결과를 찾지 못했어요.")
+        except Exception as e:
+            logger.error(f"Search error: {e}")
+            await _send_reply("검색 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.")
+        return {"ok": True}
+
+    # Normal chat — build context
+    if not agent_id:
+        await _send_reply("먼저 /start <코드>로 에이전트를 연결해주세요!")
+        return {"ok": True}
+
+    system_prompt = DEFAULT_SYSTEM_PROMPT
+    history: list = []
+
+    agent_data = await _supabase_get("gyeol_agents", {
+        "select": "warmth,logic,creativity,energy,humor",
+        "id": f"eq.{agent_id}",
+    })
+    if agent_data and isinstance(agent_data, list) and len(agent_data) > 0:
+        system_prompt = _build_personality_prompt(agent_data[0])
+
+    conv_data = await _supabase_get("gyeol_conversations", {
+        "select": "role,content",
+        "agent_id": f"eq.{agent_id}",
+        "order": "created_at.desc",
+        "limit": "10",
+    })
+    if conv_data and isinstance(conv_data, list):
+        history = [{"role": r["role"], "content": r["content"]} for r in reversed(conv_data)]
 
     try:
         reply = await _call_groq(text, system_prompt, history)
@@ -236,12 +360,7 @@ async def telegram_webhook(request: Request):
             {"agent_id": agent_id, "role": "assistant", "content": reply, "channel": "telegram", "provider": "groq"},
         ])
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        await client.post(
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
-            json={"chat_id": chat_id, "text": reply},
-        )
-
+    await _send_reply(reply)
     return {"ok": True}
 
 
