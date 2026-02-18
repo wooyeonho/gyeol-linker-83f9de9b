@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
+import Onboarding from './Onboarding';
 import { VoidCore } from '@/src/components/PearlSpheres';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
@@ -54,7 +55,7 @@ function MessageBubble({ msg }: { msg: Message }) {
 
 export default function GyeolPage() {
   const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage } = useGyeolStore();
-  const { agent, loading: agentLoading } = useInitAgent();
+  const { agent, loading: agentLoading, needsOnboarding, completeOnboarding } = useInitAgent();
   const { user } = useAuth();
   const [input, setInput] = useState('');
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -88,6 +89,10 @@ export default function GyeolPage() {
         <div className="void-dot" />
       </main>
     );
+  }
+
+  if (needsOnboarding && user) {
+    return <Onboarding userId={user.id} onComplete={completeOnboarding} />;
   }
 
   return (

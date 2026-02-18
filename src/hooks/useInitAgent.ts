@@ -10,6 +10,7 @@ export function useInitAgent() {
   const { user } = useAuth();
   const { agent, setAgent, setMessages } = useGyeolStore();
   const [loading, setLoading] = useState(!agent);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -25,6 +26,7 @@ export function useInitAgent() {
 
         if (existing) {
           setAgent(existing as any);
+          setNeedsOnboarding(false);
           const { data: convs } = await supabase
             .from('gyeol_conversations' as any)
             .select('*')
@@ -33,19 +35,8 @@ export function useInitAgent() {
             .limit(50);
           setMessages((convs as any[]) ?? []);
         } else {
-          const { data: newAgent, error: insertErr } = await supabase
-            .from('gyeol_agents' as any)
-            .upsert({ user_id: user.id, name: 'GYEOL' } as any, { onConflict: 'user_id', ignoreDuplicates: true })
-            .select()
-            .single();
-          if (insertErr) {
-            // Race condition: another tab already created, re-fetch
-            const { data: refetch } = await supabase
-              .from('gyeol_agents' as any).select('*').eq('user_id', user.id).maybeSingle();
-            if (refetch) setAgent(refetch as any);
-          } else if (newAgent) {
-            setAgent(newAgent as any);
-          }
+          // No agent yet — show onboarding
+          setNeedsOnboarding(true);
         }
       } finally {
         setLoading(false);
@@ -53,5 +44,9 @@ export function useInitAgent() {
     })();
   }, [user, agent, setAgent, setMessages]);
 
-  return { agent, loading };
+  const completeOnboarding = () => {
+    setNeedsOnboarding(false);
+  };
+
+  return { agent, loading, needsOnboarding, completeOnboarding };
 }
