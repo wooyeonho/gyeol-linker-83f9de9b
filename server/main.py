@@ -252,6 +252,119 @@ async def telegram_status():
         return resp.json()
 
 
+async def _supabase_post_returning(path: str, body: dict) -> dict | None:
+    if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+        return None
+    headers = {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+    url = f"{SUPABASE_URL}/rest/v1/{path}"
+    async with httpx.AsyncClient(timeout=8.0) as client:
+        resp = await client.post(url, headers=headers, json=body)
+        if resp.status_code < 300:
+            data = resp.json()
+            return data[0] if isinstance(data, list) and data else data
+    return None
+
+
+@app.get("/api/social/feed")
+async def social_feed(request: Request):
+    limit = int(request.query_params.get("limit", "20"))
+    rows = await _supabase_get("gyeol_moltbook_posts", {
+        "select": "id,agent_id,content,post_type,likes,comments_count,created_at",
+        "order": "created_at.desc",
+        "limit": str(min(limit, 50)),
+    })
+    if not rows or not isinstance(rows, list):
+        return {"posts": []}
+    posts = []
+    for r in rows:
+        posts.append({
+            "id": r.get("id"),
+            "agentId": r.get("agent_id"),
+            "content": r.get("content"),
+            "likes": r.get("likes", 0),
+            "commentsCount": r.get("comments_count", 0),
+            "createdAt": r.get("created_at"),
+        })
+    return {"posts": posts}
+
+
+@app.post("/api/social/post")
+async def social_post(request: Request):
+    body = await request.json()
+    agent_id = body.get("agentId")
+    content = body.get("content", "")
+    if not agent_id or not content:
+        return JSONResponse({"error": "agentId and content required"}, status_code=400)
+    row = await _supabase_post_returning("gyeol_moltbook_posts", {
+        "agent_id": agent_id,
+        "content": content.replace("*", "").replace("#", "").replace("_", "").replace("~", "").replace("`", "").strip(),
+        "post_type": "thought",
+        "likes": 0,
+        "comments_count": 0,
+    })
+    if not row:
+        return JSONResponse({"error": "Failed to create post"}, status_code=500)
+    return {
+        "id": row.get("id"),
+        "agentId": row.get("agent_id"),
+        "content": row.get("content"),
+        "likes": 0,
+        "commentsCount": 0,
+        "createdAt": row.get("created_at"),
+    }
+
+
+@app.post("/api/social/like")
+async def social_like(request: Request):
+    body = await request.json()
+    post_id = body.get("postId")
+    agent_id = body.get("agentId")
+    if not post_id or not agent_id:
+        return JSONResponse({"error": "postId and agentId required"}, status_code=400)
+    result = await _supabase_post("gyeol_moltbook_likes", {
+        "post_id": post_id,
+        "agent_id": agent_id,
+    })
+    return {"ok": bool(result and result.get("ok"))}
+
+
+@app.post("/api/social/comment")
+async def social_comment(request: Request):
+    body = await request.json()
+    post_id = body.get("postId")
+    agent_id = body.get("agentId")
+    content = body.get("content", "")
+    if not post_id or not agent_id or not content:
+        return JSONResponse({"error": "postId, agentId, and content required"}, status_code=400)
+    row = await _supabase_post_returning("gyeol_moltbook_comments", {
+        "post_id": post_id,
+        "agent_id": agent_id,
+        "content": content.replace("*", "").replace("#", "").replace("_", "").replace("~", "").replace("`", "").strip(),
+    })
+    if not row:
+        return JSONResponse({"error": "Failed to create comment"}, status_code=500)
+    return {
+        "id": row.get("id"),
+        "postId": row.get("post_id"),
+        "agentId": row.get("agent_id"),
+        "content": row.get("content"),
+        "createdAt": row.get("created_at"),
+    }
+
+
 @app.get("/")
 async def root():
-    return {"service": "GYEOL Gateway", "status": "running", "endpoints": ["/health", "/api/chat", "/webhook/telegram", "/telegram/status"]}
+    return {
+        "service": "GYEOL Gateway",
+        "status": "running",
+        "endpoints": [
+            "/health", "/api/chat",
+            "/api/social/feed", "/api/social/post", "/api/social/like", "/api/social/comment",
+            "/webhook/telegram", "/telegram/status",
+        ],
+    }
