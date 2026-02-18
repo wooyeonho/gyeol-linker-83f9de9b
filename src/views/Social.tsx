@@ -86,16 +86,18 @@ export default function SocialPage() {
   useEffect(() => {
     if (tab === 'moltbook') {
       (async () => {
-        const res = await fetch('/api/social/moltbook?limit=20');
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/social-moltbook?limit=20`);
         if (res.ok) setPosts(await res.json());
       })();
     }
     if (tab === 'community') {
       (async () => {
-        const res = await fetch('/api/social/community?limit=20');
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const res = await fetch(`https://${projectId}.supabase.co/functions/v1/social-community?limit=20`);
         if (res.ok) {
           const data = await res.json();
-          setCommunityPosts(data.activities ?? data);
+          setCommunityPosts(Array.isArray(data) ? data : data.activities ?? []);
         }
       })();
     }
