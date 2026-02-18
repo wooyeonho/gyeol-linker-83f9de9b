@@ -70,6 +70,11 @@ export default function SocialPage() {
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  // Community comments state
+  const [communityExpandedComments, setCommunityExpandedComments] = useState<string | null>(null);
+  const [communityComments, setCommunityComments] = useState<Record<string, any[]>>({});
+  const [communityCommentText, setCommunityCommentText] = useState('');
+  const [submittingCommunityComment, setSubmittingCommunityComment] = useState(false);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -105,6 +110,14 @@ export default function SocialPage() {
           .order('created_at', { ascending: false })
           .limit(20);
         setPosts((data as any[]) ?? []);
+        // Load user's existing likes
+        if (agent?.id) {
+          const { data: likes } = await supabase
+            .from('gyeol_moltbook_likes' as any)
+            .select('post_id')
+            .eq('agent_id', agent.id);
+          if (likes) setLikedPosts(new Set((likes as any[]).map((l: any) => l.post_id)));
+        }
       })();
     }
     if (tab === 'community') {
@@ -117,16 +130,40 @@ export default function SocialPage() {
         setCommunityPosts((data as any[]) ?? []);
       })();
     }
+  }, [tab, agent?.id]);
+
+  // Realtime subscription for moltbook posts
+  useEffect(() => {
+    if (tab !== 'moltbook') return;
+    const channel = supabase
+      .channel('moltbook-realtime')
+      .on('postgres_changes' as any, { event: 'UPDATE', schema: 'public', table: 'gyeol_moltbook_posts' }, (payload: any) => {
+        setPosts(prev => prev.map(p => p.id === payload.new.id ? { ...p, likes: payload.new.likes, comments_count: payload.new.comments_count } : p));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [tab]);
 
   const handleLike = useCallback(async (postId: string) => {
-    if (likedPosts.has(postId)) return;
+    if (!agent?.id) return;
+    const alreadyLiked = likedPosts.has(postId);
     const post = posts.find(p => p.id === postId);
-    const newLikes = (post?.likes ?? 0) + 1;
-    setLikedPosts(prev => new Set(prev).add(postId));
+    const newLikes = Math.max(0, (post?.likes ?? 0) + (alreadyLiked ? -1 : 1));
+    // Optimistic update
+    if (alreadyLiked) {
+      setLikedPosts(prev => { const s = new Set(prev); s.delete(postId); return s; });
+    } else {
+      setLikedPosts(prev => new Set(prev).add(postId));
+    }
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: newLikes } : p));
+    // DB operations
+    if (alreadyLiked) {
+      await supabase.from('gyeol_moltbook_likes' as any).delete().eq('post_id', postId).eq('agent_id', agent.id);
+    } else {
+      await supabase.from('gyeol_moltbook_likes' as any).insert({ post_id: postId, agent_id: agent.id } as any);
+    }
     await supabase.from('gyeol_moltbook_posts' as any).update({ likes: newLikes } as any).eq('id', postId);
-  }, [likedPosts, posts]);
+  }, [likedPosts, posts, agent?.id]);
 
   const loadComments = useCallback(async (postId: string) => {
     const { data } = await supabase
@@ -162,6 +199,36 @@ export default function SocialPage() {
       if (!comments[postId]) await loadComments(postId);
     }
   }, [expandedComments, comments, loadComments]);
+
+  // Community comment handlers
+  const loadCommunityReplies = useCallback(async (activityId: string) => {
+    const { data } = await supabase
+      .from('gyeol_community_replies' as any)
+      .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
+      .eq('activity_id', activityId)
+      .order('created_at', { ascending: true })
+      .limit(20);
+    setCommunityComments(prev => ({ ...prev, [activityId]: (data as any[]) ?? [] }));
+  }, []);
+
+  const toggleCommunityComments = useCallback(async (activityId: string) => {
+    if (communityExpandedComments === activityId) {
+      setCommunityExpandedComments(null);
+    } else {
+      setCommunityExpandedComments(activityId);
+      if (!communityComments[activityId]) await loadCommunityReplies(activityId);
+    }
+  }, [communityExpandedComments, communityComments, loadCommunityReplies]);
+
+  const handleCommunityComment = useCallback(async (activityId: string) => {
+    if (!agent?.id || !communityCommentText.trim() || submittingCommunityComment) return;
+    setSubmittingCommunityComment(true);
+    const content = communityCommentText.trim();
+    setCommunityCommentText('');
+    await supabase.from('gyeol_community_replies' as any).insert({ activity_id: activityId, agent_id: agent.id, content } as any);
+    await loadCommunityReplies(activityId);
+    setSubmittingCommunityComment(false);
+  }, [agent?.id, communityCommentText, submittingCommunityComment, loadCommunityReplies]);
 
   const renderMatchCard = (card: MatchCard, i: number, isDemo: boolean) => (
     <motion.div key={card.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
@@ -352,7 +419,45 @@ export default function SocialPage() {
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{p.activity_type}</span>
                 </div>
                 <p className="text-sm text-foreground/80">{p.content}</p>
-                <span className="text-[10px] text-muted-foreground">{relativeTime(p.created_at)}</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => toggleCommunityComments(p.id)}
+                    className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg transition ${communityExpandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+                    <span className="material-icons-round text-sm">chat_bubble_outline</span>
+                    {(communityComments[p.id] ?? []).length || '댓글'}
+                  </button>
+                  <span className="text-[10px] text-muted-foreground ml-auto">{relativeTime(p.created_at)}</span>
+                </div>
+
+                <AnimatePresence>
+                  {communityExpandedComments === p.id && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden">
+                      <div className="pt-2 border-t border-border/30 space-y-2">
+                        {(communityComments[p.id] ?? []).map((c: any) => (
+                          <div key={c.id} className="flex gap-2">
+                            <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
+                            <p className="text-[11px] text-foreground/70">{c.content}</p>
+                          </div>
+                        ))}
+                        {(communityComments[p.id] ?? []).length === 0 && (
+                          <p className="text-[10px] text-muted-foreground text-center py-1">아직 댓글이 없습니다</p>
+                        )}
+                        {agent?.id && (
+                          <div className="flex gap-2 pt-1">
+                            <input type="text" value={communityCommentText} onChange={e => setCommunityCommentText(e.target.value)}
+                              placeholder="댓글 작성..." maxLength={200}
+                              onKeyDown={e => e.key === 'Enter' && handleCommunityComment(p.id)}
+                              className="flex-1 rounded-lg bg-secondary/50 border border-border/30 px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
+                            <button type="button" onClick={() => handleCommunityComment(p.id)} disabled={!communityCommentText.trim() || submittingCommunityComment}
+                              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
+                              {submittingCommunityComment ? '...' : '전송'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>
