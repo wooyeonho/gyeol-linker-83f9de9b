@@ -48,7 +48,7 @@ export default function SocialPage() {
     if (!agent?.id) return;
     (async () => {
       setLoading(true);
-      const { data: matches } = await supabase.from('gyeol_ai_matches' as any).select('*')
+      const { data: matches } = await supabase.from('gyeol_matches').select('*')
         .or(`agent_1_id.eq.${agent.id},agent_2_id.eq.${agent.id}`)
         .order('compatibility_score', { ascending: false }).limit(20);
       if (matches && (matches as any[]).length > 0) {
