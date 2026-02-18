@@ -25,6 +25,7 @@ export default function GyeolPage() {
   } = useGyeolStore();
 
   const [agentLoading, setAgentLoading] = useState(true);
+  const [skinColors, setSkinColors] = useState<{ primary: string; secondary: string; glowIntensity: number } | null>(null);
   const initAgent = useCallback(async () => {
     setAgentLoading(true);
     try {
@@ -59,6 +60,25 @@ export default function GyeolPage() {
     subscribeToUpdates(agent.id);
   }, [agent?.id, subscribeToUpdates]);
 
+  useEffect(() => {
+    if (!agent?.skin_id) { setSkinColors(null); return; }
+    (async () => {
+      const res = await fetch(`/api/market/skins?skinId=${agent.skin_id}`);
+      if (res.ok) {
+        const skins = await res.json();
+        const skin = Array.isArray(skins) ? skins[0] : skins;
+        if (skin?.skin_data) {
+          const sd = typeof skin.skin_data === 'string' ? JSON.parse(skin.skin_data) : skin.skin_data;
+          setSkinColors({
+            primary: sd.color_primary ?? '#7C3AED',
+            secondary: sd.color_secondary ?? '#A78BFA',
+            glowIntensity: sd.glow_intensity ?? 0.5,
+          });
+        }
+      }
+    })();
+  }, [agent?.skin_id]);
+
   const personality = agent
     ? {
         warmth: agent.warmth,
@@ -85,6 +105,7 @@ export default function GyeolPage() {
         visualState={agent?.visual_state}
         isThinking={isLoading}
         isListening={isListening}
+        skinColors={skinColors}
       />
       <ChatInterface />
       <EvolutionCeremony />

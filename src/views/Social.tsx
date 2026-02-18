@@ -5,7 +5,7 @@ import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 
 interface MatchCard {
-  id: string; name: string; gen: number; compatibilityScore: number; tags: string[]; status: string;
+  id: string; agentId: string; name: string; gen: number; compatibilityScore: number; tags: string[]; status: string;
 }
 
 function CompatibilityRing({ score }: { score: number }) {
@@ -39,7 +39,7 @@ export default function SocialPage() {
     if (!agent?.id) return;
     (async () => {
       setLoading(true);
-      const { data: matches } = await supabase.from('gyeol_matches' as any).select('*')
+      const { data: matches } = await supabase.from('gyeol_ai_matches' as any).select('*')
         .or(`agent_1_id.eq.${agent.id},agent_2_id.eq.${agent.id}`)
         .order('compatibility_score', { ascending: false }).limit(20);
       if (matches && (matches as any[]).length > 0) {
@@ -49,7 +49,7 @@ export default function SocialPage() {
         setCards((matches as any[]).map((m: any) => {
           const otherId = m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id;
           const other = agentMap.get(otherId);
-          return { id: m.id, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: [], status: m.status };
+          return { id: m.id, agentId: otherId, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: [], status: m.status };
         }));
       } else {
         setCards([]);
@@ -128,7 +128,7 @@ export default function SocialPage() {
                               const res = await fetch('/api/social/matches', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ agentId: agent?.id, targetAgentId: card.id }),
+                                body: JSON.stringify({ agentId: agent?.id, targetAgentId: card.agentId }),
                               });
                               if (res.ok) {
                                 alert('매칭 요청을 보냈어요!');
@@ -152,7 +152,7 @@ export default function SocialPage() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                   agent1Id: agent.id,
-                                  agent2Id: card.id,
+                                  agent2Id: card.agentId,
                                   userId: (await supabase.auth.getUser()).data.user?.id,
                                 }),
                               });

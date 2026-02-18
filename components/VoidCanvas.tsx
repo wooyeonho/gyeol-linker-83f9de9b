@@ -63,13 +63,18 @@ function VoidCanvas({
   const coreRadius = gen <= 1 ? 8 : gen === 2 ? 25 : gen === 3 ? 40 : gen === 4 ? 50 : 60;
 
   let pR: number, pG: number, pB: number;
+  let sR: number, sG: number, sB: number;
+  const glowMul = skinColors?.glowIntensity ?? 0.5;
   if (skinColors?.primary) {
     const rgb = hexToRgb(skinColors.primary);
     pR = rgb.r; pG = rgb.g; pB = rgb.b;
+    const sec = hexToRgb(skinColors.secondary ?? skinColors.primary);
+    sR = sec.r; sG = sec.g; sB = sec.b;
   } else {
     pR = Math.round(79 + (176 * (1 - (creativity + humor) / 2)));
     pG = Math.round(70 + (185 * (1 - (creativity + humor) / 2)));
     pB = 229;
+    sR = pR; sG = pG; sB = pB;
   }
 
   const initParticles = useCallback((w: number, h: number) => {
@@ -142,7 +147,7 @@ function VoidCanvas({
 
       const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius * pulse);
       coreGrad.addColorStop(0, `rgba(255,255,255,${(0.9 * pulse).toFixed(2)})`);
-      coreGrad.addColorStop(0.6, `rgba(${pR},${pG},${pB},${(0.7 * pulse).toFixed(2)})`);
+      coreGrad.addColorStop(0.6, `rgba(${sR},${sG},${sB},${(0.7 * pulse).toFixed(2)})`);
       coreGrad.addColorStop(1, `rgba(${pR},${pG},${pB},0)`);
       ctx.fillStyle = coreGrad;
       ctx.beginPath();
@@ -172,7 +177,7 @@ function VoidCanvas({
         p.vy *= 0.92;
         p.x += p.vx;
         p.y += p.vy;
-        const pa = p.alpha * (0.6 + 0.4 * Math.sin(pt * 0.8));
+        const pa = p.alpha * (0.6 + 0.4 * Math.sin(pt * 0.8)) * (0.5 + glowMul);
         ctx.fillStyle = `rgba(${pR},${pG},${pB},${pa.toFixed(2)})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -208,7 +213,7 @@ function VoidCanvas({
       canvas.removeEventListener('mousemove', onMove);
       canvas.removeEventListener('mouseleave', onLeave);
     };
-  }, [coreRadius, pR, pG, pB, initParticles]);
+  }, [coreRadius, pR, pG, pB, sR, sG, sB, glowMul, initParticles]);
 
   return (
     <div className="absolute inset-0 bg-black overflow-hidden">
