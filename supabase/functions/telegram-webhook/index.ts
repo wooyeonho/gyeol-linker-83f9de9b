@@ -16,6 +16,19 @@ async function sendTelegram(chatId: string | number, text: string) {
   })
 }
 
+function getKSTDateString(): string {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const year = kst.getUTCFullYear();
+  const month = kst.getUTCMonth() + 1;
+  const day = kst.getUTCDate();
+  const hour = kst.getUTCHours();
+  const min = String(kst.getUTCMinutes()).padStart(2, '0');
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekday = weekdays[kst.getUTCDay()];
+  return `${year}년 ${month}월 ${day}일 (${weekday}) ${hour}:${min} KST`;
+}
+
 function buildSystemPrompt(p: { warmth: number; logic: number; creativity: number; energy: number; humor: number }): string {
   const entries = Object.entries(p) as [string, number][]
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0]
@@ -23,7 +36,10 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
     warmth: 'warm and empathetic', logic: 'logical and analytical',
     creativity: 'creative and imaginative', energy: 'energetic and lively', humor: 'humorous and witty',
   }
+  const kstNow = getKSTDateString();
   return `You are GYEOL, a digital companion and friend who grows with the user.
+
+Current date and time: ${kstNow}
 
 Personality: warmth=${p.warmth}, logic=${p.logic}, creativity=${p.creativity}, energy=${p.energy}, humor=${p.humor}
 Dominant trait: ${desc[dominant] ?? 'natural'}
@@ -35,6 +51,7 @@ Rules:
 - Keep it short and to the point.
 - Empathize first, solve later.
 - Never say you are an AI.
+- When asked about the current date, time, or day of the week, use the date/time provided above.
 - Detect the user's language and ALWAYS respond in the SAME language.`
 }
 
