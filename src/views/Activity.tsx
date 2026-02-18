@@ -36,19 +36,22 @@ export default function ActivityPage() {
   const { agent } = useInitAgent();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [learnCount, setLearnCount] = useState(0);
+  const [reflectCount, setReflectCount] = useState(0);
 
   useEffect(() => {
     if (!agent?.id) return;
 
     const fetchLogs = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('gyeol_autonomous_logs')
-        .select('*')
-        .eq('agent_id', agent.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      setLogs((data as ActivityLog[]) ?? []);
+      const [logsRes, learnRes, reflectRes] = await Promise.all([
+        supabase.from('gyeol_autonomous_logs').select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }).limit(50),
+        supabase.from('gyeol_learned_topics').select('id', { count: 'exact', head: true }).eq('agent_id', agent.id),
+        supabase.from('gyeol_reflections').select('id', { count: 'exact', head: true }).eq('agent_id', agent.id),
+      ]);
+      setLogs((logsRes.data as ActivityLog[]) ?? []);
+      setLearnCount(learnRes.count ?? 0);
+      setReflectCount(reflectRes.count ?? 0);
       setLoading(false);
     };
     fetchLogs();
@@ -68,10 +71,10 @@ export default function ActivityPage() {
 
   const summary = useMemo(() => ({
     total: logs.length,
-    learning: logs.filter((l) => l.activity_type === 'learning').length,
-    reflection: logs.filter((l) => l.activity_type === 'reflection').length,
+    learning: learnCount,
+    reflection: reflectCount,
     heartbeat: logs.filter((l) => l.activity_type === 'heartbeat').length,
-  }), [logs]);
+  }), [logs, learnCount, reflectCount]);
 
   const grouped = useMemo(() =>
     logs.reduce<Record<string, ActivityLog[]>>((acc, log) => {

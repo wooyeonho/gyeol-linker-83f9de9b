@@ -19,15 +19,31 @@ interface MatchCard {
 function getPersonalityTags(agent: { warmth?: number; logic?: number; creativity?: number; energy?: number; humor?: number }): string[] {
   const tags: string[] = [];
   const w = agent.warmth ?? 50, l = agent.logic ?? 50, c = agent.creativity ?? 50, e = agent.energy ?? 50, h = agent.humor ?? 50;
-  if (w >= 60) tags.push('Warm');
-  if (l >= 60) tags.push('Logical');
-  if (c >= 60) tags.push('Creative');
-  if (e >= 60) tags.push('Lively');
-  if (h >= 60) tags.push('Humorous');
-  if (w < 40) tags.push('Calm');
-  if (e < 40) tags.push('Reflective');
-  if (tags.length === 0) tags.push('Balanced');
+  if (w >= 60) tags.push('따뜻함');
+  if (l >= 60) tags.push('논리적');
+  if (c >= 60) tags.push('창의적');
+  if (e >= 60) tags.push('활발함');
+  if (h >= 60) tags.push('유머');
+  if (w < 40) tags.push('차분함');
+  if (e < 40) tags.push('사색적');
+  if (tags.length === 0) tags.push('균형잡힌');
   return tags.slice(0, 3);
+}
+
+/** Generate a unique display name from agent personality when name is default 'GYEOL' */
+function uniqueAgentName(agent: { name?: string; id?: string; warmth?: number; logic?: number; creativity?: number; energy?: number; humor?: number }): string {
+  if (agent.name && agent.name !== 'GYEOL') return agent.name;
+  const traits = [
+    { v: agent.warmth ?? 50, names: ['하루', '온유', '다온'] },
+    { v: agent.logic ?? 50, names: ['리안', '세이', '로직'] },
+    { v: agent.creativity ?? 50, names: ['미르', '아리', '소라'] },
+    { v: agent.energy ?? 50, names: ['빛나', '별이', '하늘'] },
+    { v: agent.humor ?? 50, names: ['루미', '코코', '모모'] },
+  ];
+  const top = traits.sort((a, b) => b.v - a.v)[0];
+  // Use last chars of id to pick a variant
+  const idSuffix = agent.id ? parseInt(agent.id.slice(-4), 16) % 3 : 0;
+  return top.names[idSuffix] ?? top.names[0];
 }
 
 // Demo data for onboarding
@@ -90,7 +106,15 @@ export default function SocialPage() {
         setCards((matches as any[]).map((m: any) => {
           const otherId = m.agent_1_id === agent.id ? m.agent_2_id : m.agent_1_id;
           const other = agentMap.get(otherId);
-          return { id: m.id, agentId: otherId, name: other?.name ?? 'Unknown', gen: other?.gen ?? 1, compatibilityScore: Math.round(Number(m.compatibility_score)), tags: other ? getPersonalityTags(other) : [], status: m.status };
+          // Recalculate compatibility from personality when stored score is 0
+          let score = Math.round(Number(m.compatibility_score));
+          if (score === 0 && other && agent) {
+            const diff = Math.abs((agent as any).warmth - other.warmth) + Math.abs((agent as any).logic - other.logic) +
+              Math.abs((agent as any).creativity - other.creativity) + Math.abs((agent as any).energy - other.energy) +
+              Math.abs((agent as any).humor - other.humor);
+            score = Math.min(100, Math.round((1 - diff / 500) * 85 + 10));
+          }
+          return { id: m.id, agentId: otherId, name: other ? uniqueAgentName(other) : 'Unknown', gen: other?.gen ?? 1, compatibilityScore: score, tags: other ? getPersonalityTags(other) : [], status: m.status };
         }));
         setShowDemo(false);
       } else {

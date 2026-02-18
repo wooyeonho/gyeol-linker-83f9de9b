@@ -44,14 +44,29 @@ export function calculateCompatibility(
   agent2: { warmth: number; logic: number; creativity: number; energy: number; humor: number },
   tasteSimilarity: number
 ): number {
+  // Personality similarity: how close are the 5 traits (max diff per trait = 100, total max = 500)
   const diff =
     Math.abs(agent1.warmth - agent2.warmth) +
     Math.abs(agent1.logic - agent2.logic) +
     Math.abs(agent1.creativity - agent2.creativity) +
     Math.abs(agent1.energy - agent2.energy) +
     Math.abs(agent1.humor - agent2.humor);
-  const personalityBonus = diff < 100 ? 10 : 0;
-  return Math.min(100, Math.round(tasteSimilarity * 80 + personalityBonus));
+  // personalityScore: 0-100 (0 = max difference, 100 = identical)
+  const personalityScore = Math.round((1 - diff / 500) * 100);
+
+  // Complementary bonus: opposite traits can complement each other
+  const complementary =
+    (agent1.warmth > 60 && agent2.logic > 60) || (agent1.logic > 60 && agent2.warmth > 60) ||
+    (agent1.creativity > 60 && agent2.energy > 60) || (agent1.energy > 60 && agent2.creativity > 60);
+  const complementaryBonus = complementary ? 8 : 0;
+
+  // Weight: personality 50%, taste 40%, complementary 10%
+  const hasTaste = tasteSimilarity > 0;
+  if (hasTaste) {
+    return Math.min(100, Math.round(personalityScore * 0.5 + tasteSimilarity * 100 * 0.4 + complementaryBonus));
+  }
+  // No taste data: rely more on personality
+  return Math.min(100, Math.round(personalityScore * 0.85 + complementaryBonus + 5));
 }
 
 export async function findTopMatches(
