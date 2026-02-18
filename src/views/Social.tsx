@@ -111,11 +111,11 @@ export default function SocialPage() {
                 if (card.status === 'matched') {
                   window.location.href = '/activity';
                 } else {
-                  const res = await fetch('/api/social/matches', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ agentId: agent?.id, targetAgentId: card.agentId }),
-                  });
+                  const res = await fetch(`https://ambadtjrwwaaobrbzjar.supabase.co/functions/v1/breeding`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
+                     body: JSON.stringify({ agentId: agent?.id, targetAgentId: card.agentId }),
+                   });
                   if (res.ok) {
                     setCards(prev => prev.map(c => c.id === card.id ? { ...c, status: 'pending' } : c));
                   }
@@ -128,13 +128,14 @@ export default function SocialPage() {
               <button type="button"
                 onClick={async () => {
                   if (!agent?.id) return;
-                  const res = await fetch('/api/social/breeding', {
+                  const session = (await supabase.auth.getSession()).data.session;
+                  const res = await fetch(`https://ambadtjrwwaaobrbzjar.supabase.co/functions/v1/breeding`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
                     body: JSON.stringify({
                       agent1Id: agent.id,
                       agent2Id: card.agentId,
-                      userId: (await supabase.auth.getUser()).data.user?.id,
+                      userId: session?.user?.id,
                     }),
                   });
                   const data = await res.json();

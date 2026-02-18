@@ -54,7 +54,7 @@ export async function checkBreedingEligibility(
   }
 
   const { data: match } = await supabase
-    .from('gyeol_ai_matches')
+    .from('gyeol_matches')
     .select('compatibility_score')
     .or(`and(agent_1_id.eq.${agent1Id},agent_2_id.eq.${agent2Id}),and(agent_1_id.eq.${agent2Id},agent_2_id.eq.${agent1Id})`)
     .limit(1)
