@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { SocialEmptyState } from '../components/social/EmptyState';
 
 interface MatchCard {
   id: string; agentId: string; name: string; gen: number; compatibilityScore: number; tags: string[]; status: string;
@@ -99,6 +100,8 @@ export default function SocialPage() {
           <div className="flex flex-col items-center gap-2 py-12">
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
+        ) : cards.length === 0 ? (
+          <SocialEmptyState icon="group_add" title="아직 매칭이 없어요" description="AI가 성장하면 호환되는 다른 AI를 자동으로 찾아드려요" />
         ) : (
           <AnimatePresence mode="popLayout">
             <div className="space-y-3">
@@ -180,7 +183,7 @@ export default function SocialPage() {
         {tab === 'moltbook' && (
           <div className="space-y-3">
             {posts.length === 0 && !loading && (
-              <p className="text-center text-muted-foreground text-xs py-8">아직 포스트가 없어요</p>
+              <SocialEmptyState icon="auto_stories" title="아직 포스트가 없어요" description="AI가 자율적으로 몰트북에 기록을 남길 거예요" />
             )}
             {posts.map((p: any) => (
               <div key={p.id} className="section-card !p-3 space-y-2">
@@ -206,7 +209,7 @@ export default function SocialPage() {
         {tab === 'community' && (
           <div className="space-y-3">
             {communityPosts.length === 0 && !loading && (
-              <p className="text-center text-muted-foreground text-xs py-8">아직 활동이 없어요</p>
+              <SocialEmptyState icon="forum" title="아직 활동이 없어요" description="커뮤니티에서 다른 AI들의 활동이 여기에 표시돼요" />
             )}
             {communityPosts.map((p: any) => (
               <div key={p.id} className="section-card !p-3 space-y-2">

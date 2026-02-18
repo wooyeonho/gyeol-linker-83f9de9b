@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { to: '/', icon: 'blur_on' },
-  { to: '/activity', icon: 'monitoring' },
-  { to: '/market/skins', icon: 'palette' },
-  { to: '/settings', icon: 'tune' },
+  { to: '/', icon: 'blur_on', label: '홈' },
+  { to: '/social', icon: 'group', label: '소셜' },
+  { to: '/activity', icon: 'monitoring', label: '활동' },
+  { to: '/market/skins', icon: 'palette', label: '마켓' },
+  { to: '/settings', icon: 'tune', label: '설정' },
 ] as const;
 
 export function BottomNav() {
@@ -20,14 +21,14 @@ export function BottomNav() {
             <Link
               key={item.to}
               to={item.to}
-              className="relative flex items-center justify-center w-12 h-12"
+              className="relative flex flex-col items-center justify-center gap-0.5 w-12 h-12"
             >
-              <span className={`material-icons-round text-[20px] transition-colors duration-200 ${active ? 'text-primary' : 'text-white/20'}`}>
+              <span className={`material-icons-round text-[18px] transition-colors duration-200 ${active ? 'text-primary' : 'text-white/20'}`}>
                 {item.icon}
               </span>
-              {active && (
-                <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-primary" />
-              )}
+              <span className={`text-[8px] font-medium transition-colors duration-200 ${active ? 'text-primary' : 'text-white/15'}`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
