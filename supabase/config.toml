@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.heartbeat]
 verify_jwt = false
+
+[functions.breeding]
+verify_jwt = false

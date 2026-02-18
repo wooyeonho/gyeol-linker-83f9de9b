@@ -205,6 +205,58 @@ export type Database = {
           },
         ]
       }
+      gyeol_breeding_logs: {
+        Row: {
+          child_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          parent_1_id: string
+          parent_2_id: string
+          success: boolean
+        }
+        Insert: {
+          child_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          parent_1_id: string
+          parent_2_id: string
+          success?: boolean
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          parent_1_id?: string
+          parent_2_id?: string
+          success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_breeding_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_breeding_logs_parent_1_id_fkey"
+            columns: ["parent_1_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_breeding_logs_parent_2_id_fkey"
+            columns: ["parent_2_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_byok_keys: {
         Row: {
           created_at: string
