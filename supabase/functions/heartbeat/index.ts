@@ -841,7 +841,7 @@ async function runHeartbeat(agentId?: string) {
     return { message: "Kill switch active", results: [] };
   }
 
-  // OpenClaw active check — skip if OpenClaw ran within last 35 minutes
+  // OpenClaw active check — only skip overlapping skills (RSS) when OpenClaw ran within 35 min
   const thirtyFiveMinAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
   const { data: recentOpenClaw } = await supabase
     .from("gyeol_autonomous_logs")
@@ -850,9 +850,7 @@ async function runHeartbeat(agentId?: string) {
     .eq("source", "openclaw")
     .limit(1);
 
-  if (recentOpenClaw && recentOpenClaw.length > 0) {
-    return { skipped: true, reason: "OpenClaw active", results: [] };
-  }
+  const openClawActive = (recentOpenClaw && recentOpenClaw.length > 0);
 
   let agents;
   if (agentId) {
@@ -915,18 +913,24 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push({ ok: false, skillId: "web-browse", summary: String(e) });
     }
 
-    try {
-      skillResults.push(await skillRSSFetch(supabase, agent.id));
-    } catch (e) {
-      skillResults.push({ ok: false, skillId: "rss-fetch", summary: String(e) });
+    // Skip RSS when OpenClaw is active (overlapping skill)
+    if (openClawActive) {
+      skillResults.push({ ok: true, skillId: "rss-fetch", summary: "Skipped: OpenClaw active" });
+    } else {
+      try {
+        skillResults.push(await skillRSSFetch(supabase, agent.id));
+      } catch (e) {
+        skillResults.push({ ok: false, skillId: "rss-fetch", summary: String(e) });
+      }
     }
 
     // Log activity
     await supabase.from("gyeol_autonomous_logs").insert({
       agent_id: agent.id,
       activity_type: "heartbeat",
-      summary: `Ran ${skillResults.length} skills`,
-      details: { skills: skillResults, durationMs: Date.now() - start },
+      summary: `Ran ${skillResults.length} skills${openClawActive ? " (RSS skipped: OpenClaw active)" : ""}`,
+      details: { skills: skillResults, durationMs: Date.now() - start, openClawActive },
+      source: "nextjs",
     });
 
     results.push({ agentId: agent.id, skillsRun: skillResults, durationMs: Date.now() - start });
