@@ -31,7 +31,8 @@ async function resolveProvider(supabase: ReturnType<typeof createGyeolServerClie
       try {
         const apiKey = await decryptKey(row.encrypted_key);
         return { provider, apiKey };
-      } catch {
+      } catch (err) {
+        console.error('[telegram] decrypt failed:', provider, err);
         continue;
       }
     }

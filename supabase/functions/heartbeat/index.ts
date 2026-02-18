@@ -1,3 +1,12 @@
+/**
+ * Supabase Edge Function — Deno 환경 heartbeat
+ *
+ * 주의: lib/gyeol/heartbeat/에 동일 기능의 Node.js 버전 존재.
+ * 스킬 로직 변경 시 양쪽 동기화 필수.
+ *
+ * Edge Function: Supabase cron으로 30분마다 자동 실행
+ * lib/gyeol/heartbeat/: Next.js API에서 수동 트리거용
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
