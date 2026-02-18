@@ -558,8 +558,17 @@ async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: 
   const tasteInterests = taste ? (Array.isArray(taste.interests) ? taste.interests : Object.values(taste.interests ?? {})) : [];
   const tasteTopics = taste ? (Array.isArray(taste.topics) ? taste.topics : Object.values(taste.topics ?? {})) : [];
   
+  // Filter out numeric-only values, empty strings, and very short strings
+  const isValidKeyword = (v: unknown): v is string => {
+    if (typeof v !== "string") return false;
+    const trimmed = v.trim();
+    if (trimmed.length < 2) return false;
+    if (/^[\d.]+$/.test(trimmed)) return false; // filter out "0.5", "0.7" etc.
+    return true;
+  };
+
   // Prioritize user keywords, then taste vector
-  const allKeywords = [...userKws, ...tasteInterests, ...tasteTopics].filter(Boolean).slice(0, 10);
+  const allKeywords = [...userKws, ...tasteInterests, ...tasteTopics].filter(isValidKeyword).slice(0, 10);
 
   if (allKeywords.length === 0) return { ok: true, skillId: "web-crawl", summary: "No keywords found" };
 

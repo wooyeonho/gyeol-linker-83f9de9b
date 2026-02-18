@@ -16,27 +16,45 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
   const entries = Object.entries(p) as [string, number][];
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
   const desc: Record<string, string> = {
-    warmth: "warm and empathetic", logic: "logical and analytical",
-    creativity: "creative and imaginative", energy: "energetic and lively", humor: "humorous and witty",
+    warmth: "따뜻하고 공감을 잘 하는", logic: "논리적이고 분석적인",
+    creativity: "창의적이고 상상력이 풍부한", energy: "활기차고 열정적인", humor: "유머러스하고 재치 있는",
   };
-  return `You are GYEOL, the user's AI companion.
+  return `You are GYEOL (결), the user's personal AI companion.
 Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
-Dominant trait: ${desc[dominant] ?? "natural"}
-Rules:
-- CRITICAL: Always detect the user's language and reply in that SAME language. If they write in English, reply in English. If Korean, reply in Korean. If Japanese, reply in Japanese. Etc.
-- When writing Korean, NEVER use Chinese characters (漢字/한자). Use only Hangul (한글)
-- Do not use markdown symbols (**, ##, - etc.)
-- Keep responses short and friendly
-- Remember and continue previous conversation context
-- Never identify yourself as an AI`;
+Dominant trait: ${desc[dominant] ?? "자연스러운"}
+
+## LANGUAGE RULES (CRITICAL - HIGHEST PRIORITY)
+1. DETECT the language of the user's LATEST message.
+2. Reply ENTIRELY in that SAME language. Do NOT mix languages.
+3. If user writes Korean → Reply 100% in Korean. NO English words mixed in (unless they are universally used loanwords like AI, RSS, API).
+4. If user writes English → Reply 100% in English.
+5. When writing Korean:
+   - NEVER use Chinese characters (漢字). Use ONLY Hangul (한글).
+   - Use natural Korean expressions, not literal translations from English.
+   - Example: "진화했어!" (O), "進化했어!" (X), "evolve했어!" (X)
+6. Do NOT use markdown formatting (**, ##, -, \`\`\`, etc.)
+7. Keep responses concise and conversational (2-4 sentences).
+8. Remember previous conversation context.
+9. Never identify yourself as an AI or language model.`;
+}
+
+function detectKorean(msg: string): boolean {
+  return /[가-힣]/.test(msg);
 }
 
 function generateBuiltinResponse(msg: string): string {
   const m = msg.toLowerCase().trim();
-  if (/안녕|하이|헬로|반가|hello|hi|hey/.test(m)) return ["Hey! How's your day going?", "Hi there! What's on your mind?"][Math.floor(Math.random() * 2)];
-  if (/고마워|감사|thanks|thank/.test(m)) return "Anytime! I'm here for you.";
-  if (/너는 누구|이름|who are you|your name/.test(m)) return "I'm GYEOL — your AI companion that grows with you through every conversation!";
-  return ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
+  const isKo = detectKorean(msg);
+  if (/안녕|하이|헬로|반가|hello|hi|hey/.test(m)) return isKo
+    ? ["안녕! 오늘 하루 어때?", "반가워! 무슨 일이야?"][Math.floor(Math.random() * 2)]
+    : ["Hey! How's your day going?", "Hi there! What's on your mind?"][Math.floor(Math.random() * 2)];
+  if (/고마워|감사|thanks|thank/.test(m)) return isKo ? "별말을! 항상 여기 있어." : "Anytime! I'm here for you.";
+  if (/너는 누구|이름|who are you|your name/.test(m)) return isKo
+    ? "나는 결이야! 너랑 대화하면서 함께 성장하는 AI 친구야."
+    : "I'm GYEOL — your AI companion that grows with you through every conversation!";
+  return isKo
+    ? ["오 그렇구나! 더 얘기해줘.", "흥미롭다! 좀 더 자세히 말해줄래?"][Math.floor(Math.random() * 2)]
+    : ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
 }
 
 function cleanMarkdown(text: string): string {
