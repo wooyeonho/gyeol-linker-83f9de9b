@@ -13,9 +13,11 @@ import {
   calculateVisualState,
   attemptEvolution,
   checkCriticalLearning,
+  rollDailyEvent,
+  calculateEvolutionProbability,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
-import { calculateIntimacyGain, determineMood, getSpeechStyle } from '@/lib/gyeol/intimacy';
+import { calculateIntimacyGain, determineMood, getSpeechStyle, calculateIntimacyDecay } from '@/lib/gyeol/intimacy';
 import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeol/constants';
 import { decryptKey } from '@/lib/gyeol/byok';
 import { callProviderWithMessages, buildSystemPrompt, suggestProviderForMessage, type ChatMessage } from '@/lib/gyeol/chat-ai';
@@ -325,7 +327,22 @@ export async function POST(req: NextRequest) {
           personalityChanged = true;
 
           const critical = checkCriticalLearning();
-          const progressGain = 5 * critical.multiplier;
+
+          let dailyEvent = null;
+          const agentSettings = (agent.settings as Record<string, unknown>) ?? {};
+          const todayStr = new Date().toISOString().slice(0, 10);
+          if (agentSettings.dailyEventUsed !== todayStr) {
+            const event = rollDailyEvent();
+            if (event.type !== 'none') {
+              dailyEvent = event;
+              await supabase.from('gyeol_agents').update({
+                settings: { ...agentSettings, dailyEventUsed: todayStr },
+              }).eq('id', agentId).catch(() => {});
+            }
+          }
+
+          let progressGain = 5 * critical.multiplier;
+          if (dailyEvent?.type === 'exp_double') progressGain *= 2;
           const newProgress = Math.min(100, Number(agent.evolution_progress) + progressGain);
 
           await supabase
@@ -353,14 +370,28 @@ export async function POST(req: NextRequest) {
           };
           const evoResult = attemptEvolution(updatedAgent);
           if (evoResult.success) {
-            await supabase.from('gyeol_agents').update({
+            const evoUpdate: Record<string, unknown> = {
               gen: evoResult.newGen,
               evolution_progress: 0,
-            }).eq('id', agentId);
+            };
+            if (evoResult.isMutation && evoResult.personalityBonus) {
+              const b = evoResult.personalityBonus;
+              if (b.warmth) evoUpdate.warmth = Math.min(100, next.warmth + b.warmth);
+              if (b.logic) evoUpdate.logic = Math.min(100, next.logic + b.logic);
+              if (b.creativity) evoUpdate.creativity = Math.min(100, next.creativity + b.creativity);
+              if (b.energy) evoUpdate.energy = Math.min(100, next.energy + b.energy);
+              if (b.humor) evoUpdate.humor = Math.min(100, next.humor + b.humor);
+            }
+            await supabase.from('gyeol_agents').update(evoUpdate).eq('id', agentId);
             evolved = true;
             newGen = evoResult.newGen;
             if (evoResult.isMutation) {
-              console.log('[GYEOL] mutation!', evoResult.mutationType);
+              await logAction(supabase, {
+                agentId,
+                activityType: 'skill_execution',
+                summary: evoResult.message,
+                details: { mutationType: evoResult.mutationType, probability: evoResult.probability },
+              }).catch(() => {});
             }
           } else if (newProgress >= 100) {
             await supabase.from('gyeol_agents').update({ evolution_progress: 80 }).eq('id', agentId);
@@ -371,19 +402,49 @@ export async function POST(req: NextRequest) {
       }
 
       if (agent) {
+        const lastActive = agent.last_active ? new Date(agent.last_active as string) : null;
+        const now = new Date();
+        let newConsecutiveDays = Number(agent.consecutive_days) || 0;
+        if (lastActive) {
+          const lastDate = lastActive.toISOString().slice(0, 10);
+          const todayDate = now.toISOString().slice(0, 10);
+          const yesterday = new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+          if (lastDate === todayDate) {
+            // same day
+          } else if (lastDate === yesterday) {
+            newConsecutiveDays += 1;
+          } else {
+            newConsecutiveDays = 1;
+          }
+        } else {
+          newConsecutiveDays = 1;
+        }
+
+        const currentIntimacy = Number(agent.intimacy) || 0;
+        let decayedIntimacy = currentIntimacy;
+        if (lastActive) {
+          const hoursSince = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
+          if (hoursSince >= 24) {
+            const daysSince = hoursSince / 24;
+            const decay = calculateIntimacyDecay(daysSince);
+            decayedIntimacy = Math.max(0, currentIntimacy + decay);
+          }
+        }
+
         const isPositive = /좋아|고마|감사|최고|사랑|멋져|대박/.test(userMessage);
         const intimacyGain = calculateIntimacyGain(userMessage, isPositive);
-        const currentIntimacy = Number(agent.intimacy) || 0;
-        const newIntimacy = Math.min(100, Math.max(0, currentIntimacy + intimacyGain));
+        const newIntimacy = Math.min(100, Math.max(0, decayedIntimacy + intimacyGain));
         const newMood = determineMood({
-          last_active: new Date().toISOString(),
-          consecutive_days: Number(agent.consecutive_days) || 0,
+          last_active: now.toISOString(),
+          consecutive_days: newConsecutiveDays,
           intimacy: newIntimacy,
           total_conversations: (Number(agent.total_conversations) || 0) + 2,
         });
         await supabase.from('gyeol_agents').update({
           intimacy: newIntimacy,
           mood: newMood,
+          consecutive_days: newConsecutiveDays,
+          last_active: now.toISOString(),
         }).eq('id', agentId).catch(() => {});
       }
 
@@ -407,6 +468,9 @@ export async function POST(req: NextRequest) {
       evolved,
       newGen: evolved ? newGen : undefined,
       newVisualState: personalityChanged ? newVisualState : undefined,
+      criticalLearning: false,
+      criticalMultiplier: 1,
+      dailyEvent: null,
     });
   } catch (e) {
     console.error('gyeol chat error', e);

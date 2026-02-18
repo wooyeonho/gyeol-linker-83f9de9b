@@ -83,13 +83,32 @@ export function calculateEvolutionProbability(agent: {
   return Math.min(95, Math.floor((baseRate + personalityBonus + conversationBonus) * progressMultiplier));
 }
 
+const MUTATION_BONUSES: Record<MutationType, Partial<PersonalityParams>> = {
+  empathy_master: { warmth: 15 },
+  logic_genius: { logic: 15 },
+  creative_burst: { creativity: 15 },
+  energy_overflow: { energy: 15 },
+  humor_king: { humor: 15 },
+  balanced_sage: { warmth: 5, logic: 5, creativity: 5, energy: 5, humor: 5 },
+};
+
+const MUTATION_NAMES: Record<MutationType, string> = {
+  empathy_master: '공감의 달인',
+  logic_genius: '논리의 천재',
+  creative_burst: '창작 폭발',
+  energy_overflow: '에너지 과부하',
+  humor_king: '유머의 왕',
+  balanced_sage: '균형의 현자',
+};
+
 export interface EvolutionResult {
   success: boolean;
   newGen: number;
   probability: number;
   isMutation: boolean;
   mutationType: MutationType | null;
-  personalityBonus: number;
+  mutationName: string | null;
+  personalityBonus: Partial<PersonalityParams> | null;
   message: string;
 }
 
@@ -104,8 +123,6 @@ export function attemptEvolution(agent: {
   evolution_progress: number;
 }): EvolutionResult {
   const probability = calculateEvolutionProbability(agent);
-  const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
-  const personalityBonus = Math.floor(avg / 20);
 
   if (agent.evolution_progress < 100) {
     return {
@@ -114,7 +131,8 @@ export function attemptEvolution(agent: {
       probability,
       isMutation: false,
       mutationType: null,
-      personalityBonus,
+      mutationName: null,
+      personalityBonus: null,
       message: `진화 진행도 부족 (${agent.evolution_progress}/100)`,
     };
   }
@@ -134,13 +152,15 @@ export function attemptEvolution(agent: {
   }
 
   const newGen = success ? agent.gen + 1 : agent.gen;
+  const mutationName = mutationType ? MUTATION_NAMES[mutationType] : null;
+  const mutationBonus = mutationType ? MUTATION_BONUSES[mutationType] : null;
   const message = success
     ? isMutation
-      ? `돌연변이 진화! Gen ${newGen} (${mutationType}) - 확률 ${probability}%`
+      ? `돌연변이 진화! Gen ${newGen} (${mutationName}) - 확률 ${probability}%`
       : `진화 성공! Gen ${newGen} - 확률 ${probability}%`
     : `진화 실패 (${Math.floor(roll)}/${probability}) - 다음에 다시 도전!`;
 
-  return { success, newGen, probability, isMutation, mutationType, personalityBonus, message };
+  return { success, newGen, probability, isMutation, mutationType, mutationName, personalityBonus: mutationBonus, message };
 }
 
 export function checkCriticalLearning(): { isCritical: boolean; multiplier: number } {
@@ -152,12 +172,18 @@ export function checkCriticalLearning(): { isCritical: boolean; multiplier: numb
 
 export type DailyEventType = 'none' | 'exp_double' | 'evolution_boost' | 'rare_ticket';
 
-export function rollDailyEvent(): DailyEventType {
+export interface DailyEvent {
+  type: DailyEventType;
+  name: string;
+  description: string;
+}
+
+export function rollDailyEvent(): DailyEvent {
   const roll = Math.random() * 100;
-  if (roll < 85) return 'none';
-  if (roll < 93) return 'exp_double';
-  if (roll < 98) return 'evolution_boost';
-  return 'rare_ticket';
+  if (roll < 85) return { type: 'none', name: '', description: '' };
+  if (roll < 93) return { type: 'exp_double', name: '경험치 2배', description: '오늘 하루 경험치가 2배!' };
+  if (roll < 98) return { type: 'evolution_boost', name: '진화 부스트', description: '진화 확률이 올라갑니다!' };
+  return { type: 'rare_ticket', name: '레어 티켓', description: '특별한 보상을 획득했습니다!' };
 }
 
 export function applyPersonalityDelta(
