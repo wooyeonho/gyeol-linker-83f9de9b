@@ -1,3 +1,12 @@
+/**
+ * Supabase Edge Function — Deno 환경 heartbeat
+ *
+ * 주의: lib/gyeol/heartbeat/에 동일 기능의 Node.js 버전 존재.
+ * 스킬 로직 변경 시 양쪽 동기화 필수.
+ *
+ * Edge Function: Supabase cron으로 30분마다 자동 실행
+ * lib/gyeol/heartbeat/: Next.js API에서 수동 트리거용
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -669,6 +678,19 @@ async function runHeartbeat(agentId?: string) {
 
   if (state?.kill_switch) {
     return { message: "Kill switch active", results: [] };
+  }
+
+  // OpenClaw active check — skip if OpenClaw ran within last 35 minutes
+  const thirtyFiveMinAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+  const { data: recentOpenClaw } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .gte("created_at", thirtyFiveMinAgo)
+    .eq("was_sandboxed", true)
+    .limit(1);
+
+  if (recentOpenClaw && recentOpenClaw.length > 0) {
+    return { skipped: true, reason: "OpenClaw active", results: [] };
   }
 
   let agents;

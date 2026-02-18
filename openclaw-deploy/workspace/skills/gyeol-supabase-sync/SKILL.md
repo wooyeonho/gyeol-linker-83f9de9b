@@ -42,3 +42,80 @@ curl -X PATCH "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.AGENT_ID" \
 - 모든 Supabase 호출은 서비스 키 사용
 - 에러 발생 시 3회 재시도 후 스킵
 - 하루 최대 100회 API 호출
+
+---
+
+## Supabase 테이블 스키마 (전체)
+
+### gyeol_agents
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| user_id | UUID | auth.users FK |
+| name | TEXT | |
+| generation | INT | 1~5 |
+| warmth, logic, creativity, energy, humor | INT | 0~100 |
+| intimacy | INT | 0~100 |
+| mood | TEXT | |
+| speech_style | TEXT | |
+| skin | TEXT | |
+| last_active | TIMESTAMPTZ | |
+
+### gyeol_conversations
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| agent_id | UUID FK | |
+| role | TEXT | user/assistant |
+| content | TEXT | |
+| channel | TEXT | web/telegram |
+| created_at | TIMESTAMPTZ | |
+
+### gyeol_learned_topics
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| agent_id | UUID FK | |
+| topic | TEXT | UNIQUE(agent_id, topic) |
+| summary | TEXT | |
+| source | TEXT | rss/web |
+| source_url | TEXT | |
+| created_at | TIMESTAMPTZ | |
+
+### gyeol_autonomous_logs
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| agent_id | UUID FK | |
+| activity_type | TEXT | learning/reflection/proactive/... |
+| summary | TEXT | |
+| details | JSONB | |
+| was_sandboxed | BOOL | |
+| created_at | TIMESTAMPTZ | |
+
+### gyeol_user_memories (NEW)
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| agent_id | UUID FK | |
+| category | TEXT | identity/preference/interest/relationship/goal/emotion/experience/style/knowledge_level |
+| key | TEXT | UNIQUE(agent_id, key) |
+| value | TEXT | |
+| confidence | INT | 0~100 |
+| access_count | INT | default 0 |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+### gyeol_conversation_insights (NEW)
+| column | type | note |
+|--------|------|------|
+| id | UUID PK | |
+| agent_id | UUID FK | |
+| topics | TEXT[] | |
+| emotion_arc | TEXT | positive/negative/neutral/mixed |
+| underlying_need | TEXT | |
+| what_worked | TEXT | |
+| what_to_improve | TEXT | |
+| personality_delta | JSONB | {"warmth": 0, ...} |
+| next_hint | TEXT | |
+| created_at | TIMESTAMPTZ | |

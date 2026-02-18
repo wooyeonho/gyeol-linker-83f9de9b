@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 import { attemptBreeding, checkBreedingEligibility } from '@/lib/gyeol/breeding';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +8,10 @@ export async function POST(req: Request) {
     if (!agent1Id || !agent2Id || !userId) {
       return NextResponse.json({ error: 'agent1Id, agent2Id, userId required' }, { status: 400 });
     }
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+    const supabase = createGyeolServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error: missing service role key' }, { status: 500 });
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const result = await attemptBreeding(supabase, agent1Id, agent2Id, userId);
     return NextResponse.json(result);
   } catch (e: unknown) {
@@ -31,10 +28,10 @@ export async function GET(req: Request) {
     if (!agent1Id || !agent2Id) {
       return NextResponse.json({ error: 'agent1Id, agent2Id required' }, { status: 400 });
     }
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+    const supabase = createGyeolServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error: missing service role key' }, { status: 500 });
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const result = await checkBreedingEligibility(supabase, agent1Id, agent2Id);
     return NextResponse.json(result);
   } catch (e: unknown) {

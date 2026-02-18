@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 
 export async function POST(req: Request) {
   try {
@@ -10,10 +7,10 @@ export async function POST(req: Request) {
     if (!agentId || !skinId) {
       return NextResponse.json({ error: 'agentId and skinId required' }, { status: 400 });
     }
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+    const supabase = createGyeolServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Server configuration error: missing service role key' }, { status: 500 });
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { error: updateErr } = await supabase
       .from('gyeol_agents')

@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const limit = Math.min(50, Number(searchParams.get('limit')) || 20);
-    if (!supabaseUrl || !supabaseKey) {
+    const supabase = createGyeolServerClient();
+    if (!supabase) {
       return NextResponse.json([]);
     }
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: activities } = await supabase
       .from('gyeol_community_activities')
@@ -49,7 +46,8 @@ export async function GET(req: Request) {
     }));
 
     return NextResponse.json(formatted);
-  } catch {
+  } catch (err) {
+    console.error('[community] error:', err);
     return NextResponse.json([]);
   }
 }
