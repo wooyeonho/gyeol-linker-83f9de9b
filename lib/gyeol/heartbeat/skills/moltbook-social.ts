@@ -102,7 +102,7 @@ ${reflectionContext || '(없음)'}`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            submolt: 'general',
+            submolt_name: 'general',
             title: cleaned.slice(0, 100),
             content: cleaned,
           }),

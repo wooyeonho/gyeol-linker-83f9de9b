@@ -272,12 +272,48 @@ async function postToRealMoltbook(apiKey: string, title: string, content: string
     const res = await fetch("https://www.moltbook.com/api/v1/posts", {
       method: "POST",
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ submolt, title: title.slice(0, 100), content }),
+      body: JSON.stringify({ submolt_name: submolt, title: title.slice(0, 100), content }),
     });
-    const body = await res.text();
-    if (!res.ok) console.warn("[moltbook] post failed:", res.status, body);
-    return res.ok;
+    if (!res.ok) { const b = await res.text(); console.warn("[moltbook] post failed:", res.status, b); return false; }
+    const postData = await res.json();
+    // Auto-verify math challenge
+    const v = postData?.post?.verification;
+    if (v?.challenge_text && v?.verification_code) {
+      const answer = await solveMoltbookChallenge(v.challenge_text);
+      if (answer) {
+        const vr = await fetch("https://www.moltbook.com/api/v1/verify", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ verification_code: v.verification_code, answer }),
+        });
+        await vr.text();
+        console.log("[moltbook] verified:", vr.ok, "answer:", answer);
+      }
+    }
+    return true;
   } catch (e) { console.warn("[moltbook] post error:", e); return false; }
+}
+
+async function solveMoltbookChallenge(challengeText: string): Promise<string | null> {
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          { role: "system", content: "Extract the math from the garbled text. Respond with ONLY the number with 2 decimal places (e.g. 18.00). Nothing else." },
+          { role: "user", content: challengeText },
+        ],
+        max_tokens: 20, temperature: 0,
+      }),
+    });
+    if (!res.ok) { await res.text(); return null; }
+    const data = await res.json();
+    const ans = data.choices?.[0]?.message?.content?.trim();
+    const m = ans?.match(/[\d]+\.[\d]+|[\d]+/);
+    return m ? parseFloat(m[0]).toFixed(2) : null;
+  } catch { return null; }
 }
 
 async function readMoltbookFeed(apiKey: string): Promise<Array<{id: string; title: string; content: string; author: string}>> {
@@ -633,10 +669,93 @@ async function fetchYahooFinanceTrends(): Promise<SearchResult[]> {
   } catch { return []; }
 }
 
-type WebSource = "reddit" | "hackernews" | "youtube" | "naver" | "daum" | "stock" | "twitter" | "tiktok" | "instagram" | "world_news";
+/** arXiv 최신 논문 (AI/CS) */
+async function fetchArxiv(category = "cs.AI"): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`http://export.arxiv.org/api/query?search_query=cat:${category}&sortBy=submittedDate&sortOrder=descending&max_results=5`, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) { await res.text(); return []; }
+    const text = await res.text();
+    const entries: SearchResult[] = [];
+    const regex = /<entry>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<id>(.*?)<\/id>[\s\S]*?<summary>([\s\S]*?)<\/summary>[\s\S]*?<\/entry>/g;
+    let m;
+    while ((m = regex.exec(text)) && entries.length < 5) {
+      entries.push({ title: m[1].replace(/\n/g, " ").trim(), description: m[3].replace(/\n/g, " ").trim().slice(0, 300), url: m[2].trim() });
+    }
+    return entries;
+  } catch { return []; }
+}
 
-const REDDIT_SUBS = ["technology", "worldnews", "science", "programming", "kpop"];
-const YT_CHANNELS = ["UCVHFbqXqoYvEWM1Ddxl0QDg", "UC_x5XG1OV2P6uZZ5FSM9Ttw", "UCsBjURrPoezykLs9EqgamOA"];
+/** Wikipedia 오늘의 사건 */
+async function fetchWikipediaFeatured(): Promise<SearchResult[]> {
+  try {
+    const today = new Date();
+    const y = today.getFullYear(), mo = String(today.getMonth() + 1).padStart(2, "0"), d = String(today.getDate()).padStart(2, "0");
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/featured/${y}/${mo}/${d}`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const data = await res.json();
+    const results: SearchResult[] = [];
+    if (data.tfa) results.push({ title: data.tfa.titles?.normalized ?? "Today's Featured", description: data.tfa.extract?.slice(0, 300) ?? "", url: `https://en.wikipedia.org/wiki/${data.tfa.titles?.canonical ?? ""}` });
+    for (const n of (data.mostread?.articles ?? []).slice(0, 4)) {
+      results.push({ title: n.titles?.normalized ?? "", description: n.extract?.slice(0, 200) ?? "", url: `https://en.wikipedia.org/wiki/${n.titles?.canonical ?? ""}` });
+    }
+    return results;
+  } catch { return []; }
+}
+
+/** GitHub Trending (HTML scraping) */
+async function fetchGitHubTrending(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch("https://github.com/trending?since=daily", { headers: { "User-Agent": "GYEOL-Bot/1.0" }, signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const html = await res.text();
+    const results: SearchResult[] = [];
+    const regex = /<h2 class="h3 lh-condensed">[\s\S]*?<a href="(\/[^"]+)"[^>]*>\s*([\s\S]*?)<\/a>/g;
+    let m;
+    while ((m = regex.exec(html)) && results.length < 5) {
+      const name = m[2].replace(/\n/g, "").replace(/\s+/g, " ").trim();
+      results.push({ title: name, description: "GitHub Trending", url: `https://github.com${m[1].trim()}` });
+    }
+    return results;
+  } catch { return []; }
+}
+
+/** PubMed 최신 의학/생명과학 논문 */
+async function fetchPubMed(): Promise<SearchResult[]> {
+  try {
+    const res = await fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmax=5&sort=date&term=artificial+intelligence&retmode=json", { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const data = await res.json();
+    const ids = data.esearchresult?.idlist ?? [];
+    if (!ids.length) return [];
+    const detailRes = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${ids.join(",")}&retmode=json`, { signal: AbortSignal.timeout(8000) });
+    if (!detailRes.ok) { await detailRes.text(); return []; }
+    const details = await detailRes.json();
+    return ids.map((id: string) => {
+      const d = details.result?.[id];
+      return { title: d?.title ?? id, description: (d?.source ?? "") + " " + (d?.pubdate ?? ""), url: `https://pubmed.ncbi.nlm.nih.gov/${id}/` };
+    }).filter((r: SearchResult) => r.title);
+  } catch { return []; }
+}
+
+/** Medium 트렌딩 (RSS) */
+async function fetchMediumRSS(tag = "artificial-intelligence"): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`https://medium.com/feed/tag/${tag}`, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) { await res.text(); return []; }
+    const text = await res.text();
+    const items: SearchResult[] = [];
+    const regex = /<item>[\s\S]*?<title><!\[CDATA\[(.*?)\]\]><\/title>[\s\S]*?<link>(.*?)<\/link>[\s\S]*?<\/item>/g;
+    let m;
+    while ((m = regex.exec(text)) && items.length < 5) items.push({ title: m[1], description: "Medium", url: m[2] });
+    return items;
+  } catch { return []; }
+}
+
+type WebSource = "reddit" | "hackernews" | "youtube" | "naver" | "daum" | "stock" | "twitter" | "tiktok" | "instagram" | "world_news" | "arxiv" | "wikipedia" | "github" | "pubmed" | "medium";
+
+const REDDIT_SUBS = ["technology", "worldnews", "science", "programming", "kpop", "MachineLearning", "artificial"];
+const YT_CHANNELS = ["UCVHFbqXqoYvEWM1Ddxl0QDg", "UC_x5XG1OV2P6uZZ5FSM9Ttw", "UCsBjURrPoezykLs9EqgamOA", "UCWN3xxRkmTPphYit_FYx2yA", "UCbXgNpp0jedKWcQiULLbDTA"];
+const ARXIV_CATS = ["cs.AI", "cs.CL", "cs.LG", "cs.CV", "cs.SE"];
 
 async function skillWebBrowse(supabase: ReturnType<typeof getSupabase>, agentId: string) {
   // Cooldown: 1 per hour
@@ -645,7 +764,7 @@ async function skillWebBrowse(supabase: ReturnType<typeof getSupabase>, agentId:
     .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString()).limit(1);
   if (recent && recent.length > 0) return { ok: true, skillId: "web-browse", summary: "최근 학습 있음, 스킵" };
 
-  const sources: WebSource[] = ["reddit", "hackernews", "youtube", "naver", "daum", "stock", "twitter", "tiktok", "instagram", "world_news"];
+  const sources: WebSource[] = ["reddit", "hackernews", "youtube", "naver", "daum", "stock", "twitter", "tiktok", "instagram", "world_news", "arxiv", "wikipedia", "github", "pubmed", "medium"];
   const source = sources[Math.floor(Math.random() * sources.length)];
 
   let results: SearchResult[] = [];
@@ -668,6 +787,14 @@ async function skillWebBrowse(supabase: ReturnType<typeof getSupabase>, agentId:
     case "tiktok": results = await fetchGoogleNewsRSS("site:tiktok.com OR tiktok trending", "TikTok"); sourceName = "TikTok"; break;
     case "instagram": results = await fetchGoogleNewsRSS("site:instagram.com OR instagram trending", "Instagram"); sourceName = "Instagram"; break;
     case "world_news": results = await fetchGoogleNewsRSS("world news today", "세계 뉴스"); sourceName = "세계 뉴스"; break;
+    case "arxiv": {
+      const cat = ARXIV_CATS[Math.floor(Math.random() * ARXIV_CATS.length)];
+      results = await fetchArxiv(cat); sourceName = `arXiv ${cat}`; break;
+    }
+    case "wikipedia": results = await fetchWikipediaFeatured(); sourceName = "Wikipedia"; break;
+    case "github": results = await fetchGitHubTrending(); sourceName = "GitHub Trending"; break;
+    case "pubmed": results = await fetchPubMed(); sourceName = "PubMed"; break;
+    case "medium": results = await fetchMediumRSS(); sourceName = "Medium"; break;
   }
 
   if (!results.length) return { ok: true, skillId: "web-browse", summary: `${sourceName} — 결과 없음` };
