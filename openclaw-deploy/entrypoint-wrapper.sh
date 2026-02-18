@@ -1,16 +1,31 @@
 #!/usr/bin/env bash
 set -e
 
-# Patch entrypoint.sh to remove the browser sidecar nginx block
-# The browser VNC proxy causes "host not found" errors in containers without docker-compose
+export OPENCLAW_HOME="${OPENCLAW_HOME:-/data/.openclaw}"
+export OPENCLAW_HOST="${OPENCLAW_HOST:-0.0.0.0}"
+
+KOYEB_PORT="${PORT:-8080}"
+export OPENCLAW_PORT="${KOYEB_PORT}"
+
+echo "=== GYEOL OpenClaw Koyeb Entrypoint ==="
+echo "OPENCLAW_HOME=${OPENCLAW_HOME}"
+echo "OPENCLAW_PORT=${OPENCLAW_PORT}"
+echo "OPENCLAW_HOST=${OPENCLAW_HOST}"
+echo "Workspace files:"
+ls -la "${OPENCLAW_HOME}/workspace/" 2>/dev/null || echo "  (no workspace found)"
+echo "Config:"
+cat "${OPENCLAW_HOME}/openclaw.json" 2>/dev/null || echo "  (no config found)"
+echo "========================================="
+
 ORIG_ENTRYPOINT="/app/scripts/entrypoint.sh"
 PATCHED_ENTRYPOINT="/tmp/entrypoint-patched.sh"
 
-cp "$ORIG_ENTRYPOINT" "$PATCHED_ENTRYPOINT"
-
-# Remove the browser location block from the nginx config template
-# Replace the browser proxy block with a simple 404 return
-sed -i 's|proxy_pass http://browser:3000/;|return 404;|g' "$PATCHED_ENTRYPOINT"
-
-chmod +x "$PATCHED_ENTRYPOINT"
-exec "$PATCHED_ENTRYPOINT" "$@"
+if [ -f "$ORIG_ENTRYPOINT" ]; then
+  cp "$ORIG_ENTRYPOINT" "$PATCHED_ENTRYPOINT"
+  sed -i 's|proxy_pass http://browser:3000/;|return 404;|g' "$PATCHED_ENTRYPOINT"
+  chmod +x "$PATCHED_ENTRYPOINT"
+  exec "$PATCHED_ENTRYPOINT" "$@"
+else
+  echo "Original entrypoint not found, starting openclaw directly..."
+  exec openclaw "$@"
+fi
