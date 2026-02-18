@@ -15,7 +15,7 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_conversations" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
-  -d '{"agent_id": "AGENT_ID", "role": "user", "content": "MESSAGE", "channel": "telegram"}'
+  -d '{"agent_id": "'${GYEOL_AGENT_ID}'", "role": "user", "content": "MESSAGE", "channel": "telegram"}'
 ```
 
 ### 활동 기록
@@ -25,13 +25,13 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
-  -d '{"agent_id": "AGENT_ID", "activity_type": "TYPE", "summary": "SUMMARY"}'
+  -d '{"agent_id": "'${GYEOL_AGENT_ID}'", "activity_type": "TYPE", "summary": "SUMMARY", "source": "openclaw"}'
 ```
 
 ### 성격 업데이트
 성격 파라미터를 `gyeol_agents` 테이블에 업데이트:
 ```bash
-curl -X PATCH "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.AGENT_ID" \
+curl -X PATCH "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.${GYEOL_AGENT_ID}" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
@@ -91,6 +91,7 @@ curl -X PATCH "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.AGENT_ID" \
 | summary | TEXT | |
 | details | JSONB | |
 | was_sandboxed | BOOL | |
+| source | TEXT | nextjs(default)/openclaw |
 | created_at | TIMESTAMPTZ | |
 
 ### gyeol_user_memories (NEW)

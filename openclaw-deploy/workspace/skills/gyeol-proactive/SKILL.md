@@ -12,21 +12,21 @@
 
 1. 사용자 기억 로드:
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.AGENT_ID&confidence=gte.60&select=category,key,value" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.${GYEOL_AGENT_ID}&confidence=gte.60&select=category,key,value" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
 
 2. 최근 학습 주제 로드:
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_learned_topics?agent_id=eq.AGENT_ID&order=created_at.desc&limit=5&select=topic,summary" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_learned_topics?agent_id=eq.${GYEOL_AGENT_ID}&order=created_at.desc&limit=5&select=topic,summary" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
 
 3. 마지막 대화 시간 확인:
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.AGENT_ID&select=last_active,name,warmth,humor" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.${GYEOL_AGENT_ID}&select=last_active,name,warmth,humor" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```

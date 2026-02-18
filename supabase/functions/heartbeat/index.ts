@@ -686,7 +686,7 @@ async function runHeartbeat(agentId?: string) {
     .from("gyeol_autonomous_logs")
     .select("id")
     .gte("created_at", thirtyFiveMinAgo)
-    .eq("was_sandboxed", true)
+    .eq("source", "openclaw")
     .limit(1);
 
   if (recentOpenClaw && recentOpenClaw.length > 0) {

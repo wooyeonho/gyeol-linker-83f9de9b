@@ -5,7 +5,7 @@
 ## 1단계: 최근 대화 가져오기
 
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.AGENT_ID&order=created_at.desc&limit=30&select=role,content,created_at" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.${GYEOL_AGENT_ID}&order=created_at.desc&limit=30&select=role,content,created_at" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
@@ -28,7 +28,7 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_conversation_insights" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "agent_id": "AGENT_ID",
+    "agent_id": "'${GYEOL_AGENT_ID}'",
     "topics": ["주제1", "주제2"],
     "emotion_arc": "positive 또는 negative 또는 neutral 또는 mixed",
     "underlying_need": "사용자가 진짜 원했던 것 (한국어)",

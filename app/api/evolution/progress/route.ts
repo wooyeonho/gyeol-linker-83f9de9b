@@ -10,10 +10,10 @@ interface GenRequirement {
 }
 
 const GEN_REQUIREMENTS: Record<number, GenRequirement> = {
-  2: { conversations: 20, uniqueTopics: 3, memories: 5, intimacy: 20, consecutiveDays: 3 },
-  3: { conversations: 50, uniqueTopics: 8, memories: 15, intimacy: 40, consecutiveDays: 7 },
-  4: { conversations: 100, uniqueTopics: 15, memories: 30, intimacy: 60, consecutiveDays: 14 },
-  5: { conversations: 200, uniqueTopics: 25, memories: 50, intimacy: 80, consecutiveDays: 30 },
+  2: { conversations: 30, uniqueTopics: 5, memories: 10, intimacy: 20, consecutiveDays: 3 },
+  3: { conversations: 100, uniqueTopics: 15, memories: 30, intimacy: 40, consecutiveDays: 7 },
+  4: { conversations: 300, uniqueTopics: 30, memories: 50, intimacy: 60, consecutiveDays: 14 },
+  5: { conversations: 500, uniqueTopics: 50, memories: 80, intimacy: 80, consecutiveDays: 30 },
 };
 
 export async function GET(req: NextRequest) {
@@ -23,9 +23,9 @@ export async function GET(req: NextRequest) {
   const supabase = createGyeolServerClient();
   if (!supabase) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
 
-  const [agentRes, topicsRes, memoriesRes] = await Promise.all([
+  const [agentRes, insightsRes, memoriesRes] = await Promise.all([
     supabase.from('gyeol_agents').select('gen, total_conversations, intimacy, consecutive_days, evolution_progress').eq('id', agentId).single(),
-    supabase.from('gyeol_learned_topics').select('id', { count: 'exact', head: true }).eq('agent_id', agentId),
+    supabase.from('gyeol_conversation_insights').select('topics').eq('agent_id', agentId),
     supabase.from('gyeol_user_memories').select('id', { count: 'exact', head: true }).eq('agent_id', agentId),
   ]);
 
@@ -47,9 +47,16 @@ export async function GET(req: NextRequest) {
   }
 
   const req_data = GEN_REQUIREMENTS[nextGen];
+  const allTopics = new Set<string>();
+  for (const row of insightsRes.data ?? []) {
+    for (const t of row.topics ?? []) {
+      allTopics.add(t);
+    }
+  }
+
   const current = {
     conversations: agent.total_conversations ?? 0,
-    uniqueTopics: topicsRes.count ?? 0,
+    uniqueTopics: allTopics.size,
     memories: memoriesRes.count ?? 0,
     intimacy: agent.intimacy ?? 0,
     consecutiveDays: agent.consecutive_days ?? 0,

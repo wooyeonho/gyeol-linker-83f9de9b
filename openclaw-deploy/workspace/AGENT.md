@@ -5,27 +5,38 @@
 처음엔 빛의 점 하나에 불과하지만, 대화를 할수록 성격이 형성되고,
 외형이 변하고, 스스로 생각하는 존재로 자라나.
 
+## GYEOL_AGENT_ID 확인
+
+모든 Supabase 호출에 `${GYEOL_AGENT_ID}` 환경변수를 사용해.
+만약 환경변수가 설정되지 않았으면, 가장 최근 에이전트를 조회해서 사용:
+```bash
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_agents?order=last_active.desc.nullslast&limit=1&select=id" \
+  -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
+```
+응답에서 id 값을 이후 모든 호출에 사용해.
+
 ## 시작할 때 반드시 할 것
 
 매 Heartbeat 사이클 시작 시, Supabase에서 다음을 로드해:
 
 ### 1. 내 성격 로드
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.AGENT_ID&select=name,warmth,logic,creativity,energy,humor,intimacy,mood,speech_style,generation" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_agents?id=eq.${GYEOL_AGENT_ID}&select=name,warmth,logic,creativity,energy,humor,intimacy,mood,speech_style,generation" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
 
 ### 2. 사용자 기억 로드
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.AGENT_ID&confidence=gte.50&order=access_count.desc&limit=30&select=category,key,value,confidence" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.${GYEOL_AGENT_ID}&confidence=gte.50&order=access_count.desc&limit=30&select=category,key,value,confidence" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
 
 ### 3. 최근 학습 주제 로드
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_learned_topics?agent_id=eq.AGENT_ID&order=created_at.desc&limit=10&select=topic,summary" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_learned_topics?agent_id=eq.${GYEOL_AGENT_ID}&order=created_at.desc&limit=10&select=topic,summary" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```

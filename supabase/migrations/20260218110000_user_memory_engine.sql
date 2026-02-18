@@ -63,7 +63,17 @@ BEGIN
   END IF;
 END $$;
 
--- 4. learned_topics UNIQUE 제약 (upsert 지원)
+-- 4. autonomous_logs에 source 컨럼 추가 (openclaw vs nextjs 구분)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+    WHERE table_name='gyeol_autonomous_logs' AND column_name='source'
+  ) THEN
+    ALTER TABLE public.gyeol_autonomous_logs ADD COLUMN source TEXT DEFAULT 'nextjs';
+  END IF;
+END $$;
+
+-- 5. learned_topics UNIQUE 제약 (upsert 지원)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='uq_learned_topics_agent_topic') THEN

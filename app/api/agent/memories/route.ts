@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
     .from('gyeol_user_memories')
     .select('id, category, key, value, confidence, access_count, updated_at')
     .eq('agent_id', agentId)
+    .gte('confidence', 50)
     .order('category')
     .order('confidence', { ascending: false });
 
