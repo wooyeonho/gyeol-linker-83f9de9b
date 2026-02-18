@@ -1,9 +1,3 @@
 {
-  "buildCommand": "next build",
-  "crons": [
-    {
-      "path": "/api/heartbeat",
-      "schedule": "*/30 * * * *"
-    }
-  ]
+  "buildCommand": "next build"
 }
