@@ -59,7 +59,7 @@ function MessageBubble({ msg }: { msg: Message }) {
 }
 
 export default function GyeolPage() {
-  const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage } = useGyeolStore();
+  const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight } = useGyeolStore();
   const { agent, loading: agentLoading, needsOnboarding, completeOnboarding } = useInitAgent();
   const { user } = useAuth();
   const [input, setInput] = useState('');
@@ -67,7 +67,6 @@ export default function GyeolPage() {
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [evoOpen, setEvoOpen] = useState(false);
   const [breedingOpen, setBreedingOpen] = useState(false);
-  const [insight, setInsight] = useState<{ topics: string[]; emotionArc: string; whatWorked: string; whatToImprove: string; personalityChanged: boolean; changes: Record<string, number> } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -293,11 +292,12 @@ export default function GyeolPage() {
 
       <BottomNav />
       <EvolutionCeremony />
-      <MemoryDashboard isOpen={memoryOpen} onClose={() => setMemoryOpen(false)} />
+      <MemoryDashboard isOpen={memoryOpen} onClose={() => setMemoryOpen(false)} agentId={agent?.id} />
       <EvolutionProgress
         isOpen={evoOpen}
         onClose={() => setEvoOpen(false)}
         currentGen={agent?.gen ?? 1}
+        agent={agent}
         onEvolve={async () => {
           if (!agent?.id) return;
           try {
@@ -312,7 +312,7 @@ export default function GyeolPage() {
           } catch { alert('진화 시도 중 오류가 발생했어요.'); }
         }}
       />
-      <InsightCard insight={insight} onDismiss={() => setInsight(null)} />
+      <InsightCard insight={lastInsight} onDismiss={clearInsight} />
       <BreedingResult isOpen={breedingOpen} onClose={() => setBreedingOpen(false)} />
     </main>
   );

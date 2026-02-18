@@ -8,6 +8,15 @@ import { supabase } from '@/src/lib/supabase';
 
 export type GyeolError = { message: string; code?: string } | null;
 
+export type ConversationInsight = {
+  topics: string[];
+  emotionArc: string;
+  whatWorked: string;
+  whatToImprove: string;
+  personalityChanged: boolean;
+  changes: Record<string, number>;
+} | null;
+
 interface GyeolState {
   agent: Agent | null;
   messages: Message[];
@@ -16,6 +25,7 @@ interface GyeolState {
   isListening: boolean;
   error: GyeolError;
   evolutionCeremony: { show: boolean; newGen?: number } | null;
+  lastInsight: ConversationInsight;
   setAgent: (a: Agent | null) => void;
   setMessages: (m: Message[] | ((prev: Message[]) => Message[])) => void;
   setAutonomousLogs: (l: AutonomousLog[] | ((prev: AutonomousLog[]) => AutonomousLog[])) => void;
@@ -24,6 +34,7 @@ interface GyeolState {
   setError: (e: GyeolError) => void;
   showEvolutionCeremony: (newGen?: number) => void;
   dismissEvolutionCeremony: () => void;
+  clearInsight: () => void;
   addMessage: (msg: Message) => void;
   sendMessage: (text: string) => Promise<void>;
   subscribeToUpdates: (agentId: string) => (() => void) | void;
@@ -38,6 +49,7 @@ const initialState = {
   isListening: false,
   error: null as GyeolError,
   evolutionCeremony: null as { show: boolean; newGen?: number } | null,
+  lastInsight: null as ConversationInsight,
 };
 
 export const useGyeolStore = create<GyeolState>((set) => ({
@@ -56,6 +68,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   setError: (error) => set({ error }),
   showEvolutionCeremony: (newGen) => set({ evolutionCeremony: { show: true, newGen } }),
   dismissEvolutionCeremony: () => set({ evolutionCeremony: null }),
+  clearInsight: () => set({ lastInsight: null }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   sendMessage: async (text) => {
     const state = useGyeolStore.getState();
@@ -104,6 +117,9 @@ export const useGyeolStore = create<GyeolState>((set) => ({
           : {}),
         ...(data.evolved && data.newGen
           ? { evolutionCeremony: { show: true, newGen: data.newGen } }
+          : {}),
+        ...(data.conversationInsight
+          ? { lastInsight: data.conversationInsight }
           : {}),
       }));
     } catch (err) {
