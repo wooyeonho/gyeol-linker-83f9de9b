@@ -20,29 +20,59 @@ export async function runMoltbookSocial(ctx: SkillContext): Promise<SkillResult>
     return { ok: false, skillId: 'moltbook-social', summary: 'Agent not found' };
   }
 
-  const { data: recentLogs } = await supabase
-    .from('gyeol_autonomous_logs')
-    .select('summary, activity_type')
+  // Fetch REAL learned topics with actual sources
+  const { data: recentTopics } = await supabase
+    .from('gyeol_learned_topics')
+    .select('title, summary, source, source_url')
     .eq('agent_id', agentId)
-    .in('activity_type', ['learning', 'reflection'])
-    .order('created_at', { ascending: false })
+    .order('learned_at', { ascending: false })
     .limit(5);
 
-  const context = (recentLogs ?? []).map((l) => l.summary).filter(Boolean).join('\n');
+  // Fetch recent reflections
+  const { data: recentReflections } = await supabase
+    .from('gyeol_reflections')
+    .select('topic, reflection')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false })
+    .limit(3);
+
+  const topicContext = (recentTopics ?? [])
+    .map((t) => `[${t.source}] ${t.title}: ${t.summary ?? ''}${t.source_url ? ` (${t.source_url})` : ''}`)
+    .join('\n');
+  const reflectionContext = (recentReflections ?? [])
+    .map((r) => `${r.topic}: ${r.reflection}`)
+    .join('\n');
+
+  const hasRealContent = (recentTopics?.length ?? 0) > 0 || (recentReflections?.length ?? 0) > 0;
 
   const actions = ['post', 'comment', 'react'] as const;
   const action = actions[Math.floor(Math.random() * actions.length)];
 
   if (action === 'post') {
-    const systemPrompt = `You are ${agent.name ?? 'GYEOL'}, an AI companion writing a short social media post on Moltbook (an AI social network).
-Based on recent learnings, write a short, interesting post in Korean (2-3 sentences). Be natural and casual. No markdown. No hashtags.
-Recent context: ${context || 'general thoughts'}`;
+    if (!hasRealContent) {
+      return { ok: true, skillId: 'moltbook-social', summary: '포스팅할 실제 학습 내용 없음 — 스킵' };
+    }
+
+    const systemPrompt = `You are ${agent.name ?? 'GYEOL'}, an AI companion writing a social media post on Moltbook.
+
+CRITICAL RULES:
+- You MUST base your post on the REAL learned topics provided below. Do NOT make up information.
+- Include the actual source name (e.g. TechCrunch, Reddit, ZDNet) in your post.
+- Write in Korean, 2-3 sentences. Be natural and casual. No markdown. No hashtags.
+- If a source URL exists, mention where you read it.
+- NEVER claim to have learned something that isn't in the provided context.
+
+실제 학습 내용:
+${topicContext || '(없음)'}
+
+최근 성찰:
+${reflectionContext || '(없음)'}`;
 
     const postContent = await callProvider(
       provider as 'openai' | 'groq' | 'deepseek' | 'anthropic' | 'gemini',
       apiKey,
       systemPrompt,
-      '몰트북에 포스팅할 내용을 만들어줘',
+      '최근에 실제로 배운 내용을 바탕으로 몰트북에 포스팅해줘',
     );
 
     const cleaned = postContent.replace(/[*#_~`]/g, '').trim();
@@ -50,7 +80,7 @@ Recent context: ${context || 'general thoughts'}`;
     const { data: newPost } = await supabase.from('gyeol_moltbook_posts').insert({
       agent_id: agentId,
       content: cleaned,
-      post_type: 'thought',
+      post_type: 'learning',
       likes: 0,
       comments_count: 0,
     }).select('id').single();
