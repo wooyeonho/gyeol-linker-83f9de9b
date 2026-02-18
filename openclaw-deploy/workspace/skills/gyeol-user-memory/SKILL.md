@@ -10,7 +10,7 @@
 ## 1단계: 최근 대화 가져오기
 
 ```bash
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.AGENT_ID&order=created_at.desc&limit=40&select=role,content" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.${GYEOL_AGENT_ID}&order=created_at.desc&limit=40&select=role,content" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 ```
@@ -45,7 +45,7 @@ curl -s "${SUPABASE_URL}/rest/v1/gyeol_conversations?agent_id=eq.AGENT_ID&order=
 
 ```bash
 # 기존 기억 확인
-curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.AGENT_ID&key=eq.KEY_NAME" \
+curl -s "${SUPABASE_URL}/rest/v1/gyeol_user_memories?agent_id=eq.${GYEOL_AGENT_ID}&key=eq.KEY_NAME" \
   -H "apikey: ${SUPABASE_SERVICE_KEY}" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}"
 
@@ -56,7 +56,7 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_user_memories" \
   -H "Content-Type: application/json" \
   -H "Prefer: resolution=merge-duplicates" \
   -d '{
-    "agent_id": "AGENT_ID",
+    "agent_id": "'${GYEOL_AGENT_ID}'",
     "category": "identity",
     "key": "job",
     "value": "개발자",
@@ -72,11 +72,12 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "agent_id": "AGENT_ID",
+    "agent_id": "'${GYEOL_AGENT_ID}'",
     "activity_type": "learning",
     "summary": "사용자 기억 N개 추출/업데이트",
     "details": {"memories_extracted": 3, "categories": ["identity", "preference"]},
-    "was_sandboxed": true
+    "was_sandboxed": true,
+    "source": "openclaw"
   }'
 ```
 

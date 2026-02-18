@@ -25,7 +25,7 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_learned_topics" \
   -H "Content-Type: application/json" \
   -H "Prefer: resolution=merge-duplicates" \
   -d '{
-    "agent_id": "AGENT_ID",
+    "agent_id": "'${GYEOL_AGENT_ID}'",
     "topic": "학습 주제 (짧게)",
     "summary": "핵심 요약 (1-2문장, 한국어)",
     "source": "rss 또는 web",
@@ -41,11 +41,12 @@ curl -X POST "${SUPABASE_URL}/rest/v1/gyeol_autonomous_logs" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "agent_id": "AGENT_ID",
+    "agent_id": "'${GYEOL_AGENT_ID}'",
     "activity_type": "learning",
     "summary": "오늘 배운 것: (요약)",
     "details": {"topics": ["주제1", "주제2"], "source_count": 3},
-    "was_sandboxed": true
+    "was_sandboxed": true,
+    "source": "openclaw"
   }'
 ```
 
