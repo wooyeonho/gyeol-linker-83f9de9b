@@ -291,12 +291,77 @@ async def telegram_webhook(request: Request):
             await _send_reply("에이전트 정보를 불러올 수 없어요.")
         return {"ok": True}
 
+    # /memory command — view and manage user memories
+    if text.strip().startswith("/memory"):
+        if not agent_id:
+            await _send_reply("먼저 /start <코드>로 에이전트를 연결해주세요!")
+            return {"ok": True}
+        parts = text.strip().split(maxsplit=2)
+        sub_cmd = parts[1].strip().lower() if len(parts) > 1 else "list"
+
+        if sub_cmd == "list" or sub_cmd == "/memory":
+            mem_data = await _supabase_get("gyeol_user_memories", {
+                "select": "id,category,key,value,confidence",
+                "agent_id": f"eq.{agent_id}",
+                "order": "confidence.desc",
+                "limit": "15",
+            })
+            if not mem_data or not isinstance(mem_data, list) or len(mem_data) == 0:
+                await _send_reply("아직 저장된 기억이 없어요.")
+            else:
+                lines = ["[ 기억 목록 ]", "━━━━━━━━━━━━━━━"]
+                for i, m in enumerate(mem_data, 1):
+                    conf = m.get("confidence", 0)
+                    conf_bar = "●" * (conf // 20) + "○" * (5 - conf // 20)
+                    lines.append(f"{i}. [{m.get('category', '?')}] {m.get('key', '')}")
+                    lines.append(f"   → {m.get('value', '')}  ({conf_bar} {conf}%)")
+                lines.append(f"\n삭제: /memory delete <번호>")
+                await _send_reply("\n".join(lines))
+            return {"ok": True}
+
+        if sub_cmd == "delete" and len(parts) > 2:
+            try:
+                idx = int(parts[2].strip()) - 1
+            except ValueError:
+                await _send_reply("번호를 입력해주세요. 예: /memory delete 3")
+                return {"ok": True}
+            mem_data = await _supabase_get("gyeol_user_memories", {
+                "select": "id,key",
+                "agent_id": f"eq.{agent_id}",
+                "order": "confidence.desc",
+                "limit": "15",
+            })
+            if not mem_data or not isinstance(mem_data, list) or idx < 0 or idx >= len(mem_data):
+                await _send_reply("유효하지 않은 번호예요. /memory list로 확인해주세요.")
+                return {"ok": True}
+            target = mem_data[idx]
+            # Delete via Supabase REST API
+            try:
+                delete_url = f"{SUPABASE_URL}/rest/v1/gyeol_user_memories?id=eq.{target['id']}"
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.delete(delete_url, headers={
+                        "apikey": SUPABASE_SERVICE_KEY,
+                        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                    })
+                if resp.status_code < 300:
+                    await _send_reply(f"'{target.get('key', '')}' 기억을 삭제했어요.")
+                else:
+                    await _send_reply("삭제 중 오류가 발생했어요.")
+            except Exception as e:
+                logger.error(f"Memory delete error: {e}")
+                await _send_reply("삭제 중 오류가 발생했어요.")
+            return {"ok": True}
+
+        await _send_reply("사용법:\n/memory — 기억 목록\n/memory list — 기억 목록\n/memory delete <번호> — 기억 삭제")
+        return {"ok": True}
+
     # /help command
     if text.strip() == "/help":
         await _send_reply(
             "/start <코드> — 에이전트 연결\n"
             "/status — 에이전트 상태 보기\n"
             "/search <키워드> — 웹 검색\n"
+            "/memory — 기억 관리\n"
             "/help — 도움말\n\n"
             "그 외 메시지는 AI가 답변해요!"
         )

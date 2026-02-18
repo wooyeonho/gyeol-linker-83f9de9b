@@ -151,6 +151,19 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
     .map((t: any) => `${t.title}: ${t.summary ?? ""}`)
     .join("\n");
 
+  // Load recent emotion arc from conversation insights
+  const { data: recentInsight } = await supabase
+    .from("gyeol_conversation_insights")
+    .select("emotion_arc, underlying_need, what_worked, next_hint")
+    .eq("agent_id", agentId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const emotionContext = recentInsight
+    ? `최근 감정 흐름: ${recentInsight.emotion_arc}${recentInsight.underlying_need ? `\n사용자의 잠재 니즈: ${recentInsight.underlying_need}` : ""}${recentInsight.next_hint ? `\n다음 대화 힌트: ${recentInsight.next_hint}` : ""}`
+    : "";
+
   // Determine trigger reason
   const now = new Date();
   const kstHour = (now.getUTCHours() + 9) % 24;
@@ -172,8 +185,10 @@ ${memoryContext || "(아직 기억 없음)"}
 최근 학습한 내용:
 ${topicContext || "(최근 학습 없음)"}
 
-규칙:
+${emotionContext ? `사용자 감정 상태:\n${emotionContext}\n` : ""}규칙:
 - 반드시 사용자 기억이나 학습 내용 중 1개 이상을 자연스럽게 활용해서 메시지 작성
+- 사용자의 최근 감정 상태를 고려해서 공감적인 톤으로 메시지 작성
+- 감정이 부정적이면 위로와 응원 위주, 긍정적이면 함께 기뻐하는 톤
 - 한국어로 1-2문장, 친한 친구처럼 캐주얼하게
 - 마크다운 금지, AI라고 말하지 않기
 - 기억이 없으면 최근 학습 내용을 공유`;
