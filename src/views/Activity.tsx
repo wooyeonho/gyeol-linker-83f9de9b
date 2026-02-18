@@ -1,18 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
-import { supabase } from '@/src/lib/supabase';
+import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { format, isToday, isYesterday } from 'date-fns';
-import type { AutonomousLog } from '@/lib/gyeol/types';
+
+interface ActivityLog {
+  id: string;
+  activity_type: string;
+  summary: string | null;
+  created_at: string;
+  was_sandboxed: boolean;
+  details: Record<string, unknown>;
+}
 
 const TYPE_ICON: Record<string, string> = {
   learning: 'school', reflection: 'psychology', social: 'group',
   proactive_message: 'mail', skill_execution: 'build', error: 'shield',
+  heartbeat: 'favorite',
 };
 const TYPE_LABEL: Record<string, string> = {
   learning: 'Learning', reflection: 'Reflection', social: 'Social',
   proactive_message: 'Proactive', skill_execution: 'Skill', error: 'Security',
+  heartbeat: 'Heartbeat',
 };
 
 function formatDate(dateStr: string) {
@@ -24,40 +34,51 @@ function formatDate(dateStr: string) {
 
 export default function ActivityPage() {
   const { agent } = useInitAgent();
-  const [logs, setLogs] = useState<AutonomousLog[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!agent?.id) return;
-    (async () => {
+
+    const fetchLogs = async () => {
       setLoading(true);
       const { data } = await supabase
-        .from('gyeol_autonomous_logs' as any)
-        .select('*').eq('agent_id', agent.id)
-        .order('created_at', { ascending: false }).limit(50);
-      setLogs((data as any[]) ?? []);
+        .from('gyeol_autonomous_logs')
+        .select('*')
+        .eq('agent_id', agent.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      setLogs((data as ActivityLog[]) ?? []);
       setLoading(false);
-    })();
+    };
+    fetchLogs();
 
+    // Realtime subscription for new logs
     const channel = supabase
       .channel(`activity:${agent.id}`)
-      .on('postgres_changes' as any,
+      .on(
+        'postgres_changes' as any,
         { event: 'INSERT', schema: 'public', table: 'gyeol_autonomous_logs', filter: `agent_id=eq.${agent.id}` },
-        (payload: any) => { setLogs((prev) => [payload.new as AutonomousLog, ...prev]); }
-      ).subscribe();
+        (payload: any) => { setLogs((prev) => [payload.new as ActivityLog, ...prev]); }
+      )
+      .subscribe();
+
     return () => { supabase.removeChannel(channel); };
   }, [agent?.id]);
 
-  const summary = {
+  const summary = useMemo(() => ({
     total: logs.length,
     learning: logs.filter((l) => l.activity_type === 'learning').length,
     reflection: logs.filter((l) => l.activity_type === 'reflection').length,
-  };
-  const grouped = logs.reduce<Record<string, AutonomousLog[]>>((acc, log) => {
-    const key = formatDate(log.created_at);
-    (acc[key] ??= []).push(log);
-    return acc;
-  }, {});
+    heartbeat: logs.filter((l) => l.activity_type === 'heartbeat').length,
+  }), [logs]);
+
+  const grouped = useMemo(() =>
+    logs.reduce<Record<string, ActivityLog[]>>((acc, log) => {
+      const key = formatDate(log.created_at);
+      (acc[key] ??= []).push(log);
+      return acc;
+    }, {}), [logs]);
 
   return (
     <main className="min-h-screen bg-black font-display pb-16">
@@ -72,6 +93,7 @@ export default function ActivityPage() {
             { label: 'Total', value: summary.total },
             { label: 'Learn', value: summary.learning },
             { label: 'Reflect', value: summary.reflection },
+            { label: 'Heartbeat', value: summary.heartbeat },
           ].map((s) => (
             <div key={s.label} className="flex-1 text-center">
               <p className="text-lg font-light text-foreground/70">{s.value}</p>
@@ -99,8 +121,12 @@ export default function ActivityPage() {
                 {items.map((log, i) => (
                   <motion.div key={log.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                     className="flex items-start gap-3 py-2.5 border-b border-white/[0.03] last:border-0">
-                    <div className="w-6 h-6 rounded-md bg-primary/[0.07] flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="material-icons-round text-primary/50 text-sm">{TYPE_ICON[log.activity_type] ?? 'info'}</span>
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                      log.activity_type === 'heartbeat' ? 'bg-rose-500/[0.07]' : 'bg-primary/[0.07]'
+                    }`}>
+                      <span className={`material-icons-round text-sm ${
+                        log.activity_type === 'heartbeat' ? 'text-rose-500/50' : 'text-primary/50'
+                      }`}>{TYPE_ICON[log.activity_type] ?? 'info'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
