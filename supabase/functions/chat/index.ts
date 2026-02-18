@@ -67,13 +67,30 @@ serve(async (req) => {
       ? { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor }
       : { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
 
+    // Load installed skills for this agent
+    const { data: installedSkills } = await db.from("gyeol_agent_skills")
+      .select("skill_id").eq("agent_id", agentId).eq("is_active", true);
+    let skillNames: string[] = [];
+    if (installedSkills && installedSkills.length > 0) {
+      const skillIds = installedSkills.map((s: any) => s.skill_id);
+      const { data: skills } = await db.from("gyeol_skills")
+        .select("name, description, category").in("id", skillIds);
+      skillNames = (skills ?? []).map((s: any) => `${s.name} (${s.category ?? "general"}): ${s.description ?? ""}`);
+    }
+
     // Load recent conversation history
     const { data: history } = await db.from("gyeol_conversations")
       .select("role, content").eq("agent_id", agentId)
       .order("created_at", { ascending: false }).limit(10);
 
+    const systemPrompt = buildSystemPrompt(personality) + (
+      skillNames.length > 0
+        ? `\n\nYou have the following installed skills that enhance your abilities:\n${skillNames.map(s => `- ${s}`).join("\n")}\nLeverage these skills naturally in conversation when relevant.`
+        : ""
+    );
+
     const chatMessages: ChatMessage[] = [
-      { role: "system", content: buildSystemPrompt(personality) },
+      { role: "system", content: systemPrompt },
       ...((history ?? []).reverse().map((h: any) => ({ role: h.role, content: h.content }))),
       { role: "user", content: message },
     ];
