@@ -1,7 +1,29 @@
 {
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "groq/llama-3.3-70b-versatile",
+        "fallbacks": [
+          "groq/llama-3.1-8b-instant"
+        ]
+      },
+      "models": {
+        "groq/llama-3.3-70b-versatile": {
+          "alias": "llama70b"
+        },
+        "groq/llama-3.1-8b-instant": {
+          "alias": "llama8b"
+        }
+      }
+    }
+  },
   "channels": {
     "telegram": {
       "enabled": true
     }
+  },
+  "heartbeat": {
+    "enabled": true,
+    "interval": 1800
   }
 }

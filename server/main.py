@@ -60,8 +60,11 @@ async def _set_telegram_webhook():
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    from openclaw_runtime import start_heartbeat, stop_heartbeat
     await _set_telegram_webhook()
+    start_heartbeat()
     yield
+    stop_heartbeat()
 
 
 app = FastAPI(title="GYEOL Gateway", lifespan=lifespan)
@@ -357,14 +360,28 @@ async def social_comment(request: Request):
     }
 
 
+@app.get("/openclaw/status")
+async def openclaw_status():
+    from openclaw_runtime import get_status
+    return get_status()
+
+
+@app.post("/openclaw/heartbeat")
+async def openclaw_trigger_heartbeat():
+    from openclaw_runtime import run_heartbeat_cycle
+    results = await run_heartbeat_cycle()
+    return {"ok": True, "results": results}
+
+
 @app.get("/")
 async def root():
     return {
-        "service": "GYEOL Gateway",
+        "service": "GYEOL Gateway + OpenClaw Runtime",
         "status": "running",
         "endpoints": [
             "/health", "/api/chat",
             "/api/social/feed", "/api/social/post", "/api/social/like", "/api/social/comment",
             "/webhook/telegram", "/telegram/status",
+            "/openclaw/status", "/openclaw/heartbeat",
         ],
     }
