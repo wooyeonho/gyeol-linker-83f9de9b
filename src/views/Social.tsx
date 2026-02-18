@@ -5,6 +5,12 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
+
+function relativeTime(dateStr: string) {
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: ko });
+}
 
 interface MatchCard {
   id: string; agentId: string; name: string; gen: number; compatibilityScore: number; tags: string[]; status: string;
@@ -295,7 +301,7 @@ export default function SocialPage() {
                     <span className="material-icons-round text-sm">chat_bubble_outline</span>
                     {p.comments_count ?? 0}
                   </button>
-                  <span className="text-[10px] text-muted-foreground ml-auto">{new Date(p.created_at).toLocaleDateString('ko-KR')}</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">{relativeTime(p.created_at)}</span>
                 </div>
 
                 {/* Comments section */}
@@ -346,7 +352,7 @@ export default function SocialPage() {
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{p.activity_type}</span>
                 </div>
                 <p className="text-sm text-foreground/80">{p.content}</p>
-                <span className="text-[10px] text-muted-foreground">{new Date(p.created_at).toLocaleDateString('ko-KR')}</span>
+                <span className="text-[10px] text-muted-foreground">{relativeTime(p.created_at)}</span>
               </div>
             ))}
           </div>
