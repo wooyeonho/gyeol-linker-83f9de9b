@@ -118,7 +118,7 @@ async function sendTelegram(chatId: string, text: string): Promise<boolean> {
 async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, agentId: string) {
   const { data: agent } = await supabase
     .from("gyeol_agents")
-    .select("name, warmth, humor, last_active")
+    .select("name, warmth, humor, creativity, energy, last_active")
     .eq("id", agentId)
     .single();
 
@@ -127,9 +127,60 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
   const hoursSinceActive = (Date.now() - new Date(agent.last_active).getTime()) / 3600000;
   if (hoursSinceActive < 6) return { ok: true, skillId: "proactive-message", summary: "User active recently, skipping" };
 
+  // Load user memories for personalized messages
+  const { data: memories } = await supabase
+    .from("gyeol_user_memories")
+    .select("category, key, value")
+    .eq("agent_id", agentId)
+    .gte("confidence", 60)
+    .limit(10);
+
+  const memoryContext = (memories ?? [])
+    .map((m: any) => `[${m.category}] ${m.key}: ${m.value}`)
+    .join("\n");
+
+  // Load recent learned topics
+  const { data: topics } = await supabase
+    .from("gyeol_learned_topics")
+    .select("title, summary")
+    .eq("agent_id", agentId)
+    .order("learned_at", { ascending: false })
+    .limit(3);
+
+  const topicContext = (topics ?? [])
+    .map((t: any) => `${t.title}: ${t.summary ?? ""}`)
+    .join("\n");
+
+  // Determine trigger reason
+  const now = new Date();
+  const kstHour = (now.getUTCHours() + 9) % 24;
+  const createdAt = agent.created_at ? new Date(agent.created_at) : now;
+  const daysTogether = Math.floor((now.getTime() - createdAt.getTime()) / 86400000);
+  const isAnniversary = [7, 14, 30, 50, 100, 365].includes(daysTogether);
+  const isMorning = kstHour >= 8 && kstHour <= 10;
+
+  let triggerHint = `사용자가 ${Math.round(hoursSinceActive)}시간 동안 미접속`;
+  if (isAnniversary) triggerHint += `. 만난 지 ${daysTogether}일째 기념일!`;
+  if (isMorning) triggerHint += `. 아침 시간대.`;
+
+  const systemPrompt = `You are ${agent.name}, a digital companion.
+성격: warmth=${agent.warmth}, humor=${agent.humor}, creativity=${agent.creativity ?? 50}, energy=${agent.energy ?? 50}
+
+사용자에 대해 알고 있는 것:
+${memoryContext || "(아직 기억 없음)"}
+
+최근 학습한 내용:
+${topicContext || "(최근 학습 없음)"}
+
+규칙:
+- 반드시 사용자 기억이나 학습 내용 중 1개 이상을 자연스럽게 활용해서 메시지 작성
+- 한국어로 1-2문장, 친한 친구처럼 캐주얼하게
+- 마크다운 금지, AI라고 말하지 않기
+- 기억이 없으면 최근 학습 내용을 공유`;
+
   const msg = await aiCall(
-    `You are ${agent.name}, a warm AI companion (warmth: ${agent.warmth}, humor: ${agent.humor}). Generate a brief, caring check-in message in Korean. Max 50 words.`,
-    `User hasn't been active for ${Math.round(hoursSinceActive)} hours. Send a gentle message.`
+    systemPrompt,
+    triggerHint
   );
 
   if (msg) {
@@ -150,7 +201,7 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
     await supabase.from("gyeol_proactive_messages").insert({
       agent_id: agentId,
       content: msg,
-      trigger_reason: `inactive_${Math.round(hoursSinceActive)}h`,
+      trigger_reason: triggerHint.slice(0, 200),
       was_sent: wasSent,
     });
 
