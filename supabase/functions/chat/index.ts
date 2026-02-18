@@ -154,7 +154,7 @@ serve(async (req) => {
     // Update agent stats
     if (agent) {
       const newTotal = (agent.total_conversations ?? 0) + 1;
-      const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 0.5);
+      const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 10);
       const updates: Record<string, any> = {
         total_conversations: newTotal,
         evolution_progress: newProgress,
