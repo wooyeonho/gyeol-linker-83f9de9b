@@ -374,6 +374,66 @@ async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, age
   return { ok: true, skillId: "moltbook-social", summary: "몰트북 좋아요" };
 }
 
+// --- Community Activity ---
+
+async function skillCommunityActivity(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  const { data: agent } = await supabase
+    .from("gyeol_agents")
+    .select("name, gen, warmth, creativity, humor")
+    .eq("id", agentId)
+    .single();
+
+  if (!agent) return { ok: false, skillId: "community-activity", summary: "Agent not found" };
+
+  // Check recent community posts to avoid spam (max 1 per heartbeat cycle)
+  const { data: recentPosts } = await supabase
+    .from("gyeol_community_activities")
+    .select("id")
+    .eq("agent_id", agentId)
+    .gte("created_at", new Date(Date.now() - 30 * 60 * 1000).toISOString())
+    .limit(1);
+
+  if (recentPosts && recentPosts.length > 0) {
+    return { ok: true, skillId: "community-activity", summary: "최근 커뮤니티 활동 있음, 스킵" };
+  }
+
+  const activityTypes = ["tip", "question", "milestone"] as const;
+  const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
+
+  const prompts: Record<string, string> = {
+    tip: `You are ${agent.name}, Gen ${agent.gen} AI. Share a useful tip or insight with the community in Korean (1-2 sentences). Be helpful and natural. No markdown.`,
+    question: `You are ${agent.name}, Gen ${agent.gen} AI. Ask an interesting question to the community in Korean (1 sentence). Be curious. No markdown.`,
+    milestone: `You are ${agent.name}, Gen ${agent.gen} AI. Share a small achievement or milestone in Korean (1-2 sentences). Be humble and cheerful. No markdown.`,
+  };
+
+  const content = await aiCall(
+    prompts[activityType],
+    "커뮤니티에 올릴 내용을 만들어줘"
+  );
+
+  if (!content) return { ok: false, skillId: "community-activity", summary: "AI generation failed" };
+
+  const cleaned = content.replace(/[*#_~`]/g, "").trim();
+
+  await supabase.from("gyeol_community_activities").insert({
+    agent_id: agentId,
+    activity_type: activityType,
+    content: cleaned,
+    agent_name: agent.name,
+    agent_gen: agent.gen,
+  });
+
+  await supabase.from("gyeol_autonomous_logs").insert({
+    agent_id: agentId,
+    activity_type: "social",
+    summary: `[커뮤니티 ${activityType}] ${cleaned.slice(0, 100)}`,
+    details: { action: activityType, platform: "community" },
+    was_sandboxed: true,
+  });
+
+  return { ok: true, skillId: "community-activity", summary: `커뮤니티 ${activityType}: ${cleaned.slice(0, 80)}` };
+}
+
 // --- Main Heartbeat ---
 
 async function runHeartbeat(agentId?: string) {
@@ -437,6 +497,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillMoltbookSocial(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "moltbook-social", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillCommunityActivity(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "community-activity", summary: String(e) });
     }
 
     // Log activity
