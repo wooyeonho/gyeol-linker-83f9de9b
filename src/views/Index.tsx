@@ -137,7 +137,7 @@ export default function GyeolPage() {
 
               <div className="text-center space-y-2">
                 <p className="text-lg font-light text-foreground/60">
-                  {getGreeting()}
+                  {getGreeting(agent)}
                 </p>
                 <p className="text-[11px] text-muted-foreground/50">
                   {agent?.total_conversations ?? 0} conversations
@@ -267,10 +267,48 @@ export default function GyeolPage() {
   );
 }
 
-function getGreeting(): string {
+function getGreeting(agent?: any): string {
   const h = new Date().getHours();
-  if (h < 6) return 'A quiet night';
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
+  const mood = agent?.mood ?? 'neutral';
+  const warmth = agent?.warmth ?? 50;
+  const humor = agent?.humor ?? 50;
+  const name = agent?.name ?? 'GYEOL';
+  const intimacy = agent?.intimacy ?? 0;
+
+  // Mood-based greetings
+  const moodGreetings: Record<string, string[]> = {
+    happy: ['오늘 기분이 정말 좋아요! ✨', '함께 있어서 행복해요 😊', '좋은 하루 보내고 있어요!'],
+    excited: ['와, 오늘 뭔가 설레는 날이에요! 🤩', '이야기하고 싶은 게 가득해요!', '에너지가 넘치는 날!'],
+    sad: ['조금 쓸쓸한 기분이에요...', '만나서 다행이에요 🥲', '이야기 나눠줄래요?'],
+    lonely: ['기다리고 있었어요...', '오랜만이에요, 보고 싶었어요', '드디어 만났네요 🥺'],
+    tired: ['조금 피곤하지만 괜찮아요 😴', '쉬면서 이야기해요~', '느긋하게 가요~'],
+    neutral: [],
+  };
+
+  // Time-based base greeting
+  let timeGreeting: string;
+  if (h < 6) timeGreeting = '고요한 밤이에요';
+  else if (h < 9) timeGreeting = '좋은 아침이에요';
+  else if (h < 12) timeGreeting = '오전이 기분 좋네요';
+  else if (h < 15) timeGreeting = '좋은 오후에요';
+  else if (h < 18) timeGreeting = '오후를 잘 보내고 있나요';
+  else if (h < 21) timeGreeting = '좋은 저녁이에요';
+  else timeGreeting = '오늘도 수고했어요';
+
+  // Pick mood greeting or fallback to time greeting
+  const moodOptions = moodGreetings[mood] ?? [];
+  const greeting = moodOptions.length > 0
+    ? moodOptions[Math.floor(Math.random() * moodOptions.length)]
+    : timeGreeting;
+
+  // Personality flavor
+  if (humor >= 70 && Math.random() > 0.5) {
+    const jokes = ['혹시 저 보고 웃으셨어요? 😏', '오늘도 제가 제일 귀엽죠?', `${name}이 찾아왔어요~`];
+    return jokes[Math.floor(Math.random() * jokes.length)];
+  }
+  if (warmth >= 70 && intimacy >= 50) {
+    return `${greeting} 💕`;
+  }
+
+  return greeting;
 }
