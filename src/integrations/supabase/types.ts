@@ -875,6 +875,76 @@ export type Database = {
           },
         ]
       }
+      gyeol_user_feeds: {
+        Row: {
+          agent_id: string
+          created_at: string
+          feed_name: string | null
+          feed_url: string
+          id: string
+          is_active: boolean
+          last_fetched_at: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          feed_name?: string | null
+          feed_url: string
+          id?: string
+          is_active?: boolean
+          last_fetched_at?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          feed_name?: string | null
+          feed_url?: string
+          id?: string
+          is_active?: boolean
+          last_fetched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_user_feeds_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_user_keywords: {
+        Row: {
+          agent_id: string
+          category: string | null
+          created_at: string
+          id: string
+          keyword: string
+        }
+        Insert: {
+          agent_id: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          keyword: string
+        }
+        Update: {
+          agent_id?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_user_keywords_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
