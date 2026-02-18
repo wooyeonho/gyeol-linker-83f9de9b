@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-[70] bg-black/90 backdrop-blur-md border-t border-white/[0.04]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-      <div className="max-w-md mx-auto grid grid-cols-5 items-center h-12">
+      <div className="max-w-md mx-auto grid grid-cols-5 place-items-center h-12">
         {NAV_ITEMS.map((item) => {
           const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
           return (
