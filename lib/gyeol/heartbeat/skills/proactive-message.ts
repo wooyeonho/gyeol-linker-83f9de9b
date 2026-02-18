@@ -83,9 +83,8 @@ Generate a short, warm Korean message (1-2 sentences) to the user. Be natural an
       data: { url: '/', agentId },
     });
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+        ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
       await fetch(`${baseUrl}/api/push/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

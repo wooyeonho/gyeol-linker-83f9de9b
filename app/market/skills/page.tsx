@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useGyeolStore } from '@/store/gyeol-store';
 
 interface SkillItem {
   id: string;
@@ -19,6 +20,7 @@ interface SkillItem {
 }
 
 export default function GyeolSkillsPage() {
+  const { agent } = useGyeolStore();
   const [skills, setSkills] = useState<SkillItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,6 +72,16 @@ export default function GyeolSkillsPage() {
                 </div>
                 <button
                   type="button"
+                  onClick={async () => {
+                    if (!agent?.id) return;
+                    const res = await fetch('/api/market/skills/install', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ agentId: agent.id, skillId: s.id }),
+                    });
+                    if (res.ok) alert(`${s.name} 설치 완료!`);
+                    else alert('설치 실패');
+                  }}
                   className="rounded-xl bg-indigo-500/20 text-indigo-400 px-4 py-2 text-sm font-medium shrink-0"
                 >
                   설치
