@@ -14,14 +14,14 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-[70] bg-black/90 backdrop-blur-md border-t border-white/[0.04]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-      <div className="max-w-md mx-auto flex justify-around items-center h-12">
+      <div className="max-w-md mx-auto grid grid-cols-5 items-center h-12">
         {NAV_ITEMS.map((item) => {
           const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
           return (
             <Link
               key={item.to}
               to={item.to}
-              className="relative flex flex-col items-center justify-center gap-0.5 w-12 h-12"
+              className="flex flex-col items-center justify-center gap-0.5 h-12"
             >
               <span className={`material-icons-round text-[18px] transition-colors duration-200 ${active ? 'text-primary' : 'text-white/20'}`}>
                 {item.icon}
