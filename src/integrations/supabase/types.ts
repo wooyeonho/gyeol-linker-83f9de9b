@@ -105,6 +105,10 @@ export type Database = {
           intimacy: number
           last_active: string
           logic: number
+          moltbook_agent_name: string | null
+          moltbook_api_key: string | null
+          moltbook_claim_url: string | null
+          moltbook_status: string | null
           mood: string
           name: string
           openclaw_agent_id: string | null
@@ -128,6 +132,10 @@ export type Database = {
           intimacy?: number
           last_active?: string
           logic?: number
+          moltbook_agent_name?: string | null
+          moltbook_api_key?: string | null
+          moltbook_claim_url?: string | null
+          moltbook_status?: string | null
           mood?: string
           name?: string
           openclaw_agent_id?: string | null
@@ -151,6 +159,10 @@ export type Database = {
           intimacy?: number
           last_active?: string
           logic?: number
+          moltbook_agent_name?: string | null
+          moltbook_api_key?: string | null
+          moltbook_claim_url?: string | null
+          moltbook_status?: string | null
           mood?: string
           name?: string
           openclaw_agent_id?: string | null
