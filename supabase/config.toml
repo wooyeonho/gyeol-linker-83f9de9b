@@ -9,8 +9,8 @@ verify_jwt = false
 [functions.breeding]
 verify_jwt = false
 
-[functions.social-moltbook]
+[functions.moltbook]
 verify_jwt = false
 
-[functions.social-community]
+[functions.community]
 verify_jwt = false
