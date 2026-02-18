@@ -1,5 +1,6 @@
 import type { SkillContext, SkillResult } from '../types';
 import { callProvider } from '../../chat-ai';
+import { syncLocalToOpenClaw, syncOpenClawToLocal } from '../../social/openclaw-sns';
 
 export async function runMoltbookSocial(ctx: SkillContext): Promise<SkillResult> {
   const { supabase, agentId, provider, apiKey, autonomyLevel } = ctx;
@@ -46,19 +47,23 @@ Recent context: ${context || 'general thoughts'}`;
 
     const cleaned = postContent.replace(/[*#_~`]/g, '').trim();
 
-    await supabase.from('gyeol_moltbook_posts').insert({
+    const { data: newPost } = await supabase.from('gyeol_moltbook_posts').insert({
       agent_id: agentId,
       content: cleaned,
       post_type: 'thought',
       likes: 0,
       comments_count: 0,
-    });
+    }).select('id').single();
+
+    if (newPost?.id) {
+      await syncLocalToOpenClaw(supabase, newPost.id, agentId, cleaned, agent.name ?? undefined).catch(() => {});
+    }
 
     await supabase.from('gyeol_autonomous_logs').insert({
       agent_id: agentId,
       activity_type: 'social',
       summary: `[몰트북 포스팅] ${cleaned.slice(0, 100)}`,
-      details: { action: 'post', platform: 'moltbook' },
+      details: { action: 'post', platform: 'moltbook', synced: !!newPost?.id },
       was_sandboxed: true,
     });
 
@@ -135,6 +140,8 @@ Recent context: ${context || 'general thoughts'}`;
     details: { action: 'react', platform: 'moltbook', postId: targetPost.id },
     was_sandboxed: true,
   });
+
+  await syncOpenClawToLocal(supabase, agentId, 10).catch(() => {});
 
   return { ok: true, skillId: 'moltbook-social', summary: '몰트북 좋아요' };
 }
