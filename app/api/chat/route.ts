@@ -262,8 +262,8 @@ export async function POST(req: NextRequest) {
           assistantContent = content;
           provider = 'cloudflare';
         }
-      } catch {
-        // fallback
+      } catch (err) {
+        console.error('[chat] cloudflare fallback failed:', err);
       }
     }
 
@@ -395,8 +395,8 @@ export async function POST(req: NextRequest) {
           } else if (newProgress >= 100) {
             await supabase.from('gyeol_agents').update({ evolution_progress: 80 }).eq('id', agentId);
           }
-        } catch {
-          // evolution analysis failed - non-critical
+        } catch (err) {
+          console.error('[chat] evolution analysis failed:', err);
         }
       }
 

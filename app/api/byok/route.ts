@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true, id: data?.id, provider, masked: maskKey(apiKey) });
-  } catch {
+  } catch (err) {
+    console.error('[byok] save key failed:', err);
     return NextResponse.json({ error: 'Failed to save key' }, { status: 500 });
   }
 }
