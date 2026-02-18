@@ -128,7 +128,7 @@ export default function GyeolPage() {
               transition={{ duration: 0.4 }}
               className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
             >
-              <VoidCore isThinking={isLoading} />
+              <VoidCore isThinking={isLoading} mood={(agent as any)?.mood ?? 'neutral'} />
 
               <div className="text-center space-y-2">
                 <p className="text-lg font-light text-foreground/60">
