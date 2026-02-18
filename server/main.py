@@ -348,8 +348,29 @@ async def telegram_webhook(request: Request):
     if conv_data and isinstance(conv_data, list):
         history = [{"role": r["role"], "content": r["content"]} for r in reversed(conv_data)]
 
+    # Auto web search routing: ask AI if search is needed
+    search_context = ""
     try:
-        reply = await _call_groq(text, system_prompt, history)
+        need_search = await _call_groq(
+            f"사용자 메시지: {text}\n\n이 메시지에 답하려면 최신 정보나 웹검색이 필요한가요? 뉴스, 날씨, 최신 트렌드, 특정 사실 확인 등이 필요하면 YES와 검색 키워드를 반환하세요.\n형식: YES: <검색키워드> 또는 NO",
+            "You are a search router. Determine if a user message requires web search for up-to-date info. Respond ONLY with 'YES: <search query>' or 'NO'. Nothing else.",
+        )
+        if need_search and need_search.strip().upper().startswith("YES:"):
+            search_query = need_search.strip()[4:].strip()
+            if search_query:
+                search_results = await _web_search(search_query)
+                if search_results:
+                    search_context = f"\n\n[웹 검색 결과 ({search_query})]\n{search_results}"
+    except Exception as e:
+        logger.warning(f"Auto search routing error: {e}")
+
+    # Augment system prompt with search results if available
+    final_system = system_prompt
+    if search_context:
+        final_system += f"\n\n다음 웹 검색 결과를 참고해서 답변해. 출처를 자연스럽게 언급해:{search_context}"
+
+    try:
+        reply = await _call_groq(text, final_system, history)
     except Exception as e:
         logger.error(f"Telegram chat error: {e}")
         reply = "죄송해요, 잠시 문제가 있어요."
