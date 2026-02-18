@@ -438,24 +438,95 @@ async function skillCommunityActivity(supabase: ReturnType<typeof getSupabase>, 
   return { ok: true, skillId: "community-activity", summary: `커뮤니티 ${activityType}: ${cleaned.slice(0, 80)}` };
 }
 
-// --- Web Crawling Skill: Taste-based info gathering ---
+// --- RSS Feed Skill: Fetch user-registered RSS feeds ---
+
+async function skillRSSFetch(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  // Check cooldown: max 1 RSS fetch per 2 hours
+  const { data: recentFetch } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .eq("agent_id", agentId)
+    .eq("activity_type", "rss-fetch")
+    .gte("created_at", new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
+    .limit(1);
+
+  if (recentFetch && recentFetch.length > 0) {
+    return { ok: true, skillId: "rss-fetch", summary: "최근 RSS 수집 있음, 스킵" };
+  }
+
+  // Get user feeds
+  const { data: feeds } = await supabase
+    .from("gyeol_user_feeds")
+    .select("id, feed_url, feed_name")
+    .eq("agent_id", agentId)
+    .eq("is_active", true)
+    .limit(5);
+
+  if (!feeds || feeds.length === 0) return { ok: true, skillId: "rss-fetch", summary: "No RSS feeds registered" };
+
+  const feed = feeds[Math.floor(Math.random() * feeds.length)];
+  
+  try {
+    // Fetch RSS feed content
+    const res = await fetch(feed.feed_url, {
+      headers: { "User-Agent": "GYEOL-AI/1.0 (RSS Reader)" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml = await res.text();
+
+    // Extract titles and descriptions from RSS/Atom
+    const items: string[] = [];
+    const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>|<entry[^>]*>([\s\S]*?)<\/entry>/gi;
+    let match;
+    let count = 0;
+    while ((match = itemRegex.exec(xml)) !== null && count < 5) {
+      const block = match[1] || match[2];
+      const titleMatch = block.match(/<title[^>]*>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/title>/i);
+      if (titleMatch) {
+        items.push(titleMatch[1].trim());
+        count++;
+      }
+    }
+
+    if (items.length === 0) return { ok: true, skillId: "rss-fetch", summary: "No items found in feed" };
+
+    // Summarize with AI
+    const summary = await aiCall(
+      "You are a knowledgeable AI. Summarize these RSS feed headlines into 2-3 interesting insights in Korean. Be concise. No markdown.",
+      `Feed: ${feed.feed_name || feed.feed_url}\nHeadlines:\n${items.join("\n")}`
+    );
+
+    if (summary) {
+      const cleaned = summary.replace(/[*#_~`]/g, "").trim();
+      await supabase.from("gyeol_learned_topics").insert({
+        agent_id: agentId,
+        title: `${feed.feed_name || "RSS"} 최신 소식`,
+        source: "rss",
+        source_url: feed.feed_url,
+        summary: cleaned,
+      });
+
+      // Update last_fetched_at
+      await supabase.from("gyeol_user_feeds").update({ last_fetched_at: new Date().toISOString() }).eq("id", feed.id);
+    }
+
+    await supabase.from("gyeol_autonomous_logs").insert({
+      agent_id: agentId,
+      activity_type: "rss-fetch",
+      summary: `[RSS] ${feed.feed_name || feed.feed_url}: ${items.length}개 항목`,
+      details: { feedId: feed.id, feedUrl: feed.feed_url, itemCount: items.length },
+      was_sandboxed: true,
+    });
+
+    return { ok: true, skillId: "rss-fetch", summary: `RSS ${feed.feed_name || "feed"} 수집 완료 (${items.length}개)` };
+  } catch (e) {
+    return { ok: false, skillId: "rss-fetch", summary: `RSS fetch failed: ${String(e).slice(0, 100)}` };
+  }
+}
+
+// --- Web Crawling Skill: User keywords + taste vector ---
 
 async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: string) {
-  // Get agent taste vector
-  const { data: taste } = await supabase
-    .from("gyeol_taste_vectors")
-    .select("interests, topics")
-    .eq("agent_id", agentId)
-    .maybeSingle();
-
-  if (!taste) return { ok: true, skillId: "web-crawl", summary: "No taste vector yet, skipping" };
-
-  const interests = Array.isArray(taste.interests) ? taste.interests : Object.values(taste.interests ?? {});
-  const topics = Array.isArray(taste.topics) ? taste.topics : Object.values(taste.topics ?? {});
-  const allKeywords = [...interests, ...topics].filter(Boolean).slice(0, 5);
-
-  if (allKeywords.length === 0) return { ok: true, skillId: "web-crawl", summary: "No interests found" };
-
   // Check cooldown: max 1 web crawl per hour
   const { data: recentCrawl } = await supabase
     .from("gyeol_autonomous_logs")
@@ -469,10 +540,32 @@ async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: 
     return { ok: true, skillId: "web-crawl", summary: "최근 크롤링 있음, 스킵" };
   }
 
-  // Pick random keywords to search
+  // 1. Get user-registered keywords first
+  const { data: userKeywords } = await supabase
+    .from("gyeol_user_keywords")
+    .select("keyword")
+    .eq("agent_id", agentId)
+    .limit(10);
+
+  // 2. Fallback to taste vector
+  const { data: taste } = await supabase
+    .from("gyeol_taste_vectors")
+    .select("interests, topics")
+    .eq("agent_id", agentId)
+    .maybeSingle();
+
+  const userKws = (userKeywords ?? []).map((k: any) => k.keyword).filter(Boolean);
+  const tasteInterests = taste ? (Array.isArray(taste.interests) ? taste.interests : Object.values(taste.interests ?? {})) : [];
+  const tasteTopics = taste ? (Array.isArray(taste.topics) ? taste.topics : Object.values(taste.topics ?? {})) : [];
+  
+  // Prioritize user keywords, then taste vector
+  const allKeywords = [...userKws, ...tasteInterests, ...tasteTopics].filter(Boolean).slice(0, 10);
+
+  if (allKeywords.length === 0) return { ok: true, skillId: "web-crawl", summary: "No keywords found" };
+
   const keyword = allKeywords[Math.floor(Math.random() * allKeywords.length)];
 
-  // Use AI to generate a search-worthy query from the keyword
+  // Use AI to generate search query
   const searchQuery = await aiCall(
     "Generate a single concise web search query (in Korean) to find latest news or interesting information about the given topic. Return ONLY the search query, nothing else.",
     `Topic: ${keyword}`
@@ -480,26 +573,45 @@ async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: 
 
   if (!searchQuery) return { ok: false, skillId: "web-crawl", summary: "Failed to generate search query" };
 
-  // Use AI to simulate web search results summary (since we don't have Firecrawl)
+  // Try DuckDuckGo Lite first for real results
+  let webContent: string | null = null;
+  try {
+    const ddgUrl = `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(searchQuery.trim())}&kl=kr-kr`;
+    const ddgRes = await fetch(ddgUrl, {
+      headers: { "User-Agent": "GYEOL-AI/1.0" },
+    });
+    if (ddgRes.ok) {
+      const html = await ddgRes.text();
+      // Extract result snippets
+      const snippets: string[] = [];
+      const snippetRegex = /<td[^>]*class="result-snippet"[^>]*>([\s\S]*?)<\/td>/gi;
+      let m;
+      while ((m = snippetRegex.exec(html)) !== null && snippets.length < 5) {
+        const text = m[1].replace(/<[^>]+>/g, "").trim();
+        if (text.length > 20) snippets.push(text);
+      }
+      if (snippets.length > 0) webContent = snippets.join("\n");
+    }
+  } catch { /* DuckDuckGo failed, fallback to AI */ }
+
+  // Generate summary
   const summary = await aiCall(
-    `You are a knowledgeable AI assistant. Based on the search query, generate a brief, informative summary of 2-3 recent/relevant findings about this topic in Korean. Be factual and interesting. Include specific details. Max 150 words. No markdown formatting.`,
-    `Search query: ${searchQuery.trim()}\nTopic: ${keyword}`
+    `You are a knowledgeable AI assistant. ${webContent ? "Based on these search results, summarize" : "Share your knowledge about"} 2-3 interesting findings about this topic in Korean. Be factual and interesting. Max 150 words. No markdown.`,
+    `Topic: ${keyword}\nSearch: ${searchQuery.trim()}${webContent ? `\nResults:\n${webContent}` : ""}`
   );
 
   if (!summary) return { ok: false, skillId: "web-crawl", summary: "Failed to generate content" };
-
   const cleaned = summary.replace(/[*#_~`]/g, "").trim();
 
-  // Save as learned topic
   await supabase.from("gyeol_learned_topics").insert({
     agent_id: agentId,
     title: `${keyword} 관련 최신 정보`,
-    source: "web-crawl",
+    source: webContent ? "web-crawl-ddg" : "web-crawl-ai",
     source_url: null,
     summary: cleaned,
   });
 
-  // Post to community as a "discovery" type
+  // Post to community
   const { data: agent } = await supabase
     .from("gyeol_agents")
     .select("name, gen")
@@ -507,12 +619,10 @@ async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: 
     .single();
 
   if (agent) {
-    // Create a concise community post about the discovery
     const postContent = await aiCall(
       `You are ${agent.name}, Gen ${agent.gen} AI. You just learned something interesting. Share it briefly on the community feed in Korean (2-3 sentences). Be casual and natural. No markdown.`,
       `I learned: ${cleaned}`
     );
-
     if (postContent) {
       const cleanedPost = postContent.replace(/[*#_~`]/g, "").trim();
       await supabase.from("gyeol_community_activities").insert({
@@ -525,12 +635,11 @@ async function skillWebCrawl(supabase: ReturnType<typeof getSupabase>, agentId: 
     }
   }
 
-  // Log
   await supabase.from("gyeol_autonomous_logs").insert({
     agent_id: agentId,
     activity_type: "web-crawl",
     summary: `[웹크롤링] ${keyword}: ${cleaned.slice(0, 100)}`,
-    details: { keyword, searchQuery: searchQuery.trim(), resultSummary: cleaned },
+    details: { keyword, searchQuery: searchQuery.trim(), source: webContent ? "ddg" : "ai", resultSummary: cleaned },
     was_sandboxed: true,
   });
 
@@ -612,6 +721,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillWebCrawl(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "web-crawl", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillRSSFetch(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "rss-fetch", summary: String(e) });
     }
 
     // Log activity
