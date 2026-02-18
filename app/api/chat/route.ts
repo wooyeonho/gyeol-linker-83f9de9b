@@ -20,6 +20,7 @@ import { calculateIntimacyGain, determineMood, getSpeechStyle, calculateIntimacy
 import { EVOLUTION_INTERVAL, DEMO_USER_ID, CHAT_HISTORY_LIMIT } from '@/lib/gyeol/constants';
 import { decryptKey } from '@/lib/gyeol/byok';
 import { callProviderWithMessages, buildSystemPrompt, suggestProviderForMessage, type ChatMessage } from '@/lib/gyeol/chat-ai';
+import { extractAndSaveMemory } from '@/lib/gyeol/memory/realtime-extract';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const BYOK_PROVIDER_ORDER: Array<'groq' | 'openai' | 'deepseek' | 'anthropic' | 'gemini' | 'cloudflare' | 'ollama'> = [
@@ -172,7 +173,73 @@ export async function POST(req: NextRequest) {
     const agentIntimacy = Number(agent?.intimacy) || 0;
     const agentMood = (agent?.mood as string) || 'neutral';
     const speechStyle = getSpeechStyle(agentIntimacy);
-    const systemPrompt = buildSystemPrompt(personality, { intimacy: agentIntimacy, mood: agentMood, speechStyle });
+    let systemPrompt = buildSystemPrompt(personality, { intimacy: agentIntimacy, mood: agentMood, speechStyle });
+
+    if (supabase) {
+      try {
+        const [memoriesRes, topicsRes, insightsRes] = await Promise.all([
+          supabase
+            .from('gyeol_user_memories')
+            .select('category, key, value')
+            .eq('agent_id', agentId)
+            .gte('confidence', 50)
+            .order('access_count', { ascending: false })
+            .limit(30),
+          supabase
+            .from('gyeol_learned_topics')
+            .select('topic, summary')
+            .eq('agent_id', agentId)
+            .order('created_at', { ascending: false })
+            .limit(10),
+          supabase
+            .from('gyeol_conversation_insights')
+            .select('topics, emotion_arc, underlying_need, what_worked, what_to_improve, next_hint')
+            .eq('agent_id', agentId)
+            .order('created_at', { ascending: false })
+            .limit(1),
+        ]);
+
+        const memories = memoriesRes.data ?? [];
+        if (memories.length > 0) {
+          const grouped: Record<string, string[]> = {};
+          for (const m of memories) {
+            const cat = m.category as string;
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(`${m.key}: ${m.value}`);
+          }
+          const labels: Record<string, string> = {
+            identity: 'identity', preference: 'preference', interest: 'interest',
+            relationship: 'relationship', goal: 'goal', emotion: 'emotion',
+            experience: 'experience', style: 'style', knowledge_level: 'knowledge_level',
+          };
+          let block = '\n\n## User Memories';
+          for (const [cat, items] of Object.entries(grouped)) {
+            block += `\n[${labels[cat] ?? cat}] ${items.join(', ')}`;
+          }
+          systemPrompt += block;
+        }
+
+        const topics = topicsRes.data ?? [];
+        if (topics.length > 0) {
+          systemPrompt += '\n\n## Recently Learned Topics';
+          for (const t of topics) {
+            systemPrompt += `\n- ${t.topic}: ${t.summary ?? ''}`;
+          }
+        }
+
+        const insights = insightsRes.data ?? [];
+        if (insights.length > 0) {
+          const ins = insights[0];
+          systemPrompt += '\n\n## Latest Conversation Insight';
+          if (ins.underlying_need) systemPrompt += `\nUser need: ${ins.underlying_need}`;
+          if (ins.what_worked) systemPrompt += `\nWhat worked: ${ins.what_worked}`;
+          if (ins.what_to_improve) systemPrompt += `\nImprove: ${ins.what_to_improve}`;
+          if (ins.next_hint) systemPrompt += `\nNext hint: ${ins.next_hint}`;
+        }
+      } catch (err) {
+        console.warn('[chat] memory/topic/insight load failed:', err);
+      }
+    }
 
     let chatMessages: ChatMessage[];
     if (supabase) {
@@ -271,6 +338,12 @@ export async function POST(req: NextRequest) {
       console.log('[GYEOL] all providers failed, using builtin response');
       assistantContent = generateBuiltinResponse(userMessage);
       provider = 'builtin';
+    }
+
+    if (supabase) {
+      extractAndSaveMemory(supabase, agentId, userMessage, provider).catch((err) => {
+        console.warn('[chat] realtime memory extraction failed:', err);
+      });
     }
 
     const outputFilter = filterOutput(assistantContent);

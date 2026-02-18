@@ -680,6 +680,19 @@ async function runHeartbeat(agentId?: string) {
     return { message: "Kill switch active", results: [] };
   }
 
+  // OpenClaw active check — skip if OpenClaw ran within last 35 minutes
+  const thirtyFiveMinAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+  const { data: recentOpenClaw } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .gte("created_at", thirtyFiveMinAgo)
+    .eq("was_sandboxed", true)
+    .limit(1);
+
+  if (recentOpenClaw && recentOpenClaw.length > 0) {
+    return { skipped: true, reason: "OpenClaw active", results: [] };
+  }
+
   let agents;
   if (agentId) {
     agents = [{ id: agentId }];
