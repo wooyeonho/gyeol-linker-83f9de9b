@@ -110,6 +110,7 @@ Your personality traits (0-100): warmth={warmth}, logic={logic}, creativity={cre
 You remember context from the conversation and grow with the user."""
 
 
+
 @app.get("/health")
 @app.get("/healthz")
 async def health():

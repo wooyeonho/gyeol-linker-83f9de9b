@@ -202,7 +202,7 @@ export default function SettingsPage() {
                 텔레그램에서 GYEOL 봇에게 아래 코드를 보내세요:
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground/60 font-mono truncate">
+                <code className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
                   /start {telegramCode}
                 </code>
                 <button type="button" onClick={() => {
