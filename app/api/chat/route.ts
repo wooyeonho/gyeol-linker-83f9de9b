@@ -14,7 +14,6 @@ import {
   attemptEvolution,
   checkCriticalLearning,
   rollDailyEvent,
-  calculateEvolutionProbability,
 } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
 import { calculateIntimacyGain, determineMood, getSpeechStyle, calculateIntimacyDecay } from '@/lib/gyeol/intimacy';
@@ -101,11 +100,10 @@ async function tryByok(
   for (const provider of providerOrder) {
     if (!BYOK_PROVIDER_ORDER.includes(provider as typeof BYOK_PROVIDER_ORDER[number])) continue;
     const { data: row } = await supabase
-      .from('gyeol_user_api_keys')
+      .from('gyeol_byok_keys')
       .select('id, encrypted_key')
       .eq('user_id', userId)
       .eq('provider', provider)
-      .eq('is_valid', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -121,7 +119,7 @@ async function tryByok(
       if (content) {
         if (row.id) {
           await supabase
-            .from('gyeol_user_api_keys')
+            .from('gyeol_byok_keys')
             .update({ last_used: new Date().toISOString() })
             .eq('id', row.id);
         }
@@ -282,6 +280,8 @@ export async function POST(req: NextRequest) {
     let evolved = false;
     let newGen: number | undefined;
     let newVisualState: Record<string, unknown> | undefined;
+    let criticalResult = { isCritical: false, multiplier: 1 };
+    let dailyEventResult: { type: string; name: string; description: string } | null = null;
 
     if (supabase) {
       await supabase.from('gyeol_conversations').insert([
@@ -326,23 +326,22 @@ export async function POST(req: NextRequest) {
           newVisualState = calculateVisualState(next);
           personalityChanged = true;
 
-          const critical = checkCriticalLearning();
+          criticalResult = checkCriticalLearning();
 
-          let dailyEvent = null;
           const agentSettings = (agent.settings as Record<string, unknown>) ?? {};
           const todayStr = new Date().toISOString().slice(0, 10);
           if (agentSettings.dailyEventUsed !== todayStr) {
             const event = rollDailyEvent();
             if (event.type !== 'none') {
-              dailyEvent = event;
+              dailyEventResult = event;
               await supabase.from('gyeol_agents').update({
                 settings: { ...agentSettings, dailyEventUsed: todayStr },
               }).eq('id', agentId).catch(() => {});
             }
           }
 
-          let progressGain = 5 * critical.multiplier;
-          if (dailyEvent?.type === 'exp_double') progressGain *= 2;
+          let progressGain = 5 * criticalResult.multiplier;
+          if (dailyEventResult?.type === 'exp_double') progressGain *= 2;
           const newProgress = Math.min(100, Number(agent.evolution_progress) + progressGain);
 
           await supabase
@@ -468,9 +467,9 @@ export async function POST(req: NextRequest) {
       evolved,
       newGen: evolved ? newGen : undefined,
       newVisualState: personalityChanged ? newVisualState : undefined,
-      criticalLearning: false,
-      criticalMultiplier: 1,
-      dailyEvent: null,
+      criticalLearning: criticalResult.isCritical,
+      criticalMultiplier: criticalResult.multiplier,
+      dailyEvent: dailyEventResult,
     });
   } catch (e) {
     console.error('gyeol chat error', e);
