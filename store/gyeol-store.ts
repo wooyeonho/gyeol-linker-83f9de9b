@@ -26,6 +26,7 @@ interface GyeolState {
   error: GyeolError;
   evolutionCeremony: { show: boolean; newGen?: number } | null;
   lastInsight: ConversationInsight;
+  lastReaction: string | null;
   setAgent: (a: Agent | null) => void;
   setMessages: (m: Message[] | ((prev: Message[]) => Message[])) => void;
   setAutonomousLogs: (l: AutonomousLog[] | ((prev: AutonomousLog[]) => AutonomousLog[])) => void;
@@ -35,6 +36,7 @@ interface GyeolState {
   showEvolutionCeremony: (newGen?: number) => void;
   dismissEvolutionCeremony: () => void;
   clearInsight: () => void;
+  setReaction: (r: string | null) => void;
   addMessage: (msg: Message) => void;
   sendMessage: (text: string) => Promise<void>;
   subscribeToUpdates: (agentId: string) => (() => void) | void;
@@ -50,6 +52,7 @@ const initialState = {
   error: null as GyeolError,
   evolutionCeremony: null as { show: boolean; newGen?: number } | null,
   lastInsight: null as ConversationInsight,
+  lastReaction: null as string | null,
 };
 
 export const useGyeolStore = create<GyeolState>((set) => ({
@@ -69,6 +72,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   showEvolutionCeremony: (newGen) => set({ evolutionCeremony: { show: true, newGen } }),
   dismissEvolutionCeremony: () => set({ evolutionCeremony: null }),
   clearInsight: () => set({ lastInsight: null }),
+  setReaction: (r) => set({ lastReaction: r }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   sendMessage: async (text) => {
     const state = useGyeolStore.getState();
@@ -112,6 +116,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
       set((s) => ({
         messages: [...s.messages, assistantMsg],
         isLoading: false,
+        lastReaction: data.reaction ?? null,
         ...(data.newVisualState && s.agent
           ? { agent: { ...s.agent, visual_state: data.newVisualState } }
           : {}),
@@ -122,6 +127,9 @@ export const useGyeolStore = create<GyeolState>((set) => ({
           ? { lastInsight: data.conversationInsight }
           : {}),
       }));
+      if (data.reaction) {
+        setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : '전송에 실패했어요. 다시 시도해 주세요.';
       set((s) => ({ isLoading: false, error: { message, code: 'SEND_FAILED' } }));

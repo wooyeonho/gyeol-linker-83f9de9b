@@ -44,6 +44,15 @@ export default function AuthPage() {
     if (error) setError(error.message || 'Google sign-in failed.');
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) { setError('Enter your email first'); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    if (error) setError(error.message);
+    else setSuccess('Password reset email sent!');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display bg-black">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -79,6 +88,21 @@ export default function AuthPage() {
               {m === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
           ))}
+        </div>
+
+        {/* Google button — prominent, at top */}
+        <button type="button" onClick={handleGoogleLogin}
+          className="w-full py-3.5 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center gap-3 mb-6 transition">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+          </svg>
+          <span className="text-sm text-foreground/70">Continue with Google</span>
+        </button>
+
+        <div className="flex items-center gap-3 w-full mb-6">
+          <div className="flex-1 h-px bg-white/[0.06]" />
+          <span className="text-[10px] text-white/15">or</span>
+          <div className="flex-1 h-px bg-white/[0.06]" />
         </div>
 
         <form onSubmit={handleSubmit} className="w-full space-y-3">
@@ -124,15 +148,13 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <div className="mt-10 w-full flex flex-col items-center">
-          <p className="text-[10px] text-white/15 mb-4 uppercase tracking-[0.15em]">Or continue with</p>
-          <button type="button" onClick={handleGoogleLogin}
-            className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/40 hover:text-white/60 hover:bg-white/[0.06] transition-colors">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
-            </svg>
+        {/* Forgot password */}
+        {mode === 'login' && (
+          <button type="button" onClick={handleForgotPassword}
+            className="mt-3 text-[11px] text-white/25 hover:text-white/50 transition">
+            Forgot password?
           </button>
-        </div>
+        )}
       </motion.main>
     </div>
   );
