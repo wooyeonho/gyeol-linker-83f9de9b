@@ -48,6 +48,15 @@ export default function SettingsPage() {
   const [telegramLinked, setTelegramLinked] = useState(false);
   const [telegramCode, setTelegramCode] = useState('');
 
+  // Proactive message interval
+  const PROACTIVE_OPTIONS = [
+    { value: 1, label: '1시간' },
+    { value: 2, label: '2시간' },
+    { value: 4, label: '4시간' },
+    { value: 6, label: '6시간' },
+  ];
+  const [proactiveInterval, setProactiveInterval] = useState(6);
+
   // Analysis domains
   const ANALYSIS_DOMAINS = [
     { key: 'crypto', icon: 'currency_bitcoin', label: '암호화폐/온체인', desc: 'CDD, CVDD, MVRV, NUPL, 공포탐욕 등' },
@@ -75,6 +84,7 @@ export default function SettingsPage() {
     if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
     if (s.analysisDomains) setAnalysisDomains(s.analysisDomains);
+    if (typeof s.proactiveInterval === 'number') setProactiveInterval(s.proactiveInterval);
     
     setTelegramCode(agent.id);
 
@@ -374,6 +384,41 @@ export default function SettingsPage() {
                       </div>
                     );
                   })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== PROACTIVE MESSAGE ====== */}
+        <section>
+          <SectionHeader id="proactive" icon="notifications_active" title="Proactive Message" />
+          <AnimatePresence>
+            {activeSection === 'proactive' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
+                <p className="text-[10px] text-white/25 leading-relaxed">
+                  AI가 먼저 연락하는 미접속 시간을 설정해요. 설정한 시간 동안 대화가 없으면 텔레그램으로 먼저 메시지를 보내요.
+                </p>
+                <div className="flex gap-2">
+                  {PROACTIVE_OPTIONS.map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => {
+                        setProactiveInterval(opt.value);
+                        if (agent) supabase.from('gyeol_agents' as any)
+                          .update({ settings: { ...(agent as any).settings, proactiveInterval: opt.value } } as any)
+                          .eq('id', agent.id);
+                      }}
+                      className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition border ${
+                        proactiveInterval === opt.value
+                          ? 'bg-primary/15 text-primary/90 border-primary/30'
+                          : 'bg-white/[0.02] text-white/30 border-white/[0.06] hover:border-white/10'
+                      }`}>
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
               </motion.div>
             )}
