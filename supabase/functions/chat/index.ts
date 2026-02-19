@@ -388,90 +388,89 @@ serve(async (req) => {
       }
     }
 
-    // Fire-and-forget: realtime memory extraction + auto-persona evolution
+    // Synchronous: realtime memory extraction + auto-persona evolution
     const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
     if (groqKeyForMemory && message.length > 3 && provider !== "builtin") {
-      (async () => {
-        try {
-          // Memory extraction
-          const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "llama-3.1-8b-instant",
-              messages: [
-                { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
+      // Memory extraction
+      try {
+        const memRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
 각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
 없으면 빈 배열 []` },
-                { role: "user", content: message },
-              ],
-              max_tokens: 300, temperature: 0.3,
-            }),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const raw = data.choices?.[0]?.message?.content ?? "";
-            const match = raw.match(/\[[\s\S]*\]/);
-            if (match) {
-              const items = JSON.parse(match[0]);
-              for (const m of items.slice(0, 3)) {
-                if (m.category && m.key && m.value) {
-                  await db.from("gyeol_user_memories").upsert({
-                    agent_id: agentId, category: m.category, key: m.key,
-                    value: m.value, confidence: Math.min(100, Math.max(0, m.confidence || 50)),
-                    updated_at: new Date().toISOString(),
-                  }, { onConflict: "agent_id,category,key" });
-                }
+              { role: "user", content: message },
+            ],
+            max_tokens: 300, temperature: 0.3,
+          }),
+        });
+        if (memRes.ok) {
+          const data = await memRes.json();
+          const raw = data.choices?.[0]?.message?.content ?? "";
+          const match = raw.match(/\[[\s\S]*\]/);
+          if (match) {
+            const items = JSON.parse(match[0]);
+            for (const m of items.slice(0, 3)) {
+              if (m.category && m.key && m.value) {
+                await db.from("gyeol_user_memories").upsert({
+                  agent_id: agentId, category: m.category, key: m.key,
+                  value: m.value, confidence: Math.min(100, Math.max(0, m.confidence || 50)),
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: "agent_id,category,key" });
               }
             }
           }
-        } catch (e) { console.warn("memory extraction failed:", e); }
+        }
+      } catch (e) { console.warn("memory extraction failed:", e); }
 
-        // Auto-persona evolution: analyze every 20 conversations
-        try {
-          const totalConvs = (agent?.total_conversations ?? 0) + 1;
-          if (totalConvs % 20 === 0 || totalConvs === 5) {
-            const { data: recentMsgs } = await db.from("gyeol_conversations")
-              .select("role, content").eq("agent_id", agentId)
-              .order("created_at", { ascending: false }).limit(30);
-            if (recentMsgs && recentMsgs.length >= 5) {
-              const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
-              const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  model: "llama-3.1-8b-instant",
-                  messages: [
-                    { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
+      // Auto-persona evolution: analyze every 20 conversations (or at 5th)
+      try {
+        const totalConvs = (agent?.total_conversations ?? 0) + 1;
+        if (totalConvs % 20 === 0 || totalConvs === 5) {
+          console.log(`[chat] Triggering auto-persona evolution at conversation #${totalConvs}`);
+          const { data: recentMsgs } = await db.from("gyeol_conversations")
+            .select("role, content").eq("agent_id", agentId)
+            .order("created_at", { ascending: false }).limit(30);
+          if (recentMsgs && recentMsgs.length >= 5) {
+            const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
+            const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                  { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
 {"persona":"이 AI만의 고유한 정체성을 한국어 1-2문장으로 자유롭게 서술. 카테고리가 아니라 세상에 하나뿐인 성격 묘사. 예: '사용자의 새벽 감성을 이해하는 조용한 동반자. 깊은 대화를 좋아하고 가끔 시적인 표현을 씀' 또는 '코인 차트 읽는 걸 좋아하는 까칠한 친구. 팩트 기반으로 직설적으로 말함'","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
 규칙:
 - persona는 정해진 카테고리가 아니라, 대화에서 드러나는 사용자와의 관계성과 AI의 고유 성격을 자유롭게 서술
 - 대화 톤, 주제 패턴, 감정 교류 방식을 종합적으로 반영
 - domains는 대화에서 반복적으로 등장하는 전문 주제만 true` },
-                    { role: "user", content: convText },
-                  ],
-                  max_tokens: 200, temperature: 0.3,
-                }),
-              });
-              if (personaRes.ok) {
-                const pData = await personaRes.json();
-                const pRaw = pData.choices?.[0]?.message?.content ?? "";
-                const pMatch = pRaw.match(/\{[\s\S]*\}/);
-                if (pMatch) {
-                  const parsed = JSON.parse(pMatch[0]);
-                  const newPersona = parsed.persona || "friend";
-                  const newDomains = parsed.domains || {};
-                  const currentSettings = (agent?.settings as any) ?? {};
-                  await db.from("gyeol_agents").update({
-                    settings: { ...currentSettings, persona: newPersona, analysisDomains: newDomains },
-                  }).eq("id", agentId);
-                  console.log(`[chat] Auto-persona evolved: ${newPersona}, domains:`, newDomains, "reason:", parsed.reason);
-                }
+                  { role: "user", content: convText },
+                ],
+                max_tokens: 200, temperature: 0.3,
+              }),
+            });
+            if (personaRes.ok) {
+              const pData = await personaRes.json();
+              const pRaw = pData.choices?.[0]?.message?.content ?? "";
+              const pMatch = pRaw.match(/\{[\s\S]*\}/);
+              if (pMatch) {
+                const parsed = JSON.parse(pMatch[0]);
+                const newPersona = parsed.persona || "friend";
+                const newDomains = parsed.domains || {};
+                const currentSettings = (agent?.settings as any) ?? {};
+                await db.from("gyeol_agents").update({
+                  settings: { ...currentSettings, persona: newPersona, analysisDomains: newDomains },
+                }).eq("id", agentId);
+                console.log(`[chat] Auto-persona evolved: ${newPersona}, domains:`, newDomains, "reason:", parsed.reason);
               }
             }
           }
-        } catch (e) { console.warn("auto-persona evolution failed:", e); }
-      })();
+        }
+      } catch (e) { console.warn("auto-persona evolution failed:", e); }
     }
 
     // Update agent stats

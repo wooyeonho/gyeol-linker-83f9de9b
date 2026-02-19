@@ -284,8 +284,11 @@ Deno.serve(async (req) => {
       if (link?.agent_id) {
         const { data: a } = await supabase.from('gyeol_agents').select('name, gen, settings').eq('id', link.agent_id).maybeSingle()
         const persona = (a?.settings as any)?.persona ?? '기본 친구'
-        const personaDisplay = persona === 'friend' ? '기본 친구' : (persona.length > 30 ? persona.slice(0, 30) + '...' : persona)
-        await sendTelegram(chatId, `연결됨: ${a?.name ?? 'GYEOL'} (Gen ${a?.gen ?? 1})\n페르소나: ${personaDisplay}\n상태: 활성 ✅`)
+        const personaDisplay = persona === 'friend' ? '기본 친구' : (persona.length > 60 ? persona.slice(0, 60) + '...' : persona)
+        const domains = (a?.settings as any)?.analysisDomains ?? {}
+        const activeDomains = Object.entries(domains).filter(([, v]) => v).map(([k]) => k)
+        const domainStr = activeDomains.length > 0 ? `\n전문 분야: ${activeDomains.join(', ')}` : ''
+        await sendTelegram(chatId, `연결됨: ${a?.name ?? 'GYEOL'} (Gen ${a?.gen ?? 1})\n\n🌟 페르소나:\n${personaDisplay}${domainStr}\n\n상태: 활성 ✅`)
       } else {
         await sendTelegram(chatId, '아직 에이전트가 연결되지 않았어요.\n/start <코드>로 연결해주세요.')
       }
