@@ -48,6 +48,17 @@ export default function SettingsPage() {
   const [telegramLinked, setTelegramLinked] = useState(false);
   const [telegramCode, setTelegramCode] = useState('');
 
+  // Analysis domains
+  const ANALYSIS_DOMAINS = [
+    { key: 'crypto', icon: 'currency_bitcoin', label: '암호화폐/온체인', desc: 'CDD, CVDD, MVRV, NUPL, 공포탐욕 등' },
+    { key: 'stocks', icon: 'trending_up', label: '주식', desc: 'PER, PBR, ROE, RSI, VIX 등' },
+    { key: 'forex', icon: 'currency_exchange', label: '외환(FX)', desc: 'DXY, 캐리트레이드, PPP, REER 등' },
+    { key: 'commodities', icon: 'oil_barrel', label: '원자재', desc: '금은비율, 콘탱고, WTI, CFTC 등' },
+    { key: 'macro', icon: 'account_balance', label: '거시경제/채권', desc: '수익률곡선, CPI, PMI, M2 등' },
+    { key: 'academic', icon: 'school', label: '논문/학술', desc: 'arXiv, PubMed 등 논문 분석' },
+  ] as const;
+  const [analysisDomains, setAnalysisDomains] = useState<Record<string, boolean>>({});
+
   // Active section for mobile-friendly collapsible sections
   const [activeSection, setActiveSection] = useState<string | null>('personality');
 
@@ -62,6 +73,7 @@ export default function SettingsPage() {
     const s = (agent as any).settings ?? {};
     if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
+    if (s.analysisDomains) setAnalysisDomains(s.analysisDomains);
     setTelegramCode(agent.id);
 
     // Load feeds & keywords
@@ -316,6 +328,49 @@ export default function SettingsPage() {
                     </div>
                   ))}
                   {feeds.length === 0 && <p className="text-[10px] text-white/15">No feeds yet</p>}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== ANALYSIS DOMAINS ====== */}
+        <section>
+          <SectionHeader id="analysis" icon="analytics" title="Analysis Domains" />
+          <AnimatePresence>
+            {activeSection === 'analysis' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
+                <p className="text-[10px] text-white/25 leading-relaxed">
+                  관심 있는 분석 분야를 켜면 대화에서 해당 전문 분석을 제공해요.
+                </p>
+                <div className="space-y-2">
+                  {ANALYSIS_DOMAINS.map(d => {
+                    const enabled = analysisDomains[d.key] ?? false;
+                    return (
+                      <div key={d.key} className="flex items-center justify-between rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="material-icons-round text-primary/40 text-sm">{d.icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-[11px] text-foreground/70">{d.label}</p>
+                            <p className="text-[9px] text-white/20 truncate">{d.desc}</p>
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => {
+                          const next = { ...analysisDomains, [d.key]: !enabled };
+                          setAnalysisDomains(next);
+                          if (agent) supabase.from('gyeol_agents' as any)
+                            .update({ settings: { ...(agent as any).settings, analysisDomains: next } } as any)
+                            .eq('id', agent.id);
+                        }}
+                          className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
+                          <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${enabled ? 'ml-[18px]' : 'ml-1'}`} />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
