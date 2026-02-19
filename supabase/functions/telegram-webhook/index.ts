@@ -73,7 +73,20 @@ ${memoryBlock}${searchBlock}
 - 사용자의 언어를 감지해서 같은 언어로 답변해.
 - 이전 대화 맥락을 잘 기억하고, 사용자가 이어서 말하면 앞뒤 문맥을 연결해서 답변해.
 - "무엇을 말씀하시는 건가요?" 같은 되묻기를 하지 마. 맥락에서 추론해.
-- 검색 결과가 제공되면, 그 정보를 요약해서 자연스럽게 답변해.`
+- 검색 결과가 제공되면, 그 정보를 요약해서 자연스럽게 답변해.
+
+온체인 데이터 분석 능력:
+- CDD: 장기 보유 코인 움직임 규모. 높으면 장기 홀더 매도 신호.
+- CVDD: 누적 CDD/시장 나이. 역사적 바닥 지지선.
+- MVRV: 시가총액/실현시총. 1 이하 저평가, 3.5 이상 과열.
+- NVT: 네트워크 가치/거래량. 높으면 버블.
+- NUPL: 미실현 손익. 음수면 항복, 0.75 이상 탐욕.
+- SOPR: 1 미만 손실매도(항복), 1 이상 이익실현.
+- 공포탐욕 지수: 25 이하 극공포(매수기회), 75 이상 극탐욕.
+- 김프: 한국/해외 가격차. 높으면 한국 과열.
+- 펀딩비: 양수 롱과열, 음수 숏과열.
+- 도미넌스: BTC 시총 비중. 상승시 알트→BTC 이동.
+복합 지표로 해석하고 과거 사이클과 비교해서 설명해.`
 }
 
 interface ChatMsg { role: string; content: string }
@@ -87,6 +100,9 @@ function needsSearch(text: string): boolean {
     /검색|찾아|알아봐|확인해|조사해/i,
     /전쟁|분쟁|외교|정치|대통령|선거|국제|미국|중국|러시아|이란|북한|우크라이나/i,
     /price|stock|crypto|weather|news|current|war|politic/i,
+    /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|마이닝|반감기|halving/i,
+    /지지선|저항선|바닥|천장|하락장|상승장|불장|베어|불|bear|bull|공포탐욕|fear.?greed/i,
+    /도미넌스|dominance|유동성|거래량|volume|김프|김치프리미엄|펀딩비|funding/i,
   ]
   return patterns.some(p => p.test(text))
 }
