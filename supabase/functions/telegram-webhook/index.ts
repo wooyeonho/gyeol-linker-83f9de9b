@@ -75,18 +75,13 @@ ${memoryBlock}${searchBlock}
 - "무엇을 말씀하시는 건가요?" 같은 되묻기를 하지 마. 맥락에서 추론해.
 - 검색 결과가 제공되면, 그 정보를 요약해서 자연스럽게 답변해.
 
-온체인 데이터 분석 능력:
-- CDD: 장기 보유 코인 움직임 규모. 높으면 장기 홀더 매도 신호.
-- CVDD: 누적 CDD/시장 나이. 역사적 바닥 지지선.
-- MVRV: 시가총액/실현시총. 1 이하 저평가, 3.5 이상 과열.
-- NVT: 네트워크 가치/거래량. 높으면 버블.
-- NUPL: 미실현 손익. 음수면 항복, 0.75 이상 탐욕.
-- SOPR: 1 미만 손실매도(항복), 1 이상 이익실현.
-- 공포탐욕 지수: 25 이하 극공포(매수기회), 75 이상 극탐욕.
-- 김프: 한국/해외 가격차. 높으면 한국 과열.
-- 펀딩비: 양수 롱과열, 음수 숏과열.
-- 도미넌스: BTC 시총 비중. 상승시 알트→BTC 이동.
-복합 지표로 해석하고 과거 사이클과 비교해서 설명해.`
+금융/시장 분석 능력:
+암호화폐 온체인: CDD, CVDD, MVRV, NVT, NUPL, SOPR, 해시레이트, 반감기, 공포탐욕, 김프, 펀딩비, 도미넌스
+주식: PER, PBR, ROE, EPS, PSR, EV/EBITDA, 배당수익률, 베타, RSI, MACD, 볼린저, VIX
+외환: 금리차, PPP, 경상수지, REER, 캐리트레이드, DXY
+원자재: 콘탱고/백워데이션, 금은비율, 크랙스프레드, 구리금비율, WTI-브렌트, CFTC COT
+거시경제: 수익률곡선, 테일러룰, 실질금리, 신용스프레드, M2, PMI, CPI/PCE, 실업률, GDP, 장단기금리차
+복합 지표로 해석하고 과거 사이클과 비교해. 투자 조언 아닌 정보 제공임을 명시해.`
 }
 
 interface ChatMsg { role: string; content: string }
@@ -103,6 +98,10 @@ function needsSearch(text: string): boolean {
     /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|마이닝|반감기|halving/i,
     /지지선|저항선|바닥|천장|하락장|상승장|불장|베어|불|bear|bull|공포탐욕|fear.?greed/i,
     /도미넌스|dominance|유동성|거래량|volume|김프|김치프리미엄|펀딩비|funding/i,
+    /PER|PBR|ROE|EPS|PSR|EV.?EBITDA|배당|베타|RSI|MACD|볼린저|VIX|밸류에이션/i,
+    /금리|수익률곡선|yield.?curve|테일러|신용스프레드|M2|통화량|PMI|CPI|PCE|GDP|실업률|비농업/i,
+    /환율|달러인덱스|DXY|캐리.?트레이드|구매력평가|PPP|경상수지|실질실효환율|REER/i,
+    /원유|금값|은값|구리|원자재|콘탱고|백워데이션|크랙스프레드|WTI|브렌트|CFTC|COT/i,
   ]
   return patterns.some(p => p.test(text))
 }

@@ -27,12 +27,16 @@ function needsSearch(text: string): boolean {
     /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|마이닝|반감기|halving/i,
     /지지선|저항선|바닥|천장|하락장|상승장|불장|베어|불|bear|bull|공포탐욕|fear.?greed/i,
     /도미넌스|dominance|유동성|거래량|volume|김프|김치프리미엄|펀딩비|funding/i,
+    /PER|PBR|ROE|EPS|PSR|EV.?EBITDA|배당|베타|RSI|MACD|볼린저|VIX|밸류에이션/i,
+    /금리|수익률곡선|yield.?curve|테일러|신용스프레드|M2|통화량|PMI|CPI|PCE|GDP|실업률|비농업/i,
+    /환율|달러인덱스|DXY|캐리.?트레이드|구매력평가|PPP|경상수지|실질실효환율|REER/i,
+    /원유|금값|은값|구리|원자재|콘탱고|백워데이션|크랙스프레드|WTI|브렌트|CFTC|COT/i,
   ];
   return patterns.some(p => p.test(text));
 }
 
-function isOnchainQuery(text: string): boolean {
-  return /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|반감기|halving|도미넌스|dominance|펀딩비|funding|김프|공포탐욕|fear.?greed/i.test(text);
+function isFinancialAnalysisQuery(text: string): boolean {
+  return /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|반감기|halving|도미넌스|dominance|펀딩비|funding|김프|공포탐욕|fear.?greed|PER|PBR|ROE|EPS|PSR|EV.?EBITDA|배당수익률|베타|RSI|MACD|볼린저|VIX|금리|수익률곡선|yield.?curve|테일러|신용스프레드|M2|통화량|PMI|CPI|PCE|GDP|실업률|비농업|환율|DXY|달러인덱스|캐리.?트레이드|PPP|경상수지|REER|콘탱고|백워데이션|크랙스프레드|WTI|브렌트|CFTC|COT|금.?은.?비율/i.test(text);
 }
 
 async function searchPerplexity(query: string): Promise<string> {
@@ -148,22 +152,25 @@ Dominant trait: ${desc[dominant] ?? "자연스러운"}
 11. If you are unsure about the language, default to Korean.
 12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.
 
-## 온체인 데이터 분석 능력
-너는 비트코인/암호화폐 온체인 데이터 분석에 능숙해. 사용자가 온체인 지표를 언급하면 정확하게 해석해줘:
-- CDD (Coin Days Destroyed): 장기 보유 코인이 움직인 규모. 높으면 장기 홀더 매도 신호.
-- CVDD (Cumulative Value Days Destroyed): 누적 CDD를 시장 나이로 나눈 값. 역사적 바닥 지지선 역할.
-- MVRV (Market Value to Realized Value): 시가총액/실현 시총 비율. 1 이하면 저평가, 3.5 이상이면 과열.
-- NVT (Network Value to Transactions): 네트워크 가치 대비 거래량. P/E 비율과 유사. 높으면 버블 경고.
-- NUPL (Net Unrealized Profit/Loss): 미실현 손익 비율. 음수면 항복 구간, 0.75 이상이면 탐욕.
-- SOPR (Spent Output Profit Ratio): 1 미만이면 손실 매도(항복), 1 이상이면 이익 실현.
-- 해시레이트: 채굴 난이도/보안 지표. 상승하면 네트워크 건전성 좋음.
-- 반감기: 약 4년마다 블록 보상 절반. 역사적으로 12-18개월 후 가격 상승.
-- 공포탐욕 지수: 0-100. 25 이하 극도 공포(매수 기회), 75 이상 극도 탐욕(과열).
-- 김프(김치프리미엄): 한국 거래소와 해외 거래소의 가격 차이. 높으면 한국 시장 과열.
-- 펀딩비: 선물 시장의 롱/숏 비율 지표. 양수면 롱 과열, 음수면 숏 과열.
-- 도미넌스: 비트코인 시총 비중. 상승하면 알트코인에서 비트코인으로 자금 이동.
+## 금융/시장 분석 능력
+너는 금융 시장 전반의 핵심 지표와 분석 프레임워크에 능숙해.
 
-분석할 때는 단일 지표가 아닌 복합적으로 해석하고, 과거 사이클과 비교해서 설명해.`;
+### 암호화폐 온체인
+CDD(장기홀더 움직임), CVDD(역사적 바닥선), MVRV(1이하 저평가/3.5이상 과열), NVT(P/E유사), NUPL(음수=항복/0.75이상=탐욕), SOPR(1미만 손실매도), 해시레이트, 반감기(4년주기), 공포탐욕지수(25이하 매수/75이상 과열), 김프, 펀딩비, 도미넌스
+
+### 주식
+PER(주가/이익), PBR(주가/자산,1미만 저평가), ROE(15%이상 우수), EPS성장률, PSR(적자기업 평가), EV/EBITDA(인수합병 핵심), 배당수익률, 베타(시장대비 변동성), RSI(70이상 과매수/30이하 과매도), MACD(시그널 돌파=매매신호), 볼린저밴드, VIX(30이상 공포/12이하 안일)
+
+### 외환(FX)
+금리차(캐리트레이드 핵심), PPP(장기균형환율), 경상수지, REER(100이상 고평가), 캐리트레이드 언와인딩 리스크, DXY(100이상 달러강세)
+
+### 원자재
+콘탱고(공급충분)/백워데이션(공급부족), 금은비율(80이상 불안/40이하 은고평가), 유가 크랙스프레드, 구리금비율(경기선행), WTI-브렌트 스프레드, CFTC COT(극단편중시 반전)
+
+### 거시경제/채권
+수익률곡선 역전(경기침체 선행,과거100%적중), 테일러룰, 실질금리(마이너스=자산인플레), 신용스프레드(확대=둔화), M2통화량, PMI(50기준), CPI/PCE(Core중요,목표2%), 실업률/비농업고용, GDP성장률, 장단기금리차(10Y-2Y역전=12-18개월내 침체)
+
+복합 지표로 해석하고 과거 사이클/역사적 패턴과 비교해. 투자 조언이 아닌 정보 제공임을 명시해.`;
 }
 
 function cleanMarkdown(text: string): string {
@@ -274,8 +281,8 @@ serve(async (req) => {
     if (needsSearch(message)) {
       console.log("[chat] Real-time search triggered for:", message);
       // For on-chain queries, enhance the search query
-      const searchQuery = isOnchainQuery(message)
-        ? `${message} 비트코인 온체인 데이터 지표 현재값 분석`
+      const searchQuery = isFinancialAnalysisQuery(message)
+        ? `${message} 금융 시장 지표 현재값 데이터 분석`
         : message;
       searchContext = await searchRealtime(searchQuery);
       if (searchContext) {
