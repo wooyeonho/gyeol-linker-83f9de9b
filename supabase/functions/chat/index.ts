@@ -24,8 +24,15 @@ function needsSearch(text: string): boolean {
     /검색|찾아|알아봐|확인해|조사해/i,
     /전쟁|분쟁|외교|정치|대통령|선거|국제|미국|중국|러시아|이란|북한|우크라이나/i,
     /price|stock|crypto|weather|news|current|war|politic/i,
+    /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|마이닝|반감기|halving/i,
+    /지지선|저항선|바닥|천장|하락장|상승장|불장|베어|불|bear|bull|공포탐욕|fear.?greed/i,
+    /도미넌스|dominance|유동성|거래량|volume|김프|김치프리미엄|펀딩비|funding/i,
   ];
   return patterns.some(p => p.test(text));
+}
+
+function isOnchainQuery(text: string): boolean {
+  return /온체인|on.?chain|CDD|CVDD|MVRV|NVT|NUPL|SOPR|hash.?rate|해시레이트|채굴|반감기|halving|도미넌스|dominance|펀딩비|funding|김프|공포탐욕|fear.?greed/i.test(text);
 }
 
 async function searchPerplexity(query: string): Promise<string> {
@@ -139,7 +146,24 @@ Dominant trait: ${desc[dominant] ?? "자연스러운"}
 9. Never identify yourself as an AI or language model.
 10. NEVER output internal tokens, XML tags, or system markers.
 11. If you are unsure about the language, default to Korean.
-12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.`;
+12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.
+
+## 온체인 데이터 분석 능력
+너는 비트코인/암호화폐 온체인 데이터 분석에 능숙해. 사용자가 온체인 지표를 언급하면 정확하게 해석해줘:
+- CDD (Coin Days Destroyed): 장기 보유 코인이 움직인 규모. 높으면 장기 홀더 매도 신호.
+- CVDD (Cumulative Value Days Destroyed): 누적 CDD를 시장 나이로 나눈 값. 역사적 바닥 지지선 역할.
+- MVRV (Market Value to Realized Value): 시가총액/실현 시총 비율. 1 이하면 저평가, 3.5 이상이면 과열.
+- NVT (Network Value to Transactions): 네트워크 가치 대비 거래량. P/E 비율과 유사. 높으면 버블 경고.
+- NUPL (Net Unrealized Profit/Loss): 미실현 손익 비율. 음수면 항복 구간, 0.75 이상이면 탐욕.
+- SOPR (Spent Output Profit Ratio): 1 미만이면 손실 매도(항복), 1 이상이면 이익 실현.
+- 해시레이트: 채굴 난이도/보안 지표. 상승하면 네트워크 건전성 좋음.
+- 반감기: 약 4년마다 블록 보상 절반. 역사적으로 12-18개월 후 가격 상승.
+- 공포탐욕 지수: 0-100. 25 이하 극도 공포(매수 기회), 75 이상 극도 탐욕(과열).
+- 김프(김치프리미엄): 한국 거래소와 해외 거래소의 가격 차이. 높으면 한국 시장 과열.
+- 펀딩비: 선물 시장의 롱/숏 비율 지표. 양수면 롱 과열, 음수면 숏 과열.
+- 도미넌스: 비트코인 시총 비중. 상승하면 알트코인에서 비트코인으로 자금 이동.
+
+분석할 때는 단일 지표가 아닌 복합적으로 해석하고, 과거 사이클과 비교해서 설명해.`;
 }
 
 function cleanMarkdown(text: string): string {
@@ -249,7 +273,11 @@ serve(async (req) => {
     let searchContext = "";
     if (needsSearch(message)) {
       console.log("[chat] Real-time search triggered for:", message);
-      searchContext = await searchRealtime(message);
+      // For on-chain queries, enhance the search query
+      const searchQuery = isOnchainQuery(message)
+        ? `${message} 비트코인 온체인 데이터 지표 현재값 분석`
+        : message;
+      searchContext = await searchRealtime(searchQuery);
       if (searchContext) {
         console.log("[chat] Search results found, length:", searchContext.length);
         systemPrompt += `\n\n[실시간 검색 결과 - 이 정보를 바탕으로 정확하게 답변해]\n${searchContext}`;
