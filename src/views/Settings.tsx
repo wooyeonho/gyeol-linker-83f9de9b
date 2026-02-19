@@ -524,11 +524,15 @@ export default function SettingsPage() {
                 <div className="flex gap-2">
                   {PROACTIVE_OPTIONS.map(opt => (
                     <button key={opt.value} type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         setProactiveInterval(opt.value);
-                        if (agent) supabase.from('gyeol_agents' as any)
-                          .update({ settings: { ...(agent as any).settings, proactiveInterval: opt.value } } as any)
-                          .eq('id', agent.id);
+                        if (agent) {
+                          const newSettings = { ...(agent as any).settings, proactiveInterval: opt.value };
+                          await supabase.from('gyeol_agents' as any)
+                            .update({ settings: newSettings } as any)
+                            .eq('id', agent.id);
+                          setAgent({ ...agent, settings: newSettings } as any);
+                        }
                       }}
                       className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition border ${
                         proactiveInterval === opt.value

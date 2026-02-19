@@ -161,6 +161,9 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
   const proactiveInterval = typeof agentSettings.proactiveInterval === 'number' ? agentSettings.proactiveInterval : 6;
   const isSimpleMode = agentSettings.mode === "simple";
 
+  // OFF (0) means completely disabled
+  if (proactiveInterval === 0) return { ok: true, skillId: "proactive-message", summary: "Proactive messages disabled by user (OFF)" };
+
   const hoursSinceActive = (Date.now() - new Date(agent.last_active).getTime()) / 3600000;
   if (hoursSinceActive < proactiveInterval) return { ok: true, skillId: "proactive-message", summary: `User active within ${proactiveInterval}h, skipping` };
 
