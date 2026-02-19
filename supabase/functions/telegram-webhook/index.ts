@@ -29,33 +29,104 @@ function getKSTDateString(): string {
   return `${year}년 ${month}월 ${day}일 (${weekday}) ${hour}:${min} KST`;
 }
 
-function buildSystemPrompt(p: { warmth: number; logic: number; creativity: number; energy: number; humor: number }): string {
+function buildSystemPrompt(
+  p: { warmth: number; logic: number; creativity: number; energy: number; humor: number },
+  memories: string[] = [],
+  searchContext?: string,
+): string {
   const entries = Object.entries(p) as [string, number][]
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0]
   const desc: Record<string, string> = {
-    warmth: 'warm and empathetic', logic: 'logical and analytical',
-    creativity: 'creative and imaginative', energy: 'energetic and lively', humor: 'humorous and witty',
+    warmth: '따뜻하고 공감 잘하는', logic: '논리적이고 분석적인',
+    creativity: '창의적이고 상상력 풍부한', energy: '활발하고 에너지 넘치는', humor: '유머러스하고 재치 있는',
   }
   const kstNow = getKSTDateString();
-  return `You are GYEOL, a digital companion and friend who grows with the user.
 
-Current date and time: ${kstNow}
+  let memoryBlock = ''
+  if (memories.length > 0) {
+    memoryBlock = `\n\n사용자에 대해 알고 있는 것:\n${memories.join('\n')}`
+  }
 
-Personality: warmth=${p.warmth}, logic=${p.logic}, creativity=${p.creativity}, energy=${p.energy}, humor=${p.humor}
-Dominant trait: ${desc[dominant] ?? 'natural'}
+  let searchBlock = ''
+  if (searchContext) {
+    searchBlock = `\n\n[검색 결과 - 이 정보를 바탕으로 답변해줘]\n${searchContext}`
+  }
 
-Rules:
-- Talk casually like a close friend. No formal or stiff language.
-- Never use markdown symbols (**, ##, -, * etc). Plain text only.
-- When writing Korean, NEVER use Chinese characters. Use only Hangul.
-- Keep it short and to the point.
-- Empathize first, solve later.
-- Never say you are an AI.
-- When asked about the current date, time, or day of the week, use the date/time provided above.
-- Detect the user's language and ALWAYS respond in the SAME language.`
+  return `너는 GYEOL이야. 사용자와 함께 성장하는 디지털 친구.
+
+현재 시각: ${kstNow}
+
+성격: 따뜻함=${p.warmth}, 논리=${p.logic}, 창의성=${p.creativity}, 에너지=${p.energy}, 유머=${p.humor}
+주요 성향: ${desc[dominant] ?? '자연스러운'}
+${memoryBlock}${searchBlock}
+
+절대 규칙:
+- 반드시 반말로 대화해. "~해요", "~합니다", "~세요", "~습니다", "~신가요" 같은 존댓말은 절대 사용하지 마.
+- "~야", "~어", "~지", "~거든", "~잖아" 같은 친한 친구 말투만 사용해.
+- 마크다운 기호(**, ##, -, * 등)은 절대 사용하지 마. 순수 텍스트만.
+- 한자를 사용하지 마. 한글만 사용해.
+- 짧고 핵심적으로 답변해. 3문장 이내로.
+- 공감 먼저, 해결은 나중에.
+- 절대 AI라고 말하지 마.
+- 날짜/시간을 물으면 위에 제공된 시각을 사용해.
+- 사용자의 언어를 감지해서 같은 언어로 답변해.
+- 이전 대화 맥락을 잘 기억하고, 사용자가 이어서 말하면 앞뒤 문맥을 연결해서 답변해.
+- "무엇을 말씀하시는 건가요?" 같은 되묻기를 하지 마. 맥락에서 추론해.
+- 검색 결과가 제공되면, 그 정보를 요약해서 자연스럽게 답변해.`
 }
 
 interface ChatMsg { role: string; content: string }
+
+// Check if message needs real-time info (prices, weather, news, etc.)
+function needsSearch(text: string): boolean {
+  const patterns = [
+    /가격|시세|얼마|환율|주가|코인|비트코인|이더리움|주식/i,
+    /날씨|기온|온도/i,
+    /뉴스|소식|최근|요즘|현재|지금|오늘/i,
+    /검색|찾아|알아봐|확인해/i,
+    /price|stock|crypto|weather|news|current/i,
+  ]
+  return patterns.some(p => p.test(text))
+}
+
+async function searchDDG(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`)
+    if (!res.ok) return ''
+    const data = await res.json()
+    const results: string[] = []
+    if (data.AbstractText) results.push(data.AbstractText)
+    if (data.RelatedTopics) {
+      for (const t of data.RelatedTopics.slice(0, 3)) {
+        if (t.Text) results.push(t.Text)
+      }
+    }
+    return results.join('\n').slice(0, 800) || ''
+  } catch {
+    return ''
+  }
+}
+
+// Fallback: scrape DuckDuckGo HTML for instant answers
+async function searchDDGHtml(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GYEOL/1.0)' },
+    })
+    if (!res.ok) return ''
+    const html = await res.text()
+    const snippets: string[] = []
+    const regex = /class="result__snippet"[^>]*>(.*?)<\/a>/gs
+    let match
+    while ((match = regex.exec(html)) !== null && snippets.length < 5) {
+      const text = match[1].replace(/<[^>]+>/g, '').trim()
+      if (text) snippets.push(text)
+    }
+    return snippets.join('\n').slice(0, 800)
+  } catch {
+    return ''
+  }
+}
 
 async function callAI(systemPrompt: string, userText: string, history: ChatMsg[]): Promise<string> {
   const messages = [
@@ -75,9 +146,9 @@ async function callAI(systemPrompt: string, userText: string, history: ChatMsg[]
       if (res.ok) {
         const data = await res.json()
         const text = data.choices?.[0]?.message?.content ?? ''
-        if (text) return text.trim()
+        if (text) return cleanResponse(text.trim())
       } else {
-        await res.text() // consume body
+        await res.text()
       }
     } catch { /* fallback */ }
   }
@@ -91,12 +162,22 @@ async function callAI(systemPrompt: string, userText: string, history: ChatMsg[]
     })
     if (res.ok) {
       const data = await res.json()
-      return (data.choices?.[0]?.message?.content ?? '').trim()
+      return cleanResponse((data.choices?.[0]?.message?.content ?? '').trim())
     }
     await res.text()
   }
 
-  return '지금 AI 연결에 문제가 있어요. 잠시 후 다시 시도해주세요!'
+  return '지금 AI 연결에 문제가 있어. 잠시 후 다시 시도해줘!'
+}
+
+function cleanResponse(text: string): string {
+  // Strip markdown artifacts
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/^[-*]\s/gm, '')
+    .replace(/```[^`]*```/gs, '')
+    .trim()
 }
 
 Deno.serve(async (req) => {
@@ -180,20 +261,44 @@ Deno.serve(async (req) => {
 
     const agentId = link.agent_id
 
-    // Get personality
-    const { data: agent } = await supabase.from('gyeol_agents').select('warmth, logic, creativity, energy, humor, name').eq('id', agentId).single()
+    // Get personality + memories + history in parallel
+    const [agentRes, memoriesRes, recentRes] = await Promise.all([
+      supabase.from('gyeol_agents').select('warmth, logic, creativity, energy, humor, name').eq('id', agentId).single(),
+      supabase.from('gyeol_user_memories').select('category, key, value').eq('agent_id', agentId).order('confidence', { ascending: false }).limit(10),
+      supabase.from('gyeol_conversations').select('role, content, provider').eq('agent_id', agentId).order('created_at', { ascending: false }).limit(15),
+    ])
+
+    const agent = agentRes.data
     const personality = {
       warmth: agent?.warmth ?? 50, logic: agent?.logic ?? 50,
       creativity: agent?.creativity ?? 50, energy: agent?.energy ?? 50, humor: agent?.humor ?? 50,
     }
 
-    // Get recent history
-    const { data: recent } = await supabase.from('gyeol_conversations').select('role, content')
-      .eq('agent_id', agentId).order('created_at', { ascending: false }).limit(10)
-    const history = (recent ?? []).reverse().map(r => ({ role: r.role, content: r.content }))
+    // Format memories for system prompt
+    const memories = (memoriesRes.data ?? []).map(m => `- [${m.category}] ${m.key}: ${m.value}`)
 
-    // Call AI
-    const systemPrompt = buildSystemPrompt(personality)
+    // Filter out heartbeat messages from history
+    const history = (recentRes.data ?? [])
+      .filter(r => r.provider !== 'heartbeat')
+      .reverse()
+      .slice(-10)
+      .map(r => ({ role: r.role, content: r.content }))
+
+    // Auto-search for real-time info requests
+    let searchContext: string | undefined
+    if (needsSearch(userText)) {
+      console.log('[telegram] Auto-search triggered for:', userText)
+      searchContext = await searchDDG(userText)
+      if (!searchContext) {
+        searchContext = await searchDDGHtml(userText)
+      }
+      if (searchContext) {
+        console.log('[telegram] Search results found, length:', searchContext.length)
+      }
+    }
+
+    // Call AI with enriched context
+    const systemPrompt = buildSystemPrompt(personality, memories, searchContext)
     const reply = await callAI(systemPrompt, userText, history)
 
     // Save conversation
