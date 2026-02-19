@@ -342,8 +342,10 @@ serve(async (req) => {
     // ── 4. Rate limit (in-memory, 10 per agent per minute) ──
     const rateLimitKey = `chat:${agentId}`;
     const now = Date.now();
-    if (!globalThis._rateLimit) globalThis._rateLimit = new Map();
-    const bucket = globalThis._rateLimit.get(rateLimitKey) ?? [];
+    const g = globalThis as Record<string, unknown>;
+    if (!g._rateLimit) g._rateLimit = new Map();
+    const rlMap = g._rateLimit as Map<string, number[]>;
+    const bucket = rlMap.get(rateLimitKey) ?? [];
     const recent = bucket.filter((t: number) => now - t < 60000);
     if (recent.length >= 10) {
       return new Response(JSON.stringify({ error: "Too many requests. Please wait." }), {
@@ -351,7 +353,7 @@ serve(async (req) => {
       });
     }
     recent.push(now);
-    globalThis._rateLimit.set(rateLimitKey, recent);
+    rlMap.set(rateLimitKey, recent);
     const personality = { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor };
     const agentSettings = (agent?.settings as any) ?? {};
     const analysisDomains: Record<string, boolean> = agentSettings.analysisDomains ?? {};

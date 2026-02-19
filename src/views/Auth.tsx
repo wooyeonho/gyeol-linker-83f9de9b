@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { lovable } from '@/src/integrations/lovable/index';
@@ -155,6 +156,12 @@ export default function AuthPage() {
             Forgot password?
           </button>
         )}
+
+        {/* Legal links */}
+        <div className="flex gap-3 mt-6">
+          <Link to="/terms" className="text-[10px] text-white/20 hover:text-white/40 transition">Terms</Link>
+          <Link to="/privacy" className="text-[10px] text-white/20 hover:text-white/40 transition">Privacy</Link>
+        </div>
       </motion.main>
     </div>
   );

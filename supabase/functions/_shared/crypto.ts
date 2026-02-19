@@ -2,7 +2,7 @@ const ENCRYPTION_KEY = Deno.env.get("BYOK_ENCRYPTION_KEY")!;
 
 export async function encryptKey(plaintext: string): Promise<string> {
   const key = await crypto.subtle.importKey(
-    "raw", hexToBytes(ENCRYPTION_KEY), "AES-GCM", false, ["encrypt"]
+    "raw", hexToBytes(ENCRYPTION_KEY).buffer, "AES-GCM", false, ["encrypt"]
   );
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(plaintext);
@@ -14,10 +14,11 @@ export async function decryptKey(encrypted: string): Promise<string> {
   const [ivHex, ctHex] = encrypted.split(":");
   if (!ivHex || !ctHex) return encrypted;
   const key = await crypto.subtle.importKey(
-    "raw", hexToBytes(ENCRYPTION_KEY), "AES-GCM", false, ["decrypt"]
+    "raw", hexToBytes(ENCRYPTION_KEY).buffer, "AES-GCM", false, ["decrypt"]
   );
+  const iv = hexToBytes(ivHex);
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: hexToBytes(ivHex) }, key, hexToBytes(ctHex)
+    { name: "AES-GCM", iv: iv.buffer }, key, hexToBytes(ctHex)
   );
   return new TextDecoder().decode(decrypted);
 }

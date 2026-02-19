@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
 import { useGyeolStore } from '@/store/gyeol-store';
-import { supabase } from '@/src/lib/supabase';
+import { supabase, supabaseUrl } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 
@@ -683,10 +684,45 @@ export default function SettingsPage() {
                   className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/5 text-emerald-500/70 border-emerald-500/10' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
                   {killSwitchActive ? 'Resume System' : 'Emergency Stop (Kill Switch)'}
                 </button>
+
+                {/* Account Deletion */}
+                <div className="mt-4 pt-4 border-t border-white/[0.04]">
+                  <button type="button" onClick={async () => {
+                    const confirmed = window.confirm(
+                      'Are you sure? This will permanently delete your account and ALL data including conversations, memories, and AI personality. This cannot be undone.'
+                    );
+                    if (!confirmed) return;
+                    const doubleConfirm = window.confirm('This is your LAST chance. Delete everything?');
+                    if (!doubleConfirm) return;
+                    try {
+                      const { data: { session } } = await supabase.auth.getSession();
+                      await fetch(`${supabaseUrl}/functions/v1/delete-account`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${session?.access_token}`,
+                        },
+                      });
+                      await supabase.auth.signOut();
+                      window.location.href = '/auth';
+                    } catch {
+                      alert('Failed to delete account. Please try again.');
+                    }
+                  }}
+                    className="w-full py-2.5 rounded-xl text-xs font-medium border border-red-500/20 bg-red-500/5 text-red-400/70">
+                    Delete Account & All Data
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </section>
+
+        {/* Legal links */}
+        <div className="flex gap-3 justify-center mt-4 mb-8">
+          <Link to="/terms" className="text-[10px] text-white/20 hover:text-white/40 transition">Terms</Link>
+          <Link to="/privacy" className="text-[10px] text-white/20 hover:text-white/40 transition">Privacy</Link>
+        </div>
       </div>
       <BottomNav />
     </main>
