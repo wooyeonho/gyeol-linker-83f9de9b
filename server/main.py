@@ -476,13 +476,18 @@ async def telegram_webhook(request: Request):
     # /help command
     if text.strip() == "/help":
         await _send_reply(
+            "📋 GYEOL 명령어 목록\n\n"
             "/start <코드> — 에이전트 연결\n"
-            "/status — 에이전트 상태 보기\n"
-            "/evolve — 진화 현황 보기\n"
-            "/search <키워드> — 웹 검색\n"
-            "/memory — 기억 관리\n"
-            "/help — 도움말\n\n"
-            "그 외 메시지는 AI가 답변해요!"
+            "/status — 에이전트 상태 (성격·친밀도·진화)\n"
+            "/evolve — 성격 진화 히스토리\n"
+            "/memory — 기억 목록 보기\n"
+            "/memory add 키=값 — 기억 추가\n"
+            "/memory add 카테고리:키=값 — 카테고리 지정 추가\n"
+            "/memory delete <번호> — 기억 삭제\n"
+            "/search <키워드> — 실시간 웹 검색\n"
+            "/help — 이 도움말\n\n"
+            "💡 그 외 메시지는 AI가 자동으로 답변해요!\n"
+            "최신 정보가 필요한 질문은 자동으로 웹 검색합니다."
         )
         return {"ok": True}
 
