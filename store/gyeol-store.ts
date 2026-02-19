@@ -97,11 +97,13 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
     try {
       const { supabaseUrl, supabaseKey } = await import('@/src/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token ?? supabaseKey;
       const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${supabaseKey}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ agentId: agent.id, message: text, locale: navigator.language ?? 'ko' }),
       });
