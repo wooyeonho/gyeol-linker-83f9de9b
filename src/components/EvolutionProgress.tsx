@@ -57,13 +57,13 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
         .select('*', { count: 'exact', head: true })
         .eq('agent_id', agent.id);
 
-      // Get memories count (learned topics + reflections)
-      const { count: reflectionCount } = await supabase
-        .from('gyeol_reflections' as any)
+      // Get memories count from gyeol_user_memories (AI-extracted real memories)
+      const { count: memoryCount } = await supabase
+        .from('gyeol_user_memories' as any)
         .select('*', { count: 'exact', head: true })
         .eq('agent_id', agent.id);
 
-      const totalMemories = (topicCount ?? 0) + (reflectionCount ?? 0);
+      const totalMemories = (topicCount ?? 0) + (memoryCount ?? 0);
       const conversations = agent.total_conversations ?? 0;
       const intimacy = agent.intimacy ?? 0;
       const consecutiveDays = agent.consecutive_days ?? 0;

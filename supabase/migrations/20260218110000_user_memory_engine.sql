@@ -73,11 +73,11 @@ BEGIN
   END IF;
 END $$;
 
--- 5. learned_topics UNIQUE 제약 (upsert 지원)
+-- 5. learned_topics UNIQUE 제약 (upsert 지원) — 실제 컬럼명은 'title'
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='uq_learned_topics_agent_topic') THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='uq_learned_topics_agent_title') THEN
     ALTER TABLE public.gyeol_learned_topics
-      ADD CONSTRAINT uq_learned_topics_agent_topic UNIQUE (agent_id, topic);
+      ADD CONSTRAINT uq_learned_topics_agent_title UNIQUE (agent_id, title);
   END IF;
 END $$;
