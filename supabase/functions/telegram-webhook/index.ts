@@ -346,7 +346,7 @@ Deno.serve(async (req) => {
 
     const isSafeMode: boolean = agentSettings.kidsSafe === true
     if (isSafeMode) {
-      systemPrompt += `\n\n## 안전 모드 (활성)\n- 전연령 적합 응답만\n- 폭력, 약물, 성적 내용, 욕설 금지\n- 부적절한 질문은 부드럽게 전환`
+      systemPrompt += `\n\n## 안전 모드\n- 전연령 적합만. 폭력, 약물, 성적, 욕설 금지. 부적절한 질문은 부드럽게 전환.`
     }
 
     const reply = await callAI(systemPrompt, userText, history)

@@ -98,7 +98,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${supabaseKey}`,
         },
-        body: JSON.stringify({ agentId: agent.id, message: text }),
+        body: JSON.stringify({ agentId: agent.id, message: text, locale: navigator.language ?? 'ko' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');

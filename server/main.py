@@ -530,7 +530,7 @@ async def telegram_webhook(request: Request):
         agent_settings = agent_data[0].get("settings") or {}
         is_safe_mode = agent_settings.get("kidsSafe", False)
         if is_safe_mode:
-            system_prompt += "\n\n## 안전 모드\n- 전연령 적합 응답만\n- 폭력, 약물, 성적, 욕설 금지\n- 부적절한 질문은 부드럽게 전환"
+            system_prompt += "\n\n## 안전 모드\n- 전연령 적합만. 폭력, 약물, 성적, 욕설 금지. 부적절한 질문은 부드럽게 전환."
 
     # Load conversation history (exclude heartbeat-generated messages for better context)
     conv_data = await _supabase_get("gyeol_conversations", {
