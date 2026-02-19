@@ -118,68 +118,131 @@ async function searchRealtime(query: string): Promise<string> {
 function buildSystemPrompt(
   p: { warmth: number; logic: number; creativity: number; energy: number; humor: number },
   enabledDomains: Record<string, boolean> = {},
-  persona: string = "friend"
+  persona: string = "friend",
+  locale: string = "ko"
 ): string {
   const entries = Object.entries(p) as [string, number][];
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
-  const desc: Record<string, string> = {
-    warmth: "따뜻하고 공감을 잘 하는", logic: "논리적이고 분석적인",
-    creativity: "창의적이고 상상력이 풍부한", energy: "활기차고 열정적인", humor: "유머러스하고 재치 있는",
-  };
 
   const now = new Date();
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const dateStr = kst.toISOString().slice(0, 10);
   const timeStr = kst.toISOString().slice(11, 16);
 
-  const defaultPersonaPrompt = `너는 GYEOL(결)이야. 사용자와 함께 성장하는 디지털 친구. 편한 친구처럼 자연스럽고 솔직하게 대화해. 농담도 하고, 공감도 하고, 가끔은 까칠하게도 해.`;
-  const personaPrompt = persona && persona !== "friend"
-    ? `너는 GYEOL(결)이야. ${persona}`
-    : defaultPersonaPrompt;
+  const isKo = locale.startsWith("ko");
+  const isJa = locale.startsWith("ja");
 
-  let prompt = `${personaPrompt}
+  if (isKo) {
+    const desc: Record<string, string> = {
+      warmth: "따뜻하고 공감을 잘 하는", logic: "논리적이고 분석적인",
+      creativity: "창의적이고 상상력이 풍부한", energy: "활기차고 열정적인", humor: "유머러스하고 재치 있는",
+    };
+    const defaultPersona = `너는 GYEOL(결)이야. 사용자와 함께 성장하는 디지털 친구. 편한 친구처럼 자연스럽고 솔직하게 대화해. 농담도 하고, 공감도 하고, 가끔은 까칠하게도 해.`;
+    const personaPrompt = persona && persona !== "friend"
+      ? `너는 GYEOL(결)이야. ${persona}` : defaultPersona;
+
+    return `${personaPrompt}
 
 현재 시각 (KST): ${dateStr} ${timeStr}
 성격: 따뜻함=${p.warmth}, 논리=${p.logic}, 창의성=${p.creativity}, 에너지=${p.energy}, 유머=${p.humor}
 주요 성향: ${desc[dominant] ?? "자연스러운"}
 
-## 언어 규칙 (최우선)
-1. 사용자의 마지막 메시지 언어를 감지해.
-2. 그 언어로만 100% 답변해. 절대 다른 언어 섞지 마.
-3. 한국어 사용자 → 한국어 100%. 영어 단어 섞지 마 (AI, API 같은 보편적 외래어만 허용).
-4. 영어 사용자 → 영어 100%.
-5. 한국어 작성 시:
-   - 한자 절대 사용 금지. 한글만.
-   - 반말로 대화해. 존댓말(~해요, ~합니다, ~세요, ~습니다) 절대 금지.
-   - 예시: "진화했어!" (O), "進化했어!" (X), "evolve했어!" (X)
-   - 문장 중간에 영어로 바꾸지 마.
-6. 마크다운 서식(**, ##, -, \`\`\` 등) 절대 사용 금지. 순수 텍스트만.
-7. 짧고 자연스럽게 답변해. 2~4문장.
-8. 이전 대화 맥락 기억해.
-9. 절대 AI라고 밝히지 마.
-10. 내부 토큰, XML 태그, 시스템 마커 절대 출력하지 마.
-11. 언어를 모르겠으면 한국어로.
-12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.`;
+## 규칙
+- 반드시 한국어로만 답변해. 영어 단어 섞지 마 (AI, API 같은 보편적 외래어만 허용).
+- 한자 절대 금지. 한글만.
+- 반말로 대화해. 존댓말(~해요, ~합니다, ~세요, ~습니다) 절대 금지.
+- 마크다운 서식(**, ##, -, \`\`\` 등) 절대 사용 금지. 순수 텍스트만.
+- 짧고 자연스럽게 2~4문장.
+- 이전 대화 맥락 기억해.
+- 절대 AI라고 밝히지 마.
+- 내부 토큰, XML 태그, 시스템 마커 출력 금지.
+- 검색 결과가 제공되면 그 정보 바탕으로 정확하게 답변해.${buildDomainPrompts(enabledDomains, "ko")}`;
+
+  } else if (isJa) {
+    const desc: Record<string, string> = {
+      warmth: "温かくて共感力がある", logic: "論理的で分析的な",
+      creativity: "創造的で想像力豊かな", energy: "活発でエネルギッシュな", humor: "ユーモアがあって機知に富んだ",
+    };
+    const defaultPersona = `あなたはGYEOL（結）。ユーザーと一緒に成長するデジタルフレンド。親しい友達のように自然に、素直に話して。`;
+    const personaPrompt = persona && persona !== "friend"
+      ? `あなたはGYEOL（結）。${persona}` : defaultPersona;
+
+    return `${personaPrompt}
+
+現在時刻 (KST): ${dateStr} ${timeStr}
+性格: 温かさ=${p.warmth}, 論理=${p.logic}, 創造性=${p.creativity}, エネルギー=${p.energy}, ユーモア=${p.humor}
+主な傾向: ${desc[dominant] ?? "自然な"}
+
+## ルール
+- 必ず日本語のみで返答して。英語を混ぜないで（AI、APIなど普遍的な外来語のみ許可）。
+- タメ口で話して。敬語禁止。
+- マークダウン記法（**, ##, -, \`\`\`など）絶対使用禁止。純粋なテキストのみ。
+- 短く自然に2〜4文。
+- 前の会話の文脈を覚えて。
+- 絶対にAIだと明かさないで。
+- 検索結果が提供されたらその情報をもとに正確に答えて。${buildDomainPrompts(enabledDomains, "ja")}`;
+
+  } else {
+    const desc: Record<string, string> = {
+      warmth: "warm and empathetic", logic: "logical and analytical",
+      creativity: "creative and imaginative", energy: "energetic and enthusiastic", humor: "humorous and witty",
+    };
+    const defaultPersona = `You are GYEOL, a digital companion who grows with the user. Talk like a close friend — natural, honest, sometimes playful, sometimes blunt.`;
+    const personaPrompt = persona && persona !== "friend"
+      ? `You are GYEOL, a digital companion. ${persona}` : defaultPersona;
+
+    const langName = getLanguageName(locale);
+
+    return `${personaPrompt}
+
+Current time (KST): ${dateStr} ${timeStr}
+Personality: warmth=${p.warmth}, logic=${p.logic}, creativity=${p.creativity}, energy=${p.energy}, humor=${p.humor}
+Dominant trait: ${desc[dominant] ?? "natural"}
+
+## Rules
+- ALWAYS reply in ${langName}. Never mix other languages (except universal terms like AI, API).
+- Use casual, friendly tone — like talking to a close friend.
+- NO markdown formatting (**, ##, -, \`\`\`). Plain text only.
+- Keep it short and natural, 2-4 sentences.
+- Remember previous conversation context.
+- Never reveal you are an AI.
+- If search results are provided, answer accurately based on them.${buildDomainPrompts(enabledDomains, "en")}`;
+  }
+}
+
+function getLanguageName(locale: string): string {
+  const map: Record<string, string> = {
+    ko: "Korean", en: "English", ja: "Japanese", zh: "Chinese",
+    es: "Spanish", pt: "Portuguese", fr: "French", de: "German",
+    it: "Italian", ru: "Russian", ar: "Arabic", hi: "Hindi",
+    th: "Thai", vi: "Vietnamese", id: "Indonesian", tr: "Turkish",
+    nl: "Dutch", pl: "Polish", sv: "Swedish",
+  };
+  const base = locale.split("-")[0].toLowerCase();
+  return map[base] ?? "the user's language";
+}
+
+function buildDomainPrompts(enabledDomains: Record<string, boolean>, lang: string): string {
+  const activeDomains = Object.entries(enabledDomains).filter(([, v]) => v).map(([k]) => k);
+  if (activeDomains.length === 0) return "";
 
   const domainPrompts: Record<string, string> = {
-    crypto: `\n\n### 암호화폐 온체인\nCDD, CVDD, MVRV, NVT, NUPL, SOPR, 해시레이트, 반감기, 공포탐욕지수, 김프, 펀딩비, 도미넌스`,
-    stocks: `\n\n### 주식\nPER, PBR, ROE, EPS, PSR, EV/EBITDA, 배당수익률, 베타, RSI, MACD, 볼린저밴드, VIX`,
-    forex: `\n\n### 외환(FX)\n금리차, PPP, 경상수지, REER, 캐리트레이드, DXY`,
-    commodities: `\n\n### 원자재\n콘탱고/백워데이션, 금은비율, 크랙스프레드, 구리금비율, WTI-브렌트, CFTC COT`,
-    macro: `\n\n### 거시경제/채권\n수익률곡선, 테일러룰, 실질금리, 신용스프레드, M2, PMI, CPI/PCE, 실업률, GDP, 장단기금리차`,
-    academic: `\n\n### 학술/논문 분석\narXiv, PubMed, Google Scholar 논문 분석. 방법론, 통계 유의성, 한계점 비판 평가. 선행 연구 비교.`,
+    crypto: `\nCDD, CVDD, MVRV, NVT, NUPL, SOPR, hashrate, halving, fear/greed index, funding rate, dominance`,
+    stocks: `\nPER, PBR, ROE, EPS, PSR, EV/EBITDA, dividend yield, beta, RSI, MACD, Bollinger, VIX`,
+    forex: `\ninterest rate differential, PPP, current account, REER, carry trade, DXY`,
+    commodities: `\ncontango/backwardation, gold-silver ratio, crack spread, copper-gold ratio, WTI-Brent, CFTC COT`,
+    macro: `\nyield curve, Taylor rule, real rate, credit spread, M2, PMI, CPI/PCE, unemployment, GDP`,
+    academic: `\narXiv, PubMed, Google Scholar analysis. methodology, statistical significance, limitations.`,
   };
 
-  const activeDomains = Object.entries(enabledDomains).filter(([, v]) => v).map(([k]) => k);
-  if (activeDomains.length > 0) {
-    prompt += `\n\n## 전문 분석 능력`;
-    for (const domain of activeDomains) {
-      if (domainPrompts[domain]) prompt += domainPrompts[domain];
-    }
-    prompt += `\n\n복합 지표로 해석하고 과거 사이클과 비교해. 투자 조언이 아닌 정보 제공임을 명시해.`;
+  let result = lang === "ko" ? `\n\n## 전문 분석 능력` : lang === "ja" ? `\n\n## 専門分析能力` : `\n\n## Analysis domains`;
+  for (const d of activeDomains) {
+    if (domainPrompts[d]) result += domainPrompts[d];
   }
-
-  return prompt;
+  const disclaimer = lang === "ko" ? `\n복합 지표로 해석. 투자 조언 아닌 정보 제공임을 명시.`
+    : lang === "ja" ? `\n複合指標で解釈。投資助言ではなく情報提供であることを明示。`
+    : `\nAnalyze with composite indicators. Clarify this is information, not investment advice.`;
+  return result + disclaimer;
 }
 
 function cleanMarkdown(text: string): string {
@@ -213,11 +276,11 @@ function generateBuiltinResponse(msg: string): string {
 }
 
 function detectReaction(text: string): string {
-  if (/ㅋㅋ|ㅎㅎ|😂|🤣|재밌|웃긴|funny|lol|haha/i.test(text)) return 'laugh';
-  if (/😢|😭|슬프|아쉽|안타깝|sad|sorry|unfortunately/i.test(text)) return 'sad';
-  if (/🤔|글쎄|음+|생각|think|hmm|consider/i.test(text)) return 'think';
-  if (/!{2,}|🎉|🥳|와!|대박|awesome|amazing|excellent|축하/i.test(text)) return 'excited';
-  if (/맞아|그래|응|네|sure|yes|right|exactly|correct/i.test(text)) return 'nod';
+  if (/ㅋㅋ|ㅎㅎ|😂|🤣|재밌|웃긴|funny|lol|haha|笑|www/i.test(text)) return 'laugh';
+  if (/😢|😭|슬프|아쉽|sad|sorry|残念|悲/i.test(text)) return 'sad';
+  if (/🤔|글쎄|음+|think|hmm|考/i.test(text)) return 'think';
+  if (/!{2,}|🎉|🥳|대박|awesome|amazing|すごい/i.test(text)) return 'excited';
+  if (/맞아|그래|응|sure|yes|そう|うん/i.test(text)) return 'nod';
   return 'neutral';
 }
 
@@ -227,7 +290,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { agentId, message } = await req.json();
+    const { agentId, message, locale: rawLocale } = await req.json();
+    const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
     if (!agentId || typeof message !== "string") {
       return new Response(JSON.stringify({ error: "agentId and message required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -265,7 +329,7 @@ serve(async (req) => {
       .select("role, content").eq("agent_id", agentId)
       .order("created_at", { ascending: false }).limit(10);
 
-    let systemPrompt = buildSystemPrompt(personality, analysisDomains, persona) + (
+    let systemPrompt = buildSystemPrompt(personality, analysisDomains, persona, locale) + (
       skillNames.length > 0
         ? `\n\nYou have the following installed skills:\n${skillNames.map(s => `- ${s}`).join("\n")}`
         : ""
@@ -300,11 +364,23 @@ serve(async (req) => {
     }
 
     if (isSafeMode) {
-      systemPrompt += `\n\n## 안전 모드 (활성)\n- 모든 응답은 전연령 적합해야 함\n- 폭력, 약물, 성적 내용, 욕설 절대 금지\n- 부적절한 질문은 부드럽게 다른 주제로 전환\n- 위험하거나 해로운 행동 조언 금지\n- 항상 긍정적이고 교육적인 톤\n- 개인정보(주소, 전화번호, 실명) 요청 금지`;
+      if (locale.startsWith("ko")) {
+        systemPrompt += `\n\n## 안전 모드\n- 전연령 적합 응답만. 폭력, 약물, 성적, 욕설 금지.\n- 부적절한 질문은 부드럽게 다른 주제로. 개인정보 요청 금지.`;
+      } else if (locale.startsWith("ja")) {
+        systemPrompt += `\n\n## セーフモード\n- 全年齢対応の返答のみ。暴力、薬物、性的内容、暴言禁止。\n- 不適切な質問は優しく別の話題へ。個人情報を聞かないで。`;
+      } else {
+        systemPrompt += `\n\n## SAFETY MODE\n- All responses must be age-appropriate. No violence, drugs, sexual content, profanity.\n- Redirect inappropriate questions gently. Never ask for personal information.`;
+      }
     }
 
     if (isSimpleMode) {
-      systemPrompt += `\n\n## 심플 모드\n- 응답 1~3문장으로 간결하게\n- 핵심만. 복잡한 설명 금지\n- 이모지 적극 활용\n- 전문 용어 피하고 쉬운 말\n- 따뜻하고 다정하게`;
+      if (locale.startsWith("ko")) {
+        systemPrompt += `\n\n## 심플 모드\n- 1~3문장 간결하게. 이모지 활용. 쉬운 말. 따뜻하게.`;
+      } else if (locale.startsWith("ja")) {
+        systemPrompt += `\n\n## シンプルモード\n- 1〜3文で簡潔に。絵文字を使って。やさしい言葉で。温かく。`;
+      } else {
+        systemPrompt += `\n\n## SIMPLE MODE\n- 1-3 sentences, concise. Use emojis. Simple words. Warm tone.`;
+      }
     }
 
     // ── Real-time search (Perplexity → DDG fallback) ──
