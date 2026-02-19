@@ -6,6 +6,11 @@ import { create } from 'zustand';
 import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
 import { supabase } from '@/src/lib/supabase';
 
+/** Strip CJK Unified Ideographs from Korean responses to prevent Chinese chars leaking through */
+function cleanChinese(text: string): string {
+  // Replace CJK Unified Ideographs (U+4E00–U+9FFF) that aren't common in Korean
+  return text.replace(/[\u4E00-\u9FFF]/g, '');
+}
 export type GyeolError = { message: string; code?: string } | null;
 
 export type ConversationInsight = {
@@ -106,7 +111,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
         id: crypto.randomUUID(),
         agent_id: agent.id,
         role: 'assistant',
-        content: data.message ?? '',
+        content: cleanChinese(data.message ?? ''),
         channel: 'web',
         provider: null,
         tokens_used: null,
