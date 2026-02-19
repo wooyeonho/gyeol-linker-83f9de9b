@@ -107,8 +107,9 @@ export default function MarketSkinsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20">
-      <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
+    <main className="min-h-screen bg-background font-display pb-20 relative">
+      <div className="aurora-bg" />
+      <div className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10">
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Market</h1>

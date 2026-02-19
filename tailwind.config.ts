@@ -41,7 +41,8 @@ const config: Config = {
         surface: 'hsl(var(--surface))',
       },
       fontFamily: {
-        display: ['Manrope', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+        body: ['"Noto Sans KR"', '"Plus Jakarta Sans"', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '1rem',

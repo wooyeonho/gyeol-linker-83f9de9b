@@ -84,8 +84,9 @@ export default function ActivityPage() {
     }, {}), [logs]);
 
   return (
-    <main className="min-h-screen bg-black font-display pb-16">
-      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-5">
+    <main className="min-h-screen bg-background font-display pb-16 relative">
+      <div className="aurora-bg" />
+      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-5 relative z-10">
         <header>
           <h1 className="text-base font-semibold text-foreground/80">Activity</h1>
           <p className="text-[11px] text-white/20 mt-1">Autonomous activity feed</p>

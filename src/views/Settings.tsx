@@ -213,17 +213,36 @@ export default function SettingsPage() {
   const setters = [setWarmth, setLogic, setCreativity, setEnergy, setHumor];
 
   return (
-    <main className="min-h-screen bg-black font-display pb-16">
-      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4">
+    <main className="min-h-screen bg-background font-display pb-16 relative">
+      <div className="aurora-bg" />
+      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-foreground/80">Settings</h1>
           <button type="button" onClick={signOut}
-            className="text-[10px] text-white/20 hover:text-white/50 transition">Sign out</button>
+            className="text-[10px] text-slate-500 hover:text-foreground transition">Sign out</button>
         </header>
+
+        {/* Profile Card */}
+        <div className="glass-card rounded-2xl overflow-hidden">
+          <div className="h-16 bg-gradient-to-r from-primary/30 to-secondary/20" />
+          <div className="px-5 pb-5 -mt-8 flex items-end gap-3">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center">
+                <div className="void-dot" />
+              </div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-card shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+            </div>
+            <div className="pb-1">
+              <p className="text-sm font-bold text-foreground">{agent?.name ?? 'GYEOL'}</p>
+              <p className="text-[10px] text-primary/60">Generation {agent?.gen ?? 1}</p>
+              <p className="text-[9px] text-slate-500">Status: Evolving & Learning</p>
+            </div>
+          </div>
+        </div>
 
         {/* Account */}
         <section className="space-y-1">
-          <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Account</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Account</p>
           <p className="text-sm text-foreground/60">{user?.email}</p>
         </section>
 
@@ -720,8 +739,8 @@ export default function SettingsPage() {
 
         {/* Legal links */}
         <div className="flex gap-3 justify-center mt-4 mb-8">
-          <Link to="/terms" className="text-[10px] text-white/20 hover:text-white/40 transition">Terms</Link>
-          <Link to="/privacy" className="text-[10px] text-white/20 hover:text-white/40 transition">Privacy</Link>
+          <Link to="/terms" className="text-xs text-slate-400 hover:text-white underline decoration-slate-600 underline-offset-2 transition">Terms</Link>
+          <Link to="/privacy" className="text-xs text-slate-400 hover:text-white underline decoration-slate-600 underline-offset-2 transition">Privacy</Link>
         </div>
       </div>
       <BottomNav />

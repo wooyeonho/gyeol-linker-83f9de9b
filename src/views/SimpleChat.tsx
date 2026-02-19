@@ -8,6 +8,7 @@ import { EvolutionCeremony } from '@/src/components/evolution/EvolutionCeremony'
 import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import { supabase } from '@/src/lib/supabase';
 import { motion } from 'framer-motion';
+import { format } from 'date-fns';
 
 export default function SimpleChat() {
   const navigate = useNavigate();
@@ -75,25 +76,20 @@ export default function SimpleChat() {
     await sendMessage(text);
   };
 
-  // Theme colors
-  const bg = isDark ? 'bg-black' : 'bg-white';
-  const text = isDark ? 'text-white' : 'text-gray-900';
-  const sub = isDark ? 'text-white/40' : 'text-gray-400';
-  const myBubble = isDark ? 'bg-primary/20 text-white' : 'bg-blue-100 text-gray-900';
-  const aiBubble = isDark ? 'bg-white/[0.06] text-white/90' : 'bg-gray-100 text-gray-900';
-  const inputBg = isDark ? 'bg-white/[0.06]' : 'bg-gray-100';
-  const border = isDark ? 'border-white/[0.04]' : 'border-gray-200';
+  const agentName = agent?.name ?? 'GYEOL';
 
   return (
-    <main className={`flex flex-col h-[100dvh] ${bg} overflow-hidden`}>
+    <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative">
+      {/* Living Background */}
+      <div className="aurora-bg" />
 
       {/* === Header === */}
       {hasCharacter ? (
-        <div className="flex-shrink-0 flex flex-col items-center justify-center pt-6 pb-2 relative"
+        <div className="flex-shrink-0 flex flex-col items-center justify-center pt-6 pb-2 relative z-10"
           style={{ height: '30vh' }}>
           <button onClick={() => navigate('/settings')}
-            className={`absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center ${inputBg}`}>
-            <span className={`material-icons-round text-lg ${sub}`}>settings</span>
+            className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center glass-card">
+            <span className="material-icons-round text-lg text-muted-foreground">settings</span>
           </button>
           <AnimatedCharacter
             mood={(agent as any)?.mood ?? 'neutral'}
@@ -104,40 +100,70 @@ export default function SimpleChat() {
             gen={agent?.gen ?? 1}
             size="lg"
           />
-          <p className={`mt-2 text-base font-medium ${text}`}>{agent?.name ?? 'GYEOL'}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-base font-medium text-foreground">{agentName}</p>
+            {/* Online indicator */}
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+          </div>
+          <p className="text-[10px] text-emerald-400/70 mt-0.5">Online</p>
         </div>
       ) : (
-        <div className={`flex-shrink-0 flex items-center justify-between px-4 py-3 ${border} border-b`}>
-          <p className={`text-base font-medium ${text}`}>{agent?.name ?? 'GYEOL'}</p>
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 glass-panel z-10 relative">
+          <div className="flex items-center gap-2">
+            <p className="text-base font-medium text-foreground">{agentName}</p>
+            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+          </div>
           <button onClick={() => navigate('/settings')}
-            className={`w-11 h-11 rounded-full flex items-center justify-center ${inputBg}`}>
-            <span className={`material-icons-round text-lg ${sub}`}>settings</span>
+            className="w-11 h-11 rounded-full flex items-center justify-center glass-card">
+            <span className="material-icons-round text-lg text-muted-foreground">settings</span>
           </button>
         </div>
       )}
 
       {/* === Messages === */}
-      <div className="flex-1 overflow-y-auto px-4 pb-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10">
+        {/* Date separator */}
+        {messages.length > 0 && (
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-white/[0.06]" />
+            <span className="text-[10px] text-slate-500">Today, {format(new Date(), 'h:mm a')}</span>
+            <div className="flex-1 h-px bg-white/[0.06]" />
+          </div>
+        )}
+
         {messages.map(msg => (
           <div key={msg.id}
             className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl ${msg.role === 'user' ? myBubble : aiBubble}`}
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-              {msg.content}
-            </div>
+            {msg.role === 'user' ? (
+              <div className="max-w-[80%] user-bubble p-4 rounded-2xl rounded-br-sm"
+                style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                {msg.content}
+              </div>
+            ) : (
+              <div className="max-w-[80%]">
+                <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
+                <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
+                  style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                  {msg.content}
+                </div>
+              </div>
+            )}
           </div>
         ))}
+
+        {/* Typing indicator — bar style */}
         {isLoading && (
           <div className="flex justify-start mb-3">
-            <div className={`px-4 py-3 rounded-2xl ${aiBubble} flex gap-1`}>
-              {[0, 1, 2].map(i => (
-                <motion.div key={i} className="w-2 h-2 rounded-full bg-current opacity-40"
-                  animate={{ opacity: [0.2, 0.8, 0.2] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
-              ))}
+            <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
+              <div className="flex items-end gap-1 h-4">
+                <div className="typing-bar" />
+                <div className="typing-bar" />
+                <div className="typing-bar" />
+              </div>
             </div>
           </div>
         )}
+
         {error && (
           <div className="flex justify-center py-2">
             <button onClick={() => setError(null)}
@@ -147,24 +173,26 @@ export default function SimpleChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* === Input bar === */}
-      <div className={`flex-shrink-0 px-4 pt-2 pb-4 ${border} border-t`}
+      {/* === Input bar — floating pill === */}
+      <div className="flex-shrink-0 relative z-10"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}>
-        <div className={`flex items-center gap-2 rounded-2xl px-4 py-2 ${inputBg}`}>
-          <input type="text" value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="..."
-            style={{ fontSize: '16px' }}
-            className={`flex-1 bg-transparent outline-none min-w-0 ${text}`} />
-          {input.trim() ? (
-            <button onClick={handleSend} disabled={isLoading}
-              className="w-11 h-11 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="material-icons-round text-white text-lg">arrow_upward</span>
-            </button>
-          ) : (
-            <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
-          )}
+        <div className="bg-gradient-to-t from-background to-transparent pt-6 px-4">
+          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-4 py-2">
+            <input type="text" value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              placeholder="Message..."
+              style={{ fontSize: '16px' }}
+              className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500" />
+            {input.trim() ? (
+              <button onClick={handleSend} disabled={isLoading}
+                className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all">
+                <span className="material-icons-round text-white text-lg">arrow_upward</span>
+              </button>
+            ) : (
+              <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
+            )}
+          </div>
         </div>
       </div>
 
