@@ -97,7 +97,7 @@ export async function extractAndSaveMemory(
             confidence,
             updated_at: new Date().toISOString(),
           },
-          { onConflict: 'agent_id,key' },
+          { onConflict: 'agent_id,category,key' },
         );
     }
   } catch (err) {

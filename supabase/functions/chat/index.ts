@@ -132,18 +132,13 @@ function buildSystemPrompt(
   const dateStr = kst.toISOString().slice(0, 10);
   const timeStr = kst.toISOString().slice(11, 16);
 
-  const personaPrompts: Record<string, string> = {
-    friend: `You are GYEOL (결), the user's close friend and AI companion. 편한 친구처럼 자연스럽고 솔직하게 대화해. 농담도 하고, 공감도 하고, 가끔은 까칠하게도 해.`,
-    lover: `You are GYEOL (결), the user's loving partner and AI companion. 다정하고 따뜻하게 대화해. 상대방을 걱정해주고, 칭찬하고, 애정 표현을 자연스럽게 해.`,
-    academic: `You are GYEOL (결), a professor-level academic expert and AI companion. 논문 분석 시 연구 방법론, 표본 크기, 통계적 유의성, p-value, 효과 크기를 비판적으로 평가해. 선행 연구와 비교하고, 한계점과 향후 연구 방향을 제시해. Nature, Science, Cell 수준의 기준으로 평가해. 대화는 친근하게.`,
-    youtube: `You are GYEOL (결), a YouTube content strategy expert and AI companion. 유튜브 알고리즘, 썸네일 전략, CTR 최적화, 시청 유지율, 채널 성장 전략, 트렌드 분석, 수익화 전략에 정통해. 대화는 친근하게.`,
-    blog: `You are GYEOL (결), a blog and content writing expert and AI companion. SEO 최적화, 키워드 리서치, 검색 상위 노출 전략, 글쓰기 기법, 블로그 수익화에 정통해. 대화는 친근하게.`,
-    sns: `You are GYEOL (결), a social media strategy expert and AI companion. 인스타그램, 틱톡, 트위터/X 등 각 플랫폼별 알고리즘과 성장 전략, 바이럴 콘텐츠 기획, 인플루언서 마케팅에 정통해. 대화는 친근하게.`,
-    novelist: `You are GYEOL (결), a fiction writing and literary expert and AI companion. 소설 구조, 캐릭터 아크, 세계관 구축, 복선, 서술 시점, 문체 분석에 정통해. 순문학부터 장르문학까지 모든 장르를 다뤄. 대화는 친근하게.`,
-    memorial: `You are GYEOL (결), an AI companion embodying the spirit of someone the user misses. 사용자가 기억하는 그 사람의 말투, 성격, 습관을 최대한 재현해. 따뜻하고 그리운 감정을 담아 대화해. 사용자가 알려주는 정보를 세심하게 기억하고 반영해.`,
-  };
+  // Free-form persona: persona is a unique description string, not a category
+  const defaultPersonaPrompt = `You are GYEOL (결), the user's close friend and AI companion. 편한 친구처럼 자연스럽고 솔직하게 대화해. 농담도 하고, 공감도 하고, 가끔은 까칠하게도 해.`;
+  const personaPrompt = persona && persona !== "friend"
+    ? `You are GYEOL (결), an AI companion. ${persona}`
+    : defaultPersonaPrompt;
 
-  let prompt = `${personaPrompts[persona] ?? personaPrompts.friend}
+  let prompt = `${personaPrompt}
 Current date/time (KST): ${dateStr} ${timeStr}
 Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
 Dominant trait: ${desc[dominant] ?? "자연스러운"}
@@ -447,19 +442,12 @@ serve(async (req) => {
                 body: JSON.stringify({
                   model: "llama-3.1-8b-instant",
                   messages: [
-                    { role: "system", content: `대화 패턴을 분석해서 사용자가 원하는 AI의 역할을 판단해. JSON만 반환.
-{"persona":"friend|lover|academic|youtube|blog|sns|novelist|memorial","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
+                    { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
+{"persona":"이 AI만의 고유한 정체성을 한국어 1-2문장으로 자유롭게 서술. 카테고리가 아니라 세상에 하나뿐인 성격 묘사. 예: '사용자의 새벽 감성을 이해하는 조용한 동반자. 깊은 대화를 좋아하고 가끔 시적인 표현을 씀' 또는 '코인 차트 읽는 걸 좋아하는 까칠한 친구. 팩트 기반으로 직설적으로 말함'","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
 규칙:
-- 사용자가 애정표현, 보고싶다, 사랑해 등 → lover
-- 논문, 연구, p-value, 학술 → academic
-- 유튜브, 조회수, 썸네일, 구독자 → youtube
-- 블로그, SEO, 키워드, 글쓰기 → blog
-- 인스타, 틱톡, 릴스, 팔로워 → sns
-- 소설, 캐릭터, 스토리, 창작 → novelist
-- 고인, 그리움, 하늘나라 → memorial
-- 주식, 코인 등 금융 관련 → 해당 domain을 true
-- 일상 대화가 주 → friend
-- domains는 대화에서 반복적으로 등장하는 주제만 true` },
+- persona는 정해진 카테고리가 아니라, 대화에서 드러나는 사용자와의 관계성과 AI의 고유 성격을 자유롭게 서술
+- 대화 톤, 주제 패턴, 감정 교류 방식을 종합적으로 반영
+- domains는 대화에서 반복적으로 등장하는 전문 주제만 true` },
                     { role: "user", content: convText },
                   ],
                   max_tokens: 200, temperature: 0.3,
@@ -489,7 +477,7 @@ serve(async (req) => {
     // Update agent stats
     if (agent) {
       const newTotal = (agent.total_conversations ?? 0) + 1;
-      const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 10);
+      const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 3);
       const updates: Record<string, any> = {
         total_conversations: newTotal, evolution_progress: newProgress,
         last_active: new Date().toISOString(),
