@@ -5,6 +5,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')
+const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY')
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
 const AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions'
 
@@ -80,50 +81,53 @@ interface ChatMsg { role: string; content: string }
 // Check if message needs real-time info (prices, weather, news, etc.)
 function needsSearch(text: string): boolean {
   const patterns = [
-    /가격|시세|얼마|환율|주가|코인|비트코인|이더리움|주식/i,
-    /날씨|기온|온도/i,
-    /뉴스|소식|최근|요즘|현재|지금|오늘/i,
-    /검색|찾아|알아봐|확인해/i,
-    /price|stock|crypto|weather|news|current/i,
+    /가격|시세|얼마|환율|주가|코인|비트코인|이더리움|주식|선물|나스닥|다우|코스피|코스닥/i,
+    /날씨|기온|온도|비 올|눈 올/i,
+    /뉴스|소식|최근|요즘|현재|지금|오늘|어제|이번 주/i,
+    /검색|찾아|알아봐|확인해|조사해/i,
+    /전쟁|분쟁|외교|정치|대통령|선거|국제|미국|중국|러시아|이란|북한|우크라이나/i,
+    /price|stock|crypto|weather|news|current|war|politic/i,
   ]
   return patterns.some(p => p.test(text))
 }
 
-async function searchDDG(query: string): Promise<string> {
-  try {
-    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`)
-    if (!res.ok) return ''
-    const data = await res.json()
-    const results: string[] = []
-    if (data.AbstractText) results.push(data.AbstractText)
-    if (data.RelatedTopics) {
-      for (const t of data.RelatedTopics.slice(0, 3)) {
-        if (t.Text) results.push(t.Text)
-      }
-    }
-    return results.join('\n').slice(0, 800) || ''
-  } catch {
+async function searchPerplexity(query: string): Promise<string> {
+  if (!PERPLEXITY_API_KEY) {
+    console.log('[telegram] Perplexity API key not configured, skipping search')
     return ''
   }
-}
-
-// Fallback: scrape DuckDuckGo HTML for instant answers
-async function searchDDGHtml(query: string): Promise<string> {
   try {
-    const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GYEOL/1.0)' },
+    const res = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'sonar',
+        messages: [
+          { role: 'system', content: '한국어로 간결하게 핵심 정보만 답변해. 숫자, 날짜, 출처를 포함해.' },
+          { role: 'user', content: query },
+        ],
+        max_tokens: 512,
+        search_recency_filter: 'day',
+      }),
     })
-    if (!res.ok) return ''
-    const html = await res.text()
-    const snippets: string[] = []
-    const regex = /class="result__snippet"[^>]*>(.*?)<\/a>/gs
-    let match
-    while ((match = regex.exec(html)) !== null && snippets.length < 5) {
-      const text = match[1].replace(/<[^>]+>/g, '').trim()
-      if (text) snippets.push(text)
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error('[telegram] Perplexity error:', res.status, errText)
+      return ''
     }
-    return snippets.join('\n').slice(0, 800)
-  } catch {
+    const data = await res.json()
+    const content = data.choices?.[0]?.message?.content ?? ''
+    const citations = data.citations ?? []
+    let result = content.trim()
+    if (citations.length > 0) {
+      result += '\n\n출처: ' + citations.slice(0, 3).join(', ')
+    }
+    return result.slice(0, 1200)
+  } catch (err) {
+    console.error('[telegram] Perplexity search failed:', err)
     return ''
   }
 }
@@ -284,16 +288,13 @@ Deno.serve(async (req) => {
       .slice(-10)
       .map(r => ({ role: r.role, content: r.content }))
 
-    // Auto-search for real-time info requests
+    // Auto-search for real-time info requests via Perplexity
     let searchContext: string | undefined
     if (needsSearch(userText)) {
-      console.log('[telegram] Auto-search triggered for:', userText)
-      searchContext = await searchDDG(userText)
-      if (!searchContext) {
-        searchContext = await searchDDGHtml(userText)
-      }
+      console.log('[telegram] Perplexity search triggered for:', userText)
+      searchContext = await searchPerplexity(userText)
       if (searchContext) {
-        console.log('[telegram] Search results found, length:', searchContext.length)
+        console.log('[telegram] Perplexity results found, length:', searchContext.length)
       }
     }
 
