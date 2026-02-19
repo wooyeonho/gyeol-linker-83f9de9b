@@ -54,7 +54,9 @@ export default function MarketSkinsPage() {
         .upsert({ agent_id: agent.id, skin_id: skin.id, is_equipped: true } as any,
           { onConflict: 'agent_id,skin_id' });
       setAppliedId(skin.id);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('Failed to apply skin:', err);
+    }
     setApplying(null);
   };
 
@@ -98,7 +100,9 @@ export default function MarketSkinsPage() {
       setPreviewFile(null);
       setPreviewUrl(null);
       setShowUpload(false);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('Failed to upload skin:', err);
+    }
     setUploading(false);
   };
 

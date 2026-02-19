@@ -56,7 +56,9 @@ export default function MarketSkillsPage() {
         .upsert({ agent_id: agent.id, skill_id: skill.id, is_active: true } as any,
           { onConflict: 'agent_id,skill_id' });
       setInstalledIds(prev => new Set(prev).add(skill.id));
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('Failed to install skill:', err);
+    }
     setInstalling(null);
   };
 
@@ -76,7 +78,9 @@ export default function MarketSkillsPage() {
       setUploadName('');
       setUploadDesc('');
       setShowUpload(false);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('Failed to upload skill:', err);
+    }
     setUploading(false);
   };
 
