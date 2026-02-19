@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useGyeolStore } from '@/store/gyeol-store';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
@@ -14,6 +15,7 @@ type Keyword = { id: string; keyword: string; category: string | null };
 export default function SettingsPage() {
   const { agent } = useInitAgent();
   const { user, signOut } = useAuth();
+  const { setAgent } = useGyeolStore();
 
   // Personality sliders
   const [warmth, setWarmth] = useState(50);
@@ -306,8 +308,10 @@ export default function SettingsPage() {
                     <button key={String(c.key)} type="button" onClick={async () => {
                       setCharPreset(c.key);
                       const s = (agent?.settings as any) ?? {};
+                      const newSettings = { ...s, characterPreset: c.key };
                       await supabase.from('gyeol_agents' as any)
-                        .update({ settings: { ...s, characterPreset: c.key } } as any).eq('id', agent?.id);
+                        .update({ settings: newSettings } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, settings: newSettings } as any);
                     }}
                       className={`flex flex-col items-center p-3 rounded-xl border transition ${
                         charPreset === c.key ? 'border-primary/40 bg-primary/10' : 'border-white/[0.06]'
