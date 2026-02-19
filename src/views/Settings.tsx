@@ -266,8 +266,8 @@ export default function SettingsPage() {
                         .update({ settings: { ...s, mode: m.key } } as any).eq('id', agent?.id);
                       window.location.href = '/';
                     }}
-                      className={`p-4 rounded-xl border text-center transition ${
-                        currentMode === m.key ? 'border-primary/40 bg-primary/10' : 'border-white/[0.06]'
+                      className={`p-4 rounded-xl text-center transition ${
+                        currentMode === m.key ? 'glass-card-selected' : 'glass-card'
                       }`}>
                       <span className="text-xl">{m.icon}</span>
                       <p className="text-[11px] text-foreground/80 mt-1">{m.label}</p>
@@ -299,8 +299,8 @@ export default function SettingsPage() {
                     await supabase.from('gyeol_agents' as any)
                       .update({ settings: { ...s, kidsSafe: v } } as any).eq('id', agent?.id);
                   }}
-                    className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-primary' : 'bg-white/10'}`}>
-                    <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform ${kidsSafe ? 'translate-x-4' : ''}`} />
+                    className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${kidsSafe ? 'translate-x-4' : ''}`} />
                   </button>
                 </div>
               </motion.div>
@@ -334,8 +334,8 @@ export default function SettingsPage() {
                         .update({ settings: newSettings } as any).eq('id', agent?.id);
                       if (agent) setAgent({ ...agent, settings: newSettings } as any);
                     }}
-                      className={`flex flex-col items-center p-3 rounded-xl border transition ${
-                        charPreset === c.key ? 'border-primary/40 bg-primary/10' : 'border-white/[0.06]'
+                      className={`flex flex-col items-center p-3 rounded-xl transition ${
+                        charPreset === c.key ? 'glass-card-selected' : 'glass-card'
                       }`}>
                       <span className="text-lg">{c.emoji}</span>
                       <span className="text-[9px] text-white/30 mt-1">{c.label}</span>
@@ -517,7 +517,7 @@ export default function SettingsPage() {
                             .update({ settings: { ...(agent as any).settings, analysisDomains: next } } as any)
                             .eq('id', agent.id);
                         }}
-                          className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
+                          className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
                           <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${enabled ? 'ml-[18px]' : 'ml-1'}`} />
                         </button>
                       </div>
@@ -593,7 +593,7 @@ export default function SettingsPage() {
                       </div>
                     ) : (
                       <button type="button" onClick={item.onChange as () => void}
-                        className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
+                        className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
                         <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${item.value ? 'ml-[18px]' : 'ml-1'}`} />
                       </button>
                     )}
@@ -611,7 +611,7 @@ export default function SettingsPage() {
                       .update({ settings: { ...(agent as any).settings, autoTTS: next } } as any)
                       .eq('id', agent.id);
                   }}
-                    className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-primary/60' : 'bg-white/[0.06]'}`}>
+                    className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
                     <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${autoTTS ? 'ml-[18px]' : 'ml-1'}`} />
                   </button>
                 </div>
