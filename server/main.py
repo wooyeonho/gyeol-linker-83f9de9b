@@ -352,7 +352,52 @@ async def telegram_webhook(request: Request):
                 await _send_reply("삭제 중 오류가 발생했어요.")
             return {"ok": True}
 
-        await _send_reply("사용법:\n/memory — 기억 목록\n/memory list — 기억 목록\n/memory delete <번호> — 기억 삭제")
+        if sub_cmd == "add" and len(parts) > 2:
+            # Format: /memory add 카테고리:키=값  or  /memory add 키=값
+            raw = parts[2].strip()
+            category = "preference"
+            key_val = raw
+            if ":" in raw and "=" in raw:
+                cat_part, key_val = raw.split(":", 1)
+                cat_part = cat_part.strip().lower()
+                valid_cats = ["identity", "preference", "interest", "relationship", "goal", "emotion", "experience", "style", "knowledge_level"]
+                if cat_part in valid_cats:
+                    category = cat_part
+            if "=" not in key_val:
+                await _send_reply("형식: /memory add 키=값\n예: /memory add favorite_food=떡볶이\n예: /memory add identity:job=개발자")
+                return {"ok": True}
+            mem_key, mem_val = key_val.split("=", 1)
+            mem_key = mem_key.strip()
+            mem_val = mem_val.strip()
+            if not mem_key or not mem_val:
+                await _send_reply("키와 값을 모두 입력해주세요.\n예: /memory add hobby=독서")
+                return {"ok": True}
+            # Upsert via POST with merge-duplicates
+            try:
+                upsert_url = f"{SUPABASE_URL}/rest/v1/gyeol_user_memories"
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.post(upsert_url, headers={
+                        "apikey": SUPABASE_SERVICE_KEY,
+                        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                        "Content-Type": "application/json",
+                        "Prefer": "resolution=merge-duplicates",
+                    }, json={
+                        "agent_id": agent_id,
+                        "category": category,
+                        "key": mem_key,
+                        "value": mem_val,
+                        "confidence": 100,
+                    })
+                if resp.status_code < 300:
+                    await _send_reply(f"기억 추가 완료!\n[{category}] {mem_key} → {mem_val}")
+                else:
+                    await _send_reply(f"저장 중 오류가 발생했어요. ({resp.status_code})")
+            except Exception as e:
+                logger.error(f"Memory add error: {e}")
+                await _send_reply("저장 중 오류가 발생했어요.")
+            return {"ok": True}
+
+        await _send_reply("사용법:\n/memory — 기억 목록\n/memory list — 기억 목록\n/memory add 키=값 — 기억 추가\n/memory add 카테고리:키=값 — 카테고리 지정 추가\n/memory delete <번호> — 기억 삭제\n\n카테고리: identity, preference, interest, relationship, goal, emotion, experience, style, knowledge_level")
         return {"ok": True}
 
     # /evolve command — show personality evolution history
