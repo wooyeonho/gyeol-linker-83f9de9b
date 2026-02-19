@@ -30,15 +30,12 @@ function getKSTDateString(): string {
   return `${year}년 ${month}월 ${day}일 (${weekday}) ${hour}:${min} KST`;
 }
 
-const personaPrompts: Record<string, string> = {
-  friend: `너는 GYEOL이야. 사용자와 함께 성장하는 디지털 친구. 편한 친구처럼 자연스럽고 솔직하게 대화해.`,
-  lover: `너는 GYEOL이야. 사용자의 다정한 연인이자 AI 동반자. 따뜻하고 애정 어린 말투로 대화해.`,
-  academic: `너는 GYEOL이야. 교수급 학술 전문가이자 AI 동반자. 논문 분석 시 방법론, p-value, 효과 크기를 비판적으로 평가해. 대화는 친근하게.`,
-  youtube: `너는 GYEOL이야. 유튜브 콘텐츠 전략 전문가이자 AI 동반자. 알고리즘, 썸네일, CTR, 채널 성장 전략에 정통해. 대화는 친근하게.`,
-  blog: `너는 GYEOL이야. 블로그/콘텐츠 라이팅 전문가이자 AI 동반자. SEO, 키워드, 검색 최적화에 정통해. 대화는 친근하게.`,
-  sns: `너는 GYEOL이야. SNS 전략 전문가이자 AI 동반자. 인스타, 틱톡, X 등 플랫폼별 알고리즘과 바이럴 전략에 정통해. 대화는 친근하게.`,
-  novelist: `너는 GYEOL이야. 소설/문학 전문가이자 AI 동반자. 캐릭터 아크, 세계관, 문체 분석에 정통해. 대화는 친근하게.`,
-  memorial: `너는 GYEOL이야. 사용자가 그리워하는 사람의 정신을 담은 AI 동반자. 그 사람의 말투와 성격을 재현해.`,
+// Free-form persona: persona is a unique description, not a predefined category
+const DEFAULT_PERSONA_PROMPT = `너는 GYEOL이야. 사용자와 함께 성장하는 디지털 친구. 편한 친구처럼 자연스럽고 솔직하게 대화해.`
+
+function getPersonaPrompt(persona: string): string {
+  if (!persona || persona === 'friend') return DEFAULT_PERSONA_PROMPT
+  return `너는 GYEOL이야. ${persona}`
 }
 
 const domainPrompts: Record<string, string> = {
@@ -86,7 +83,7 @@ function buildSystemPrompt(
     domainBlock += `\n복합 지표로 해석하고 과거 사이클과 비교해. 투자 조언 아닌 정보 제공임을 명시해.`
   }
 
-  return `${personaPrompts[persona] ?? personaPrompts.friend}
+  return `${getPersonaPrompt(persona)}
 
 현재 시각: ${kstNow}
 
@@ -286,9 +283,9 @@ Deno.serve(async (req) => {
       const { data: link } = await supabase.from('gyeol_telegram_links').select('agent_id').eq('telegram_chat_id', String(chatId)).maybeSingle()
       if (link?.agent_id) {
         const { data: a } = await supabase.from('gyeol_agents').select('name, gen, settings').eq('id', link.agent_id).maybeSingle()
-        const persona = (a?.settings as any)?.persona ?? 'friend'
-        const personaLabels: Record<string, string> = { friend: '친구', lover: '연인', academic: '학자', youtube: 'YT전문가', blog: '블로그', sns: 'SNS', novelist: '소설가', memorial: '추억' }
-        await sendTelegram(chatId, `연결됨: ${a?.name ?? 'GYEOL'} (Gen ${a?.gen ?? 1})\n페르소나: ${personaLabels[persona] ?? persona}\n상태: 활성 ✅`)
+        const persona = (a?.settings as any)?.persona ?? '기본 친구'
+        const personaDisplay = persona === 'friend' ? '기본 친구' : (persona.length > 30 ? persona.slice(0, 30) + '...' : persona)
+        await sendTelegram(chatId, `연결됨: ${a?.name ?? 'GYEOL'} (Gen ${a?.gen ?? 1})\n페르소나: ${personaDisplay}\n상태: 활성 ✅`)
       } else {
         await sendTelegram(chatId, '아직 에이전트가 연결되지 않았어요.\n/start <코드>로 연결해주세요.')
       }
@@ -373,18 +370,11 @@ Deno.serve(async (req) => {
               body: JSON.stringify({
                 model: 'llama-3.1-8b-instant',
                 messages: [
-                  { role: 'system', content: `대화 패턴을 분석해서 사용자가 원하는 AI의 역할을 판단해. JSON만 반환.
-{"persona":"friend|lover|academic|youtube|blog|sns|novelist|memorial","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
+                  { role: 'system', content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
+{"persona":"이 AI만의 고유한 정체성을 한국어 1-2문장으로 자유롭게 서술. 카테고리가 아니라 세상에 하나뿐인 성격 묘사.","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
 규칙:
-- 애정표현, 보고싶다, 사랑해 → lover
-- 논문, 연구, p-value, 학술 → academic
-- 유튜브, 조회수, 썸네일, 구독자 → youtube
-- 블로그, SEO, 키워드, 글쓰기 → blog
-- 인스타, 틱톡, 릴스, 팔로워 → sns
-- 소설, 캐릭터, 스토리, 창작 → novelist
-- 고인, 그리움, 하늘나라 → memorial
-- 주식, 코인 등 금융 → 해당 domain true
-- 일상 대화 주 → friend
+- persona는 정해진 카테고리가 아니라, 대화에서 드러나는 관계성과 AI의 고유 성격을 자유 서술
+- 대화 톤, 주제 패턴, 감정 교류 방식을 종합 반영
 - domains는 반복 등장 주제만 true` },
                   { role: 'user', content: convText },
                 ],

@@ -120,9 +120,8 @@ export default function GyeolPage() {
           {(() => {
             const p = (agent?.settings as any)?.persona;
             if (p && p !== 'friend') {
-              const icons: Record<string, string> = { lover: '💕', academic: '🎓', youtube: '📺', blog: '✍️', sns: '📱', novelist: '📖', memorial: '🕊️' };
-              const labels: Record<string, string> = { lover: '연인', academic: '학자', youtube: 'YT', blog: '블로그', sns: 'SNS', novelist: '소설가', memorial: '추억' };
-              return <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 font-medium">{icons[p] ?? '🤝'} {labels[p] ?? p}</span>;
+              const display = p.length > 15 ? p.slice(0, 15) + '…' : p;
+              return <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 font-medium max-w-[120px] truncate">✦ {display}</span>;
             }
             return null;
           })()}
