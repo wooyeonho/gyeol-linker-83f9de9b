@@ -53,6 +53,7 @@ export default function SettingsPage() {
 
   // Proactive message interval
   const PROACTIVE_OPTIONS = [
+    { value: 0, label: 'OFF' },
     { value: 1, label: '1시간' },
     { value: 2, label: '2시간' },
     { value: 4, label: '4시간' },
