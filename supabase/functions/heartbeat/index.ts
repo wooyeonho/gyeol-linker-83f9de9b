@@ -195,21 +195,43 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
     .map((t: any) => `${t.title}: ${t.summary ?? ""}`)
     .join("\n");
 
-  // Perplexity real-time search based on user interests
+  // Perplexity real-time search — rate limited to once per 4 hours per agent
   let realtimeInfo = "";
-  const interestKeywords = (memories ?? [])
-    .filter((m: any) => m.category === "interest" || m.category === "hobby" || m.category === "work")
-    .map((m: any) => m.value)
-    .slice(0, 2);
-  if (interestKeywords.length > 0) {
-    const searchQuery = `${interestKeywords.join(" ")} 최신 뉴스 오늘`;
-    const searchResult = await searchPerplexity(searchQuery);
-    if (searchResult) realtimeInfo = searchResult;
-  } else if ((topics ?? []).length > 0) {
-    // Fallback: search based on recent learned topic
-    const searchQuery = `${(topics as any[])[0].title} 최신 동향`;
-    const searchResult = await searchPerplexity(searchQuery);
-    if (searchResult) realtimeInfo = searchResult;
+  const fourHoursAgoSearch = new Date(Date.now() - 4 * 3600000).toISOString();
+  const { data: recentSearch } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .eq("agent_id", agentId)
+    .eq("activity_type", "learning")
+    .gte("created_at", fourHoursAgoSearch)
+    .like("summary", "%실시간 검색%")
+    .limit(1);
+
+  const shouldSearchRealtime = !recentSearch || recentSearch.length === 0;
+
+  if (shouldSearchRealtime) {
+    const interestKeywords = (memories ?? [])
+      .filter((m: any) => m.category === "interest" || m.category === "hobby" || m.category === "work")
+      .map((m: any) => m.value)
+      .slice(0, 2);
+    if (interestKeywords.length > 0) {
+      const searchQuery = `${interestKeywords.join(" ")} 최신 뉴스 오늘`;
+      const searchResult = await searchPerplexity(searchQuery);
+      if (searchResult) realtimeInfo = searchResult;
+    } else if ((topics ?? []).length > 0) {
+      const searchQuery = `${(topics as any[])[0].title} 최신 동향`;
+      const searchResult = await searchPerplexity(searchQuery);
+      if (searchResult) realtimeInfo = searchResult;
+    }
+    // Log the search to enforce 4-hour cooldown
+    if (realtimeInfo) {
+      await supabase.from("gyeol_autonomous_logs").insert({
+        agent_id: agentId, activity_type: "learning",
+        summary: `[실시간 검색] Perplexity proactive search`,
+        details: { source: "perplexity", context: "proactive-message" },
+        was_sandboxed: true,
+      });
+    }
   }
 
   // Load recent emotion arc from conversation insights
