@@ -522,11 +522,15 @@ async def telegram_webhook(request: Request):
     history: list = []
 
     agent_data = await _supabase_get("gyeol_agents", {
-        "select": "warmth,logic,creativity,energy,humor",
+        "select": "warmth,logic,creativity,energy,humor,settings",
         "id": f"eq.{agent_id}",
     })
     if agent_data and isinstance(agent_data, list) and len(agent_data) > 0:
         system_prompt = _build_personality_prompt(agent_data[0])
+        agent_settings = agent_data[0].get("settings") or {}
+        is_safe_mode = agent_settings.get("kidsSafe", False)
+        if is_safe_mode:
+            system_prompt += "\n\n## SAFETY MODE (ACTIVE)\n- 모든 응답은 전연령 적합해야 함\n- 폭력, 약물, 성적 내용, 욕설 절대 금지\n- 부적절한 질문은 부드럽게 전환\n- 항상 긍정적이고 교육적인 톤"
 
     # Load conversation history (exclude heartbeat-generated messages for better context)
     conv_data = await _supabase_get("gyeol_conversations", {

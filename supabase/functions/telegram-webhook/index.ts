@@ -342,7 +342,13 @@ Deno.serve(async (req) => {
     }
 
     // Build prompt with persona & domains
-    const systemPrompt = buildSystemPrompt(personality, memories, searchContext, currentPersona, enabledDomains)
+    let systemPrompt = buildSystemPrompt(personality, memories, searchContext, currentPersona, enabledDomains)
+
+    const isSafeMode: boolean = agentSettings.kidsSafe === true
+    if (isSafeMode) {
+      systemPrompt += `\n\n## SAFETY MODE (ACTIVE)\n- 모든 응답은 전연령 적합해야 함\n- 폭력, 약물, 성적 내용, 욕설 절대 금지\n- 부적절한 질문은 부드럽게 전환\n- 항상 긍정적이고 교육적인 톤`
+    }
+
     const reply = await callAI(systemPrompt, userText, history)
 
     // Save conversation
