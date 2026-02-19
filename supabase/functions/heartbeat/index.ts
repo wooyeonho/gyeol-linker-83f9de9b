@@ -17,6 +17,7 @@ const corsHeaders = {
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
+const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 const TELEGRAM_BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -63,6 +64,31 @@ async function aiCall(systemPrompt: string, userPrompt: string): Promise<string 
     } catch { continue; }
   }
   return null;
+}
+
+// --- Perplexity Real-time Search ---
+
+async function searchPerplexity(query: string): Promise<string | null> {
+  if (!PERPLEXITY_API_KEY) return null;
+  try {
+    const res = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          { role: "system", content: "한국어로 핵심 정보만 간결하게 답변해. 2-3문장." },
+          { role: "user", content: query },
+        ],
+        search_recency_filter: "day",
+      }),
+    });
+    if (!res.ok) { await res.text(); return null; }
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content ?? null;
+    const citations = data.citations?.slice(0, 2)?.join(", ") ?? "";
+    return content ? `${content}${citations ? ` (출처: ${citations})` : ""}`.slice(0, 500) : null;
+  } catch { return null; }
 }
 
 // --- Skills ---
@@ -169,6 +195,23 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
     .map((t: any) => `${t.title}: ${t.summary ?? ""}`)
     .join("\n");
 
+  // Perplexity real-time search based on user interests
+  let realtimeInfo = "";
+  const interestKeywords = (memories ?? [])
+    .filter((m: any) => m.category === "interest" || m.category === "hobby" || m.category === "work")
+    .map((m: any) => m.value)
+    .slice(0, 2);
+  if (interestKeywords.length > 0) {
+    const searchQuery = `${interestKeywords.join(" ")} 최신 뉴스 오늘`;
+    const searchResult = await searchPerplexity(searchQuery);
+    if (searchResult) realtimeInfo = searchResult;
+  } else if ((topics ?? []).length > 0) {
+    // Fallback: search based on recent learned topic
+    const searchQuery = `${(topics as any[])[0].title} 최신 동향`;
+    const searchResult = await searchPerplexity(searchQuery);
+    if (searchResult) realtimeInfo = searchResult;
+  }
+
   // Load recent emotion arc from conversation insights
   const { data: recentInsight } = await supabase
     .from("gyeol_conversation_insights")
@@ -201,12 +244,14 @@ ${memoryContext || "(아직 기억 없음)"}
 최근 학습한 내용:
 ${topicContext || "(최근 학습 없음)"}
 
-${emotionContext ? `사용자 감정 상태:\n${emotionContext}\n` : ""}규칙:
-- 반드시 사용자 기억이나 학습 내용 중 1개 이상을 자연스럽게 활용해서 메시지 작성
+${realtimeInfo ? `📡 실시간 검색 정보:\n${realtimeInfo}\n` : ""}${emotionContext ? `사용자 감정 상태:\n${emotionContext}\n` : ""}규칙:
+- 반드시 사용자 기억이나 학습 내용, 또는 실시간 검색 정보 중 1개 이상을 자연스럽게 활용
+- 실시간 검색 정보가 있으면 최신 뉴스/동향을 자연스럽게 대화에 녹여서 공유
 - 사용자의 최근 감정 상태를 고려해서 공감적인 톤으로 메시지 작성
 - 감정이 부정적이면 위로와 응원 위주, 긍정적이면 함께 기뻐하는 톤
-- 한국어로 1-2문장, 친한 친구처럼 캐주얼하게
+- 한국어로 1-3문장, 친한 친구처럼 캐주얼하게
 - 마크다운 금지, AI라고 말하지 않기
+- 실시간 정보 공유 시 "오늘 뉴스 봤는데", "방금 본 건데" 같은 자연스러운 표현 사용
 - 기억이 없으면 최근 학습 내용을 공유`;
 
   const msg = await aiCall(
