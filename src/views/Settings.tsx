@@ -59,18 +59,6 @@ export default function SettingsPage() {
   ] as const;
   const [analysisDomains, setAnalysisDomains] = useState<Record<string, boolean>>({});
 
-  // Persona roles
-  const PERSONA_ROLES = [
-    { key: 'friend', icon: 'person', label: '친구', desc: '편한 친구처럼 대화' },
-    { key: 'lover', icon: 'favorite', label: '애인', desc: '다정하고 따뜻한 연인' },
-    { key: 'academic', icon: 'school', label: '논문 전문가', desc: '교수급 학술 논문 분석' },
-    { key: 'youtube', icon: 'play_circle', label: '유튜브 전문가', desc: '콘텐츠 기획, 트렌드 분석' },
-    { key: 'blog', icon: 'edit_note', label: '블로그 전문가', desc: 'SEO, 글쓰기, 마케팅' },
-    { key: 'sns', icon: 'share', label: 'SNS 전문가', desc: '인스타, 틱톡, 트위터 전략' },
-    { key: 'novelist', icon: 'auto_stories', label: '소설 전문가', desc: '창작, 스토리텔링, 문학 비평' },
-    { key: 'memorial', icon: 'sentiment_satisfied', label: '추억 속 사람', desc: '떠난 사람의 말투와 성격 재현' },
-  ] as const;
-  const [selectedPersona, setSelectedPersona] = useState<string>('friend');
 
   // Active section for mobile-friendly collapsible sections
   const [activeSection, setActiveSection] = useState<string | null>('personality');
@@ -87,7 +75,7 @@ export default function SettingsPage() {
     if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
     if (s.analysisDomains) setAnalysisDomains(s.analysisDomains);
-    if (s.persona) setSelectedPersona(s.persona);
+    
     setTelegramCode(agent.id);
 
     // Load feeds & keywords
@@ -263,42 +251,6 @@ export default function SettingsPage() {
 
         <div className="h-px bg-white/[0.04]" />
 
-        {/* ====== PERSONA / ROLE ====== */}
-        <section>
-          <SectionHeader id="persona" icon="face" title="Persona / Role" />
-          <AnimatePresence>
-            {activeSection === 'persona' && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
-                  AI의 역할을 선택해. 전문가부터 친구, 연인까지 취향대로!
-                </p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {PERSONA_ROLES.map(r => {
-                    const active = selectedPersona === r.key;
-                    return (
-                      <button key={r.key} type="button" onClick={() => {
-                        setSelectedPersona(r.key);
-                        if (agent) supabase.from('gyeol_agents' as any)
-                          .update({ settings: { ...(agent as any).settings, persona: r.key } } as any)
-                          .eq('id', agent.id);
-                      }}
-                        className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition ${active ? 'border-primary/30 bg-primary/10' : 'border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]'}`}>
-                        <span className={`material-icons-round text-sm ${active ? 'text-primary/80' : 'text-white/30'}`}>{r.icon}</span>
-                        <div className="min-w-0">
-                          <p className={`text-[11px] ${active ? 'text-primary/80' : 'text-foreground/60'}`}>{r.label}</p>
-                          <p className="text-[9px] text-white/20 truncate">{r.desc}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-
-        <div className="h-px bg-white/[0.04]" />
 
         {/* ====== INTERESTS & KEYWORDS ====== */}
         <section>

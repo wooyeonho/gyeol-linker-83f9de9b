@@ -393,11 +393,12 @@ serve(async (req) => {
       }
     }
 
-    // Fire-and-forget realtime memory extraction via Groq
+    // Fire-and-forget: realtime memory extraction + auto-persona evolution
     const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
     if (groqKeyForMemory && message.length > 3 && provider !== "builtin") {
       (async () => {
         try {
+          // Memory extraction
           const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
@@ -430,6 +431,58 @@ serve(async (req) => {
             }
           }
         } catch (e) { console.warn("memory extraction failed:", e); }
+
+        // Auto-persona evolution: analyze every 20 conversations
+        try {
+          const totalConvs = (agent?.total_conversations ?? 0) + 1;
+          if (totalConvs % 20 === 0 || totalConvs === 5) {
+            const { data: recentMsgs } = await db.from("gyeol_conversations")
+              .select("role, content").eq("agent_id", agentId)
+              .order("created_at", { ascending: false }).limit(30);
+            if (recentMsgs && recentMsgs.length >= 5) {
+              const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
+              const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  model: "llama-3.1-8b-instant",
+                  messages: [
+                    { role: "system", content: `대화 패턴을 분석해서 사용자가 원하는 AI의 역할을 판단해. JSON만 반환.
+{"persona":"friend|lover|academic|youtube|blog|sns|novelist|memorial","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
+규칙:
+- 사용자가 애정표현, 보고싶다, 사랑해 등 → lover
+- 논문, 연구, p-value, 학술 → academic
+- 유튜브, 조회수, 썸네일, 구독자 → youtube
+- 블로그, SEO, 키워드, 글쓰기 → blog
+- 인스타, 틱톡, 릴스, 팔로워 → sns
+- 소설, 캐릭터, 스토리, 창작 → novelist
+- 고인, 그리움, 하늘나라 → memorial
+- 주식, 코인 등 금융 관련 → 해당 domain을 true
+- 일상 대화가 주 → friend
+- domains는 대화에서 반복적으로 등장하는 주제만 true` },
+                    { role: "user", content: convText },
+                  ],
+                  max_tokens: 200, temperature: 0.3,
+                }),
+              });
+              if (personaRes.ok) {
+                const pData = await personaRes.json();
+                const pRaw = pData.choices?.[0]?.message?.content ?? "";
+                const pMatch = pRaw.match(/\{[\s\S]*\}/);
+                if (pMatch) {
+                  const parsed = JSON.parse(pMatch[0]);
+                  const newPersona = parsed.persona || "friend";
+                  const newDomains = parsed.domains || {};
+                  const currentSettings = (agent?.settings as any) ?? {};
+                  await db.from("gyeol_agents").update({
+                    settings: { ...currentSettings, persona: newPersona, analysisDomains: newDomains },
+                  }).eq("id", agentId);
+                  console.log(`[chat] Auto-persona evolved: ${newPersona}, domains:`, newDomains, "reason:", parsed.reason);
+                }
+              }
+            }
+          }
+        } catch (e) { console.warn("auto-persona evolution failed:", e); }
       })();
     }
 
