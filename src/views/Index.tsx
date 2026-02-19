@@ -16,7 +16,7 @@ import { InsightCard } from '@/src/components/InsightCard';
 import { BreedingResult } from '@/src/components/BreedingResult';
 import type { Message } from '@/lib/gyeol/types';
 
-function MessageBubble({ msg }: { msg: Message }) {
+function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
   const isUser = msg.role === 'user';
   const [reading, setReading] = useState(false);
 
@@ -33,25 +33,28 @@ function MessageBubble({ msg }: { msg: Message }) {
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
     >
       {isUser ? (
-        <div className="max-w-[75%] px-4 py-2.5 rounded-2xl rounded-br-md bg-primary/15 border border-primary/10">
+        <div className="max-w-[75%] user-bubble p-4 rounded-2xl rounded-br-sm">
           <p className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">{msg.content}</p>
         </div>
       ) : (
-        <div className="max-w-[85%] px-4 py-2.5">
-          {(msg as any).metadata?.criticalLearning && (
-            <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
-              ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
-            </span>
-          )}
-          <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
-          <button type="button" onClick={handleSpeak}
-            className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
-            aria-label={reading ? 'Stop reading' : 'Read aloud'}>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
-            </svg>
-          </button>
+        <div className="max-w-[85%]">
+          <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
+          <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
+            {(msg as any).metadata?.criticalLearning && (
+              <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
+                ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
+              </span>
+            )}
+            <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
+            <button type="button" onClick={handleSpeak}
+              className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
+              aria-label={reading ? 'Stop reading' : 'Read aloud'}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </motion.div>
@@ -91,9 +94,12 @@ export default function GyeolPage() {
     if (text.trim()) setInput((prev) => (prev ? prev + ' ' + text : text));
   };
 
+  const agentName = agent?.name ?? 'GYEOL';
+
   if (agentLoading) {
     return (
-      <main className="h-[100dvh] bg-black flex items-center justify-center">
+      <main className="h-[100dvh] bg-background flex items-center justify-center">
+        <div className="aurora-bg" />
         <div className="void-dot" />
       </main>
     );
@@ -104,17 +110,15 @@ export default function GyeolPage() {
   }
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-black font-display overflow-hidden relative">
-      {/* Ambient background glow */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/[0.03] blur-[100px] ambient-glow" />
-      </div>
+    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative">
+      {/* Aurora background */}
+      <div className="aurora-bg" />
 
       {/* Top bar */}
       <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-glow-xs" />
-          <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agent?.name ?? 'GYEOL'}</span>
+          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary shadow-glow-xs" />
+          <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agentName}</span>
         </div>
         <div className="flex items-center gap-3">
           {(() => {
@@ -128,7 +132,7 @@ export default function GyeolPage() {
           <GenBadge gen={agent?.gen ?? 1} size="sm" />
           <div className="w-8 h-[2px] bg-border/30 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-primary/60 rounded-full"
+              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${Number(agent?.evolution_progress ?? 0)}%` }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
@@ -152,15 +156,19 @@ export default function GyeolPage() {
               transition={{ duration: 0.4 }}
               className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
             >
-              <AnimatedCharacter
-                mood={(agent as any)?.mood ?? 'neutral'}
-                isThinking={isLoading}
-                reaction={lastReaction}
-                characterPreset={((agent as any)?.settings as any)?.characterPreset ?? 'void'}
-                skinId={(agent as any)?.skin_id}
-                gen={agent?.gen ?? 1}
-                size="sm"
-              />
+              {/* VoidCore with aurora glow */}
+              <div className="relative">
+                <div className="absolute inset-0 -m-8 rounded-full bg-gradient-to-br from-primary/10 to-secondary/5 blur-3xl" />
+                <AnimatedCharacter
+                  mood={(agent as any)?.mood ?? 'neutral'}
+                  isThinking={isLoading}
+                  reaction={lastReaction}
+                  characterPreset={((agent as any)?.settings as any)?.characterPreset ?? 'void'}
+                  skinId={(agent as any)?.skin_id}
+                  gen={agent?.gen ?? 1}
+                  size="sm"
+                />
+              </div>
 
               <div className="text-center space-y-2">
                 <p className="text-lg font-light text-foreground/60">
@@ -175,14 +183,14 @@ export default function GyeolPage() {
                   <button
                     type="button"
                     onClick={() => setMemoryOpen(true)}
-                    className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10 text-primary/70 text-[10px] font-medium hover:bg-primary/20 transition flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1"
                   >
                     <span className="text-xs">🧠</span> AI의 기억
                   </button>
                   <button
                     type="button"
                     onClick={() => setEvoOpen(true)}
-                    className="px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10 text-primary/70 text-[10px] font-medium hover:bg-primary/20 transition flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1"
                   >
                     <span className="text-xs">🧬</span> 진화 현황
                   </button>
@@ -230,7 +238,7 @@ export default function GyeolPage() {
                         alert('An error occurred during evolution attempt.');
                       }
                     }}
-                    className="mt-2 px-4 py-2 rounded-xl bg-primary/20 border border-primary/30 text-primary text-xs font-medium animate-pulse hover:bg-primary/30 transition"
+                    className="mt-2 px-4 py-2 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium animate-pulse transition"
                   >
                     ✨ Evolve! (Gen {(agent as any).gen} → {(agent as any).gen + 1})
                   </button>
@@ -258,7 +266,7 @@ export default function GyeolPage() {
                 className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-2"
               >
                 {messages.map((msg) => (
-                  <MessageBubble key={msg.id} msg={msg} />
+                  <MessageBubble key={msg.id} msg={msg} agentName={agentName} />
                 ))}
                 {error && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center py-2">
@@ -269,10 +277,13 @@ export default function GyeolPage() {
                   </motion.div>
                 )}
                 {isLoading && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start px-4 py-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary/60 void-dot-thinking" />
-                      <span className="text-[11px] text-muted-foreground/40">thinking...</span>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start px-1 py-2">
+                    <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
+                      <div className="flex items-end gap-1 h-4">
+                        <div className="typing-bar" />
+                        <div className="typing-bar" />
+                        <div className="typing-bar" />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -282,27 +293,29 @@ export default function GyeolPage() {
         </AnimatePresence>
       </div>
 
-      {/* Input bar */}
+      {/* Input bar — floating pill */}
       <div className="relative z-[60] px-4 pb-[calc(56px+env(safe-area-inset-bottom,8px)+8px)] pt-2">
-        <div className="flex items-center gap-2 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-3 py-1">
-          <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            onFocus={() => messages.length > 0 && setChatExpanded(true)}
-            placeholder="Ask me anything..."
-            className="flex-1 bg-transparent text-foreground/90 placeholder:text-white/20 text-sm py-2.5 outline-none min-w-0"
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="w-8 h-8 rounded-xl bg-primary/80 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95"
-          >
-            <span className="material-icons-round text-base">arrow_upward</span>
-          </button>
+        <div className="bg-gradient-to-t from-background to-transparent pt-4">
+          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-3 py-1">
+            <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              onFocus={() => messages.length > 0 && setChatExpanded(true)}
+              placeholder="Ask me anything..."
+              className="flex-1 bg-transparent text-foreground/90 placeholder:text-slate-500 text-sm py-2.5 outline-none min-w-0"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105"
+            >
+              <span className="material-icons-round text-base">arrow_upward</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -342,7 +355,6 @@ function getGreeting(agent?: any): string {
   const name = agent?.name ?? 'GYEOL';
   const intimacy = agent?.intimacy ?? 0;
 
-  // Mood-based greetings
   const moodGreetings: Record<string, string[]> = {
     happy: ['오늘 기분이 정말 좋아요! ✨', '함께 있어서 행복해요 😊', '좋은 하루 보내고 있어요!'],
     excited: ['와, 오늘 뭔가 설레는 날이에요! 🤩', '이야기하고 싶은 게 가득해요!', '에너지가 넘치는 날!'],
@@ -352,7 +364,6 @@ function getGreeting(agent?: any): string {
     neutral: [],
   };
 
-  // Time-based base greeting
   let timeGreeting: string;
   if (h < 6) timeGreeting = '고요한 밤이에요';
   else if (h < 9) timeGreeting = '좋은 아침이에요';
@@ -362,13 +373,11 @@ function getGreeting(agent?: any): string {
   else if (h < 21) timeGreeting = '좋은 저녁이에요';
   else timeGreeting = '오늘도 수고했어요';
 
-  // Pick mood greeting or fallback to time greeting
   const moodOptions = moodGreetings[mood] ?? [];
   const greeting = moodOptions.length > 0
     ? moodOptions[Math.floor(Math.random() * moodOptions.length)]
     : timeGreeting;
 
-  // Personality flavor
   if (humor >= 70 && Math.random() > 0.5) {
     const jokes = ['혹시 저 보고 웃으셨어요? 😏', '오늘도 제가 제일 귀엽죠?', `${name}이 찾아왔어요~`];
     return jokes[Math.floor(Math.random() * jokes.length)];

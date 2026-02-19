@@ -3,52 +3,52 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
-  --primary: 244 63% 52%;
+  --background: 240 10% 97%;
+  --foreground: 240 10% 10%;
+  --primary: 258 80% 58%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 20%;
-  --muted: 0 0% 94%;
-  --muted-foreground: 0 0% 45%;
-  --accent: 244 63% 52%;
+  --secondary: 189 90% 42%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 10% 93%;
+  --muted-foreground: 240 5% 45%;
+  --accent: 189 90% 42%;
   --accent-foreground: 0 0% 100%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
-  --border: 0 0% 90%;
-  --ring: 244 63% 52%;
+  --card-foreground: 240 10% 10%;
+  --border: 240 10% 90%;
+  --ring: 258 80% 58%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
   --radius: 1rem;
-  --surface: 0 0% 98%;
+  --surface: 240 10% 96%;
 }
 
 .dark {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 90%;
-  --primary: 244 63% 52%;
+  --background: 240 20% 4%;
+  --foreground: 240 5% 90%;
+  --primary: 258 80% 58%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 6%;
-  --secondary-foreground: 0 0% 85%;
-  --muted: 0 0% 8%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 244 63% 52%;
+  --secondary: 189 90% 42%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 260 15% 10%;
+  --muted-foreground: 240 5% 45%;
+  --accent: 189 90% 42%;
   --accent-foreground: 0 0% 100%;
-  --card: 0 0% 4%;
-  --card-foreground: 0 0% 90%;
-  --border: 0 0% 12%;
-  --ring: 244 63% 52%;
-  --destructive: 0 72% 51%;
+  --card: 260 15% 7%;
+  --card-foreground: 240 5% 88%;
+  --border: 260 10% 14%;
+  --ring: 258 80% 58%;
+  --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --surface: 0 0% 3%;
+  --surface: 260 15% 5%;
 }
 
 html {
-  background: #000;
+  background: #0a0a0c;
 }
 
 body {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   word-break: keep-all;
@@ -75,29 +75,166 @@ p, .text-base, .text-sm, .text-lg {
   background: hsl(var(--card) / 0.6);
 }
 
+/* ============================================
+   STITCH 디자인 시스템 — 글로벌 유틸리티
+   ============================================ */
+
+/* Aurora 배경 — 모든 페이지 공통 */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.aurora-bg::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: hsl(258 80% 58% / 0.15);
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: aurora-pulse 10s infinite ease-in-out;
+}
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: hsl(189 90% 42% / 0.08);
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: aurora-pulse 10s infinite ease-in-out 2s;
+}
+
+@keyframes aurora-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* 글래스 패널 — 카드/헤더/입력바 */
+.glass-panel {
+  background: rgba(19, 18, 23, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+/* 글래스 카드 — 일반 콘텐츠 카드 */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 글래스 카드 — 선택된 상태 */
+.glass-card-selected {
+  border: 1px solid transparent;
+  background-image: 
+    linear-gradient(180deg, rgba(30, 27, 41, 0.8), rgba(30, 27, 41, 0.8)),
+    linear-gradient(135deg, #784eda 0%, #06b6d4 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 40px rgba(120, 78, 218, 0.2);
+}
+
+/* AI 말풍선 — 글래스 버블 */
+.glass-bubble {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* 유저 말풍선 — 그라디언트 */
+.user-bubble {
+  background: linear-gradient(135deg, rgba(120,78,218,0.2) 0%, rgba(120,78,218,0.05) 100%);
+  border: 1px solid rgba(120, 78, 218, 0.2);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+/* 오로라 링 로고 */
+.aurora-ring {
+  background: conic-gradient(from 0deg, #784eda, #06b6d4, #784eda);
+  filter: blur(12px);
+  opacity: 0.8;
+}
+
+/* 입력 필드 포커스 글로우 */
+.input-glow:focus-within {
+  box-shadow: 0 0 0 2px rgba(120, 78, 218, 0.3), 0 0 20px rgba(120, 78, 218, 0.15);
+  border-color: rgba(120, 78, 218, 0.5) !important;
+}
+
+/* CTA 버튼 글로우 */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(120, 78, 218, 0.3);
+  transition: all 0.3s ease;
+}
+.btn-glow:hover {
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.4);
+}
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: 0.5s;
+}
+.btn-glow:hover::before {
+  left: 100%;
+}
+
+/* 타이핑 인디케이터 바 */
+.typing-bar {
+  width: 4px;
+  border-radius: 2px;
+  background-color: hsl(var(--muted-foreground));
+  animation: typing-wave 1s infinite;
+}
+.typing-bar:nth-child(2) { animation-delay: 0.2s; }
+.typing-bar:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-wave {
+  0%, 100% { height: 8px; opacity: 0.5; }
+  50% { height: 16px; opacity: 1; background-color: hsl(var(--primary)); }
+}
+
 /* Void Dot */
 @keyframes void-breathe {
   0%, 100% {
     transform: scale(1);
-    box-shadow:
-      0 0 20px 4px hsl(244 63% 52% / 0.4),
-      0 0 60px 10px hsl(244 63% 52% / 0.15),
-      0 0 120px 30px hsl(244 63% 52% / 0.05);
+    box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.4), 0 0 60px 10px hsl(var(--secondary) / 0.1);
   }
   50% {
-    transform: scale(1.15);
-    box-shadow:
-      0 0 30px 8px hsl(244 63% 52% / 0.6),
-      0 0 80px 20px hsl(244 63% 52% / 0.25),
-      0 0 160px 40px hsl(244 63% 52% / 0.08);
+    transform: scale(1.2);
+    box-shadow: 0 0 30px 8px hsl(var(--primary) / 0.6), 0 0 80px 20px hsl(var(--secondary) / 0.2);
   }
 }
 
 .void-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: hsl(244 63% 52%);
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
   animation: void-breathe 4s ease-in-out infinite;
 }
 
@@ -111,7 +248,7 @@ p, .text-base, .text-sm, .text-lg {
 }
 
 .void-ring {
-  border: 1px solid hsl(244 63% 52% / 0.2);
+  border: 1px solid hsl(258 80% 58% / 0.2);
   border-radius: 50%;
   animation: void-ring-pulse 6s ease-in-out infinite;
 }
@@ -127,7 +264,21 @@ p, .text-base, .text-sm, .text-lg {
   animation: ambient-drift 20s ease-in-out infinite;
 }
 
+/* 스핀 슬로우 애니메이션 (로고 링) */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
 /* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
 .gyeol-scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;

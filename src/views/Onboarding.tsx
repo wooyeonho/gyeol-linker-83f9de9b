@@ -25,6 +25,8 @@ interface Props {
   onComplete: () => void;
 }
 
+const TOTAL_STEPS = 3;
+
 export default function Onboarding({ userId, onComplete }: Props) {
   const { setAgent } = useGyeolStore();
   const [step, setStep] = useState(0);
@@ -38,7 +40,6 @@ export default function Onboarding({ userId, onComplete }: Props) {
     setSaving(true);
     try {
       const settingsData: any = { mode: selectedMode };
-
       if (selectedMode === 'simple') {
         settingsData.autoTTS = true;
         settingsData.fontSize = 18;
@@ -46,7 +47,6 @@ export default function Onboarding({ userId, onComplete }: Props) {
       } else {
         settingsData.characterPreset = 'void';
       }
-
       const chosen = PRESETS[preset];
       const agentData: any = {
         user_id: userId,
@@ -56,7 +56,6 @@ export default function Onboarding({ userId, onComplete }: Props) {
           ? { warmth: chosen.warmth, logic: chosen.logic, creativity: chosen.creativity, energy: chosen.energy, humor: chosen.humor }
           : { warmth: 60, logic: 40, creativity: 50, energy: 50, humor: 50 }),
       };
-
       const { data, error } = await supabase
         .from('gyeol_agents' as any)
         .upsert(agentData as any, { onConflict: 'user_id', ignoreDuplicates: false })
@@ -71,13 +70,10 @@ export default function Onboarding({ userId, onComplete }: Props) {
     }
   };
 
-  // Step flow:
-  // Simple:   0(mode) → 1(name) → 2(character) → finish
-  // Advanced: 0(mode) → 1(name) → 3(personality) → finish
   const getNextStep = () => {
     if (step === 0) return 1;
     if (step === 1) return selectedMode === 'simple' ? 2 : 3;
-    return -1; // finish
+    return -1;
   };
 
   const handleNext = () => {
@@ -91,11 +87,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
     else if (step === 1) setStep(0);
   };
 
+  const currentStepNum = step === 0 ? 1 : step === 1 ? 2 : 3;
+
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center font-display">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px] bg-primary/[0.04]" />
-      </div>
+    <div className="min-h-screen bg-background flex items-center justify-center font-display relative">
+      <div className="aurora-bg" />
 
       <motion.div
         key={step}
@@ -105,13 +101,27 @@ export default function Onboarding({ userId, onComplete }: Props) {
         transition={{ duration: 0.4 }}
         className="w-full max-w-sm px-6 relative z-10"
       >
+        {/* Progress bar */}
+        <div className="mb-8">
+          <p className="text-[10px] text-slate-400 mb-2 text-center">Step {currentStepNum} of {TOTAL_STEPS}</p>
+          <div className="flex gap-1.5">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-500 ${
+                i < currentStepNum
+                  ? 'bg-gradient-to-r from-primary to-secondary'
+                  : 'bg-white/[0.06]'
+              }`} />
+            ))}
+          </div>
+        </div>
+
         {/* Step 0: Mode Selection */}
         {step === 0 && (
           <div className="flex flex-col items-center gap-8">
             <div className="void-dot mb-2" />
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-semibold text-foreground/90">GYEOL</h1>
-              <p className="text-sm text-white/30">Choose your experience</p>
+              <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">GYEOL</h1>
+              <p className="text-sm text-slate-400">Choose your experience</p>
             </div>
 
             <div className="w-full grid grid-cols-2 gap-3">
@@ -120,22 +130,22 @@ export default function Onboarding({ userId, onComplete }: Props) {
                 { key: 'advanced' as const, icon: '🧬', label: 'Advanced', desc: 'Full Experience' },
               ].map(m => (
                 <button key={m.key} onClick={() => setSelectedMode(m.key)}
-                  className={`p-5 rounded-xl border text-center transition-all ${
+                  className={`p-5 rounded-2xl text-center transition-all hover:border-white/15 hover:-translate-y-1 ${
                     selectedMode === m.key
-                      ? 'border-primary/40 bg-primary/10'
-                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                      ? 'glass-card-selected'
+                      : 'glass-card'
                   }`}>
                   <span className="text-2xl block mb-2">{m.icon}</span>
                   <p className="text-sm font-medium text-foreground/80">{m.label}</p>
-                  <p className="text-[10px] text-white/25 mt-1">{m.desc}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{m.desc}</p>
                 </button>
               ))}
             </div>
 
-            <p className="text-[10px] text-white/20">You can switch anytime in Settings</p>
+            <p className="text-[10px] text-slate-500">You can switch anytime in Settings</p>
 
             <button onClick={handleNext}
-              className="w-full py-3.5 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] text-sm">
+              className="w-full py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm">
               Next
             </button>
           </div>
@@ -146,24 +156,28 @@ export default function Onboarding({ userId, onComplete }: Props) {
           <div className="flex flex-col items-center gap-8">
             <div className="void-dot mb-2" />
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-semibold text-foreground/90">Welcome to GYEOL</h1>
-              <p className="text-sm text-white/30">Your AI companion that evolves with you</p>
+              <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">Welcome to GYEOL</h1>
+              <p className="text-sm text-slate-400">Your AI companion that evolves with you</p>
             </div>
 
             <div className="w-full space-y-3">
-              <label className="text-[10px] text-white/30 uppercase tracking-wider">Name your companion</label>
-              <input
-                type="text" value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="GYEOL" maxLength={20}
-                className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-foreground/90 placeholder:text-white/20 focus:border-primary/30 transition-all outline-none text-sm"
-              />
+              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Name your companion</label>
+              <div className="input-glow rounded-full border border-white/[0.06] bg-[#1f1d25] transition-all">
+                <input
+                  type="text" value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="GYEOL" maxLength={20}
+                  className="w-full px-5 py-3.5 bg-transparent rounded-full text-foreground/90 placeholder:text-slate-600 outline-none text-sm"
+                />
+              </div>
             </div>
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-white/30 hover:text-white/60 text-sm transition">Back</button>
+                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                <span className="material-icons-round text-sm">arrow_back</span> Back
+              </button>
               <button onClick={handleNext}
-                className="flex-1 py-3.5 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] text-sm">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm">
                 Next
               </button>
             </div>
@@ -174,11 +188,10 @@ export default function Onboarding({ userId, onComplete }: Props) {
         {step === 2 && (
           <div className="flex flex-col items-center gap-6">
             <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold text-foreground/90">Choose a character</h2>
-              <p className="text-xs text-white/30">Optional — you can use text-only mode</p>
+              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">Choose a character</h2>
+              <p className="text-xs text-slate-400">Optional — you can use text-only mode</p>
             </div>
 
-            {/* Preview */}
             {selectedChar && (
               <div className="w-24 h-24">
                 <AnimatedCharacter mood="happy" isThinking={false} characterPreset={selectedChar} gen={1} size="lg" />
@@ -188,22 +201,24 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="w-full grid grid-cols-3 gap-2">
               {CHARACTERS.map(c => (
                 <button key={String(c.key)} onClick={() => setSelectedChar(c.key)}
-                  className={`flex flex-col items-center p-3 rounded-xl border transition ${
+                  className={`flex flex-col items-center p-3 rounded-2xl transition-all hover:border-white/15 hover:-translate-y-1 ${
                     selectedChar === c.key
-                      ? 'border-primary/40 bg-primary/10'
-                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                      ? 'glass-card-selected scale-105'
+                      : 'glass-card'
                   }`}>
                   <span className="text-lg">{c.emoji}</span>
-                  <span className="text-[9px] text-white/30 mt-1">{c.label}</span>
+                  <span className="text-[9px] text-slate-500 mt-1">{c.label}</span>
                 </button>
               ))}
             </div>
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-white/30 hover:text-white/60 text-sm transition">Back</button>
+                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                <span className="material-icons-round text-sm">arrow_back</span> Back
+              </button>
               <button onClick={handleFinish} disabled={saving}
-                className="flex-1 py-3.5 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] text-sm disabled:opacity-30">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
                 {saving ? 'Creating...' : 'Start'}
               </button>
             </div>
@@ -214,22 +229,22 @@ export default function Onboarding({ userId, onComplete }: Props) {
         {step === 3 && (
           <div className="flex flex-col items-center gap-6">
             <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold text-foreground/90">
+              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">
                 Choose {name.trim() || 'GYEOL'}'s Personality
               </h2>
-              <p className="text-xs text-white/30">This can evolve over time through conversation</p>
+              <p className="text-xs text-slate-400">This can evolve over time through conversation</p>
             </div>
 
             <div className="w-full grid grid-cols-2 gap-3">
               {PRESETS.map((p, i) => (
                 <button key={p.label} onClick={() => setPreset(i)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
+                  className={`p-4 rounded-2xl text-left transition-all hover:border-white/15 hover:-translate-y-1 ${
                     preset === i
-                      ? 'border-primary/40 bg-primary/10'
-                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]'
+                      ? 'glass-card-selected'
+                      : 'glass-card'
                   }`}>
                   <p className="text-sm font-medium text-foreground/80">{p.label}</p>
-                  <p className="text-[10px] text-white/25 mt-1">
+                  <p className="text-[10px] text-slate-500 mt-1">
                     {Object.entries(p).filter(([k]) => k !== 'label')
                       .sort(([, a], [, b]) => (b as number) - (a as number))
                       .slice(0, 2)
@@ -242,9 +257,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-white/30 hover:text-white/60 text-sm transition">Back</button>
+                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                <span className="material-icons-round text-sm">arrow_back</span> Back
+              </button>
               <button onClick={handleFinish} disabled={saving}
-                className="flex-1 py-3.5 bg-primary/80 hover:bg-primary text-white font-medium rounded-xl transition-all active:scale-[0.98] text-sm disabled:opacity-30">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
                 {saving ? 'Creating...' : 'Start Journey'}
               </button>
             </div>

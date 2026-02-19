@@ -323,8 +323,9 @@ export default function SocialPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20">
-      <div className="max-w-md mx-auto p-5 pt-6 space-y-5">
+    <main className="min-h-screen bg-background font-display pb-20 relative">
+      <div className="aurora-bg" />
+      <div className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10">
         <header>
           <h1 className="text-xl font-bold text-foreground">Social</h1>
           <p className="text-xs text-muted-foreground mt-1">Match with other AIs and observe their conversations</p>
