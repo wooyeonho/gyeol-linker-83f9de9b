@@ -117,6 +117,15 @@ export default function GyeolPage() {
           <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agent?.name ?? 'GYEOL'}</span>
         </div>
         <div className="flex items-center gap-3">
+          {(() => {
+            const p = (agent?.settings as any)?.persona;
+            if (p && p !== 'friend') {
+              const icons: Record<string, string> = { lover: '💕', academic: '🎓', youtube: '📺', blog: '✍️', sns: '📱', novelist: '📖', memorial: '🕊️' };
+              const labels: Record<string, string> = { lover: '연인', academic: '학자', youtube: 'YT', blog: '블로그', sns: 'SNS', novelist: '소설가', memorial: '추억' };
+              return <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 font-medium">{icons[p] ?? '🤝'} {labels[p] ?? p}</span>;
+            }
+            return null;
+          })()}
           <GenBadge gen={agent?.gen ?? 1} size="sm" />
           <div className="w-8 h-[2px] bg-border/30 rounded-full overflow-hidden">
             <motion.div

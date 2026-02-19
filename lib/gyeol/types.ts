@@ -33,6 +33,7 @@ export interface Agent {
   consecutive_days: number;
   created_at: string;
   last_active: string;
+  settings?: Record<string, any>;
 }
 
 export interface Message {
