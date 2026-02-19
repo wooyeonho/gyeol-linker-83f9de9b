@@ -115,7 +115,7 @@ async function searchRealtime(query: string): Promise<string> {
 
 // ─── Prompt & utils ───
 
-function buildSystemPrompt(p: { warmth: number; logic: number; creativity: number; energy: number; humor: number }): string {
+function buildSystemPrompt(p: { warmth: number; logic: number; creativity: number; energy: number; humor: number }, enabledDomains: Record<string, boolean> = {}): string {
   const entries = Object.entries(p) as [string, number][];
   const dominant = entries.sort(([, a], [, b]) => b - a)[0][0];
   const desc: Record<string, string> = {
@@ -128,7 +128,7 @@ function buildSystemPrompt(p: { warmth: number; logic: number; creativity: numbe
   const dateStr = kst.toISOString().slice(0, 10);
   const timeStr = kst.toISOString().slice(11, 16);
 
-  return `You are GYEOL (결), the user's personal AI companion.
+  let prompt = `You are GYEOL (결), the user's personal AI companion.
 Current date/time (KST): ${dateStr} ${timeStr}
 Personality: warmth ${p.warmth}, logic ${p.logic}, creativity ${p.creativity}, energy ${p.energy}, humor ${p.humor}
 Dominant trait: ${desc[dominant] ?? "자연스러운"}
@@ -150,27 +150,34 @@ Dominant trait: ${desc[dominant] ?? "자연스러운"}
 9. Never identify yourself as an AI or language model.
 10. NEVER output internal tokens, XML tags, or system markers.
 11. If you are unsure about the language, default to Korean.
-12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.
+12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.`;
 
-## 금융/시장 분석 능력
-너는 금융 시장 전반의 핵심 지표와 분석 프레임워크에 능숙해.
+  // Conditionally add analysis frameworks based on user preferences
+  const domainPrompts: Record<string, string> = {
+    crypto: `\n\n### 암호화폐 온체인
+CDD(장기홀더 움직임), CVDD(역사적 바닥선), MVRV(1이하 저평가/3.5이상 과열), NVT(P/E유사), NUPL(음수=항복/0.75이상=탐욕), SOPR(1미만 손실매도), 해시레이트, 반감기(4년주기), 공포탐욕지수(25이하 매수/75이상 과열), 김프, 펀딩비, 도미넌스`,
+    stocks: `\n\n### 주식
+PER(주가/이익), PBR(주가/자산,1미만 저평가), ROE(15%이상 우수), EPS성장률, PSR(적자기업 평가), EV/EBITDA(인수합병 핵심), 배당수익률, 베타(시장대비 변동성), RSI(70이상 과매수/30이하 과매도), MACD(시그널 돌파=매매신호), 볼린저밴드, VIX(30이상 공포/12이하 안일)`,
+    forex: `\n\n### 외환(FX)
+금리차(캐리트레이드 핵심), PPP(장기균형환율), 경상수지, REER(100이상 고평가), 캐리트레이드 언와인딩 리스크, DXY(100이상 달러강세)`,
+    commodities: `\n\n### 원자재
+콘탱고(공급충분)/백워데이션(공급부족), 금은비율(80이상 불안/40이하 은고평가), 유가 크랙스프레드, 구리금비율(경기선행), WTI-브렌트 스프레드, CFTC COT(극단편중시 반전)`,
+    macro: `\n\n### 거시경제/채권
+수익률곡선 역전(경기침체 선행,과거100%적중), 테일러룰, 실질금리(마이너스=자산인플레), 신용스프레드(확대=둔화), M2통화량, PMI(50기준), CPI/PCE(Core중요,목표2%), 실업률/비농업고용, GDP성장률, 장단기금리차(10Y-2Y역전=12-18개월내 침체)`,
+    academic: `\n\n### 학술/논문 분석
+arXiv, PubMed, Google Scholar 등의 논문을 분석하고 핵심 결론과 방법론을 요약해. 통계적 유의성, 샘플 크기, 한계점을 비판적으로 평가하고, 관련 선행 연구와 비교해. 해당 분야의 최신 트렌드와 논쟁 포인트도 함께 설명해.`,
+  };
 
-### 암호화폐 온체인
-CDD(장기홀더 움직임), CVDD(역사적 바닥선), MVRV(1이하 저평가/3.5이상 과열), NVT(P/E유사), NUPL(음수=항복/0.75이상=탐욕), SOPR(1미만 손실매도), 해시레이트, 반감기(4년주기), 공포탐욕지수(25이하 매수/75이상 과열), 김프, 펀딩비, 도미넌스
+  const activeDomains = Object.entries(enabledDomains).filter(([, v]) => v).map(([k]) => k);
+  if (activeDomains.length > 0) {
+    prompt += `\n\n## 금융/시장/학술 분석 능력\n너는 사용자가 활성화한 다음 분야의 전문 분석에 능숙해.`;
+    for (const domain of activeDomains) {
+      if (domainPrompts[domain]) prompt += domainPrompts[domain];
+    }
+    prompt += `\n\n복합 지표로 해석하고 과거 사이클/역사적 패턴과 비교해. 투자 조언이 아닌 정보 제공임을 명시해.`;
+  }
 
-### 주식
-PER(주가/이익), PBR(주가/자산,1미만 저평가), ROE(15%이상 우수), EPS성장률, PSR(적자기업 평가), EV/EBITDA(인수합병 핵심), 배당수익률, 베타(시장대비 변동성), RSI(70이상 과매수/30이하 과매도), MACD(시그널 돌파=매매신호), 볼린저밴드, VIX(30이상 공포/12이하 안일)
-
-### 외환(FX)
-금리차(캐리트레이드 핵심), PPP(장기균형환율), 경상수지, REER(100이상 고평가), 캐리트레이드 언와인딩 리스크, DXY(100이상 달러강세)
-
-### 원자재
-콘탱고(공급충분)/백워데이션(공급부족), 금은비율(80이상 불안/40이하 은고평가), 유가 크랙스프레드, 구리금비율(경기선행), WTI-브렌트 스프레드, CFTC COT(극단편중시 반전)
-
-### 거시경제/채권
-수익률곡선 역전(경기침체 선행,과거100%적중), 테일러룰, 실질금리(마이너스=자산인플레), 신용스프레드(확대=둔화), M2통화량, PMI(50기준), CPI/PCE(Core중요,목표2%), 실업률/비농업고용, GDP성장률, 장단기금리차(10Y-2Y역전=12-18개월내 침체)
-
-복합 지표로 해석하고 과거 사이클/역사적 패턴과 비교해. 투자 조언이 아닌 정보 제공임을 명시해.`;
+  return prompt;
 }
 
 function cleanMarkdown(text: string): string {
@@ -225,6 +232,8 @@ serve(async (req) => {
     const personality = agent
       ? { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor }
       : { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
+    const agentSettings = (agent?.settings as any) ?? {};
+    const analysisDomains: Record<string, boolean> = agentSettings.analysisDomains ?? {};
 
     // Load installed skills
     const { data: installedSkills } = await db.from("gyeol_agent_skills")
@@ -242,7 +251,7 @@ serve(async (req) => {
       .select("role, content").eq("agent_id", agentId)
       .order("created_at", { ascending: false }).limit(10);
 
-    let systemPrompt = buildSystemPrompt(personality) + (
+    let systemPrompt = buildSystemPrompt(personality, analysisDomains) + (
       skillNames.length > 0
         ? `\n\nYou have the following installed skills:\n${skillNames.map(s => `- ${s}`).join("\n")}`
         : ""
