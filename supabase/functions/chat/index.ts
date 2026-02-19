@@ -1,11 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { decryptKey } from "../_shared/crypto.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function getCorsOrigin(req: Request): string {
+  const origin = req.headers.get("origin") ?? "";
+  return allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+}
+function corsHeaders(req: Request) {
+  return {
+    "Access-Control-Allow-Origin": getCorsOrigin(req),
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
 
@@ -287,26 +295,64 @@ function detectReaction(text: string): string {
 // ─── Main handler ───
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const ch = corsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: ch });
 
   try {
-    const { agentId, message, locale: rawLocale } = await req.json();
-    const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
-    if (!agentId || typeof message !== "string") {
-      return new Response(JSON.stringify({ error: "agentId and message required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // ── 1. Auth: verify the requesting user ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const db = createClient(supabaseUrl, supabaseKey);
+    const { agentId, message, locale: rawLocale } = await req.json();
+    if (!agentId || typeof message !== "string") {
+      return new Response(JSON.stringify({ error: "agentId and message required" }), {
+        status: 400, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+    const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
 
-    // Load agent personality
+    // ── 2. Ownership: verify agent belongs to user ──
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const db = createClient(supabaseUrl, supabaseServiceKey);
     const { data: agent } = await db.from("gyeol_agents").select("*").eq("id", agentId).single();
-    const personality = agent
-      ? { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor }
-      : { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
+    if (!agent || agent.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: "Agent not found or access denied" }), {
+        status: 403, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── 3. Message length limit (2000 chars) ──
+    const trimmedMessage = message.slice(0, 2000);
+
+    // ── 4. Rate limit (in-memory, 10 per agent per minute) ──
+    const rateLimitKey = `chat:${agentId}`;
+    const now = Date.now();
+    if (!globalThis._rateLimit) globalThis._rateLimit = new Map();
+    const bucket = globalThis._rateLimit.get(rateLimitKey) ?? [];
+    const recent = bucket.filter((t: number) => now - t < 60000);
+    if (recent.length >= 10) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait." }), {
+        status: 429, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+    recent.push(now);
+    globalThis._rateLimit.set(rateLimitKey, recent);
+    const personality = { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor };
     const agentSettings = (agent?.settings as any) ?? {};
     const analysisDomains: Record<string, boolean> = agentSettings.analysisDomains ?? {};
     const persona: string = agentSettings.persona ?? "friend";
@@ -385,12 +431,11 @@ serve(async (req) => {
 
     // ── Real-time search (Perplexity → DDG fallback) ──
     let searchContext = "";
-    if (needsSearch(message)) {
-      console.log("[chat] Real-time search triggered for:", message);
-      // For on-chain queries, enhance the search query
-      const searchQuery = isFinancialAnalysisQuery(message)
-        ? `${message} 금융 시장 지표 현재값 데이터 분석`
-        : message;
+    if (needsSearch(trimmedMessage)) {
+      console.log("[chat] Real-time search triggered for:", trimmedMessage);
+      const searchQuery = isFinancialAnalysisQuery(trimmedMessage)
+        ? `${trimmedMessage} 금융 시장 지표 현재값 데이터 분석`
+        : trimmedMessage;
       searchContext = await searchRealtime(searchQuery);
       if (searchContext) {
         console.log("[chat] Search results found, length:", searchContext.length);
@@ -401,12 +446,12 @@ serve(async (req) => {
     const chatMessages: ChatMessage[] = [
       { role: "system", content: systemPrompt },
       ...((history ?? []).reverse().map((h: any) => ({ role: h.role, content: h.content }))),
-      { role: "user", content: message },
+      { role: "user", content: trimmedMessage },
     ];
 
     // Save user message
     await db.from("gyeol_conversations").insert({
-      agent_id: agentId, role: "user", content: message, channel: "web",
+      agent_id: agentId, role: "user", content: trimmedMessage, channel: "web",
     });
 
     let assistantContent = "";
@@ -454,7 +499,7 @@ serve(async (req) => {
     }
 
     // Builtin fallback
-    if (!assistantContent) { assistantContent = generateBuiltinResponse(message); provider = "builtin"; }
+    if (!assistantContent) { assistantContent = generateBuiltinResponse(trimmedMessage); provider = "builtin"; }
 
     const responseTime = Date.now() - startTime;
 
@@ -483,7 +528,7 @@ serve(async (req) => {
 
     // Synchronous: realtime memory extraction + auto-persona evolution
     const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
-    if (groqKeyForMemory && message.length > 3 && provider !== "builtin") {
+    if (groqKeyForMemory && trimmedMessage.length > 3 && provider !== "builtin") {
       // Memory extraction
       try {
         const memRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -495,7 +540,7 @@ serve(async (req) => {
               { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
 각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
 없으면 빈 배열 []` },
-              { role: "user", content: message },
+              { role: "user", content: trimmedMessage },
             ],
             max_tokens: 300, temperature: 0.3,
           }),
@@ -598,18 +643,18 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...ch, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...ch, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("chat error:", e);
     return new Response(JSON.stringify({ error: "Server error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

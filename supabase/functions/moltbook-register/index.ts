@@ -1,21 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function corsHeaders(req: Request) {
+  const o = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": _origins.includes(o) ? o : _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
 }
 
 const MOLTBOOK_API = 'https://www.moltbook.com/api/v1'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders(req) })
   }
 
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
     }
 
     const supabase = createClient(
@@ -27,7 +31,7 @@ Deno.serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
     const { data: claims, error: authErr } = await supabase.auth.getClaims(token)
     if (authErr || !claims?.claims) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
     }
 
     const userId = claims.claims.sub as string
@@ -48,7 +52,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (!agent) {
-      return new Response(JSON.stringify({ error: 'Agent not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'Agent not found' }), { status: 404, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
     }
 
     // Already registered?
@@ -58,7 +62,7 @@ Deno.serve(async (req) => {
         message: '이미 Moltbook에 등록됨',
         status: agent.moltbook_status,
         agentName: agent.name,
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }), { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
     }
 
     // Generate a valid Moltbook username (alphanumeric only)
@@ -95,7 +99,7 @@ Deno.serve(async (req) => {
       const errBody = await regRes.text()
       console.error('Moltbook registration failed:', regRes.status, errBody)
       return new Response(JSON.stringify({ error: `Moltbook registration failed: ${regRes.status}`, details: errBody }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 502, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -112,7 +116,7 @@ Deno.serve(async (req) => {
 
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'No API key received from Moltbook' }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 502, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -135,12 +139,12 @@ Deno.serve(async (req) => {
       claimUrl,
       verificationCode: regData.agent?.verification_code,
       status: 'pending_claim',
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }), { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
 
   } catch (err) {
     console.error('Moltbook register error:', err)
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 })

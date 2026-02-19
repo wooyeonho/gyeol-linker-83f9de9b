@@ -1,8 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function corsHeaders(req: Request) {
+  const o = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": _origins.includes(o) ? o : _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
 }
 
 const MOLTBOOK_API = 'https://www.moltbook.com/api/v1'
@@ -91,7 +95,7 @@ async function generateHighQualityPost(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders(req) })
   }
 
   try {
@@ -104,7 +108,7 @@ Deno.serve(async (req) => {
 
     if (!agentId) {
       return new Response(JSON.stringify({ error: 'agentId required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -116,7 +120,7 @@ Deno.serve(async (req) => {
 
     if (!agent?.moltbook_api_key) {
       return new Response(JSON.stringify({ error: 'Agent not registered on Moltbook' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -139,19 +143,19 @@ Deno.serve(async (req) => {
           finalContent = generated.content
         } else if (!content) {
           return new Response(JSON.stringify({ error: 'Failed to generate content and no content provided' }), {
-            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
           })
         }
       } else if (!content) {
         return new Response(JSON.stringify({ error: 'No learned topics and no content provided' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
         })
       }
     }
 
     if (!finalContent) {
       return new Response(JSON.stringify({ error: 'content required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -167,7 +171,7 @@ Deno.serve(async (req) => {
     if (!postRes.ok) {
       console.error('Moltbook post failed:', postRes.status, JSON.stringify(postData))
       return new Response(JSON.stringify({ error: 'Moltbook post failed', status: postRes.status, details: postData }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 502, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -207,12 +211,12 @@ Deno.serve(async (req) => {
       message: verified ? 'Moltbook.com에 포스팅 + 인증 완료! 🦞' : 'Moltbook.com에 포스팅 완료 (인증 대기중)',
       moltbookPost: postData,
       generatedContent: autoGenerate ? { title: finalTitle, content: finalContent } : undefined,
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }), { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
 
   } catch (err) {
     console.error('Moltbook post error:', err)
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 })
