@@ -930,6 +930,20 @@ async function runHeartbeat(agentId?: string) {
     return { message: "Kill switch active", results: [] };
   }
 
+  // Global dedup: prevent concurrent/duplicate heartbeat runs within 3 minutes
+  const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+  const { data: recentHeartbeat } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .eq("activity_type", "heartbeat")
+    .eq("source", "nextjs")
+    .gte("created_at", threeMinAgo)
+    .limit(1);
+
+  if (!agentId && recentHeartbeat && recentHeartbeat.length > 0) {
+    return { message: "Heartbeat already ran within 3 minutes, skipping duplicate", results: [] };
+  }
+
   // OpenClaw active check — only skip overlapping skills (RSS) when OpenClaw ran within 35 min
   const thirtyFiveMinAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
   const { data: recentOpenClaw } = await supabase
