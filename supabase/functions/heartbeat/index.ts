@@ -159,6 +159,7 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
 
   const agentSettings = (agent as any).settings ?? {};
   const proactiveInterval = typeof agentSettings.proactiveInterval === 'number' ? agentSettings.proactiveInterval : 6;
+  const isSimpleMode = agentSettings.mode === "simple";
 
   const hoursSinceActive = (Date.now() - new Date(agent.last_active).getTime()) / 3600000;
   if (hoursSinceActive < proactiveInterval) return { ok: true, skillId: "proactive-message", summary: `User active within ${proactiveInterval}h, skipping` };
@@ -279,8 +280,14 @@ ${realtimeInfo ? `📡 실시간 검색 정보:\n${realtimeInfo}\n` : ""}${emoti
 - 실시간 정보 공유 시 "오늘 뉴스 봤는데", "방금 본 건데" 같은 자연스러운 표현 사용
 - 기억이 없으면 최근 학습 내용을 공유`;
 
+  const proactivePrompt = isSimpleMode
+    ? `사용자에게 짧고 따뜻한 안부 메시지를 보내. 반드시 1문장, 20자 이내, 이모지 포함.
+예: "오늘 하루 어땠어? 🌸", "밥 먹었어? 🍚", "보고 싶었어! 😊"
+사용자의 최근 대화 언어로 작성.`
+    : systemPrompt;
+
   const msg = await aiCall(
-    systemPrompt,
+    proactivePrompt,
     triggerHint
   );
 
@@ -314,6 +321,10 @@ ${realtimeInfo ? `📡 실시간 검색 정보:\n${realtimeInfo}\n` : ""}${emoti
         content: msg,
         channel: "telegram",
         provider: "heartbeat",
+        metadata: {
+          type: 'proactive',
+          reaction: 'nod',
+        },
       });
     }
   }

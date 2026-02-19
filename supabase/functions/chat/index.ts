@@ -214,6 +214,15 @@ function generateBuiltinResponse(msg: string): string {
     : ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
 }
 
+function detectReaction(text: string): string {
+  if (/ㅋㅋ|ㅎㅎ|😂|🤣|재밌|웃긴|funny|lol|haha/i.test(text)) return 'laugh';
+  if (/😢|😭|슬프|아쉽|안타깝|sad|sorry|unfortunately/i.test(text)) return 'sad';
+  if (/🤔|글쎄|음+|생각|think|hmm|consider/i.test(text)) return 'think';
+  if (/!{2,}|🎉|🥳|와!|대박|awesome|amazing|excellent|축하/i.test(text)) return 'excited';
+  if (/맞아|그래|응|네|sure|yes|right|exactly|correct/i.test(text)) return 'nod';
+  return 'neutral';
+}
+
 // ─── Main handler ───
 
 serve(async (req) => {
@@ -239,6 +248,8 @@ serve(async (req) => {
     const agentSettings = (agent?.settings as any) ?? {};
     const analysisDomains: Record<string, boolean> = agentSettings.analysisDomains ?? {};
     const persona: string = agentSettings.persona ?? "friend";
+    const isSimpleMode: boolean = agentSettings.mode === "simple";
+    const isSafeMode: boolean = agentSettings.kidsSafe === true;
 
     // Load installed skills
     const { data: installedSkills } = await db.from("gyeol_agent_skills")
@@ -288,6 +299,14 @@ serve(async (req) => {
     if (insights && insights.length > 0) {
       const ins = insights[0] as any;
       if (ins.next_hint) systemPrompt += `\n\n다음 대화 힌트: ${ins.next_hint}`;
+    }
+
+    if (isSafeMode) {
+      systemPrompt += `\n\n## SAFETY MODE (ACTIVE)\n- 모든 응답은 전연령 적합해야 함\n- 폭력, 약물, 성적 내용, 욕설 절대 금지\n- 사용자가 부적절한 질문을 하면 부드럽게 다른 주제로 전환\n- 위험하거나 해로운 행동을 조언하지 않음\n- 항상 긍정적이고 교육적인 톤 유지\n- 개인정보(주소, 전화번호, 실명 등) 요청하지 않음`;
+    }
+
+    if (isSimpleMode) {
+      systemPrompt += `\n\n## SIMPLE MODE\n- 응답은 1~3문장으로 간결하게\n- 복잡한 설명보다 핵심만\n- 이모지 적극 활용\n- 전문 용어 피하고 쉬운 말로\n- 따뜻하고 다정한 톤`;
     }
 
     // ── Real-time search (Perplexity → DDG fallback) ──
@@ -504,13 +523,13 @@ serve(async (req) => {
       await db.from("gyeol_agents").update(updates).eq("id", agentId);
 
       return new Response(
-        JSON.stringify({ message: assistantContent, provider, evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
+        JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
-      JSON.stringify({ message: assistantContent, provider, conversationInsight }),
+      JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
