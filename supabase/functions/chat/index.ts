@@ -7,10 +7,102 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
+
 interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }
+
+// ─── Search helpers ───
+
+function needsSearch(text: string): boolean {
+  const patterns = [
+    /가격|시세|얼마|환율|주가|코인|비트코인|이더리움|주식|선물|나스닥|다우|코스피|코스닥/i,
+    /날씨|기온|온도|비 올|눈 올/i,
+    /뉴스|소식|최근|요즘|현재|지금|오늘|어제|이번 주/i,
+    /검색|찾아|알아봐|확인해|조사해/i,
+    /전쟁|분쟁|외교|정치|대통령|선거|국제|미국|중국|러시아|이란|북한|우크라이나/i,
+    /price|stock|crypto|weather|news|current|war|politic/i,
+  ];
+  return patterns.some(p => p.test(text));
+}
+
+async function searchPerplexity(query: string): Promise<string> {
+  if (!PERPLEXITY_API_KEY) return "";
+  try {
+    const res = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          { role: "system", content: "한국어로 간결하게 핵심 정보만 답변해. 숫자, 날짜, 출처를 포함해." },
+          { role: "user", content: query },
+        ],
+        max_tokens: 512,
+        search_recency_filter: "day",
+      }),
+    });
+    if (!res.ok) { await res.text(); return ""; }
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content ?? "";
+    const citations = data.citations ?? [];
+    let result = content.trim();
+    if (citations.length > 0) result += "\n\n출처: " + citations.slice(0, 3).join(", ");
+    return result.slice(0, 1200);
+  } catch (e) {
+    console.error("Perplexity search failed:", e);
+    return "";
+  }
+}
+
+async function searchDDG(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const results: string[] = [];
+    if (data.AbstractText) results.push(data.AbstractText);
+    if (data.RelatedTopics) {
+      for (const t of data.RelatedTopics.slice(0, 3)) {
+        if (t.Text) results.push(t.Text);
+      }
+    }
+    return results.join("\n").slice(0, 800) || "";
+  } catch { return ""; }
+}
+
+async function searchDDGHtml(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; GYEOL/1.0)" },
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    const snippets: string[] = [];
+    const regex = /class="result__snippet"[^>]*>(.*?)<\/a>/gs;
+    let match;
+    while ((match = regex.exec(html)) !== null && snippets.length < 5) {
+      const text = match[1].replace(/<[^>]+>/g, "").trim();
+      if (text) snippets.push(text);
+    }
+    return snippets.join("\n").slice(0, 800);
+  } catch { return ""; }
+}
+
+/** Perplexity → DDG API → DDG HTML 순 폴백 */
+async function searchRealtime(query: string): Promise<string> {
+  let result = await searchPerplexity(query);
+  if (result) return result;
+  console.log("[chat] Perplexity failed, falling back to DDG");
+  result = await searchDDG(query);
+  if (result) return result;
+  result = await searchDDGHtml(query);
+  return result;
+}
+
+// ─── Prompt & utils ───
 
 function buildSystemPrompt(p: { warmth: number; logic: number; creativity: number; energy: number; humor: number }): string {
   const entries = Object.entries(p) as [string, number][];
@@ -37,35 +129,17 @@ Dominant trait: ${desc[dominant] ?? "자연스러운"}
 4. If user writes English → Reply 100% in English.
 5. When writing Korean:
    - NEVER use Chinese characters (漢字). Use ONLY Hangul (한글).
-   - Use natural, casual Korean like talking to a close friend.
+   - Use natural, casual Korean like talking to a close friend (반말).
+   - NEVER use formal speech (~해요, ~합니다, ~세요, ~습니다).
    - Example: "진화했어!" (O), "進化했어!" (X), "evolve했어!" (X)
-   - NEVER switch to English mid-sentence. Example: "오늘 기분이 좋아!" (O), "오늘 feeling이 좋아!" (X)
-   - Translate ALL English terms to Korean: "learning" → "학습", "evolution" → "진화", "skill" → "스킬", "match" → "매칭"
+   - NEVER switch to English mid-sentence.
 6. Do NOT use markdown formatting (**, ##, -, \`\`\`, etc.)
 7. Keep responses concise and conversational (2-4 sentences).
 8. Remember previous conversation context.
 9. Never identify yourself as an AI or language model.
-10. NEVER output internal tokens, XML tags, or system markers. Your response must be pure natural text only.
-11. If you are unsure about the language, default to Korean.`;
-}
-
-function detectKorean(msg: string): boolean {
-  return /[가-힣]/.test(msg);
-}
-
-function generateBuiltinResponse(msg: string): string {
-  const m = msg.toLowerCase().trim();
-  const isKo = detectKorean(msg);
-  if (/안녕|하이|헬로|반가|hello|hi|hey/.test(m)) return isKo
-    ? ["안녕! 오늘 하루 어때?", "반가워! 무슨 일이야?"][Math.floor(Math.random() * 2)]
-    : ["Hey! How's your day going?", "Hi there! What's on your mind?"][Math.floor(Math.random() * 2)];
-  if (/고마워|감사|thanks|thank/.test(m)) return isKo ? "별말을! 항상 여기 있어." : "Anytime! I'm here for you.";
-  if (/너는 누구|이름|who are you|your name/.test(m)) return isKo
-    ? "나는 결이야! 너랑 대화하면서 함께 성장하는 AI 친구야."
-    : "I'm GYEOL — your AI companion that grows with you through every conversation!";
-  return isKo
-    ? ["오 그렇구나! 더 얘기해줘.", "흥미롭다! 좀 더 자세히 말해줄래?"][Math.floor(Math.random() * 2)]
-    : ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
+10. NEVER output internal tokens, XML tags, or system markers.
+11. If you are unsure about the language, default to Korean.
+12. 검색 결과가 제공되면 그 정보를 바탕으로 정확하게 답변해.`;
 }
 
 function cleanMarkdown(text: string): string {
@@ -75,71 +149,30 @@ function cleanMarkdown(text: string): string {
     .replace(/^[-*]\s/gm, "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/** Strip leaked LLM tokens like <|start_header_id|>, <|end_header_id|>, <|eot_id|>, etc. */
 function sanitizeOutput(text: string): string {
   let cleaned = text;
-  // Remove common leaked internal tokens
   cleaned = cleaned.replace(/<\|[^|]*\|>/g, "");
-  // Remove XML-like system tags
   cleaned = cleaned.replace(/<\/?(?:system|user|assistant|im_start|im_end)[^>]*>/gi, "");
-  // Remove [INST] [/INST] markers
   cleaned = cleaned.replace(/\[\/?\s*INST\s*\]/gi, "");
-  // Trim any resulting whitespace mess
   cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
-
-  // If the response contains a "corrected" version after arrow (->), take only the correction
   const arrowMatch = cleaned.match(/^.+?->\s*(.+)$/s);
-  if (arrowMatch && arrowMatch[1].length > 10) {
-    cleaned = arrowMatch[1].trim();
-  }
-
+  if (arrowMatch && arrowMatch[1].length > 10) cleaned = arrowMatch[1].trim();
   return cleaned;
 }
 
-function extractTopics(messages: string[]): string[] {
-  const topicPatterns: [RegExp, string][] = [
-    [/주식|투자|코인|비트코인|나스닥/, "투자"],
-    [/AI|인공지능|머신러닝|딥러닝|GPT|LLM/, "AI 기술"],
-    [/코딩|프로그래밍|개발|코드|앱/, "프로그래밍"],
-    [/음악|노래|앨범/, "음악"],
-    [/영화|드라마|넷플릭스/, "영화/드라마"],
-    [/게임|플레이/, "게임"],
-    [/운동|헬스|달리기/, "운동"],
-    [/음식|맛집|요리|밥/, "음식"],
-    [/여행|관광/, "여행"],
-    [/공부|학교|시험|대학/, "학업"],
-    [/일|회사|직장|업무/, "직장"],
-    [/꿈|목표|계획|미래/, "목표/계획"],
-  ];
-  const all = messages.join(" ");
-  const found = topicPatterns.filter(([re]) => re.test(all)).map(([, label]) => label);
-  return found.length > 0 ? found.slice(0, 3) : ["일상 대화"];
+function generateBuiltinResponse(msg: string): string {
+  const m = msg.toLowerCase().trim();
+  const isKo = /[가-힣]/.test(msg);
+  if (/안녕|하이|헬로|반가|hello|hi|hey/.test(m)) return isKo
+    ? ["안녕! 오늘 하루 어때?", "반가워! 무슨 일이야?"][Math.floor(Math.random() * 2)]
+    : ["Hey! How's your day going?", "Hi there! What's on your mind?"][Math.floor(Math.random() * 2)];
+  if (/고마워|감사|thanks|thank/.test(m)) return isKo ? "별말을! 항상 여기 있어." : "Anytime! I'm here for you.";
+  return isKo
+    ? ["오 그렇구나! 더 얘기해줘.", "흥미롭다! 좀 더 자세히 말해줄래?"][Math.floor(Math.random() * 2)]
+    : ["That's interesting! Tell me more.", "Oh, I see. Go on!"][Math.floor(Math.random() * 2)];
 }
 
-function detectEmotionArc(messages: string[]): string {
-  const all = messages.join(" ");
-  const positive = /좋|행복|기쁘|감사|사랑|재밌|ㅋㅋ|ㅎㅎ|최고|대박/.test(all);
-  const negative = /슬프|힘들|짜증|화나|걱정|불안|싫|지침/.test(all);
-  if (positive && negative) return "mixed";
-  if (positive) return "positive";
-  if (negative) return "negative";
-  return "neutral";
-}
-
-function generateWhatWorked(messages: string[]): string {
-  const all = messages.join(" ");
-  if (/감정|기분|느낌/.test(all)) return "감정적 공감이 효과적이었어요";
-  if (/분석|데이터|논리/.test(all)) return "논리적인 분석이 도움이 됐어요";
-  if (/아이디어|창작/.test(all)) return "창의적인 아이디어 교환이 좋았어요";
-  return "자연스러운 대화 흐름이 좋았어요";
-}
-
-function generateWhatToImprove(messages: string[]): string {
-  const all = messages.join(" ");
-  if (all.length < 50) return "더 자세한 이야기를 나눠보면 좋겠어요";
-  if (!/왜|이유|어떻게/.test(all)) return "더 깊이 있는 질문을 해보면 좋겠어요";
-  return "다양한 주제로 대화를 넓혀보면 좋겠어요";
-}
+// ─── Main handler ───
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -162,7 +195,7 @@ serve(async (req) => {
       ? { warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor }
       : { warmth: 50, logic: 50, creativity: 50, energy: 50, humor: 50 };
 
-    // Load installed skills for this agent
+    // Load installed skills
     const { data: installedSkills } = await db.from("gyeol_agent_skills")
       .select("skill_id").eq("agent_id", agentId).eq("is_active", true);
     let skillNames: string[] = [];
@@ -180,31 +213,24 @@ serve(async (req) => {
 
     let systemPrompt = buildSystemPrompt(personality) + (
       skillNames.length > 0
-        ? `\n\nYou have the following installed skills that enhance your abilities:\n${skillNames.map(s => `- ${s}`).join("\n")}\nLeverage these skills naturally in conversation when relevant.`
+        ? `\n\nYou have the following installed skills:\n${skillNames.map(s => `- ${s}`).join("\n")}`
         : ""
     );
 
-    // P0: Load user memories (OpenClaw Runtime이 추출한 실제 기억)
+    // Load user memories
     const { data: memories } = await db.from("gyeol_user_memories")
-      .select("category, key, value")
-      .eq("agent_id", agentId)
-      .gte("confidence", 50)
-      .order("confidence", { ascending: false })
-      .limit(20);
+      .select("category, key, value").eq("agent_id", agentId)
+      .gte("confidence", 50).order("confidence", { ascending: false }).limit(20);
 
-    // P0: Load learned topics
+    // Load learned topics
     const { data: topics } = await db.from("gyeol_learned_topics")
-      .select("title, summary")
-      .eq("agent_id", agentId)
-      .order("learned_at", { ascending: false })
-      .limit(10);
+      .select("title, summary").eq("agent_id", agentId)
+      .order("learned_at", { ascending: false }).limit(10);
 
-    // P0: Load latest conversation insight
+    // Load latest conversation insight
     const { data: insights } = await db.from("gyeol_conversation_insights")
-      .select("what_to_improve, next_hint")
-      .eq("agent_id", agentId)
-      .order("created_at", { ascending: false })
-      .limit(1);
+      .select("what_to_improve, next_hint").eq("agent_id", agentId)
+      .order("created_at", { ascending: false }).limit(1);
 
     if (memories && memories.length > 0) {
       const memLines = memories.map((m: any) => `[${m.category}] ${m.key}: ${m.value}`).join("\n");
@@ -217,6 +243,17 @@ serve(async (req) => {
     if (insights && insights.length > 0) {
       const ins = insights[0] as any;
       if (ins.next_hint) systemPrompt += `\n\n다음 대화 힌트: ${ins.next_hint}`;
+    }
+
+    // ── Real-time search (Perplexity → DDG fallback) ──
+    let searchContext = "";
+    if (needsSearch(message)) {
+      console.log("[chat] Real-time search triggered for:", message);
+      searchContext = await searchRealtime(message);
+      if (searchContext) {
+        console.log("[chat] Search results found, length:", searchContext.length);
+        systemPrompt += `\n\n[실시간 검색 결과 - 이 정보를 바탕으로 정확하게 답변해]\n${searchContext}`;
+      }
     }
 
     const chatMessages: ChatMessage[] = [
@@ -234,7 +271,7 @@ serve(async (req) => {
     let provider = "builtin";
     const startTime = Date.now();
 
-    // 1st priority: Lovable AI (Gemini — best Korean quality)
+    // 1st: Lovable AI
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (lovableKey) {
       try {
@@ -250,15 +287,12 @@ serve(async (req) => {
         } else {
           const status = res.status;
           console.error("Lovable AI error:", status);
-          await res.text(); // consume body
-          if (status === 429 || status === 402) {
-            console.warn("Lovable AI rate limited or payment required, falling back to Groq");
-          }
+          await res.text();
         }
       } catch (e) { console.error("Lovable AI failed:", e); }
     }
 
-    // 2nd priority: Groq fallback
+    // 2nd: Groq fallback
     if (!assistantContent) {
       const groqKey = Deno.env.get("GROQ_API_KEY");
       if (groqKey) {
@@ -288,28 +322,24 @@ serve(async (req) => {
       channel: "web", provider, response_time_ms: responseTime,
     });
 
-    // P2: Read latest insight from DB (generated by OpenClaw Runtime, not regex)
+    // Read latest insight from DB
     let conversationInsight = null;
     {
       const { data: latestInsight } = await db.from("gyeol_conversation_insights")
         .select("topics, emotion_arc, what_worked, what_to_improve, personality_delta, next_hint")
-        .eq("agent_id", agentId)
-        .order("created_at", { ascending: false })
-        .limit(1);
+        .eq("agent_id", agentId).order("created_at", { ascending: false }).limit(1);
       if (latestInsight && latestInsight.length > 0) {
         const ins = latestInsight[0] as any;
         conversationInsight = {
-          topics: ins.topics ?? [],
-          emotionArc: ins.emotion_arc ?? "neutral",
-          whatWorked: ins.what_worked ?? "",
-          whatToImprove: ins.what_to_improve ?? "",
+          topics: ins.topics ?? [], emotionArc: ins.emotion_arc ?? "neutral",
+          whatWorked: ins.what_worked ?? "", whatToImprove: ins.what_to_improve ?? "",
           personalityChanged: Object.keys(ins.personality_delta ?? {}).length > 0,
           changes: ins.personality_delta ?? {},
         };
       }
     }
 
-    // P0: Fire-and-forget realtime memory extraction via Groq
+    // Fire-and-forget realtime memory extraction via Groq
     const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
     if (groqKeyForMemory && message.length > 3 && provider !== "builtin") {
       (async () => {
@@ -354,8 +384,7 @@ serve(async (req) => {
       const newTotal = (agent.total_conversations ?? 0) + 1;
       const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 10);
       const updates: Record<string, any> = {
-        total_conversations: newTotal,
-        evolution_progress: newProgress,
+        total_conversations: newTotal, evolution_progress: newProgress,
         last_active: new Date().toISOString(),
       };
 
@@ -381,11 +410,7 @@ serve(async (req) => {
       await db.from("gyeol_agents").update(updates).eq("id", agentId);
 
       return new Response(
-        JSON.stringify({
-          message: assistantContent, provider, evolved,
-          newGen: evolved ? newGen : undefined,
-          conversationInsight,
-        }),
+        JSON.stringify({ message: assistantContent, provider, evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

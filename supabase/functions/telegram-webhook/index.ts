@@ -132,6 +132,51 @@ async function searchPerplexity(query: string): Promise<string> {
   }
 }
 
+async function searchDDG(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`)
+    if (!res.ok) return ''
+    const data = await res.json()
+    const results: string[] = []
+    if (data.AbstractText) results.push(data.AbstractText)
+    if (data.RelatedTopics) {
+      for (const t of data.RelatedTopics.slice(0, 3)) {
+        if (t.Text) results.push(t.Text)
+      }
+    }
+    return results.join('\n').slice(0, 800) || ''
+  } catch { return '' }
+}
+
+async function searchDDGHtml(query: string): Promise<string> {
+  try {
+    const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GYEOL/1.0)' },
+    })
+    if (!res.ok) return ''
+    const html = await res.text()
+    const snippets: string[] = []
+    const regex = /class="result__snippet"[^>]*>(.*?)<\/a>/gs
+    let match
+    while ((match = regex.exec(html)) !== null && snippets.length < 5) {
+      const text = match[1].replace(/<[^>]+>/g, '').trim()
+      if (text) snippets.push(text)
+    }
+    return snippets.join('\n').slice(0, 800)
+  } catch { return '' }
+}
+
+/** Perplexity → DDG API → DDG HTML 순 폴백 */
+async function searchRealtime(query: string): Promise<string> {
+  let result = await searchPerplexity(query)
+  if (result) return result
+  console.log('[telegram] Perplexity failed, falling back to DDG')
+  result = await searchDDG(query)
+  if (result) return result
+  result = await searchDDGHtml(query)
+  return result
+}
+
 async function callAI(systemPrompt: string, userText: string, history: ChatMsg[]): Promise<string> {
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -288,13 +333,13 @@ Deno.serve(async (req) => {
       .slice(-10)
       .map(r => ({ role: r.role, content: r.content }))
 
-    // Auto-search for real-time info requests via Perplexity
+    // Auto-search for real-time info requests via Perplexity → DDG fallback
     let searchContext: string | undefined
     if (needsSearch(userText)) {
-      console.log('[telegram] Perplexity search triggered for:', userText)
-      searchContext = await searchPerplexity(userText)
+      console.log('[telegram] Real-time search triggered for:', userText)
+      searchContext = await searchRealtime(userText)
       if (searchContext) {
-        console.log('[telegram] Perplexity results found, length:', searchContext.length)
+        console.log('[telegram] Search results found, length:', searchContext.length)
       }
     }
 
