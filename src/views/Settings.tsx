@@ -4,6 +4,7 @@ import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
 import { supabase } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
 
@@ -67,7 +68,18 @@ export default function SettingsPage() {
     { key: 'academic', icon: 'school', label: '논문/학술', desc: 'arXiv, PubMed 등 논문 분석' },
   ] as const;
   const [analysisDomains, setAnalysisDomains] = useState<Record<string, boolean>>({});
-
+  // Mode, Safety, Character
+  const [currentMode, setCurrentMode] = useState<'simple' | 'advanced'>('advanced');
+  const [kidsSafe, setKidsSafe] = useState(false);
+  const [charPreset, setCharPreset] = useState<string | null>('void');
+  const CHARS = [
+    { key: null, emoji: '✉️', label: 'Text Only' },
+    { key: 'void', emoji: '●', label: 'Void' },
+    { key: 'jelly', emoji: '🫧', label: 'Jelly' },
+    { key: 'cat', emoji: '🐱', label: 'Cat' },
+    { key: 'flame', emoji: '🔥', label: 'Flame' },
+    { key: 'cloud', emoji: '☁️', label: 'Cloud' },
+  ];
 
   // Active section for mobile-friendly collapsible sections
   const [activeSection, setActiveSection] = useState<string | null>('personality');
@@ -85,6 +97,9 @@ export default function SettingsPage() {
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
     if (s.analysisDomains) setAnalysisDomains(s.analysisDomains);
     if (typeof s.proactiveInterval === 'number') setProactiveInterval(s.proactiveInterval);
+    if (s.mode) setCurrentMode(s.mode);
+    if (typeof s.kidsSafe === 'boolean') setKidsSafe(s.kidsSafe);
+    setCharPreset(s.characterPreset ?? 'void');
     
     setTelegramCode(agent.id);
 
@@ -206,6 +221,105 @@ export default function SettingsPage() {
         <section className="space-y-1">
           <p className="text-[10px] text-white/20 uppercase tracking-widest mb-1">Account</p>
           <p className="text-sm text-foreground/60">{user?.email}</p>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== MODE ====== */}
+        <section>
+          <SectionHeader id="mode" icon="toggle_on" title="Mode" />
+          <AnimatePresence>
+            {activeSection === 'mode' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2">
+                <div className="grid grid-cols-2 gap-3 px-1">
+                  {[
+                    { key: 'simple' as const, icon: '💬', label: 'Simple' },
+                    { key: 'advanced' as const, icon: '🧬', label: 'Advanced' },
+                  ].map(m => (
+                    <button key={m.key} onClick={async () => {
+                      const s = (agent?.settings as any) ?? {};
+                      await supabase.from('gyeol_agents' as any)
+                        .update({ settings: { ...s, mode: m.key } } as any).eq('id', agent?.id);
+                      window.location.href = '/';
+                    }}
+                      className={`p-4 rounded-xl border text-center transition ${
+                        currentMode === m.key ? 'border-primary/40 bg-primary/10' : 'border-white/[0.06]'
+                      }`}>
+                      <span className="text-xl">{m.icon}</span>
+                      <p className="text-[11px] text-foreground/80 mt-1">{m.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== SAFETY ====== */}
+        <section>
+          <SectionHeader id="safety" icon="shield" title="Safety" />
+          <AnimatePresence>
+            {activeSection === 'safety' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="text-[11px] text-foreground/80">Kids Safe Mode</p>
+                    <p className="text-[9px] text-white/25">Age-appropriate content filter</p>
+                  </div>
+                  <button type="button" onClick={async () => {
+                    const v = !kidsSafe; setKidsSafe(v);
+                    const s = (agent?.settings as any) ?? {};
+                    await supabase.from('gyeol_agents' as any)
+                      .update({ settings: { ...s, kidsSafe: v } } as any).eq('id', agent?.id);
+                  }}
+                    className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-primary' : 'bg-white/10'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform ${kidsSafe ? 'translate-x-4' : ''}`} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== CHARACTER ====== */}
+        <section>
+          <SectionHeader id="character" icon="pets" title="Character" />
+          <AnimatePresence>
+            {activeSection === 'character' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                {charPreset && charPreset !== 'void' && (
+                  <div className="flex justify-center mb-3">
+                    <div className="w-16 h-16">
+                      <AnimatedCharacter mood="happy" isThinking={false} characterPreset={charPreset} gen={agent?.gen ?? 1} size="sm" />
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-3 gap-2">
+                  {CHARS.map(c => (
+                    <button key={String(c.key)} type="button" onClick={async () => {
+                      setCharPreset(c.key);
+                      const s = (agent?.settings as any) ?? {};
+                      await supabase.from('gyeol_agents' as any)
+                        .update({ settings: { ...s, characterPreset: c.key } } as any).eq('id', agent?.id);
+                    }}
+                      className={`flex flex-col items-center p-3 rounded-xl border transition ${
+                        charPreset === c.key ? 'border-primary/40 bg-primary/10' : 'border-white/[0.06]'
+                      }`}>
+                      <span className="text-lg">{c.emoji}</span>
+                      <span className="text-[9px] text-white/30 mt-1">{c.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         <div className="h-px bg-white/[0.04]" />

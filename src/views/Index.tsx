@@ -4,7 +4,7 @@ import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
 import Onboarding from './Onboarding';
-import { VoidCore } from '@/src/components/PearlSpheres';
+import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
 import { VoiceInput } from '@/components/VoiceInput';
@@ -59,7 +59,7 @@ function MessageBubble({ msg }: { msg: Message }) {
 }
 
 export default function GyeolPage() {
-  const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight } = useGyeolStore();
+  const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight, lastReaction } = useGyeolStore();
   const { agent, loading: agentLoading, needsOnboarding, completeOnboarding } = useInitAgent();
   const { user } = useAuth();
   const [input, setInput] = useState('');
@@ -152,7 +152,15 @@ export default function GyeolPage() {
               transition={{ duration: 0.4 }}
               className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
             >
-              <VoidCore isThinking={isLoading} mood={(agent as any)?.mood ?? 'neutral'} />
+              <AnimatedCharacter
+                mood={(agent as any)?.mood ?? 'neutral'}
+                isThinking={isLoading}
+                reaction={lastReaction}
+                characterPreset={((agent as any)?.settings as any)?.characterPreset ?? 'void'}
+                skinId={(agent as any)?.skin_id}
+                gen={agent?.gen ?? 1}
+                size="sm"
+              />
 
               <div className="text-center space-y-2">
                 <p className="text-lg font-light text-foreground/60">
