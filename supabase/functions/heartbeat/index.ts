@@ -151,14 +151,17 @@ async function skillProactiveMessage(supabase: ReturnType<typeof getSupabase>, a
 
   const { data: agent } = await supabase
     .from("gyeol_agents")
-    .select("name, warmth, humor, creativity, energy, last_active, created_at")
+    .select("name, warmth, humor, creativity, energy, last_active, created_at, settings")
     .eq("id", agentId)
     .single();
 
   if (!agent) return { ok: false, skillId: "proactive-message", summary: "Agent not found" };
 
+  const agentSettings = (agent as any).settings ?? {};
+  const proactiveInterval = typeof agentSettings.proactiveInterval === 'number' ? agentSettings.proactiveInterval : 6;
+
   const hoursSinceActive = (Date.now() - new Date(agent.last_active).getTime()) / 3600000;
-  if (hoursSinceActive < 6) return { ok: true, skillId: "proactive-message", summary: "User active recently, skipping" };
+  if (hoursSinceActive < proactiveInterval) return { ok: true, skillId: "proactive-message", summary: `User active within ${proactiveInterval}h, skipping` };
 
   // Dedup: skip if a proactive message was sent in the last 4 hours
   const fourHoursAgo = new Date(Date.now() - 4 * 3600000).toISOString();
