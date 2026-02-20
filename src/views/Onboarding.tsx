@@ -20,6 +20,14 @@ const CHARACTERS = [
   { key: 'cloud', emoji: '☁️', label: 'Cloud' },
 ];
 
+const PERSONA_TRAITS: Record<string, string[]> = {
+  void: ['EMPATHETIC', 'WARM'],
+  jelly: ['CREATIVE', 'SPIRITED'],
+  cat: ['OBSERVANT', 'CALM'],
+  flame: ['LOGICAL', 'PRECISE'],
+  cloud: ['GENTLE', 'SUPPORTIVE'],
+};
+
 interface Props {
   userId: string;
   onComplete: () => void;
@@ -108,7 +116,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div key={i} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${
                 i < currentStepNum
-                  ? 'bg-gradient-to-r from-primary to-secondary'
+                  ? 'bg-gradient-to-r from-primary to-secondary shadow-[0_0_8px_rgba(120,78,218,0.5)]'
                   : 'bg-white/[0.06]'
               }`} />
             ))}
@@ -211,6 +219,15 @@ export default function Onboarding({ userId, onComplete }: Props) {
                   }`}>
                   <span className="text-lg">{c.emoji}</span>
                   <span className="text-[9px] text-slate-500 mt-1">{c.label}</span>
+                  {c.key && PERSONA_TRAITS[c.key] && (
+                    <div className="flex flex-wrap gap-0.5 mt-1.5 justify-center">
+                      {PERSONA_TRAITS[c.key].map(trait => (
+                        <span key={trait} className="text-[7px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold uppercase tracking-wider">
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
