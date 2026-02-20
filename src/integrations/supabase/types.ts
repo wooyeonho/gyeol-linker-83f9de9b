@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      gyeol_achievement_unlocks: {
+        Row: {
+          achievement_id: string
+          agent_id: string
+          id: string
+          is_new: boolean
+          unlocked_at: string
+        }
+        Insert: {
+          achievement_id: string
+          agent_id: string
+          id?: string
+          is_new?: boolean
+          unlocked_at?: string
+        }
+        Update: {
+          achievement_id?: string
+          agent_id?: string
+          id?: string
+          is_new?: boolean
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_achievement_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_achievement_ref"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_achievements: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_hidden: boolean
+          name: string
+          rarity: string
+          requirement_type: string
+          requirement_value: number
+          reward_coins: number
+          reward_exp: number
+          reward_title: string | null
+          sort_order: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_hidden?: boolean
+          name: string
+          rarity?: string
+          requirement_type: string
+          requirement_value?: number
+          reward_coins?: number
+          reward_exp?: number
+          reward_title?: string | null
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_hidden?: boolean
+          name?: string
+          rarity?: string
+          requirement_type?: string
+          requirement_value?: number
+          reward_coins?: number
+          reward_exp?: number
+          reward_title?: string | null
+          sort_order?: number
+        }
+        Relationships: []
+      }
       gyeol_agent_skills: {
         Row: {
           agent_id: string
@@ -464,6 +554,183 @@ export type Database = {
           },
         ]
       }
+      gyeol_currency_logs: {
+        Row: {
+          agent_id: string
+          amount: number
+          created_at: string
+          currency_type: string
+          id: string
+          reason: string
+          reference_id: string | null
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          created_at?: string
+          currency_type: string
+          id?: string
+          reason: string
+          reference_id?: string | null
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          created_at?: string
+          currency_type?: string
+          id?: string
+          reason?: string
+          reference_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_currency_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_gamification_profiles: {
+        Row: {
+          agent_id: string
+          coins: number
+          created_at: string
+          exp: number
+          id: string
+          last_daily_claim: string | null
+          level: number
+          longest_streak: number
+          streak_days: number
+          title: string | null
+          total_exp: number
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          coins?: number
+          created_at?: string
+          exp?: number
+          id?: string
+          last_daily_claim?: string | null
+          level?: number
+          longest_streak?: number
+          streak_days?: number
+          title?: string | null
+          total_exp?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          coins?: number
+          created_at?: string
+          exp?: number
+          id?: string
+          last_daily_claim?: string | null
+          level?: number
+          longest_streak?: number
+          streak_days?: number
+          title?: string | null
+          total_exp?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_gamification_agent"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_inventory: {
+        Row: {
+          acquired_at: string
+          agent_id: string
+          id: string
+          is_equipped: boolean
+          item_id: string
+          quantity: number
+        }
+        Insert: {
+          acquired_at?: string
+          agent_id: string
+          id?: string
+          is_equipped?: boolean
+          item_id: string
+          quantity?: number
+        }
+        Update: {
+          acquired_at?: string
+          agent_id?: string
+          id?: string
+          is_equipped?: boolean
+          item_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_inventory_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_inventory_item"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_leaderboard: {
+        Row: {
+          agent_gen: number | null
+          agent_id: string
+          agent_name: string | null
+          id: string
+          period: string
+          period_start: string
+          rank: number | null
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          agent_gen?: number | null
+          agent_id: string
+          agent_name?: string | null
+          id?: string
+          period: string
+          period_start: string
+          rank?: number | null
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_gen?: number | null
+          agent_id?: string
+          agent_name?: string | null
+          id?: string
+          period?: string
+          period_start?: string
+          rank?: number | null
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_leaderboard_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_learned_topics: {
         Row: {
           agent_id: string
@@ -724,6 +991,117 @@ export type Database = {
           },
         ]
       }
+      gyeol_quest_progress: {
+        Row: {
+          agent_id: string
+          claimed_at: string | null
+          completed_at: string | null
+          current_value: number
+          id: string
+          is_claimed: boolean
+          is_completed: boolean
+          quest_id: string
+          started_at: string
+        }
+        Insert: {
+          agent_id: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          current_value?: number
+          id?: string
+          is_claimed?: boolean
+          is_completed?: boolean
+          quest_id: string
+          started_at?: string
+        }
+        Update: {
+          agent_id?: string
+          claimed_at?: string | null
+          completed_at?: string | null
+          current_value?: number
+          id?: string
+          is_claimed?: boolean
+          is_completed?: boolean
+          quest_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_quest_progress_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_quest_progress_quest"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_quests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_quests: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          min_gen: number
+          min_level: number
+          quest_type: string
+          requirement_type: string
+          requirement_value: number
+          reward_coins: number
+          reward_exp: number
+          reward_item_id: string | null
+          season_id: string | null
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          min_gen?: number
+          min_level?: number
+          quest_type?: string
+          requirement_type: string
+          requirement_value?: number
+          reward_coins?: number
+          reward_exp?: number
+          reward_item_id?: string | null
+          season_id?: string | null
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          min_gen?: number
+          min_level?: number
+          quest_type?: string
+          requirement_type?: string
+          requirement_value?: number
+          reward_coins?: number
+          reward_exp?: number
+          reward_item_id?: string | null
+          season_id?: string | null
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       gyeol_reflections: {
         Row: {
           agent_id: string
@@ -758,6 +1136,141 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gyeol_season_progress: {
+        Row: {
+          agent_id: string
+          id: string
+          rewards_claimed: Json
+          season_exp: number
+          season_id: string
+          tier: number
+        }
+        Insert: {
+          agent_id: string
+          id?: string
+          rewards_claimed?: Json
+          season_exp?: number
+          season_id: string
+          tier?: number
+        }
+        Update: {
+          agent_id?: string
+          id?: string
+          rewards_claimed?: Json
+          season_exp?: number
+          season_id?: string
+          tier?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_season_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_season_ref"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyeol_seasons: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          reward_summary: string | null
+          start_date: string
+          theme_color: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          reward_summary?: string | null
+          start_date: string
+          theme_color?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          reward_summary?: string | null
+          start_date?: string
+          theme_color?: string | null
+        }
+        Relationships: []
+      }
+      gyeol_shop_items: {
+        Row: {
+          available_from: string | null
+          available_until: string | null
+          category: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_limited: boolean
+          item_data: Json | null
+          min_level: number
+          name: string
+          price_coins: number
+          price_exp: number
+          sort_order: number
+          stock: number | null
+        }
+        Insert: {
+          available_from?: string | null
+          available_until?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_limited?: boolean
+          item_data?: Json | null
+          min_level?: number
+          name: string
+          price_coins?: number
+          price_exp?: number
+          sort_order?: number
+          stock?: number | null
+        }
+        Update: {
+          available_from?: string | null
+          available_until?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_limited?: boolean
+          item_data?: Json | null
+          min_level?: number
+          name?: string
+          price_coins?: number
+          price_exp?: number
+          sort_order?: number
+          stock?: number | null
+        }
+        Relationships: []
       }
       gyeol_skills: {
         Row: {
