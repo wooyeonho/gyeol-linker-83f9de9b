@@ -151,7 +151,7 @@ export default function SimpleChat() {
                   <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
                   <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
                     style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">{msg.content}</ReactMarkdown>
+                    <div className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
                   </div>
                 </div>
               </div>
