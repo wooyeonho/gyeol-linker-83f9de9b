@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import type { Message } from '@/lib/gyeol/types';
 import { useNavigate } from 'react-router-dom';
 import { useGyeolStore } from '@/store/gyeol-store';
@@ -8,10 +8,29 @@ import { VoiceInput } from '@/components/VoiceInput';
 import { EvolutionCeremony } from '@/src/components/evolution/EvolutionCeremony';
 import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import { supabase } from '@/src/lib/supabase';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+// Emoji reactions for messages
+const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
+
+// Code block with copy button (extracted to avoid hooks-in-callback)
+function CodeBlockCopy({ children, className }: any) {
+  const code = String(children).replace(/\n$/, '');
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="relative group/code">
+      <pre className={className}><code>{children}</code></pre>
+      <button
+        onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+        className="absolute top-1 right-1 opacity-0 group-hover/code:opacity-100 transition text-[9px] px-2 py-1 rounded-md bg-primary/20 text-primary hover:bg-primary/30"
+      >{copied ? '✓' : 'Copy'}</button>
+    </div>
+  );
+}
 
 export default function SimpleChat() {
   const navigate = useNavigate();
@@ -23,6 +42,9 @@ export default function SimpleChat() {
   const fontSize = settings.fontSize ?? 18;
   const autoTTS = settings.autoTTS !== false;
   const hasCharacter = settings.characterPreset != null;
+
+  const [reactions, setReactions] = useState<Record<string, string>>({});
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
 
   const [isDark, setIsDark] = useState(
     typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
@@ -87,6 +109,27 @@ export default function SimpleChat() {
   // Intimacy info
   const intimacy = (agent as any)?.intimacy ?? 0;
   const intimacyLevel = intimacy < 10 ? 'Stranger' : intimacy < 20 ? 'Acquaintance' : intimacy < 30 ? 'Casual' : intimacy < 40 ? 'Friend' : intimacy < 50 ? 'Good Friend' : intimacy < 60 ? 'Close Friend' : intimacy < 70 ? 'Bestie' : intimacy < 80 ? 'Soulmate' : intimacy < 90 ? 'Family' : 'Inseparable';
+  const intimacyEmoji = intimacy < 10 ? '🤝' : intimacy < 20 ? '👋' : intimacy < 30 ? '😊' : intimacy < 40 ? '💕' : intimacy < 50 ? '💖' : intimacy < 60 ? '💗' : intimacy < 70 ? '💞' : intimacy < 80 ? '💘' : intimacy < 90 ? '👨‍👩‍👧' : '💫';
+
+  // Date grouping helper
+  const getDateLabel = useCallback((dateStr: string) => {
+    const d = new Date(dateStr);
+    if (isToday(d)) return '오늘';
+    if (isYesterday(d)) return '어제';
+    return format(d, 'M월 d일 (EEE)', { locale: ko });
+  }, []);
+
+  // Group messages by date
+  const groupedMessages = messages.reduce<{ date: string; label: string; msgs: Message[] }[]>((acc, msg) => {
+    const dateKey = format(new Date(msg.created_at), 'yyyy-MM-dd');
+    const last = acc[acc.length - 1];
+    if (last && last.date === dateKey) {
+      last.msgs.push(msg);
+    } else {
+      acc.push({ date: dateKey, label: getDateLabel(msg.created_at), msgs: [msg] });
+    }
+    return acc;
+  }, []);
 
   const agentName = agent?.name ?? 'GYEOL';
 
@@ -117,7 +160,7 @@ export default function SimpleChat() {
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-[10px] text-emerald-400/70">Online</p>
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary/70">💕 {intimacyLevel}</span>
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary/70">{intimacyEmoji} {intimacyLevel}</span>
           </div>
         </div>
       ) : (
@@ -135,66 +178,118 @@ export default function SimpleChat() {
 
       {/* === Messages === */}
       <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10">
-        {/* Date separator */}
-        {messages.length > 0 && (
-          <div className="flex justify-center py-4">
-            <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
-              Today, {format(new Date(), 'h:mm a')}
-            </span>
-          </div>
-        )}
+        {groupedMessages.map((group) => (
+          <div key={group.date}>
+            {/* Date separator */}
+            <div className="flex justify-center py-3">
+              <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
+                {group.label}
+              </span>
+            </div>
 
-        {messages.map(msg => (
-          <div key={msg.id} className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
-            {msg.role === 'user' ? (
-              <div className="flex gap-2.5 justify-end">
-                <div className="max-w-[80%]">
-                  <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You</span>
-                  <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
-                    style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+            {group.msgs.map(msg => (
+              <div key={msg.id} className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
+                {msg.role === 'user' ? (
+                  <div className="flex gap-2.5 justify-end">
+                    <div className="max-w-[80%]">
+                      <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You · {format(new Date(msg.created_at), 'HH:mm')}</span>
+                      <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
+                        style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      </div>
+                      {/* Reaction display */}
+                      {reactions[msg.id] && (
+                        <div className="flex justify-end mt-0.5">
+                          <span className="text-sm bg-background/50 rounded-full px-1.5 py-0.5 border border-white/5">{reactions[msg.id]}</span>
+                        </div>
+                      )}
+                      {/* Message actions */}
+                      <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">add_reaction</span>
+                        </button>
+                        <button onClick={() => handleDeleteMessage(msg.id)}
+                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+                          <span className="material-icons-round text-[12px]">delete</span>
+                        </button>
+                        <button onClick={() => handleResendMessage(msg.content)}
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">refresh</span>
+                        </button>
+                      </div>
+                      {/* Reaction picker */}
+                      <AnimatePresence>
+                        {reactionPickerFor === msg.id && (
+                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex gap-1 mt-1 justify-end">
+                            {REACTIONS.map(r => (
+                              <button key={r} onClick={() => { setReactions(prev => ({ ...prev, [msg.id]: r })); setReactionPickerFor(null); }}
+                                className="text-lg hover:scale-125 transition-transform">{r}</button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
+                      <span className="material-icons-round text-slate-300 text-[14px]">person</span>
+                    </div>
                   </div>
-                  {/* Message actions */}
-                  <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleDeleteMessage(msg.id)}
-                      className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-                      <span className="material-icons-round text-[12px]">delete</span>
-                    </button>
-                    <button onClick={() => handleResendMessage(msg.content)}
-                      className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                      <span className="material-icons-round text-[12px]">refresh</span>
-                    </button>
+                ) : (
+                  <div className="flex gap-2.5 justify-start">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
+                      <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
+                    </div>
+                    <div className="max-w-[80%]">
+                      <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName} · {format(new Date(msg.created_at), 'HH:mm')}</span>
+                      <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
+                        style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                        <div className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ pre: CodeBlockCopy }}>{msg.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                      {/* Reaction display */}
+                      {reactions[msg.id] && (
+                        <div className="flex mt-0.5">
+                          <span className="text-sm bg-background/50 rounded-full px-1.5 py-0.5 border border-white/5">{reactions[msg.id]}</span>
+                        </div>
+                      )}
+                      {/* AI message actions */}
+                      <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">add_reaction</span>
+                        </button>
+                        <button onClick={() => handleDeleteMessage(msg.id)}
+                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+                          <span className="material-icons-round text-[12px]">delete</span>
+                        </button>
+                        <button onClick={() => navigator.clipboard.writeText(msg.content)}
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">content_copy</span>
+                        </button>
+                        <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">volume_up</span>
+                        </button>
+                      </div>
+                      {/* Reaction picker */}
+                      <AnimatePresence>
+                        {reactionPickerFor === msg.id && (
+                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex gap-1 mt-1">
+                            {REACTIONS.map(r => (
+                              <button key={r} onClick={() => { setReactions(prev => ({ ...prev, [msg.id]: r })); setReactionPickerFor(null); }}
+                                className="text-lg hover:scale-125 transition-transform">{r}</button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
-                </div>
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
-                  <span className="material-icons-round text-slate-300 text-[14px]">person</span>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="flex gap-2.5 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
-                  <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
-                </div>
-                <div className="max-w-[80%]">
-                  <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
-                  <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
-                    style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                    <div className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
-                  </div>
-                  {/* AI message actions */}
-                  <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleDeleteMessage(msg.id)}
-                      className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-                      <span className="material-icons-round text-[12px]">delete</span>
-                    </button>
-                    <button onClick={() => navigator.clipboard.writeText(msg.content)}
-                      className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                      <span className="material-icons-round text-[12px]">content_copy</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         ))}
 

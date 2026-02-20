@@ -36,6 +36,31 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
   const { setAgent } = useGyeolStore();
   const [using, setUsing] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'recent' | 'quantity'>('recent');
+  const [filterCat, setFilterCat] = useState<string>('all');
+
+  // Get unique categories from items
+  const categories = ['all', ...new Set(inventory.map(inv => {
+    const item = shopItems.find(s => s.id === inv.item_id);
+    return item?.category ?? 'other';
+  }))];
+
+  // Sort and filter
+  const sortedInventory = [...inventory]
+    .filter(inv => {
+      if (filterCat === 'all') return true;
+      const item = shopItems.find(s => s.id === inv.item_id);
+      return item?.category === filterCat;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') {
+        const nameA = shopItems.find(s => s.id === a.item_id)?.name ?? '';
+        const nameB = shopItems.find(s => s.id === b.item_id)?.name ?? '';
+        return nameA.localeCompare(nameB);
+      }
+      if (sortBy === 'quantity') return b.quantity - a.quantity;
+      return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
+    });
 
   const handleUse = async (inv: InventoryItem) => {
     if (!agent?.id || using) return;
@@ -132,14 +157,36 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                   className="text-center py-2 text-sm font-medium text-emerald-400">{message}</motion.div>
               )}
 
-              {inventory.length === 0 ? (
+              {/* Sort & filter controls */}
+              {inventory.length > 0 && (
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex gap-1 flex-1 overflow-x-auto gyeol-scrollbar-hide">
+                    {categories.map(cat => (
+                      <button key={cat} onClick={() => setFilterCat(cat)}
+                        className={`px-2 py-1 rounded-lg text-[9px] font-medium whitespace-nowrap transition ${
+                          filterCat === cat ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
+                        }`}>{cat === 'all' ? '전체' : cat === 'boost' ? '부스터' : cat === 'cosmetic' ? '꾸미기' : cat}</button>
+                    ))}
+                  </div>
+                  <select value={sortBy} onChange={e => setSortBy(e.target.value as any)}
+                    className="bg-transparent text-[9px] text-muted-foreground border border-border/20 rounded-lg px-1.5 py-1">
+                    <option value="recent">최신순</option>
+                    <option value="name">이름순</option>
+                    <option value="quantity">수량순</option>
+                  </select>
+                </div>
+              )}
+
+              {sortedInventory.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-3xl">📦</span>
-                  <p className="text-[11px] text-muted-foreground/50 mt-2">아이템이 없어요</p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-2">
+                    {inventory.length === 0 ? '아이템이 없어요' : '해당 카테고리에 아이템이 없어요'}
+                  </p>
                   <p className="text-[10px] text-muted-foreground/30 mt-1">상점에서 아이템을 구매해보세요</p>
                 </div>
               ) : (
-                inventory.map(inv => {
+                sortedInventory.map(inv => {
                   const item = shopItems.find(s => s.id === inv.item_id);
                   return (
                     <motion.div key={inv.id} layout

@@ -8,6 +8,8 @@ import { BottomNav } from '@/src/components/BottomNav';
 import { useGamification, expToNextLevel, RARITY_COLORS, RARITY_BG, RARITY_GLOW } from '@/src/hooks/useGamification';
 import { SeasonPass } from '@/src/components/SeasonPass';
 import { InventoryPanel } from '@/src/components/InventoryPanel';
+import { LevelUpCeremony } from '@/src/components/LevelUpCeremony';
+import { CoinHistory } from '@/src/components/CoinHistory';
 import { useGyeolStore } from '@/store/gyeol-store';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
@@ -26,6 +28,9 @@ export default function GamificationPage() {
   const gam = useGamification();
   const { profile, loading, inventory, shopItems, reload } = gam;
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [coinHistoryOpen, setCoinHistoryOpen] = useState(false);
+  const [levelUpShow, setLevelUpShow] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState(1);
 
   if (loading) {
     return (
@@ -51,10 +56,10 @@ export default function GamificationPage() {
               <span className="material-icons-round text-primary text-[12px]">inventory_2</span>
               <span className="font-bold text-foreground">{inventory.length}</span>
             </button>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
+            <button onClick={() => setCoinHistoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
               <span className="material-icons-round text-amber-400 text-[12px]">monetization_on</span>
               <span className="font-bold text-foreground">{profile?.coins ?? 0}</span>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -130,13 +135,9 @@ export default function GamificationPage() {
         </AnimatePresence>
       </div>
 
-      <InventoryPanel
-        isOpen={inventoryOpen}
-        onClose={() => setInventoryOpen(false)}
-        inventory={inventory}
-        shopItems={shopItems}
-        onReload={reload}
-      />
+      <InventoryPanel isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} inventory={inventory} shopItems={shopItems} onReload={reload} />
+      <CoinHistory isOpen={coinHistoryOpen} onClose={() => setCoinHistoryOpen(false)} agentId={agent?.id} />
+      <LevelUpCeremony show={levelUpShow} newLevel={levelUpLevel} onClose={() => setLevelUpShow(false)} />
       <BottomNav />
     </main>
   );
@@ -349,16 +350,32 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 // ========== 리더보드 탭 ==========
 function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamification>; agentId?: string }) {
   const { leaderboard, profile } = gam;
+  const [period, setPeriod] = useState<string>('alltime');
+  const filteredBoard = leaderboard.filter(e => e.period === period || period === 'alltime');
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+      {/* Period filter */}
+      <div className="flex gap-2">
+        {[
+          { key: 'alltime', label: '전체' },
+          { key: 'weekly', label: '주간' },
+          { key: 'monthly', label: '월간' },
+        ].map(p => (
+          <button key={p.key} onClick={() => setPeriod(p.key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
+              period === p.key ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
+            }`}>{p.label}</button>
+        ))}
+      </div>
+
       {/* My rank card */}
       {profile && (
         <div className="glass-card rounded-2xl p-4 glass-card-selected">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-white text-sm font-bold">
-                {leaderboard.findIndex((l) => l.agent_id === agentId) + 1 || '—'}
+                {filteredBoard.findIndex((l) => l.agent_id === agentId) + 1 || '—'}
               </span>
             </div>
             <div className="flex-1">
@@ -378,14 +395,14 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       )}
 
       {/* Leaderboard list */}
-      {leaderboard.length === 0 ? (
+      {filteredBoard.length === 0 ? (
         <div className="text-center py-12">
           <span className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
           <p className="text-sm text-muted-foreground">아직 랭킹 데이터가 없습니다</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 퀘스트를 완료하면 랭킹에 등록됩니다</p>
         </div>
       ) : (
-        leaderboard.map((entry, i) => {
+        filteredBoard.map((entry, i) => {
           const isMe = entry.agent_id === agentId;
           const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
           return (
