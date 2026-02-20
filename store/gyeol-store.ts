@@ -102,43 +102,104 @@ export const useGyeolStore = create<GyeolState>((set) => ({
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error('Not authenticated');
+
+      // Try SSE streaming first
       const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ agentId: agent.id, message: text, locale: typeof navigator !== 'undefined' ? navigator.language : 'ko' }),
+        body: JSON.stringify({ agentId: agent.id, message: text, locale: typeof navigator !== 'undefined' ? navigator.language : 'ko', stream: true }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      const assistantMsg: Message = {
-        id: crypto.randomUUID(),
-        agent_id: agent.id,
-        role: 'assistant',
-        content: cleanChinese(data.message ?? ''),
-        channel: 'web',
-        provider: null,
-        tokens_used: null,
-        response_time_ms: null,
-        created_at: new Date().toISOString(),
-      };
-      set((s) => ({
-        messages: [...s.messages, assistantMsg],
-        isLoading: false,
-        lastReaction: data.reaction ?? null,
-        ...(data.newVisualState && s.agent
-          ? { agent: { ...s.agent, visual_state: data.newVisualState } }
-          : {}),
-        ...(data.evolved && data.newGen
-          ? { evolutionCeremony: { show: true, newGen: data.newGen } }
-          : {}),
-        ...(data.conversationInsight
-          ? { lastInsight: data.conversationInsight }
-          : {}),
-      }));
-      if (data.reaction) {
-        setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+
+      const contentType = res.headers.get('content-type') ?? '';
+
+      if (contentType.includes('text/event-stream') && res.body) {
+        // SSE streaming mode
+        const assistantId = crypto.randomUUID();
+        const assistantMsg: Message = {
+          id: assistantId,
+          agent_id: agent.id,
+          role: 'assistant',
+          content: '',
+          channel: 'web',
+          provider: null,
+          tokens_used: null,
+          response_time_ms: null,
+          created_at: new Date().toISOString(),
+        };
+        set((s) => ({ messages: [...s.messages, assistantMsg] }));
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              if (!data) continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.token) {
+                  fullContent += parsed.token;
+                  set((s) => ({
+                    messages: s.messages.map(m =>
+                      m.id === assistantId ? { ...m, content: cleanChinese(fullContent) } : m
+                    ),
+                  }));
+                }
+                if (parsed.done) {
+                  set((s) => ({
+                    isLoading: false,
+                    lastReaction: parsed.reaction ?? null,
+                  }));
+                  if (parsed.reaction) {
+                    setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+        set({ isLoading: false });
+      } else {
+        // Non-streaming JSON response fallback
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        const assistantMsg: Message = {
+          id: crypto.randomUUID(),
+          agent_id: agent.id,
+          role: 'assistant',
+          content: cleanChinese(data.message ?? ''),
+          channel: 'web',
+          provider: null,
+          tokens_used: null,
+          response_time_ms: null,
+          created_at: new Date().toISOString(),
+        };
+        set((s) => ({
+          messages: [...s.messages, assistantMsg],
+          isLoading: false,
+          lastReaction: data.reaction ?? null,
+          ...(data.newVisualState && s.agent
+            ? { agent: { ...s.agent, visual_state: data.newVisualState } }
+            : {}),
+          ...(data.evolved && data.newGen
+            ? { evolutionCeremony: { show: true, newGen: data.newGen } }
+            : {}),
+          ...(data.conversationInsight
+            ? { lastInsight: data.conversationInsight }
+            : {}),
+        }));
+        if (data.reaction) {
+          setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : '전송에 실패했어요. 다시 시도해 주세요.';

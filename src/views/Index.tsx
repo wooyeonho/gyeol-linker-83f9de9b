@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
@@ -25,6 +27,8 @@ import { NotificationPanel } from '@/src/components/NotificationPanel';
 import { ConversationExport } from '@/src/components/ConversationExport';
 import { ChatSearch } from '@/src/components/ChatSearch';
 import { MessageReactions } from '@/src/components/MessageReactions';
+import { LeaderboardWidget } from '@/src/components/LeaderboardWidget';
+import { PullToRefresh } from '@/src/components/PullToRefresh';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -59,7 +63,9 @@ function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) 
             <span className="text-[10px] text-slate-400 font-medium">You</span>
           </div>
           <div className="user-bubble p-4 rounded-2xl rounded-br-sm">
-            <p className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">{msg.content}</p>
+            <div className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+            </div>
           </div>
         </div>
       ) : (
@@ -76,7 +82,9 @@ function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) 
                   ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
                 </span>
               )}
-              <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
+              <div className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+              </div>
               <div className="flex items-center gap-3 mt-2">
                 <button type="button" onClick={handleSpeak}
                   className={`p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
@@ -322,6 +330,13 @@ export default function GyeolPage() {
                 {agent && (
                   <div className="w-full max-w-[280px] mt-3">
                     <MoodHistory agentId={agent.id} />
+                  </div>
+                )}
+
+                {/* Leaderboard Widget */}
+                {agent && (
+                  <div className="flex justify-center mt-3">
+                    <LeaderboardWidget agentId={agent.id} />
                   </div>
                 )}
                 {agent && (

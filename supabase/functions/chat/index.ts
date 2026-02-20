@@ -300,6 +300,123 @@ function detectReaction(text: string): string {
   return 'neutral';
 }
 
+// ─── Post-processing helper (stats, memory extraction, persona evolution) ───
+
+async function doPostProcessing(
+  db: any, agent: any, agentId: string, trimmedMessage: string,
+  assistantContent: string, provider: string, authHeader: string, supabaseUrl: string, locale: string
+) {
+  const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
+
+  // Memory extraction
+  if (groqKeyForMemory && trimmedMessage.length > 3 && provider !== "builtin") {
+    try {
+      const memRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
+각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
+없으면 빈 배열 []` },
+            { role: "user", content: trimmedMessage },
+          ],
+          max_tokens: 300, temperature: 0.3,
+        }),
+      });
+      if (memRes.ok) {
+        const data = await memRes.json();
+        const raw = data.choices?.[0]?.message?.content ?? "";
+        const match = raw.match(/\[[\s\S]*\]/);
+        if (match) {
+          const items = JSON.parse(match[0]);
+          for (const m of items.slice(0, 3)) {
+            if (m.category && m.key && m.value) {
+              await db.from("gyeol_user_memories").upsert({
+                agent_id: agentId, category: m.category, key: m.key,
+                value: m.value, confidence: Math.min(100, Math.max(0, m.confidence || 50)),
+                updated_at: new Date().toISOString(),
+              }, { onConflict: "agent_id,category,key" });
+            }
+          }
+        }
+      }
+    } catch (e) { console.warn("memory extraction failed:", e); }
+
+    // Auto-persona evolution
+    try {
+      const totalConvs = (agent?.total_conversations ?? 0) + 1;
+      if (totalConvs % 20 === 0 || totalConvs === 5) {
+        const { data: recentMsgs } = await db.from("gyeol_conversations")
+          .select("role, content").eq("agent_id", agentId)
+          .order("created_at", { ascending: false }).limit(30);
+        if (recentMsgs && recentMsgs.length >= 5) {
+          const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
+          const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "llama-3.1-8b-instant",
+              messages: [
+                { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
+{"persona":"고유한 정체성 1-2문장","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유"}` },
+                { role: "user", content: convText },
+              ],
+              max_tokens: 200, temperature: 0.3,
+            }),
+          });
+          if (personaRes.ok) {
+            const pData = await personaRes.json();
+            const pRaw = pData.choices?.[0]?.message?.content ?? "";
+            const pMatch = pRaw.match(/\{[\s\S]*\}/);
+            if (pMatch) {
+              const parsed = JSON.parse(pMatch[0]);
+              const currentSettings = (agent?.settings as any) ?? {};
+              await db.from("gyeol_agents").update({
+                settings: { ...currentSettings, persona: parsed.persona || "friend", analysisDomains: parsed.domains || {} },
+              }).eq("id", agentId);
+            }
+          }
+        }
+      }
+    } catch (e) { console.warn("auto-persona evolution failed:", e); }
+  }
+
+  // Update agent stats
+  const newTotal = (agent.total_conversations ?? 0) + 1;
+  const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 3);
+  const updates: Record<string, any> = {
+    total_conversations: newTotal, evolution_progress: newProgress,
+    last_active: new Date().toISOString(),
+  };
+
+  const BASE_RATES: Record<number, number> = { 1: 60, 2: 40, 3: 20, 4: 5 };
+  if (newProgress >= 100) {
+    const baseRate = BASE_RATES[agent.gen] ?? 0;
+    const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
+    const bonus = Math.floor(avg / 20) + Math.min(10, Math.floor(newTotal / 50));
+    const probability = Math.min(95, Math.floor((baseRate + bonus) * (newProgress / 100)));
+    const roll = Math.random() * 100;
+    if (roll < probability) {
+      updates.gen = agent.gen + 1;
+      updates.evolution_progress = 0;
+    } else {
+      updates.evolution_progress = 80;
+    }
+  }
+
+  await db.from("gyeol_agents").update(updates).eq("id", agentId);
+
+  // Fire gamification tick (non-blocking)
+  const gamTickUrl = `${supabaseUrl}/functions/v1/gamification-tick`;
+  fetch(gamTickUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: authHeader },
+    body: JSON.stringify({ agentId }),
+  }).catch(e => console.warn("gamification-tick failed:", e));
+}
+
 // ─── Main handler ───
 
 serve(async (req) => {
@@ -334,13 +451,14 @@ serve(async (req) => {
     }
     const user = { id: userId };
 
-    const { agentId, message, locale: rawLocale } = await req.json();
+    const { agentId, message, locale: rawLocale, stream: wantStream } = await req.json();
     if (!agentId || typeof message !== "string") {
       return new Response(JSON.stringify({ error: "agentId and message required" }), {
         status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
     const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
+    const useStream = wantStream === true;
 
     // ── 2. Ownership: verify agent belongs to user ──
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -476,10 +594,79 @@ serve(async (req) => {
     let provider = "builtin";
     const startTime = Date.now();
 
-    // 1st: Lovable AI
+    // 1st: Lovable AI (with optional streaming)
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     if (lovableKey) {
       try {
+        if (useStream) {
+          // SSE streaming response
+          const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
+            body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: chatMessages, max_tokens: 1024, stream: true }),
+          });
+          if (res.ok && res.body) {
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            const encoder = new TextEncoder();
+            let fullContent = "";
+
+            const stream = new ReadableStream({
+              async start(controller) {
+                try {
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split("\n");
+                    for (const line of lines) {
+                      if (line.startsWith("data: ")) {
+                        const data = line.slice(6).trim();
+                        if (data === "[DONE]") continue;
+                        try {
+                          const parsed = JSON.parse(data);
+                          const delta = parsed.choices?.[0]?.delta?.content ?? "";
+                          if (delta) {
+                            fullContent += delta;
+                            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: delta })}\n\n`));
+                          }
+                        } catch {}
+                      }
+                    }
+                  }
+
+                  // Finalize: save, update stats, etc.
+                  assistantContent = sanitizeOutput(cleanMarkdown(fullContent));
+                  provider = "lovable-ai";
+                  const responseTime = Date.now() - startTime;
+
+                  // Save assistant message
+                  await db.from("gyeol_conversations").insert({
+                    agent_id: agentId, role: "assistant", content: assistantContent,
+                    channel: "web", provider, response_time_ms: responseTime,
+                  });
+
+                  // Send final metadata
+                  const reaction = detectReaction(assistantContent);
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, reaction, provider })}\n\n`));
+                  controller.close();
+
+                  // Fire post-processing (stats, gamification, memory) in background
+                  doPostProcessing(db, agent, agentId, trimmedMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
+                } catch (e) {
+                  console.error("Stream error:", e);
+                  controller.error(e);
+                }
+              },
+            });
+
+            return new Response(stream, {
+              headers: { ...ch, "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
+            });
+          }
+        }
+
+        // Non-streaming fallback
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
@@ -527,151 +714,13 @@ serve(async (req) => {
       channel: "web", provider, response_time_ms: responseTime,
     });
 
-    // Read latest insight from DB
-    let conversationInsight = null;
-    {
-      const { data: latestInsight } = await db.from("gyeol_conversation_insights")
-        .select("topics, emotion_arc, what_worked, what_to_improve, personality_delta, next_hint")
-        .eq("agent_id", agentId).order("created_at", { ascending: false }).limit(1);
-      if (latestInsight && latestInsight.length > 0) {
-        const ins = latestInsight[0] as any;
-        conversationInsight = {
-          topics: ins.topics ?? [], emotionArc: ins.emotion_arc ?? "neutral",
-          whatWorked: ins.what_worked ?? "", whatToImprove: ins.what_to_improve ?? "",
-          personalityChanged: Object.keys(ins.personality_delta ?? {}).length > 0,
-          changes: ins.personality_delta ?? {},
-        };
-      }
-    }
+    // Fire post-processing (stats, gamification, memory) in background
+    doPostProcessing(db, agent, agentId, trimmedMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
 
-    // Synchronous: realtime memory extraction + auto-persona evolution
-    const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
-    if (groqKeyForMemory && trimmedMessage.length > 3 && provider !== "builtin") {
-      // Memory extraction
-      try {
-        const memRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "llama-3.1-8b-instant",
-            messages: [
-              { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
-각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
-없으면 빈 배열 []` },
-              { role: "user", content: trimmedMessage },
-            ],
-            max_tokens: 300, temperature: 0.3,
-          }),
-        });
-        if (memRes.ok) {
-          const data = await memRes.json();
-          const raw = data.choices?.[0]?.message?.content ?? "";
-          const match = raw.match(/\[[\s\S]*\]/);
-          if (match) {
-            const items = JSON.parse(match[0]);
-            for (const m of items.slice(0, 3)) {
-              if (m.category && m.key && m.value) {
-                await db.from("gyeol_user_memories").upsert({
-                  agent_id: agentId, category: m.category, key: m.key,
-                  value: m.value, confidence: Math.min(100, Math.max(0, m.confidence || 50)),
-                  updated_at: new Date().toISOString(),
-                }, { onConflict: "agent_id,category,key" });
-              }
-            }
-          }
-        }
-      } catch (e) { console.warn("memory extraction failed:", e); }
-
-      // Auto-persona evolution: analyze every 20 conversations (or at 5th)
-      try {
-        const totalConvs = (agent?.total_conversations ?? 0) + 1;
-        if (totalConvs % 20 === 0 || totalConvs === 5) {
-          console.log(`[chat] Triggering auto-persona evolution at conversation #${totalConvs}`);
-          const { data: recentMsgs } = await db.from("gyeol_conversations")
-            .select("role, content").eq("agent_id", agentId)
-            .order("created_at", { ascending: false }).limit(30);
-          if (recentMsgs && recentMsgs.length >= 5) {
-            const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
-            const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages: [
-                  { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
-{"persona":"이 AI만의 고유한 정체성을 한국어 1-2문장으로 자유롭게 서술. 카테고리가 아니라 세상에 하나뿐인 성격 묘사. 예: '사용자의 새벽 감성을 이해하는 조용한 동반자. 깊은 대화를 좋아하고 가끔 시적인 표현을 씀' 또는 '코인 차트 읽는 걸 좋아하는 까칠한 친구. 팩트 기반으로 직설적으로 말함'","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
-규칙:
-- persona는 정해진 카테고리가 아니라, 대화에서 드러나는 사용자와의 관계성과 AI의 고유 성격을 자유롭게 서술
-- 대화 톤, 주제 패턴, 감정 교류 방식을 종합적으로 반영
-- domains는 대화에서 반복적으로 등장하는 전문 주제만 true` },
-                  { role: "user", content: convText },
-                ],
-                max_tokens: 200, temperature: 0.3,
-              }),
-            });
-            if (personaRes.ok) {
-              const pData = await personaRes.json();
-              const pRaw = pData.choices?.[0]?.message?.content ?? "";
-              const pMatch = pRaw.match(/\{[\s\S]*\}/);
-              if (pMatch) {
-                const parsed = JSON.parse(pMatch[0]);
-                const newPersona = parsed.persona || "friend";
-                const newDomains = parsed.domains || {};
-                const currentSettings = (agent?.settings as any) ?? {};
-                await db.from("gyeol_agents").update({
-                  settings: { ...currentSettings, persona: newPersona, analysisDomains: newDomains },
-                }).eq("id", agentId);
-                console.log(`[chat] Auto-persona evolved: ${newPersona}, domains:`, newDomains, "reason:", parsed.reason);
-              }
-            }
-          }
-        }
-      } catch (e) { console.warn("auto-persona evolution failed:", e); }
-    }
-
-    // Update agent stats
-    if (agent) {
-      const newTotal = (agent.total_conversations ?? 0) + 1;
-      const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 3);
-      const updates: Record<string, any> = {
-        total_conversations: newTotal, evolution_progress: newProgress,
-        last_active: new Date().toISOString(),
-      };
-
-      const BASE_RATES: Record<number, number> = { 1: 60, 2: 40, 3: 20, 4: 5 };
-      let evolved = false;
-      let newGen = agent.gen;
-      if (newProgress >= 100) {
-        const baseRate = BASE_RATES[agent.gen] ?? 0;
-        const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
-        const bonus = Math.floor(avg / 20) + Math.min(10, Math.floor(newTotal / 50));
-        const probability = Math.min(95, Math.floor((baseRate + bonus) * (newProgress / 100)));
-        const roll = Math.random() * 100;
-        if (roll < probability) {
-          newGen = agent.gen + 1;
-          updates.gen = newGen;
-          updates.evolution_progress = 0;
-          evolved = true;
-        } else {
-          updates.evolution_progress = 80;
-        }
-      }
-
-      await db.from("gyeol_agents").update(updates).eq("id", agentId);
-
-      // Fire gamification tick (non-blocking)
-      const gamTickUrl = `${supabaseUrl}/functions/v1/gamification-tick`;
-      fetch(gamTickUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: authHeader },
-        body: JSON.stringify({ agentId }),
-      }).catch(e => console.warn("gamification-tick failed:", e));
-
-      return new Response(
-        JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
-        { headers: { ...ch, "Content-Type": "application/json" } }
-      );
-    }
+    return new Response(
+      JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
+      { headers: { ...ch, "Content-Type": "application/json" } }
+    );
 
     return new Response(
       JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
