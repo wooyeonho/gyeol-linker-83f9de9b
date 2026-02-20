@@ -1,5 +1,5 @@
 /**
- * 홈 화면용 미니 리더보드 위젯
+ * 홈 화면용 미니 리더보드 위젯 — 실시간 업데이트 지원
  */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -14,15 +14,31 @@ interface Entry {
 export function LeaderboardWidget({ agentId }: { agentId?: string }) {
   const [top3, setTop3] = useState<Entry[]>([]);
 
+  const fetchTop3 = async () => {
+    const { data } = await supabase.from('gyeol_leaderboard')
+      .select('agent_name, agent_gen, score')
+      .eq('period', 'alltime')
+      .order('score', { ascending: false })
+      .limit(3);
+    setTop3((data as any[]) ?? []);
+  };
+
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('gyeol_leaderboard')
-        .select('agent_name, agent_gen, score')
-        .eq('period', 'alltime')
-        .order('score', { ascending: false })
-        .limit(3);
-      setTop3((data as any[]) ?? []);
-    })();
+    fetchTop3();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('leaderboard-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'gyeol_leaderboard',
+      }, () => {
+        fetchTop3();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   if (top3.length === 0) return null;
@@ -35,6 +51,7 @@ export function LeaderboardWidget({ agentId }: { agentId?: string }) {
         <span className="text-[10px] text-slate-400 uppercase tracking-wider flex items-center gap-1">
           <span className="material-icons-round text-[12px] text-secondary">leaderboard</span>
           Top Rankings
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="Live" />
         </span>
       </div>
       <div className="space-y-1.5">

@@ -229,7 +229,6 @@ export function useGamification() {
     const { data } = await supabase
       .from('gyeol_leaderboard')
       .select('*')
-      .eq('period', 'alltime')
       .order('score', { ascending: false })
       .limit(50);
     setLeaderboard((data ?? []) as any);
@@ -339,6 +338,16 @@ export function useGamification() {
     setLoading(true);
     Promise.all([loadProfile(), loadQuests(), loadAchievements(), loadLeaderboard(), loadShop(), loadSeasons()])
       .finally(() => setLoading(false));
+
+    // Realtime leaderboard updates
+    const channel = supabase
+      .channel('gamification-leaderboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gyeol_leaderboard' }, () => {
+        loadLeaderboard();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [agentId, loadProfile, loadQuests, loadAchievements, loadLeaderboard, loadShop, loadSeasons]);
 
   return {
