@@ -137,20 +137,22 @@ export default function SimpleChat() {
   const agentName = agent?.name ?? 'GYEOL';
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative">
-      <div className="aurora-bg" />
+    <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative" role="main" aria-label="Chat">
+      <div className="aurora-bg" aria-hidden="true" />
 
       {/* === Header === */}
       {hasCharacter ? (
         <div className="flex-shrink-0 flex flex-col items-center justify-center pt-6 pb-2 relative z-10"
           style={{ height: '30vh' }}>
           <button onClick={() => setConvListOpen(true)}
-            className="absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center glass-card">
-            <span className="material-icons-round text-lg text-muted-foreground">history</span>
+            aria-label="Conversation history"
+            className="absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
           </button>
           <button onClick={() => navigate('/settings')}
-            className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center glass-card">
-            <span className="material-icons-round text-lg text-muted-foreground">settings</span>
+            aria-label="Settings"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">settings</span>
           </button>
           <AnimatedCharacter
             mood={(agent as any)?.mood ?? 'neutral'}
@@ -195,7 +197,7 @@ export default function SimpleChat() {
       )}
 
       {/* === Messages === */}
-      <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10">
+      <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10" role="log" aria-label="Messages" aria-live="polite">
         {groupedMessages.map((group) => (
           <div key={group.date}>
             {/* Date separator */}
@@ -224,16 +226,19 @@ export default function SimpleChat() {
                       {/* Message actions */}
                       <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">add_reaction</span>
+                          aria-label="Add reaction"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">add_reaction</span>
                         </button>
                         <button onClick={() => handleDeleteMessage(msg.id)}
-                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-                          <span className="material-icons-round text-[12px]">delete</span>
+                          aria-label="Delete message"
+                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">delete</span>
                         </button>
                         <button onClick={() => handleResendMessage(msg.content)}
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">refresh</span>
+                          aria-label="Resend message"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">refresh</span>
                         </button>
                       </div>
                       {/* Reaction picker */}
@@ -275,20 +280,24 @@ export default function SimpleChat() {
                       {/* AI message actions */}
                       <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">add_reaction</span>
+                          aria-label="Add reaction"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">add_reaction</span>
                         </button>
                         <button onClick={() => handleDeleteMessage(msg.id)}
-                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-                          <span className="material-icons-round text-[12px]">delete</span>
+                          aria-label="Delete message"
+                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">delete</span>
                         </button>
                         <button onClick={() => navigator.clipboard.writeText(msg.content)}
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">content_copy</span>
+                          aria-label="Copy message"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">content_copy</span>
                         </button>
                         <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">volume_up</span>
+                          aria-label="Read aloud"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">volume_up</span>
                         </button>
                       </div>
                       {/* Reaction picker */}
@@ -348,13 +357,15 @@ export default function SimpleChat() {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Message GYEOL..."
+              aria-label="Message input"
               style={{ fontSize: '16px' }}
-              className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500" />
+              className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500 focus-visible:outline-none" />
             <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
             {input.trim() && (
               <button onClick={handleSend} disabled={isLoading}
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all">
-                <span className="material-icons-round text-white text-base">arrow_upward</span>
+                aria-label="Send message"
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
+                <span className="material-icons-round text-white text-base" aria-hidden="true">arrow_upward</span>
               </button>
             )}
           </div>

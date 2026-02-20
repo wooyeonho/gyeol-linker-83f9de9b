@@ -213,12 +213,14 @@ export default function SettingsPage() {
 
   const SectionHeader = ({ id, icon, title }: { id: string; icon: string; title: string }) => (
     <button type="button" onClick={() => toggleSection(id)}
-      className="w-full flex items-center justify-between py-2 group">
+      aria-expanded={activeSection === id}
+      aria-controls={`section-${id}`}
+      className="w-full flex items-center justify-between py-2 group focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg">
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-primary/50 text-sm">{icon}</span>
+        <span className="material-icons-round text-primary/50 text-sm" aria-hidden="true">{icon}</span>
         <p className="text-[11px] text-white/40 uppercase tracking-widest font-medium">{title}</p>
       </div>
-      <span className="material-icons-round text-white/15 text-sm transition-transform group-hover:text-white/30"
+      <span className="material-icons-round text-white/15 text-sm transition-transform group-hover:text-white/30" aria-hidden="true"
         style={{ transform: activeSection === id ? 'rotate(180deg)' : 'rotate(0deg)' }}>
         expand_more
       </span>
@@ -230,7 +232,7 @@ export default function SettingsPage() {
   const setters = [setWarmth, setLogic, setCreativity, setEnergy, setHumor];
 
   return (
-    <main className="min-h-screen bg-background font-display pb-16 relative">
+    <main className="min-h-screen bg-background font-display pb-16 relative" role="main" aria-label="Settings">
       <div className="aurora-bg" />
       <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10">
         <header className="flex items-center justify-between">

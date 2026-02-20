@@ -57,14 +57,14 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-display bg-background">
-      {/* Aurora background */}
-      <div className="aurora-bg" />
+      <div className="aurora-bg" aria-hidden="true" />
 
       <motion.main
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-sm px-6 py-12 relative z-10 flex flex-col items-center"
+        role="main" aria-label="Authentication"
       >
         <div className="glass-panel rounded-2xl p-8 w-full">
           {/* Aurora ring logo — dark glow ring */}
@@ -88,13 +88,16 @@ export default function AuthPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex w-full mb-8 gap-1 bg-white/[0.03] rounded-xl p-1">
+          <div className="flex w-full mb-8 gap-1 bg-white/[0.03] rounded-xl p-1" role="tablist" aria-label="Authentication mode">
             {(['login', 'signup'] as const).map((m) => (
               <button
                 key={m}
                 type="button"
+                role="tab"
+                aria-selected={mode === m}
+                aria-controls="auth-form"
                 onClick={() => { setMode(m); setError(null); setSuccess(null); }}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
                   mode === m
                     ? 'bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/25 text-white'
                     : 'text-muted-foreground hover:text-foreground/70'
@@ -105,34 +108,39 @@ export default function AuthPage() {
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <form onSubmit={handleSubmit} className="w-full space-y-4" id="auth-form" role="tabpanel" aria-label={mode === 'login' ? 'Login form' : 'Signup form'}>
             {/* Email */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Email Address</label>
+              <label htmlFor="auth-email" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Email Address</label>
               <div className="relative input-glow rounded-xl border border-white/[0.06] bg-white/[0.03] transition-all">
-                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">email</span>
+                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">email</span>
                 <input
+                  id="auth-email"
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="hello@gyeol.ai" required
-                  className="w-full pl-12 pr-4 py-3.5 bg-transparent rounded-xl text-foreground placeholder:text-muted-foreground/40 outline-none text-sm"
+                  autoComplete="email"
+                  className="w-full pl-12 pr-4 py-3.5 bg-transparent rounded-xl text-foreground placeholder:text-muted-foreground/40 outline-none text-sm focus-visible:outline-2 focus-visible:outline-primary"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Password</label>
+              <label htmlFor="auth-password" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Password</label>
               <div className="relative input-glow rounded-xl border border-white/[0.06] bg-white/[0.03] transition-all">
-                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
+                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">lock</span>
                 <input
+                  id="auth-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password} onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••" required minLength={6}
-                  className="w-full pl-12 pr-12 py-3.5 bg-transparent rounded-xl text-foreground placeholder:text-muted-foreground/40 outline-none text-sm"
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  className="w-full pl-12 pr-12 py-3.5 bg-transparent rounded-xl text-foreground placeholder:text-muted-foreground/40 outline-none text-sm focus-visible:outline-2 focus-visible:outline-primary"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors">
-                  <span className="material-icons-round text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors focus-visible:outline-2 focus-visible:outline-primary">
+                  <span className="material-icons-round text-lg" aria-hidden="true">{showPassword ? 'visibility' : 'visibility_off'}</span>
                 </button>
               </div>
             </div>
@@ -158,12 +166,14 @@ export default function AuthPage() {
 
             {error && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                role="alert" aria-live="assertive"
                 className="text-xs text-destructive/80 bg-destructive/5 rounded-xl px-4 py-3">
                 {error}
               </motion.p>
             )}
             {success && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                role="status" aria-live="polite"
                 className="text-xs text-emerald-400/80 bg-emerald-500/5 rounded-xl px-4 py-3">
                 {success}
               </motion.p>

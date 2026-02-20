@@ -178,8 +178,8 @@ export default function GyeolPage() {
   }
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative">
-      <div className="aurora-bg" />
+    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative" role="main" aria-label="GYEOL Home">
+      <div className="aurora-bg" aria-hidden="true" />
 
       {/* Top bar — Stitch 03 */}
       <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
@@ -210,17 +210,17 @@ export default function GyeolPage() {
             <span className="material-icons-round text-secondary text-[12px]">verified</span>
             <GenBadge gen={agent?.gen ?? 1} size="sm" />
           </div>
-          <button type="button" onClick={() => setSearchOpen(!searchOpen)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
-            <span className="material-icons-round text-[16px]">search</span>
+          <button type="button" onClick={() => setSearchOpen(!searchOpen)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition focus-visible:outline-2 focus-visible:outline-primary" aria-label="Search conversations">
+            <span className="material-icons-round text-[16px]" aria-hidden="true">search</span>
           </button>
-          <button type="button" onClick={() => setNotifOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground relative transition">
-            <span className="material-icons-round text-[16px]">notifications</span>
+          <button type="button" onClick={() => setNotifOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground relative transition focus-visible:outline-2 focus-visible:outline-primary" aria-label="Notifications">
+            <span className="material-icons-round text-[16px]" aria-hidden="true">notifications</span>
           </button>
-          <button type="button" onClick={() => setExportOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
-            <span className="material-icons-round text-[16px]">download</span>
+          <button type="button" onClick={() => setExportOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition focus-visible:outline-2 focus-visible:outline-primary" aria-label="Export conversations">
+            <span className="material-icons-round text-[16px]" aria-hidden="true">download</span>
           </button>
-          <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition">
-            <span className="material-icons-round text-[14px]">trending_up</span>
+          <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition focus-visible:outline-2 focus-visible:outline-primary rounded-full" aria-label="Evolution progress">
+            <span className="material-icons-round text-[14px]" aria-hidden="true">trending_up</span>
           </button>
         </div>
       </div>
@@ -234,9 +234,10 @@ export default function GyeolPage() {
               <span className="material-icons-round text-muted-foreground text-sm">search</span>
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="대화 검색..." autoFocus
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
-              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground">
-                <span className="material-icons-round text-sm">close</span>
+                aria-label="Search conversations"
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
+                <span className="material-icons-round text-sm" aria-hidden="true">close</span>
               </button>
             </div>
           </motion.div>
@@ -468,14 +469,16 @@ export default function GyeolPage() {
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               onFocus={() => messages.length > 0 && setChatExpanded(true)}
               placeholder="Send a message to GYEOL..."
-              className="flex-1 bg-transparent text-foreground/90 placeholder:text-slate-500 text-sm py-2 outline-none min-w-0"
+              aria-label="Message input"
+              className="flex-1 bg-transparent text-foreground/90 placeholder:text-slate-500 text-sm py-2 outline-none min-w-0 focus-visible:outline-none"
             />
             <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
+              aria-label="Send message"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             >
               <span className="material-icons-round text-base">arrow_upward</span>
             </button>

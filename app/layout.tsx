@@ -73,7 +73,10 @@ export default function RootLayout({
         <meta name="color-scheme" content="dark" />
       </head>
       <body className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
-        {children}
+        <a href="#main-content" className="skip-to-content">Skip to content</a>
+        <div id="main-content">
+          {children}
+        </div>
         <BottomNavNext />
       </body>
     </html>
