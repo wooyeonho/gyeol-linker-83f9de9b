@@ -314,3 +314,23 @@ p, .text-base, .text-sm, .text-lg {
 .gyeol-scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Slider gradient track */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)));
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: hsl(var(--primary-foreground));
+  border: 3px solid hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.4);
+  cursor: pointer;
+}

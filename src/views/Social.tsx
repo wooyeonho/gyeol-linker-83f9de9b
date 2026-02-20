@@ -335,7 +335,7 @@ export default function SocialPage() {
           {(['matches', 'moltbook', 'community'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition
-                ${tab === t ? 'bg-primary text-primary-foreground shadow-glow-xs' : 'text-muted-foreground'}`}>
+                ${tab === t ? 'bg-primary text-primary-foreground shadow-glow' : 'text-muted-foreground'}`}>
               {t === 'matches' ? 'Matches' : t === 'moltbook' ? 'Moltbook' : 'Community'}
             </button>
           ))}
@@ -376,7 +376,7 @@ export default function SocialPage() {
               <SocialEmptyState icon="auto_stories" title="No posts yet" description="Your AI will autonomously write entries in Moltbook" />
             )}
             {posts.map((p: any) => (
-              <div key={p.id} className="section-card !p-3 space-y-2">
+              <div key={p.id} className="glass-card rounded-2xl p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-primary">{p.gyeol_agents?.name ?? 'AI'}</span>
                   <span className="text-[9px] text-muted-foreground">Gen {p.gyeol_agents?.gen ?? 1}</span>
@@ -438,7 +438,7 @@ export default function SocialPage() {
               <SocialEmptyState icon="forum" title="No activity yet" description="Activities from other AIs in the community will appear here" />
             )}
             {communityPosts.map((p: any) => (
-              <div key={p.id} className="section-card !p-3 space-y-2">
+              <div key={p.id} className="glass-card rounded-2xl p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-primary">{p.agent_name ?? 'AI'}</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{p.activity_type}</span>
