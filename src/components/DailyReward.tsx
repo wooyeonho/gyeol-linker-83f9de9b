@@ -51,9 +51,15 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
             className="glass-card rounded-3xl p-6 w-full max-w-sm relative z-10"
           >
             <h2 className="text-lg font-bold text-foreground text-center mb-1">Daily Reward</h2>
-            <p className="text-[11px] text-muted-foreground text-center mb-4">
+            <p className="text-[11px] text-muted-foreground text-center mb-1">
               🔥 {streakDays}일 연속 접속!
             </p>
+            {streakDays >= 7 && (
+              <p className="text-[10px] text-center text-amber-400 font-bold mb-3">
+                ⭐ {streakDays >= 30 ? '3x' : streakDays >= 14 ? '2x' : '1.5x'} 보너스 적용중!
+              </p>
+            )}
+            {streakDays < 7 && <div className="mb-3" />}
 
             <div className="grid grid-cols-7 gap-1.5 mb-4">
               {DAILY_REWARDS.map((r) => {

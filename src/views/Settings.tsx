@@ -8,6 +8,16 @@ import { supabase, supabaseUrl } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
+import { ModeSwitchGuide } from '@/src/components/ModeSwitchGuide';
+
+const PERSONALITY_PRESETS = [
+  { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
+  { label: '⚡ Energetic', warmth: 50, logic: 40, creativity: 60, energy: 80, humor: 70 },
+  { label: '🧠 Analytical', warmth: 40, logic: 80, creativity: 50, energy: 50, humor: 30 },
+  { label: '🎨 Creative', warmth: 50, logic: 30, creativity: 80, energy: 60, humor: 60 },
+  { label: '💝 Caring', warmth: 90, logic: 30, creativity: 40, energy: 60, humor: 50 },
+  { label: '🤡 Witty', warmth: 60, logic: 50, creativity: 70, energy: 70, humor: 90 },
+];
 
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
 
@@ -88,6 +98,8 @@ export default function SettingsPage() {
 
   // Active section for mobile-friendly collapsible sections
   const [activeSection, setActiveSection] = useState<string | null>('personality');
+  const [modeSwitchOpen, setModeSwitchOpen] = useState(false);
+  const [modeSwitchTarget, setModeSwitchTarget] = useState<'simple' | 'advanced'>('simple');
 
   useEffect(() => {
     if (!agent) return;
@@ -261,11 +273,11 @@ export default function SettingsPage() {
                     { key: 'simple' as const, icon: '💬', label: 'Simple' },
                     { key: 'advanced' as const, icon: '🧬', label: 'Advanced' },
                   ].map(m => (
-                    <button key={m.key} onClick={async () => {
-                      const s = (agent?.settings as any) ?? {};
-                      await supabase.from('gyeol_agents' as any)
-                        .update({ settings: { ...s, mode: m.key } } as any).eq('id', agent?.id);
-                      window.location.href = '/';
+                    <button key={m.key} onClick={() => {
+                      if (m.key !== currentMode) {
+                        setModeSwitchTarget(m.key);
+                        setModeSwitchOpen(true);
+                      }
                     }}
                       className={`p-4 rounded-xl text-center transition ${
                         currentMode === m.key ? 'glass-card-selected' : 'glass-card'
@@ -377,6 +389,23 @@ export default function SettingsPage() {
                     </button>
                   )}
                   <span className="text-[10px] text-white/20 bg-white/[0.03] px-2 py-0.5 rounded">Gen {agent?.gen ?? 1}</span>
+                </div>
+
+                {/* Personality Presets */}
+                <div>
+                  <p className="text-[10px] text-white/30 mb-2">Quick Presets</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {PERSONALITY_PRESETS.map(p => (
+                      <button key={p.label} type="button" onClick={() => {
+                        setWarmth(p.warmth); setLogic(p.logic); setCreativity(p.creativity);
+                        setEnergy(p.energy); setHumor(p.humor);
+                      }}
+                        className="p-2 rounded-lg glass-card text-center hover:border-primary/20 transition">
+                        <span className="text-sm block">{p.label.split(' ')[0]}</span>
+                        <span className="text-[8px] text-muted-foreground">{p.label.split(' ')[1]}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Personality sliders */}
@@ -749,6 +778,19 @@ export default function SettingsPage() {
           <Link to="/privacy" className="text-xs text-slate-400 hover:text-white underline decoration-slate-600 underline-offset-2 transition">Privacy</Link>
         </div>
       </div>
+
+      <ModeSwitchGuide
+        isOpen={modeSwitchOpen}
+        onClose={() => setModeSwitchOpen(false)}
+        targetMode={modeSwitchTarget}
+        onConfirm={async () => {
+          const s = (agent?.settings as any) ?? {};
+          await supabase.from('gyeol_agents' as any)
+            .update({ settings: { ...s, mode: modeSwitchTarget } } as any).eq('id', agent?.id);
+          window.location.href = '/';
+        }}
+      />
+
       <BottomNav />
     </main>
   );

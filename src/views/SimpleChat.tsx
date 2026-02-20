@@ -13,6 +13,8 @@ import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ConversationList } from '@/src/components/ConversationList';
+import { StreakBonus } from '@/src/components/StreakBonus';
 
 // Emoji reactions for messages
 const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
@@ -45,6 +47,7 @@ export default function SimpleChat() {
 
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [convListOpen, setConvListOpen] = useState(false);
 
   const [isDark, setIsDark] = useState(
     typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
@@ -141,6 +144,10 @@ export default function SimpleChat() {
       {hasCharacter ? (
         <div className="flex-shrink-0 flex flex-col items-center justify-center pt-6 pb-2 relative z-10"
           style={{ height: '30vh' }}>
+          <button onClick={() => setConvListOpen(true)}
+            className="absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center glass-card">
+            <span className="material-icons-round text-lg text-muted-foreground">history</span>
+          </button>
           <button onClick={() => navigate('/settings')}
             className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center glass-card">
             <span className="material-icons-round text-lg text-muted-foreground">settings</span>
@@ -166,6 +173,10 @@ export default function SimpleChat() {
       ) : (
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 glass-panel z-10 relative">
           <div className="flex items-center gap-2">
+            <button onClick={() => setConvListOpen(true)}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition">
+              <span className="material-icons-round text-lg">history</span>
+            </button>
             <p className="text-base font-medium text-foreground">{agentName}</p>
             <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
@@ -173,6 +184,13 @@ export default function SimpleChat() {
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card">
             <span className="material-icons-round text-lg text-muted-foreground">settings</span>
           </button>
+        </div>
+      )}
+
+      {/* Streak bonus banner */}
+      {(agent as any)?.consecutive_days > 1 && (
+        <div className="px-4 pb-1 relative z-10">
+          <StreakBonus streakDays={(agent as any).consecutive_days} />
         </div>
       )}
 
@@ -347,6 +365,15 @@ export default function SimpleChat() {
       </div>
 
       <EvolutionCeremony />
+
+      {/* Conversation history drawer */}
+      {agent?.id && (
+        <ConversationList
+          isOpen={convListOpen}
+          onClose={() => setConvListOpen(false)}
+          agentId={agent.id}
+        />
+      )}
     </main>
   );
 }
