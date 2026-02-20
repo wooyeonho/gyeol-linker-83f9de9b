@@ -16,6 +16,7 @@ import GamificationPage from './views/Gamification';
 import NotFound from './views/NotFound';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
+import ResetPasswordPage from './views/ResetPassword';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -68,6 +69,7 @@ function App() {
       <AchievementPopup />
       <Routes>
         <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/" element={<ProtectedRoute><ModeRouter /></ProtectedRoute>} />
