@@ -3,6 +3,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/Toast';
+import { AchievementPopup } from './components/AchievementPopup';
 import AuthPage from './views/Auth';
 import GyeolPage from './views/Index';
 import SimpleChat from './views/SimpleChat';
@@ -64,6 +65,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastContainer />
+      <AchievementPopup />
       <Routes>
         <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
         <Route path="/terms" element={<Terms />} />

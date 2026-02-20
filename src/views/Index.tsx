@@ -16,6 +16,11 @@ import { EvolutionProgress } from '@/src/components/EvolutionProgress';
 import { InsightCard } from '@/src/components/InsightCard';
 import { BreedingResult } from '@/src/components/BreedingResult';
 import { GamificationWidget } from '@/src/components/GamificationWidget';
+import { PersonalityRadar } from '@/src/components/PersonalityRadar';
+import { MoodHistory } from '@/src/components/MoodHistory';
+import { DailyReward } from '@/src/components/DailyReward';
+import { AchievementPopup } from '@/src/components/AchievementPopup';
+import { AgentProfile } from '@/src/components/AgentProfile';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -113,6 +118,9 @@ export default function GyeolPage() {
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [evoOpen, setEvoOpen] = useState(false);
   const [breedingOpen, setBreedingOpen] = useState(false);
+  const [dailyRewardOpen, setDailyRewardOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [dailyClaimed, setDailyClaimed] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -233,13 +241,21 @@ export default function GyeolPage() {
                 </p>
 
                 <div className="flex items-center justify-center gap-2 mt-3">
+                  <button type="button" onClick={() => setProfileOpen(true)}
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
+                    <span className="text-xs">👤</span> 프로필
+                  </button>
                   <button type="button" onClick={() => setMemoryOpen(true)}
                     className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
                     <span className="text-xs">🧠</span> AI의 기억
                   </button>
                   <button type="button" onClick={() => setEvoOpen(true)}
                     className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
-                    <span className="text-xs">🧬</span> 진화 현황
+                    <span className="text-xs">🧬</span> 진화
+                  </button>
+                  <button type="button" onClick={() => setDailyRewardOpen(true)}
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
+                    <span className="text-xs">🎁</span> 보상
                   </button>
                 </div>
 
@@ -259,6 +275,26 @@ export default function GyeolPage() {
                 {/* Gamification Widget */}
                 <GamificationWidget />
 
+                {/* Personality Radar */}
+                {agent && (
+                  <div className="flex justify-center mt-4">
+                    <PersonalityRadar
+                      warmth={agent.warmth}
+                      logic={agent.logic}
+                      creativity={agent.creativity}
+                      energy={agent.energy}
+                      humor={agent.humor}
+                      size={140}
+                    />
+                  </div>
+                )}
+
+                {/* Mood History */}
+                {agent && (
+                  <div className="w-full max-w-[280px] mt-3">
+                    <MoodHistory agentId={agent.id} />
+                  </div>
+                )}
                 {agent && (
                   <div className="flex items-center justify-center gap-3 text-[9px] text-white/25 mt-1">
                     <span>
@@ -423,6 +459,31 @@ export default function GyeolPage() {
       />
       <InsightCard insight={lastInsight} onDismiss={clearInsight} />
       <BreedingResult isOpen={breedingOpen} onClose={() => setBreedingOpen(false)} />
+      <AchievementPopup />
+      <DailyReward
+        isOpen={dailyRewardOpen}
+        onClose={() => setDailyRewardOpen(false)}
+        streakDays={agent?.consecutive_days ?? 1}
+        alreadyClaimed={dailyClaimed}
+        onClaim={async () => {
+          if (!agent?.id) return;
+          try {
+            const { data: profile } = await supabase
+              .from('gyeol_gamification_profiles')
+              .select('id, coins, exp, last_daily_claim')
+              .eq('agent_id', agent.id)
+              .maybeSingle();
+            if (profile) {
+              const reward = Math.min(100, 5 + (agent.consecutive_days ?? 0) * 5);
+              await supabase.from('gyeol_gamification_profiles')
+                .update({ coins: (profile as any).coins + reward, last_daily_claim: new Date().toISOString() } as any)
+                .eq('id', (profile as any).id);
+              setDailyClaimed(true);
+            }
+          } catch {}
+        }}
+      />
+      <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} />
     </main>
   );
 }

@@ -22,7 +22,7 @@ const REACTION_VARIANTS: Record<string, any> = {
   neutral: {},
 };
 
-// === MOOD COLORS ===
+// === MOOD COLORS (16 moods) ===
 const MOOD_COLORS: Record<string, { primary: string; secondary: string }> = {
   happy: { primary: '#6EE7B7', secondary: '#34D399' },
   excited: { primary: '#FBBF24', secondary: '#F59E0B' },
@@ -30,6 +30,16 @@ const MOOD_COLORS: Record<string, { primary: string; secondary: string }> = {
   lonely: { primary: '#C4B5FD', secondary: '#8B5CF6' },
   tired: { primary: '#9CA3AF', secondary: '#6B7280' },
   neutral: { primary: '#818CF8', secondary: '#6366F1' },
+  anxious: { primary: '#FB923C', secondary: '#EA580C' },
+  curious: { primary: '#22D3EE', secondary: '#06B6D4' },
+  proud: { primary: '#F43F5E', secondary: '#E11D48' },
+  grateful: { primary: '#F9A8D4', secondary: '#EC4899' },
+  playful: { primary: '#FDE047', secondary: '#EAB308' },
+  focused: { primary: '#6366F1', secondary: '#4F46E5' },
+  melancholic: { primary: '#A78BFA', secondary: '#7C3AED' },
+  hopeful: { primary: '#2DD4BF', secondary: '#14B8A6' },
+  surprised: { primary: '#EF4444', secondary: '#DC2626' },
+  loving: { primary: '#F472B6', secondary: '#DB2777' },
 };
 
 // === JELLY CHARACTER ===
