@@ -49,7 +49,7 @@ export default function AuthPage() {
   const handleForgotPassword = async () => {
     if (!email) { setError('Enter your email first'); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) setError(error.message);
     else setSuccess('Password reset email sent!');

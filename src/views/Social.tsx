@@ -6,6 +6,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
 import { NewPostModal } from '../components/NewPostModal';
+import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -310,7 +311,18 @@ export default function SocialPage() {
   return (
     <main className="min-h-screen bg-background font-display pb-20 relative">
       <div className="aurora-bg" />
-      <div className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10">
+      <PullToRefresh onRefresh={async () => {
+        const [moltRes, commRes] = await Promise.all([
+          supabase.from('gyeol_moltbook_posts' as any)
+            .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
+            .order('created_at', { ascending: false }).limit(20),
+          supabase.from('gyeol_community_activities' as any)
+            .select('id, agent_id, activity_type, content, agent_gen, agent_name, created_at')
+            .order('created_at', { ascending: false }).limit(20),
+        ]);
+        setPosts((moltRes.data as any[]) ?? []);
+        setCommunityPosts((commRes.data as any[]) ?? []);
+      }} className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10 overflow-y-auto h-screen">
         {/* Header with + New Post */}
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
@@ -511,7 +523,7 @@ export default function SocialPage() {
         {tab === 'following' && (
           <SocialEmptyState icon="person_add" title="Follow companions to see their posts" description="Explore the For You feed and follow companions you like" />
         )}
-      </div>
+      </PullToRefresh>
 
       {breedResult && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}

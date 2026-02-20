@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
+import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ActivityLog {
@@ -81,10 +82,18 @@ export default function ActivityPage() {
   const growthLevel = agent?.gen ? agent.gen * 10 + 2 : 1;
   const learningGrowth = logs.filter(l => l.activity_type === 'learning').length > 0 ? 12 : 0;
 
+  const handleRefresh = useCallback(async () => {
+    if (!agent?.id) return;
+    const [logsRes] = await Promise.all([
+      supabase.from('gyeol_autonomous_logs').select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }).limit(50),
+    ]);
+    setLogs((logsRes.data as ActivityLog[]) ?? []);
+  }, [agent?.id]);
+
   return (
     <main className="min-h-screen bg-background font-display pb-16 relative">
       <div className="aurora-bg" />
-      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10">
+      <PullToRefresh onRefresh={handleRefresh} className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10 overflow-y-auto h-screen">
         {/* Stitch header */}
         <div className="flex items-end justify-between mb-2">
           <div>
@@ -268,7 +277,7 @@ export default function ActivityPage() {
             )}
           </>
         )}
-      </div>
+      </PullToRefresh>
       <BottomNav />
     </main>
   );

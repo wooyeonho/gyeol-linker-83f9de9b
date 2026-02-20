@@ -250,6 +250,22 @@ p, .text-base, .text-sm, .text-lg {
   50% { height: 16px; opacity: 1; background-color: hsl(var(--primary)); }
 }
 
+/* 타이핑 인디케이터 도트 (3개 점) */
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: hsl(var(--muted-foreground));
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; background-color: hsl(var(--primary)); }
+}
+
 /* Void Dot */
 @keyframes void-breathe {
   0%, 100% {

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import type { Message } from '@/lib/gyeol/types';
 import { useNavigate } from 'react-router-dom';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
@@ -15,7 +16,7 @@ import remarkGfm from 'remark-gfm';
 export default function SimpleChat() {
   const navigate = useNavigate();
   const { agent } = useInitAgent();
-  const { messages, sendMessage, isLoading, error, setError, lastReaction, addMessage } = useGyeolStore();
+  const { messages, sendMessage, isLoading, error, setError, lastReaction, addMessage, setMessages } = useGyeolStore();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const settings = (agent?.settings as any) ?? {};
@@ -74,6 +75,19 @@ export default function SimpleChat() {
     await sendMessage(text);
   };
 
+  const handleDeleteMessage = (msgId: string) => {
+    setMessages((prev: Message[]) => prev.filter(m => m.id !== msgId));
+  };
+
+  const handleResendMessage = async (content: string) => {
+    if (isLoading || !agent?.id) return;
+    await sendMessage(content);
+  };
+
+  // Intimacy info
+  const intimacy = (agent as any)?.intimacy ?? 0;
+  const intimacyLevel = intimacy < 10 ? 'Stranger' : intimacy < 20 ? 'Acquaintance' : intimacy < 30 ? 'Casual' : intimacy < 40 ? 'Friend' : intimacy < 50 ? 'Good Friend' : intimacy < 60 ? 'Close Friend' : intimacy < 70 ? 'Bestie' : intimacy < 80 ? 'Soulmate' : intimacy < 90 ? 'Family' : 'Inseparable';
+
   const agentName = agent?.name ?? 'GYEOL';
 
   return (
@@ -101,7 +115,10 @@ export default function SimpleChat() {
             <p className="text-base font-medium text-foreground">{agentName}</p>
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
-          <p className="text-[10px] text-emerald-400/70 mt-0.5">Online</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[10px] text-emerald-400/70">Online</p>
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary/70">💕 {intimacyLevel}</span>
+          </div>
         </div>
       ) : (
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 glass-panel z-10 relative">
@@ -128,7 +145,7 @@ export default function SimpleChat() {
         )}
 
         {messages.map(msg => (
-          <div key={msg.id} className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} group`}>
             {msg.role === 'user' ? (
               <div className="flex gap-2.5 justify-end">
                 <div className="max-w-[80%]">
@@ -136,6 +153,17 @@ export default function SimpleChat() {
                   <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
                     style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                  </div>
+                  {/* Message actions */}
+                  <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleDeleteMessage(msg.id)}
+                      className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+                      <span className="material-icons-round text-[12px]">delete</span>
+                    </button>
+                    <button onClick={() => handleResendMessage(msg.content)}
+                      className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                      <span className="material-icons-round text-[12px]">refresh</span>
+                    </button>
                   </div>
                 </div>
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
@@ -153,23 +181,34 @@ export default function SimpleChat() {
                     style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
                     <div className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
                   </div>
+                  {/* AI message actions */}
+                  <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => handleDeleteMessage(msg.id)}
+                      className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+                      <span className="material-icons-round text-[12px]">delete</span>
+                    </button>
+                    <button onClick={() => navigator.clipboard.writeText(msg.content)}
+                      className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                      <span className="material-icons-round text-[12px]">content_copy</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
 
-        {/* Typing indicator with avatar */}
+        {/* Typing indicator with dots */}
         {isLoading && (
           <div className="flex gap-2.5 mb-3 justify-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center">
               <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
             </div>
             <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
-              <div className="flex items-end gap-1 h-4">
-                <div className="typing-bar" />
-                <div className="typing-bar" />
-                <div className="typing-bar" />
+              <div className="flex items-center gap-1.5 h-4">
+                <div className="typing-dot" />
+                <div className="typing-dot" style={{ animationDelay: '0.15s' }} />
+                <div className="typing-dot" style={{ animationDelay: '0.3s' }} />
               </div>
             </div>
           </div>
