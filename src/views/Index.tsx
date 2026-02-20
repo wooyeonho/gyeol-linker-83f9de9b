@@ -29,6 +29,7 @@ import { ChatSearch } from '@/src/components/ChatSearch';
 import { MessageReactions } from '@/src/components/MessageReactions';
 import { LeaderboardWidget } from '@/src/components/LeaderboardWidget';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
+import { StreakBonus } from '@/src/components/StreakBonus';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -308,6 +309,13 @@ export default function GyeolPage() {
                   </div>
                   <p className="text-[9px] text-slate-500 mt-1.5">Generation {agent?.gen ?? 1} • {agent?.total_conversations ?? 0} conversations</p>
                 </div>
+
+                {/* Streak Bonus */}
+                {agent && (agent as any).consecutive_days > 1 && (
+                  <div className="w-full max-w-[280px] mt-3">
+                    <StreakBonus streakDays={(agent as any).consecutive_days} />
+                  </div>
+                )}
 
                 {/* Gamification Widget */}
                 <GamificationWidget />
