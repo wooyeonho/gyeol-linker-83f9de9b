@@ -10,6 +10,7 @@ import { SeasonPass } from '@/src/components/SeasonPass';
 import { InventoryPanel } from '@/src/components/InventoryPanel';
 import { LevelUpCeremony } from '@/src/components/LevelUpCeremony';
 import { CoinHistory } from '@/src/components/CoinHistory';
+import { QuestTimer } from '@/src/components/QuestTimer';
 import { useGyeolStore } from '@/store/gyeol-store';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
@@ -159,6 +160,12 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+      {/* Quest Timers */}
+      <div className="grid grid-cols-2 gap-2">
+        <QuestTimer type="daily" />
+        <QuestTimer type="weekly" />
+      </div>
+
       {/* Quest type filter */}
       <div className="flex gap-2">
         {['daily', 'weekly', 'tutorial', 'seasonal'].map((type) => (

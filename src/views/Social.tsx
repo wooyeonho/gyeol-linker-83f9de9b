@@ -7,6 +7,7 @@ import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
 import { NewPostModal } from '../components/NewPostModal';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
+import { MatchingFilter } from '@/src/components/MatchingFilter';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -96,6 +97,7 @@ export default function SocialPage() {
   const [submittingCommunityComment, setSubmittingCommunityComment] = useState(false);
   const [breedResult, setBreedResult] = useState<{ success: boolean; name: string } | null>(null);
   const [newPostOpen, setNewPostOpen] = useState(false);
+  const [matchFilterOpen, setMatchFilterOpen] = useState(false);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -576,10 +578,15 @@ export default function SocialPage() {
         {/* Header with + New Post */}
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
-          <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
-            <span className="material-icons-round text-sm">add</span>
-            New Post
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition">
+              <span className="material-icons-round text-sm">tune</span>
+            </button>
+            <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
+              <span className="material-icons-round text-sm">add</span>
+              New Post
+            </button>
+          </div>
         </div>
 
         {/* For You / Following tabs */}
@@ -692,6 +699,14 @@ export default function SocialPage() {
             setPosts((moltRes.data as any[]) ?? []);
             setCommunityPosts((commRes.data as any[]) ?? []);
           })();
+        }}
+      />
+      <MatchingFilter
+        isOpen={matchFilterOpen}
+        onClose={() => setMatchFilterOpen(false)}
+        onApply={(filters) => {
+          console.log('Match filters applied:', filters);
+          setMatchFilterOpen(false);
         }}
       />
       <BottomNav />
