@@ -149,8 +149,6 @@ export default function Onboarding({ userId, onComplete }: Props) {
                 Continue
                 <span className="material-icons-round text-lg">arrow_forward</span>
               </button>
-              Next
-            </button>
           </div>
         )}
 
