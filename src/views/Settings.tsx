@@ -11,6 +11,7 @@ import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 import { ModeSwitchGuide } from '@/src/components/ModeSwitchGuide';
 import { DeleteAccountModal } from '@/src/components/DeleteAccountModal';
 import { AgentShareCard } from '@/src/components/AgentShareCard';
+import { StreakCalendar } from '@/src/components/StreakCalendar';
 
 const PERSONALITY_PRESETS = [
   { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
@@ -269,6 +270,14 @@ export default function SettingsPage() {
           <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Account</p>
           <p className="text-sm text-foreground/60">{user?.email}</p>
         </section>
+
+        {/* Streak Calendar */}
+        {agent && (agent as any).consecutive_days > 0 && (
+          <StreakCalendar
+            streakDays={(agent as any).consecutive_days}
+            longestStreak={(agent as any).consecutive_days}
+          />
+        )}
 
         <div className="h-px bg-white/[0.04]" />
 

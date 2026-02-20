@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -30,6 +30,8 @@ import { MessageReactions } from '@/src/components/MessageReactions';
 import { LeaderboardWidget } from '@/src/components/LeaderboardWidget';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { StreakBonus } from '@/src/components/StreakBonus';
+import { StreakCalendar } from '@/src/components/StreakCalendar';
+import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -138,7 +140,22 @@ export default function GyeolPage() {
   const [exportOpen, setExportOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [intimacyPopup, setIntimacyPopup] = useState<{ show: boolean; value: number }>({ show: false, value: 0 });
+  const prevIntimacyRef = useRef<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Track intimacy level-up
+  useEffect(() => {
+    if (!agent) return;
+    const intimacy = (agent as any).intimacy ?? 0;
+    const thresholds = [20, 40, 60, 80, 95];
+    if (prevIntimacyRef.current !== null) {
+      const prev = prevIntimacyRef.current;
+      const crossed = thresholds.find(t => prev < t && intimacy >= t);
+      if (crossed) setIntimacyPopup({ show: true, value: intimacy });
+    }
+    prevIntimacyRef.current = intimacy;
+  }, [(agent as any)?.intimacy]);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -311,10 +328,14 @@ export default function GyeolPage() {
                   <p className="text-[9px] text-slate-500 mt-1.5">Generation {agent?.gen ?? 1} • {agent?.total_conversations ?? 0} conversations</p>
                 </div>
 
-                {/* Streak Bonus */}
+                {/* Streak Bonus + Calendar */}
                 {agent && (agent as any).consecutive_days > 1 && (
-                  <div className="w-full max-w-[280px] mt-3">
+                  <div className="w-full max-w-[280px] mt-3 space-y-3">
                     <StreakBonus streakDays={(agent as any).consecutive_days} />
+                    <StreakCalendar
+                      streakDays={(agent as any).consecutive_days}
+                      longestStreak={(agent as any).consecutive_days}
+                    />
                   </div>
                 )}
 
@@ -541,6 +562,11 @@ export default function GyeolPage() {
       <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} />
       <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
       <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
+      <IntimacyLevelUp
+        show={intimacyPopup.show}
+        intimacy={intimacyPopup.value}
+        onClose={() => setIntimacyPopup({ show: false, value: 0 })}
+      />
     </main>
   );
 }
