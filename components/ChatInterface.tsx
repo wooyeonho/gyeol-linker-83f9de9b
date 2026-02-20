@@ -60,12 +60,13 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-end pointer-events-none">
+    <div className="absolute inset-0 flex flex-col justify-end pointer-events-none" role="region" aria-label="Chat">
       <div className="pointer-events-auto flex flex-col h-full max-h-[100dvh]">
         <div
           ref={listRef}
           className="flex-1 overflow-y-auto px-4 py-6 space-y-3 min-h-0"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          role="log" aria-label="Messages" aria-live="polite"
         >
           <AnimatePresence mode="popLayout">
             {messages.map((msg) => (
@@ -111,14 +112,15 @@ export function ChatInterface() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Ask me anything..."
-              className="flex-1 bg-transparent text-[#E5E5E5] placeholder:text-gray-500 text-sm py-2 outline-none min-w-0"
+              aria-label="Message input"
+              className="flex-1 bg-transparent text-[#E5E5E5] placeholder:text-gray-500 text-sm py-2 outline-none min-w-0 focus-visible:outline-none"
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="rounded-full p-2 text-indigo-400 hover:bg-indigo-500/20 disabled:opacity-40 disabled:pointer-events-none transition"
-              aria-label="Send"
+              className="rounded-full p-2 text-indigo-400 hover:bg-indigo-500/20 disabled:opacity-40 disabled:pointer-events-none transition focus-visible:outline-2 focus-visible:outline-primary"
+              aria-label="Send message"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
