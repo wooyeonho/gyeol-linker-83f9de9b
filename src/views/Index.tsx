@@ -23,6 +23,7 @@ import { MoodHistory } from '@/src/components/MoodHistory';
 import { DailyReward } from '@/src/components/DailyReward';
 import { AchievementPopup } from '@/src/components/AchievementPopup';
 import { AgentProfile } from '@/src/components/AgentProfile';
+import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { NotificationPanel } from '@/src/components/NotificationPanel';
 import { ConversationExport } from '@/src/components/ConversationExport';
 import { ChatSearch } from '@/src/components/ChatSearch';
@@ -34,6 +35,7 @@ import { StreakCalendar } from '@/src/components/StreakCalendar';
 import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
 import { OnboardingTutorial } from '@/src/components/OnboardingTutorial';
 import { EvolutionGuide } from '@/src/components/EvolutionGuide';
+import { DataVisualization } from '@/src/components/DataVisualization';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -144,6 +146,7 @@ export default function GyeolPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [intimacyPopup, setIntimacyPopup] = useState<{ show: boolean; value: number }>({ show: false, value: 0 });
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
   const prevIntimacyRef = useRef<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -392,6 +395,13 @@ export default function GyeolPage() {
                   </div>
                 )}
 
+                {/* Data Visualization */}
+                {agent && (
+                  <div className="w-full max-w-[280px] mt-3">
+                    <DataVisualization agentId={agent.id} />
+                  </div>
+                )}
+
                 {/* Leaderboard Widget */}
                 {agent && (
                   <div className="flex justify-center mt-3">
@@ -506,7 +516,7 @@ export default function GyeolPage() {
       </div>
 
       {/* Input bar — floating pill with + button */}
-      <div className="relative z-[60] px-4 pb-[calc(56px+env(safe-area-inset-bottom,8px)+8px)] pt-2">
+      <div className="relative z-[60] px-4 pb-[calc(64px+env(safe-area-inset-bottom,8px)+12px)] pt-2">
         <div className="bg-gradient-to-t from-background to-transparent pt-4">
           <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
             <button type="button" onClick={() => setMemoryOpen(true)} aria-label="Open memory dashboard" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
@@ -588,7 +598,32 @@ export default function GyeolPage() {
           } catch {}
         }}
       />
-      <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} />
+      <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} onShareCard={() => { setProfileOpen(false); setShareCardOpen(true); }} />
+
+      {/* Share Card Modal */}
+      <AnimatePresence>
+        {shareCardOpen && agent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setShareCardOpen(false)}>
+            <div onClick={e => e.stopPropagation()}>
+              <AgentShareCard
+                name={agent.name}
+                gen={agent.gen ?? 1}
+                warmth={agent.warmth}
+                logic={agent.logic}
+                creativity={agent.creativity}
+                energy={agent.energy}
+                humor={agent.humor}
+                intimacy={(agent as any).intimacy ?? 0}
+                totalConversations={agent.total_conversations ?? 0}
+                mood={(agent as any).mood ?? 'neutral'}
+                onClose={() => setShareCardOpen(false)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
       <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
       <IntimacyLevelUp

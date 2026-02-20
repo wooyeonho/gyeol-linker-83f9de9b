@@ -591,7 +591,7 @@ export default function SocialPage() {
         ]);
         setPosts((moltRes.data as any[]) ?? []);
         setCommunityPosts((commRes.data as any[]) ?? []);
-      }} className="flex-1 overflow-y-auto max-w-md mx-auto p-5 pt-6 pb-24 space-y-5 relative z-10">
+      }} className="flex-1 overflow-y-auto max-w-md mx-auto p-5 pt-6 pb-28 space-y-5 relative z-10">
         {/* Header with + New Post */}
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>

@@ -8,6 +8,7 @@ import { MoodHistory } from './MoodHistory';
 interface AgentProfileProps {
   isOpen: boolean;
   onClose: () => void;
+  onShareCard?: () => void;
   agent: {
     id: string;
     name: string;
@@ -33,7 +34,7 @@ const MOOD_EMOJI: Record<string, string> = {
   melancholic: '😔', hopeful: '✨', surprised: '😲', loving: '🥰',
 };
 
-export function AgentProfile({ isOpen, onClose, agent }: AgentProfileProps) {
+export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfileProps) {
   if (!agent) return null;
 
   const daysSinceCreation = Math.floor((Date.now() - new Date(agent.created_at).getTime()) / (1000 * 60 * 60 * 24));
@@ -111,6 +112,15 @@ export function AgentProfile({ isOpen, onClose, agent }: AgentProfileProps) {
 
               {/* Mood History */}
               <MoodHistory agentId={agent.id} />
+
+              {/* Share Card Button */}
+              {onShareCard && (
+                <button onClick={onShareCard}
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-[11px] font-medium hover:from-primary/20 hover:to-secondary/20 transition flex items-center justify-center gap-2">
+                  <span className="material-icons-round text-sm">share</span>
+                  프로필 카드 공유
+                </button>
+              )}
             </div>
           </motion.div>
         </motion.div>
