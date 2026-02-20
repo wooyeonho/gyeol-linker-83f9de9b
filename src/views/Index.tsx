@@ -32,6 +32,7 @@ import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { StreakBonus } from '@/src/components/StreakBonus';
 import { StreakCalendar } from '@/src/components/StreakCalendar';
 import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
+import { OnboardingTutorial } from '@/src/components/OnboardingTutorial';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -141,6 +142,7 @@ export default function GyeolPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [intimacyPopup, setIntimacyPopup] = useState<{ show: boolean; value: number }>({ show: false, value: 0 });
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const prevIntimacyRef = useRef<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -156,6 +158,20 @@ export default function GyeolPage() {
     }
     prevIntimacyRef.current = intimacy;
   }, [(agent as any)?.intimacy]);
+
+  // Auto-show tutorial on first visit
+  useEffect(() => {
+    if (!agent?.id) return;
+    const key = `gyeol_tutorial_seen_${agent.id}`;
+    if (!localStorage.getItem(key)) {
+      setTutorialOpen(true);
+    }
+  }, [agent?.id]);
+
+  const handleTutorialClose = () => {
+    setTutorialOpen(false);
+    if (agent?.id) localStorage.setItem(`gyeol_tutorial_seen_${agent.id}`, '1');
+  };
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -567,6 +583,7 @@ export default function GyeolPage() {
         intimacy={intimacyPopup.value}
         onClose={() => setIntimacyPopup({ show: false, value: 0 })}
       />
+      <OnboardingTutorial isOpen={tutorialOpen} onClose={handleTutorialClose} />
     </main>
   );
 }
