@@ -2,14 +2,13 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
-import { supabase } from '@/src/lib/supabase';
+import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
 import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 function relativeTime(dateStr: string) {
-  return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: ko });
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
 }
 
 interface MatchCard {
@@ -19,14 +18,14 @@ interface MatchCard {
 function getPersonalityTags(agent: { warmth?: number; logic?: number; creativity?: number; energy?: number; humor?: number }): string[] {
   const tags: string[] = [];
   const w = agent.warmth ?? 50, l = agent.logic ?? 50, c = agent.creativity ?? 50, e = agent.energy ?? 50, h = agent.humor ?? 50;
-  if (w >= 60) tags.push('따뜻함');
-  if (l >= 60) tags.push('논리적');
-  if (c >= 60) tags.push('창의적');
-  if (e >= 60) tags.push('활발함');
-  if (h >= 60) tags.push('유머');
-  if (w < 40) tags.push('차분함');
-  if (e < 40) tags.push('사색적');
-  if (tags.length === 0) tags.push('균형잡힌');
+  if (w >= 60) tags.push('Warm');
+  if (l >= 60) tags.push('Logical');
+  if (c >= 60) tags.push('Creative');
+  if (e >= 60) tags.push('Energetic');
+  if (h >= 60) tags.push('Humorous');
+  if (w < 40) tags.push('Calm');
+  if (e < 40) tags.push('Reflective');
+  if (tags.length === 0) tags.push('Balanced');
   return tags.slice(0, 3);
 }
 
@@ -91,6 +90,7 @@ export default function SocialPage() {
   const [communityComments, setCommunityComments] = useState<Record<string, any[]>>({});
   const [communityCommentText, setCommunityCommentText] = useState('');
   const [submittingCommunityComment, setSubmittingCommunityComment] = useState(false);
+  const [breedResult, setBreedResult] = useState<{ success: boolean; name: string } | null>(null);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -307,9 +307,9 @@ export default function SocialPage() {
                   });
                    const data = await res.json();
                    if (data.success) {
-                     alert(`Breeding success! New AI: ${data.child?.name ?? '???'}`);
+                     setBreedResult({ success: true, name: data.child?.name ?? '???' });
                    } else {
-                     alert(data.message || data.reason || 'Breeding failed');
+                     setBreedResult({ success: false, name: data.message || data.reason || 'Breeding failed' });
                    }
                 }}
                 className="w-full py-2 rounded-xl bg-purple-500/20 text-purple-400 text-xs font-medium">
@@ -409,17 +409,17 @@ export default function SocialPage() {
                           </div>
                         ))}
                         {(comments[p.id] ?? []).length === 0 && (
-                          <p className="text-[10px] text-muted-foreground text-center py-1">아직 댓글이 없습니다</p>
+                          <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
                         )}
                         {agent?.id && (
                           <div className="flex gap-2 pt-1">
                             <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
-                              placeholder="댓글 작성..." maxLength={200}
+                              placeholder="Write a comment..." maxLength={200}
                               onKeyDown={e => e.key === 'Enter' && handleComment(p.id)}
                               className="flex-1 rounded-lg bg-secondary/50 border border-border/30 px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
                             <button type="button" onClick={() => handleComment(p.id)} disabled={!commentText.trim() || submittingComment}
                               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
-                              {submittingComment ? '...' : '전송'}
+                              {submittingComment ? '...' : 'Send'}
                             </button>
                           </div>
                         )}
@@ -448,7 +448,7 @@ export default function SocialPage() {
                   <button type="button" onClick={() => toggleCommunityComments(p.id)}
                     className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg transition ${communityExpandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
                     <span className="material-icons-round text-sm">chat_bubble_outline</span>
-                    {(communityComments[p.id] ?? []).length || '댓글'}
+                    {(communityComments[p.id] ?? []).length || 'Reply'}
                   </button>
                   <span className="text-[10px] text-muted-foreground ml-auto">{relativeTime(p.created_at)}</span>
                 </div>
@@ -465,17 +465,17 @@ export default function SocialPage() {
                           </div>
                         ))}
                         {(communityComments[p.id] ?? []).length === 0 && (
-                          <p className="text-[10px] text-muted-foreground text-center py-1">아직 댓글이 없습니다</p>
+                          <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
                         )}
                         {agent?.id && (
                           <div className="flex gap-2 pt-1">
                             <input type="text" value={communityCommentText} onChange={e => setCommunityCommentText(e.target.value)}
-                              placeholder="댓글 작성..." maxLength={200}
+                              placeholder="Write a comment..." maxLength={200}
                               onKeyDown={e => e.key === 'Enter' && handleCommunityComment(p.id)}
                               className="flex-1 rounded-lg bg-secondary/50 border border-border/30 px-2.5 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
                             <button type="button" onClick={() => handleCommunityComment(p.id)} disabled={!communityCommentText.trim() || submittingCommunityComment}
                               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
-                              {submittingCommunityComment ? '...' : '전송'}
+                              {submittingCommunityComment ? '...' : 'Send'}
                             </button>
                           </div>
                         )}
@@ -488,6 +488,20 @@ export default function SocialPage() {
           </div>
         )}
       </div>
+      {breedResult && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl glass-card shadow-xl max-w-xs text-center"
+        >
+          <p className={`text-sm font-medium ${breedResult.success ? 'text-emerald-400' : 'text-destructive/80'}`}>
+            {breedResult.success ? `New AI born: ${breedResult.name}` : breedResult.name}
+          </p>
+          <button type="button" onClick={() => setBreedResult(null)}
+            className="mt-1 text-[10px] text-muted-foreground hover:text-foreground transition">Dismiss</button>
+        </motion.div>
+      )}
       <BottomNav />
     </main>
   );

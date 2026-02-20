@@ -382,7 +382,8 @@ export default function SettingsPage() {
                       </div>
                       <input type="range" min={0} max={100} value={personality[i]}
                         onChange={e => setters[i](Number(e.target.value))}
-                                                className="w-full" />
+                        aria-label={label}
+                        className="w-full" />
                     </div>
                   ))}
                 </div>

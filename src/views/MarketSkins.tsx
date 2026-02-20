@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/src/lib/supabase';
+import { supabase } from '@/src/integrations/supabase/client';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
 import { BottomNav } from '../components/BottomNav';
@@ -174,6 +174,14 @@ export default function MarketSkinsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : skins.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <span className="material-icons-round text-primary/40 text-2xl">palette</span>
+            </div>
+            <p className="text-sm text-foreground/60 font-medium">No skins available yet</p>
+            <p className="text-[11px] text-muted-foreground text-center max-w-[240px]">Be the first to submit a skin for the community!</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5">
