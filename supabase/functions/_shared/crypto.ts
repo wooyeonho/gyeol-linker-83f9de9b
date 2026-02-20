@@ -1,8 +1,9 @@
 const ENCRYPTION_KEY = Deno.env.get("BYOK_ENCRYPTION_KEY")!;
 
 export async function encryptKey(plaintext: string): Promise<string> {
+  const keyBytes = hexToBytes(ENCRYPTION_KEY);
   const key = await crypto.subtle.importKey(
-    "raw", hexToBytes(ENCRYPTION_KEY).buffer, "AES-GCM", false, ["encrypt"]
+    "raw", keyBytes.buffer.slice(keyBytes.byteOffset, keyBytes.byteOffset + keyBytes.byteLength) as ArrayBuffer, "AES-GCM", false, ["encrypt"]
   );
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(plaintext);
@@ -13,12 +14,14 @@ export async function encryptKey(plaintext: string): Promise<string> {
 export async function decryptKey(encrypted: string): Promise<string> {
   const [ivHex, ctHex] = encrypted.split(":");
   if (!ivHex || !ctHex) return encrypted;
+  const keyBytes = hexToBytes(ENCRYPTION_KEY);
   const key = await crypto.subtle.importKey(
-    "raw", hexToBytes(ENCRYPTION_KEY).buffer, "AES-GCM", false, ["decrypt"]
+    "raw", keyBytes.buffer.slice(keyBytes.byteOffset, keyBytes.byteOffset + keyBytes.byteLength) as ArrayBuffer, "AES-GCM", false, ["decrypt"]
   );
   const iv = hexToBytes(ivHex);
+  const ct = hexToBytes(ctHex);
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv.buffer }, key, hexToBytes(ctHex)
+    { name: "AES-GCM", iv: iv.buffer.slice(iv.byteOffset, iv.byteOffset + iv.byteLength) as ArrayBuffer }, key, ct
   );
   return new TextDecoder().decode(decrypted);
 }

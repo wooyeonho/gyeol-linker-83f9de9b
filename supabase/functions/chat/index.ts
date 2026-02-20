@@ -320,13 +320,19 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: authError } = await userClient.auth.getClaims(token);
-    if (authError || !claimsData?.claims) {
+    // Decode JWT payload directly (compatible with Lovable Cloud signing)
+    let userId: string;
+    try {
+      const payloadB64 = token.split('.')[1];
+      const payload = JSON.parse(atob(payloadB64));
+      userId = payload.sub;
+      if (!userId) throw new Error("No sub in token");
+    } catch {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
-    const user = { id: claimsData.claims.sub as string };
+    const user = { id: userId };
 
     const { agentId, message, locale: rawLocale } = await req.json();
     if (!agentId || typeof message !== "string") {

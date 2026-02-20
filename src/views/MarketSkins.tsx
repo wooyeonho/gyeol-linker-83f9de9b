@@ -5,6 +5,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
 import { BottomNav } from '../components/BottomNav';
+import { PurchaseConfirmModal } from '../components/PurchaseConfirmModal';
 
 interface SkinItem {
   id: string; name: string; description: string | null; price: number;
@@ -21,12 +22,19 @@ export default function MarketSkinsPage() {
   const { agent } = useInitAgent();
   const { user } = useAuth();
 
-  // Upload form
   const [showUpload, setShowUpload] = useState(false);
   const [uploadName, setUploadName] = useState('');
   const [uploadDesc, setUploadDesc] = useState('');
   const [uploadCategory, setUploadCategory] = useState('Other');
   const [uploading, setUploading] = useState(false);
+
+  // Search & category
+  const [searchQuery, setSearchQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const categories = ['All', 'Themes', 'Visual', 'Special'];
+
+  // Purchase confirm
+  const [confirmSkin, setConfirmSkin] = useState<SkinItem | null>(null);
 
   useEffect(() => {
     if (agent?.skin_id) setAppliedId(agent.skin_id as string);
@@ -47,12 +55,9 @@ export default function MarketSkinsPage() {
     if (!agent?.id || applying) return;
     setApplying(skin.id);
     try {
-      await supabase.from('gyeol_agents' as any)
-        .update({ skin_id: skin.id } as any)
-        .eq('id', agent.id);
+      await supabase.from('gyeol_agents' as any).update({ skin_id: skin.id } as any).eq('id', agent.id);
       await supabase.from('gyeol_agent_skins' as any)
-        .upsert({ agent_id: agent.id, skin_id: skin.id, is_equipped: true } as any,
-          { onConflict: 'agent_id,skin_id' });
+        .upsert({ agent_id: agent.id, skin_id: skin.id, is_equipped: true } as any, { onConflict: 'agent_id,skin_id' });
       setAppliedId(skin.id);
     } catch (err) {
       console.warn('Failed to apply skin:', err);
@@ -78,38 +83,29 @@ export default function MarketSkinsPage() {
       if (previewFile) {
         const ext = previewFile.name.split('.').pop() ?? 'png';
         const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('skin-previews')
-          .upload(path, previewFile, { contentType: previewFile.type });
+        const { error: uploadError } = await supabase.storage.from('skin-previews').upload(path, previewFile, { contentType: previewFile.type });
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('skin-previews').getPublicUrl(path);
           uploadedUrl = urlData?.publicUrl ?? null;
         }
       }
       await supabase.from('gyeol_skins' as any).insert({
-        name: uploadName.trim(),
-        description: uploadDesc.trim() || null,
-        category: uploadCategory,
-        creator_id: user.id,
-        is_approved: false,
-        price: 0,
-        preview_url: uploadedUrl,
+        name: uploadName.trim(), description: uploadDesc.trim() || null, category: uploadCategory,
+        creator_id: user.id, is_approved: false, price: 0, preview_url: uploadedUrl,
       } as any);
-      setUploadName('');
-      setUploadDesc('');
-      setPreviewFile(null);
-      setPreviewUrl(null);
-      setShowUpload(false);
-    } catch (err) {
-      console.warn('Failed to upload skin:', err);
-    }
+      setUploadName(''); setUploadDesc(''); setPreviewFile(null); setPreviewUrl(null); setShowUpload(false);
+    } catch (err) { console.warn('Failed to upload skin:', err); }
     setUploading(false);
   };
+
+  const filteredSkins = skins.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <main className="min-h-screen bg-background font-display pb-20 relative">
       <div className="aurora-bg" />
-      <div className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10">
+      <div className="max-w-md mx-auto p-5 pt-6 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Market</h1>
@@ -127,8 +123,7 @@ export default function MarketSkinsPage() {
         {/* Upload Form */}
         <AnimatePresence>
           {showUpload && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden">
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
               <div className="glass-card rounded-2xl p-4 space-y-3">
                 <p className="text-xs font-medium text-foreground/70">Submit a Skin</p>
                 <input type="text" placeholder="Skin name" value={uploadName} onChange={e => setUploadName(e.target.value)} maxLength={50}
@@ -143,9 +138,7 @@ export default function MarketSkinsPage() {
                   <label className="text-[10px] text-muted-foreground">Preview Image (optional)</label>
                   <input type="file" accept="image/*" onChange={handleFileChange}
                     className="w-full text-xs text-muted-foreground file:mr-2 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:px-3 file:py-1.5 file:text-xs file:font-medium" />
-                  {previewUrl && (
-                    <img src={previewUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border/30" />
-                  )}
+                  {previewUrl && <img src={previewUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border/30" />}
                 </div>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setShowUpload(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition">Cancel</button>
@@ -154,38 +147,63 @@ export default function MarketSkinsPage() {
                     {uploading ? 'Submitting...' : 'Submit for Review'}
                   </button>
                 </div>
-                <p className="text-[9px] text-muted-foreground text-center">Submitted skins will be reviewed before appearing in the market</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* Skills/Skins tabs */}
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
-          <Link to="/market/skills"
-            className="flex-1 py-2 rounded-lg text-center text-xs font-medium text-muted-foreground hover:text-foreground transition">
-            Skills
-          </Link>
-          <Link to="/market/skins"
-            className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">
-            Skins
-          </Link>
+          <Link to="/market/skills" className="flex-1 py-2 rounded-lg text-center text-xs font-medium text-muted-foreground hover:text-foreground transition">Skills</Link>
+          <Link to="/market/skins" className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">Skins</Link>
+        </div>
+
+        {/* Hero Banner */}
+        <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/10" />
+          <div className="relative z-10">
+            <span className="text-[8px] px-2 py-0.5 rounded-full bg-secondary text-white font-bold uppercase tracking-wider">NEW ARRIVAL</span>
+            <h2 className="text-xl font-bold text-foreground mt-2">Featured Skin</h2>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Transform your companion's visual identity.</p>
+            <button className="mt-3 px-4 py-2 rounded-full glass-card text-[11px] text-secondary font-medium border border-secondary/30">
+              Browse Collection
+            </button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2.5">
+          <span className="material-icons-round text-slate-400 text-lg">search</span>
+          <input type="text" placeholder="Search skins..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-500 outline-none" />
+        </div>
+
+        {/* Category tabs */}
+        <div className="flex gap-2 overflow-x-auto gyeol-scrollbar-hide">
+          {categories.map(c => (
+            <button key={c} onClick={() => setCategory(c.toLowerCase())}
+              className={`px-4 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition ${
+                category === c.toLowerCase()
+                  ? 'bg-gradient-to-r from-primary to-secondary text-white'
+                  : 'glass-card text-slate-400'
+              }`}>{c}</button>
+          ))}
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
-        ) : skins.length === 0 ? (
+        ) : filteredSkins.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
               <span className="material-icons-round text-primary/40 text-2xl">palette</span>
             </div>
-            <p className="text-sm text-foreground/60 font-medium">No skins available yet</p>
-            <p className="text-[11px] text-muted-foreground text-center max-w-[240px]">Be the first to submit a skin for the community!</p>
+            <p className="text-sm text-foreground/60 font-medium">No skins found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5">
-            {skins.map((s, i) => {
+            {filteredSkins.map((s, i) => {
               const isApplied = appliedId === s.id;
               const isApplying = applying === s.id;
               return (
@@ -199,9 +217,7 @@ export default function MarketSkinsPage() {
                         animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }} />
                     )}
                     {isApplied && (
-                      <div className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">
-                        Equipped
-                      </div>
+                      <div className="absolute top-2 right-2 text-[8px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">Equipped</div>
                     )}
                   </div>
                   <div className="p-3 space-y-1.5">
@@ -211,13 +227,11 @@ export default function MarketSkinsPage() {
                       <span className="text-primary text-[10px] font-medium">{s.price === 0 ? 'Free' : `${s.price}P`}</span>
                       <span className="text-[9px] text-muted-foreground">★ {s.rating}</span>
                     </div>
-                    <button type="button" onClick={() => handleApply(s)}
+                    <button type="button" onClick={() => setConfirmSkin(s)}
                       disabled={isApplied || isApplying}
-                      className={`w-full py-1.5 rounded-lg text-[10px] font-medium transition
-                        ${isApplied
-                          ? 'bg-secondary text-muted-foreground cursor-default'
-                          : 'bg-primary text-primary-foreground hover:brightness-110'
-                        } ${isApplying ? 'opacity-50' : ''}`}>
+                      className={`w-full py-1.5 rounded-lg text-[10px] font-medium transition ${
+                        isApplied ? 'bg-secondary text-muted-foreground cursor-default' : 'bg-primary text-primary-foreground hover:brightness-110'
+                      } ${isApplying ? 'opacity-50' : ''}`}>
                       {isApplying ? 'Applying...' : isApplied ? '✓ Applied' : 'Apply'}
                     </button>
                   </div>
@@ -227,6 +241,14 @@ export default function MarketSkinsPage() {
           </div>
         )}
       </div>
+      <PurchaseConfirmModal
+        open={!!confirmSkin}
+        onClose={() => setConfirmSkin(null)}
+        onConfirm={() => { if (confirmSkin) { handleApply(confirmSkin); setConfirmSkin(null); } }}
+        itemName={confirmSkin?.name ?? ''}
+        itemPrice={confirmSkin?.price ?? 0}
+        itemDescription={confirmSkin?.description ?? undefined}
+      />
       <BottomNav />
     </main>
   );
