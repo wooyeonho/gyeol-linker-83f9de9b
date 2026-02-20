@@ -15,6 +15,7 @@ import { MemoryDashboard } from '@/src/components/MemoryDashboard';
 import { EvolutionProgress } from '@/src/components/EvolutionProgress';
 import { InsightCard } from '@/src/components/InsightCard';
 import { BreedingResult } from '@/src/components/BreedingResult';
+import { GamificationWidget } from '@/src/components/GamificationWidget';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -254,6 +255,9 @@ export default function GyeolPage() {
                   </div>
                   <p className="text-[9px] text-slate-500 mt-1.5">Generation {agent?.gen ?? 1} • {agent?.total_conversations ?? 0} conversations</p>
                 </div>
+
+                {/* Gamification Widget */}
+                <GamificationWidget />
 
                 {agent && (
                   <div className="flex items-center justify-center gap-3 text-[9px] text-white/25 mt-1">

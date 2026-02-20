@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
 import { supabase } from '@/src/lib/supabase';
+import { showToast } from '@/src/components/Toast';
 
 /** Strip CJK Unified Ideographs from Korean responses to prevent Chinese chars leaking through */
 function cleanChinese(text: string): string {
@@ -147,8 +148,6 @@ export const useGyeolStore = create<GyeolState>((set) => ({
   },
   subscribeToUpdates: (agentId) => {
     if (typeof window === 'undefined') return;
-    // Subscribe to agent changes (personality, evolution) — NOT conversations
-    // Conversations are handled optimistically by sendMessage()
     const channel = supabase
       .channel(`gyeol:${agentId}`)
       .on(
@@ -157,6 +156,27 @@ export const useGyeolStore = create<GyeolState>((set) => ({
         (payload: { new: any }) => {
           const row = payload.new;
           set({ agent: row as any });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'gyeol_achievement_unlocks', filter: `agent_id=eq.${agentId}` },
+        async (payload: { new: any }) => {
+          // Fetch achievement name for toast
+          const { data: ach } = await supabase
+            .from('gyeol_achievements')
+            .select('name, rarity, icon, reward_title')
+            .eq('id', payload.new.achievement_id)
+            .maybeSingle();
+          if (ach) {
+            showToast({
+              type: 'achievement',
+              title: `🏆 업적 달성: ${(ach as any).name}`,
+              message: (ach as any).reward_title ? `칭호 획득: ${(ach as any).reward_title}` : undefined,
+              icon: (ach as any).icon ?? 'emoji_events',
+              duration: 5000,
+            });
+          }
         }
       )
       .subscribe();
