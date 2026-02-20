@@ -382,9 +382,8 @@ export default function SettingsPage() {
                       </div>
                       <input type="range" min={0} max={100} value={personality[i]}
                         onChange={e => setters[i](Number(e.target.value))}
-                        className="w-full h-1 accent-primary appearance-none bg-white/[0.06] rounded-full
-                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                          [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary" />
+                        aria-label={label}
+                        className="w-full" />
                     </div>
                   ))}
                 </div>

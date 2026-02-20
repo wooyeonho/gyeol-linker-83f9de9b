@@ -96,7 +96,7 @@ export default function AuthPage() {
                 onClick={() => { setMode(m); setError(null); setSuccess(null); }}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   mode === m
-                    ? 'bg-gradient-to-r from-primary to-[#8b5cf6] shadow-lg shadow-primary/25 text-white'
+                    ? 'bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/25 text-white'
                     : 'text-muted-foreground hover:text-foreground/70'
                 }`}
               >

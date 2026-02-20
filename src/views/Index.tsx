@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
+import { supabase, supabaseUrl } from '@/src/lib/supabase';
 import Onboarding from './Onboarding';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
@@ -248,9 +249,10 @@ export default function GyeolPage() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const res = await fetch('/api/evolution/attempt', {
+                        const session = (await supabase.auth.getSession()).data.session;
+                        const res = await fetch(`${supabaseUrl}/functions/v1/evolution-attempt`, {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
                           body: JSON.stringify({ agentId: agent.id }),
                         });
                         const data = await res.json();
@@ -258,7 +260,7 @@ export default function GyeolPage() {
                           alert(data.message || 'Evolution failed... Try again!');
                         }
                       } catch {
-                        alert('An error occurred during evolution attempt.');
+                        alert('Evolution attempt failed.');
                       }
                     }}
                     className="mt-2 px-4 py-2 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium animate-pulse transition"
@@ -331,7 +333,7 @@ export default function GyeolPage() {
       <div className="relative z-[60] px-4 pb-[calc(56px+env(safe-area-inset-bottom,8px)+8px)] pt-2">
         <div className="bg-gradient-to-t from-background to-transparent pt-4">
           <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
-            <button type="button" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
+            <button type="button" onClick={() => setMemoryOpen(true)} aria-label="Open memory dashboard" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
               <span className="material-icons-round text-[20px]">add_circle_outline</span>
             </button>
             <input
@@ -353,7 +355,7 @@ export default function GyeolPage() {
               <span className="material-icons-round text-base">arrow_upward</span>
             </button>
           </div>
-          <p className="text-center text-[9px] text-slate-600 mt-1.5">
+          <p className="text-center text-[11px] text-slate-500 mt-1.5">
             GYEOL can make mistakes. Verify important information.
           </p>
         </div>
@@ -370,15 +372,16 @@ export default function GyeolPage() {
         onEvolve={async () => {
           if (!agent?.id) return;
           try {
-            const res = await fetch('/api/evolution/attempt', {
+            const session = (await supabase.auth.getSession()).data.session;
+            const res = await fetch(`${supabaseUrl}/functions/v1/evolution-attempt`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
               body: JSON.stringify({ agentId: agent.id }),
             });
             const data = await res.json();
             if (!data.evolved) alert(data.message || 'Evolution failed...');
             setEvoOpen(false);
-          } catch { alert('진화 시도 중 오류가 발생했어요.'); }
+          } catch { alert('Evolution attempt failed.'); }
         }}
       />
       <InsightCard insight={lastInsight} onDismiss={clearInsight} />

@@ -4,8 +4,8 @@
   "description": "자율 성장하는 AI 디지털 동반자",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#4F46E5",
+  "background_color": "#0b0914",
+  "theme_color": "#784eda",
   "orientation": "portrait-primary",
   "icons": [
     {
