@@ -10,7 +10,7 @@ export interface VisualState {
   form: 'point' | 'sphere' | 'orb' | 'complex' | 'abstract';
 }
 
-export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'lonely' | 'tired';
+export type MoodType = 'happy' | 'neutral' | 'sad' | 'excited' | 'lonely' | 'tired' | 'anxious' | 'curious' | 'proud' | 'grateful' | 'playful' | 'focused' | 'melancholic' | 'hopeful' | 'surprised' | 'loving';
 
 export interface Agent {
   id: string;
