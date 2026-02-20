@@ -208,7 +208,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="absolute bottom-0 left-0 right-0 bg-card/98 backdrop-blur-md border-t border-border/30 px-5 py-4"
+                  className="absolute bottom-0 left-0 right-0 glass-panel border-t border-white/[0.06] px-5 py-4"
                 >
                   <p className="text-[12px] text-foreground/80 mb-3">이 기억을 삭제할까요?</p>
                   <div className="flex gap-2">

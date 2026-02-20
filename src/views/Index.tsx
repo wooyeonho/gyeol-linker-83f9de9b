@@ -67,15 +67,29 @@ function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) 
                 </span>
               )}
               <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
-              <button type="button" onClick={handleSpeak}
-                className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
-                aria-label={reading ? 'Stop reading' : 'Read aloud'}>
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-3 mt-2">
+                <button type="button" onClick={handleSpeak}
+                  className={`p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
+                  aria-label={reading ? 'Stop reading' : 'Read aloud'}>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+                  </svg>
+                </button>
+              </div>
             </div>
+          </div>
+          {/* Action buttons outside bubble */}
+          <div className="flex items-center gap-3 mt-1.5 ml-7">
+            <button onClick={() => navigator.clipboard.writeText(msg.content)}
+              className="flex items-center gap-1 text-[10px] text-white/20 hover:text-white/50 transition">
+              <span className="material-icons-round text-[14px]">content_copy</span>
+              Copy
+            </button>
+            <button className="flex items-center gap-1 text-[10px] text-white/20 hover:text-white/50 transition">
+              <span className="material-icons-round text-[14px]">thumb_up</span>
+              Helpful
+            </button>
           </div>
         </div>
       )}
@@ -170,6 +184,12 @@ export default function GyeolPage() {
             <span className="material-icons-round text-secondary text-[12px]">verified</span>
             <GenBadge gen={agent?.gen ?? 1} size="sm" />
           </div>
+          <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
+            <span className="material-icons-round text-[16px]">search</span>
+          </button>
+          <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground relative transition">
+            <span className="material-icons-round text-[16px]">notifications</span>
+          </button>
           <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition">
             <span className="material-icons-round text-[14px]">trending_up</span>
           </button>
@@ -220,6 +240,19 @@ export default function GyeolPage() {
                     className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
                     <span className="text-xs">🧬</span> 진화 현황
                   </button>
+                </div>
+
+                {/* Growth Status mini card */}
+                <div className="glass-card rounded-2xl p-4 w-full max-w-[280px] mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">Growth Status</span>
+                    <span className="text-[10px] text-secondary font-bold">{Math.round(Number(agent?.evolution_progress ?? 0))}%</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-white/[0.06]">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all"
+                      style={{ width: `${Math.min(Number(agent?.evolution_progress ?? 0), 100)}%` }} />
+                  </div>
+                  <p className="text-[9px] text-slate-500 mt-1.5">Generation {agent?.gen ?? 1} • {agent?.total_conversations ?? 0} conversations</p>
                 </div>
 
                 {agent && (
@@ -350,7 +383,7 @@ export default function GyeolPage() {
               type="button"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
             >
               <span className="material-icons-round text-base">arrow_upward</span>
             </button>

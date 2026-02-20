@@ -144,8 +144,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
 
             <p className="text-[10px] text-slate-500">You can switch anytime in Settings</p>
 
-            <button onClick={handleNext}
-              className="w-full py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm">
+              <button onClick={handleNext}
+                className="w-full py-4 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold flex items-center justify-center gap-2 text-sm">
+                Continue
+                <span className="material-icons-round text-lg">arrow_forward</span>
+              </button>
               Next
             </button>
           </div>
@@ -188,8 +191,10 @@ export default function Onboarding({ userId, onComplete }: Props) {
         {step === 2 && (
           <div className="flex flex-col items-center gap-6">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">Choose a character</h2>
-              <p className="text-xs text-slate-400">Optional — you can use text-only mode</p>
+              <h2 className="text-2xl font-bold text-foreground text-center">
+                Who resonates with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">you</span>?
+              </h2>
+              <p className="text-sm text-slate-400 text-center mt-2">Select the persona that best matches your energy and goals.</p>
             </div>
 
             {selectedChar && (
