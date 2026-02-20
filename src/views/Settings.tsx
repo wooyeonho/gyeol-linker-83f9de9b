@@ -6,6 +6,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { supabase, supabaseUrl } from '@/src/lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
@@ -277,6 +278,12 @@ export default function SettingsPage() {
               </motion.div>
             )}
           </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+        {/* ====== THEME ====== */}
+        <section className="px-1">
+          <ThemeToggle />
         </section>
 
         <div className="h-px bg-white/[0.04]" />

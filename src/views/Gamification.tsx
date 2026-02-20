@@ -6,15 +6,17 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BottomNav } from '@/src/components/BottomNav';
 import { useGamification, expToNextLevel, RARITY_COLORS, RARITY_BG, RARITY_GLOW } from '@/src/hooks/useGamification';
+import { SeasonPass } from '@/src/components/SeasonPass';
 import { useGyeolStore } from '@/store/gyeol-store';
 
-type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop';
+type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 
 const TABS: { key: Tab; icon: string; label: string }[] = [
   { key: 'quests', icon: 'assignment', label: '퀘스트' },
   { key: 'achievements', icon: 'emoji_events', label: '업적' },
   { key: 'leaderboard', icon: 'leaderboard', label: '랭킹' },
   { key: 'shop', icon: 'storefront', label: '상점' },
+  { key: 'season', icon: 'stars', label: '시즌' },
 ];
 
 export default function GamificationPage() {
@@ -118,6 +120,7 @@ export default function GamificationPage() {
           {tab === 'achievements' && <AchievementsTab key="achievements" gam={gam} />}
           {tab === 'leaderboard' && <LeaderboardTab key="leaderboard" gam={gam} agentId={agent?.id} />}
           {tab === 'shop' && <ShopTab key="shop" gam={gam} />}
+          {tab === 'season' && <motion.div key="season" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><SeasonPass /></motion.div>}
         </AnimatePresence>
       </div>
 

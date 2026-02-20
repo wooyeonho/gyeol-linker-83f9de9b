@@ -21,6 +21,10 @@ import { MoodHistory } from '@/src/components/MoodHistory';
 import { DailyReward } from '@/src/components/DailyReward';
 import { AchievementPopup } from '@/src/components/AchievementPopup';
 import { AgentProfile } from '@/src/components/AgentProfile';
+import { NotificationPanel } from '@/src/components/NotificationPanel';
+import { ConversationExport } from '@/src/components/ConversationExport';
+import { ChatSearch } from '@/src/components/ChatSearch';
+import { MessageReactions } from '@/src/components/MessageReactions';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -121,6 +125,10 @@ export default function GyeolPage() {
   const [dailyRewardOpen, setDailyRewardOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [dailyClaimed, setDailyClaimed] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -193,17 +201,38 @@ export default function GyeolPage() {
             <span className="material-icons-round text-secondary text-[12px]">verified</span>
             <GenBadge gen={agent?.gen ?? 1} size="sm" />
           </div>
-          <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
+          <button type="button" onClick={() => setSearchOpen(!searchOpen)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
             <span className="material-icons-round text-[16px]">search</span>
           </button>
-          <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground relative transition">
+          <button type="button" onClick={() => setNotifOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground relative transition">
             <span className="material-icons-round text-[16px]">notifications</span>
+          </button>
+          <button type="button" onClick={() => setExportOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-foreground transition">
+            <span className="material-icons-round text-[16px]">download</span>
           </button>
           <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition">
             <span className="material-icons-round text-[14px]">trending_up</span>
           </button>
         </div>
       </div>
+
+      {/* Search bar */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            className="relative z-20 px-5 overflow-hidden">
+            <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2">
+              <span className="material-icons-round text-muted-foreground text-sm">search</span>
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                placeholder="대화 검색..." autoFocus
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground">
+                <span className="material-icons-round text-sm">close</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-0 relative z-10">
@@ -372,7 +401,7 @@ export default function GyeolPage() {
                   </div>
                 )}
 
-                {messages.map((msg) => (
+                {(searchQuery ? messages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages).map((msg) => (
                   <MessageBubble key={msg.id} msg={msg} agentName={agentName} />
                 ))}
                 {error && (
@@ -484,6 +513,8 @@ export default function GyeolPage() {
         }}
       />
       <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} />
+      <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
+      <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
     </main>
   );
 }

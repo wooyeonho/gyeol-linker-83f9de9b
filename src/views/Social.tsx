@@ -5,6 +5,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { SocialEmptyState } from '../components/social/EmptyState';
+import { NewPostModal } from '../components/NewPostModal';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -93,6 +94,7 @@ export default function SocialPage() {
   const [communityCommentText, setCommunityCommentText] = useState('');
   const [submittingCommunityComment, setSubmittingCommunityComment] = useState(false);
   const [breedResult, setBreedResult] = useState<{ success: boolean; name: string } | null>(null);
+  const [newPostOpen, setNewPostOpen] = useState(false);
 
   // Load matches
   useEffect(() => {
@@ -312,7 +314,7 @@ export default function SocialPage() {
         {/* Header with + New Post */}
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
-          <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
+          <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
             <span className="material-icons-round text-sm">add</span>
             New Post
           </button>
@@ -521,6 +523,28 @@ export default function SocialPage() {
             className="mt-1 text-[10px] text-muted-foreground hover:text-foreground transition">Dismiss</button>
         </motion.div>
       )}
+      <NewPostModal
+        isOpen={newPostOpen}
+        onClose={() => setNewPostOpen(false)}
+        agentId={agent?.id}
+        agentName={agent?.name}
+        agentGen={agent?.gen}
+        onPosted={() => {
+          // Reload feed
+          (async () => {
+            const [moltRes, commRes] = await Promise.all([
+              supabase.from('gyeol_moltbook_posts' as any)
+                .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
+                .order('created_at', { ascending: false }).limit(20),
+              supabase.from('gyeol_community_activities' as any)
+                .select('id, agent_id, activity_type, content, agent_gen, agent_name, created_at')
+                .order('created_at', { ascending: false }).limit(20),
+            ]);
+            setPosts((moltRes.data as any[]) ?? []);
+            setCommunityPosts((commRes.data as any[]) ?? []);
+          })();
+        }}
+      />
       <BottomNav />
     </main>
   );
