@@ -8,6 +8,7 @@ import { SocialEmptyState } from '../components/social/EmptyState';
 import { NewPostModal } from '../components/NewPostModal';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { MatchingFilter } from '@/src/components/MatchingFilter';
+import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -98,6 +99,7 @@ export default function SocialPage() {
   const [breedResult, setBreedResult] = useState<{ success: boolean; name: string } | null>(null);
   const [newPostOpen, setNewPostOpen] = useState(false);
   const [matchFilterOpen, setMatchFilterOpen] = useState(false);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -515,9 +517,19 @@ export default function SocialPage() {
               className="overflow-hidden">
               <div className="pt-2 border-t border-border/30 space-y-2">
                 {(comments[p.id] ?? []).map((c: any) => (
-                  <div key={c.id} className="flex gap-2">
+                  <div key={c.id} className="flex gap-2 group/comment">
                     <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
-                    <p className="text-[11px] text-foreground/70">{c.content}</p>
+                    <p className="text-[11px] text-foreground/70 flex-1">{c.content}</p>
+                    {agent?.id && c.agent_id === agent.id && (
+                      <button onClick={async () => {
+                        await supabase.from('gyeol_moltbook_comments' as any).delete().eq('id', c.id);
+                        setComments(prev => ({ ...prev, [p.id]: (prev[p.id] ?? []).filter((x: any) => x.id !== c.id) }));
+                        setPosts(prev => prev.map(post => post.id === p.id ? { ...post, comments_count: Math.max(0, (post.comments_count ?? 1) - 1) } : post));
+                      }}
+                        className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
+                        <span className="material-icons-round text-[12px]">close</span>
+                      </button>
+                    )}
                   </div>
                 ))}
                 {(comments[p.id] ?? []).length === 0 && (
@@ -549,9 +561,18 @@ export default function SocialPage() {
               className="overflow-hidden">
               <div className="pt-2 border-t border-border/30 space-y-2">
                 {(communityComments[p.id] ?? []).map((c: any) => (
-                  <div key={c.id} className="flex gap-2">
+                  <div key={c.id} className="flex gap-2 group/comment">
                     <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
-                    <p className="text-[11px] text-foreground/70">{c.content}</p>
+                    <p className="text-[11px] text-foreground/70 flex-1">{c.content}</p>
+                    {agent?.id && c.agent_id === agent.id && (
+                      <button onClick={async () => {
+                        await supabase.from('gyeol_community_replies' as any).delete().eq('id', c.id);
+                        setCommunityComments(prev => ({ ...prev, [p.id]: (prev[p.id] ?? []).filter((x: any) => x.id !== c.id) }));
+                      }}
+                        className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
+                        <span className="material-icons-round text-[12px]">close</span>
+                      </button>
+                    )}
                   </div>
                 ))}
                 {(communityComments[p.id] ?? []).length === 0 && (
@@ -599,6 +620,12 @@ export default function SocialPage() {
             <button onClick={() => setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition">
               <span className="material-icons-round text-sm">tune</span>
             </button>
+            {agent && (
+              <button onClick={() => setShareCardOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition"
+                aria-label="Share profile">
+                <span className="material-icons-round text-sm">share</span>
+              </button>
+            )}
             <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
               <span className="material-icons-round text-sm">add</span>
               New Post
@@ -726,6 +753,24 @@ export default function SocialPage() {
           setMatchFilterOpen(false);
         }}
       />
+      {/* Agent Share Card Modal */}
+      <AnimatePresence>
+        {shareCardOpen && agent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={() => setShareCardOpen(false)}>
+            <div onClick={e => e.stopPropagation()}>
+              <AgentShareCard
+                name={agent.name} gen={agent.gen}
+                warmth={agent.warmth} logic={agent.logic} creativity={agent.creativity}
+                energy={agent.energy} humor={agent.humor}
+                intimacy={agent.intimacy} totalConversations={agent.total_conversations}
+                mood={agent.mood} level={1}
+                onClose={() => setShareCardOpen(false)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <BottomNav />
     </main>
   );

@@ -734,19 +734,38 @@ export default function SettingsPage() {
                   <p className="text-[10px] text-white/30">Premium AI Models (BYOK)</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {BYOK_PROVIDERS.map((provider) => {
-                      const isRegistered = byokList.some(x => x.provider === provider);
+                      const registered = byokList.find(x => x.provider === provider);
                       return (
                         <div key={provider} className="flex flex-col gap-1">
                           <button type="button" onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
-                            className={`rounded-lg border py-1.5 text-xs capitalize transition ${isRegistered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-white/[0.06] text-white/30 hover:bg-white/[0.03]'}`}>
-                            {provider}
+                            className={`rounded-lg border py-1.5 text-xs capitalize transition ${registered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-white/[0.06] text-white/30 hover:bg-white/[0.03]'}`}>
+                            <span className="flex items-center justify-center gap-1">
+                              {registered && <span className="material-icons-round text-[10px] text-emerald-400">check_circle</span>}
+                              {provider}
+                            </span>
                           </button>
                           {byokOpen === provider && (
-                            <div className="flex gap-1">
-                              <input type="password" placeholder="API Key" value={byokKey} onChange={e => setByokKey(e.target.value)}
-                                className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1 text-xs text-foreground placeholder:text-white/20 outline-none" />
-                              <button type="button" disabled={byokSaving || !byokKey.trim()} onClick={() => saveByok(provider)}
-                                className="rounded-lg bg-primary/10 text-primary/80 px-2 py-1 text-xs disabled:opacity-40">Save</button>
+                            <div className="space-y-1">
+                              {registered && (
+                                <div className="flex items-center justify-between rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-1">
+                                  <span className="text-[10px] text-white/40 font-mono">{registered.masked}</span>
+                                  <button type="button" onClick={async () => {
+                                    if (!user) return;
+                                    await supabase.from('gyeol_byok_keys' as any).delete().eq('user_id', user.id).eq('provider', provider);
+                                    setByokList(prev => prev.filter(x => x.provider !== provider));
+                                    setByokOpen(null);
+                                  }}
+                                    className="text-destructive/60 hover:text-destructive transition">
+                                    <span className="material-icons-round text-xs">delete_outline</span>
+                                  </button>
+                                </div>
+                              )}
+                              <div className="flex gap-1">
+                                <input type="password" placeholder={registered ? "New API Key" : "API Key"} value={byokKey} onChange={e => setByokKey(e.target.value)}
+                                  className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1 text-xs text-foreground placeholder:text-white/20 outline-none" />
+                                <button type="button" disabled={byokSaving || !byokKey.trim()} onClick={() => saveByok(provider)}
+                                  className="rounded-lg bg-primary/10 text-primary/80 px-2 py-1 text-xs disabled:opacity-40">{registered ? 'Update' : 'Save'}</button>
+                              </div>
                             </div>
                           )}
                         </div>
