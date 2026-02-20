@@ -21,7 +21,6 @@ export default function SimpleChat() {
   const autoTTS = settings.autoTTS !== false;
   const hasCharacter = settings.characterPreset != null;
 
-  // System theme
   const [isDark, setIsDark] = useState(
     typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
   );
@@ -32,12 +31,10 @@ export default function SimpleChat() {
     return () => mq.removeEventListener('change', h);
   }, []);
 
-  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  // Proactive message realtime
   useEffect(() => {
     if (!agent?.id) return;
     const channel = supabase
@@ -59,7 +56,6 @@ export default function SimpleChat() {
     return () => { supabase.removeChannel(channel); };
   }, [agent?.id, autoTTS]);
 
-  // Auto TTS
   useEffect(() => {
     if (!autoTTS || messages.length === 0) return;
     const last = messages[messages.length - 1];
@@ -80,7 +76,6 @@ export default function SimpleChat() {
 
   return (
     <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative">
-      {/* Living Background */}
       <div className="aurora-bg" />
 
       {/* === Header === */}
@@ -102,7 +97,6 @@ export default function SimpleChat() {
           />
           <div className="mt-2 flex items-center gap-2">
             <p className="text-base font-medium text-foreground">{agentName}</p>
-            {/* Online indicator */}
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
           <p className="text-[10px] text-emerald-400/70 mt-0.5">Online</p>
@@ -124,36 +118,51 @@ export default function SimpleChat() {
       <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10">
         {/* Date separator */}
         {messages.length > 0 && (
-          <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-[10px] text-slate-500">Today, {format(new Date(), 'h:mm a')}</span>
-            <div className="flex-1 h-px bg-white/[0.06]" />
+          <div className="flex justify-center py-4">
+            <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
+              Today, {format(new Date(), 'h:mm a')}
+            </span>
           </div>
         )}
 
         {messages.map(msg => (
-          <div key={msg.id}
-            className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex mb-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'user' ? (
-              <div className="max-w-[80%] user-bubble p-4 rounded-2xl rounded-br-sm"
-                style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                {msg.content}
+              <div className="flex gap-2.5 justify-end">
+                <div className="max-w-[80%]">
+                  <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You</span>
+                  <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
+                    style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                    {msg.content}
+                  </div>
+                </div>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
+                  <span className="material-icons-round text-slate-300 text-[14px]">person</span>
+                </div>
               </div>
             ) : (
-              <div className="max-w-[80%]">
-                <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
-                <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
-                  style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                  {msg.content}
+              <div className="flex gap-2.5 justify-start">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
+                  <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
+                </div>
+                <div className="max-w-[80%]">
+                  <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
+                  <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
+                    style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
+                    {msg.content}
+                  </div>
                 </div>
               </div>
             )}
           </div>
         ))}
 
-        {/* Typing indicator — bar style */}
+        {/* Typing indicator with avatar */}
         {isLoading && (
-          <div className="flex justify-start mb-3">
+          <div className="flex gap-2.5 mb-3 justify-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center">
+              <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
+            </div>
             <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
               <div className="flex items-end gap-1 h-4">
                 <div className="typing-bar" />
@@ -173,26 +182,31 @@ export default function SimpleChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* === Input bar — floating pill === */}
+      {/* === Input bar === */}
       <div className="flex-shrink-0 relative z-10"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}>
         <div className="bg-gradient-to-t from-background to-transparent pt-6 px-4">
-          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-4 py-2">
+          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
+            <button type="button" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
+              <span className="material-icons-round text-[20px]">add_circle_outline</span>
+            </button>
             <input type="text" value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Message..."
+              placeholder="Message GYEOL..."
               style={{ fontSize: '16px' }}
               className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500" />
-            {input.trim() ? (
+            <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
+            {input.trim() && (
               <button onClick={handleSend} disabled={isLoading}
-                className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all">
-                <span className="material-icons-round text-white text-lg">arrow_upward</span>
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all">
+                <span className="material-icons-round text-white text-base">arrow_upward</span>
               </button>
-            ) : (
-              <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
             )}
           </div>
+          <p className="text-center text-[9px] text-slate-600 mt-1.5">
+            GYEOL can make mistakes. Verify important information.
+          </p>
         </div>
       </div>
 

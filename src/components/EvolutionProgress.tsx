@@ -96,7 +96,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md max-h-[85vh] bg-card/95 backdrop-blur-md rounded-t-2xl border-t border-border/30 overflow-hidden"
+            className="w-full max-w-md max-h-[85vh] glass-panel rounded-t-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -155,7 +155,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                           )}
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-border/20 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                         <motion.div
                           className="h-full rounded-full"
                           style={{ background: cond.met ? '#34D399' : color }}

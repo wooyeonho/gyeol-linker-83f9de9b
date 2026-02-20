@@ -129,7 +129,7 @@ export default function MarketSkinsPage() {
           {showUpload && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden">
-              <div className="section-card !p-4 space-y-3">
+              <div className="glass-card rounded-2xl p-4 space-y-3">
                 <p className="text-xs font-medium text-foreground/70">Submit a Skin</p>
                 <input type="text" placeholder="Skin name" value={uploadName} onChange={e => setUploadName(e.target.value)} maxLength={50}
                   className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
@@ -166,7 +166,7 @@ export default function MarketSkinsPage() {
             Skills
           </Link>
           <Link to="/market/skins"
-            className="flex-1 py-2 rounded-lg text-center text-xs font-medium bg-primary text-primary-foreground shadow-glow-xs transition">
+            className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">
             Skins
           </Link>
         </div>
@@ -182,7 +182,7 @@ export default function MarketSkinsPage() {
               const isApplying = applying === s.id;
               return (
                 <motion.div key={s.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                  className="section-card !p-0 overflow-hidden">
+                  className="glass-card rounded-2xl p-0 overflow-hidden">
                   <div className="aspect-square bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center relative overflow-hidden">
                     {s.preview_url ? (
                       <img src={s.preview_url} alt={s.name} className="w-full h-full object-cover" />
@@ -205,7 +205,7 @@ export default function MarketSkinsPage() {
                     </div>
                     <button type="button" onClick={() => handleApply(s)}
                       disabled={isApplied || isApplying}
-                      className={`w-full py-1.5 rounded-lg text-[10px] font-medium transition shadow-glow-xs
+                      className={`w-full py-1.5 rounded-lg text-[10px] font-medium transition
                         ${isApplied
                           ? 'bg-secondary text-muted-foreground cursor-default'
                           : 'bg-primary text-primary-foreground hover:brightness-110'

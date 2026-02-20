@@ -106,7 +106,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
           <p className="text-[10px] text-slate-400 mb-2 text-center">Step {currentStepNum} of {TOTAL_STEPS}</p>
           <div className="flex gap-1.5">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-500 ${
+              <div key={i} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${
                 i < currentStepNum
                   ? 'bg-gradient-to-r from-primary to-secondary'
                   : 'bg-white/[0.06]'

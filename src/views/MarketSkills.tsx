@@ -107,7 +107,7 @@ export default function MarketSkillsPage() {
           {showUpload && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden">
-              <div className="section-card !p-4 space-y-3">
+              <div className="glass-card rounded-2xl p-4 space-y-3">
                 <p className="text-xs font-medium text-foreground/70">Submit a Skill</p>
                 <input type="text" placeholder="Skill name" value={uploadName} onChange={e => setUploadName(e.target.value)} maxLength={50}
                   className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
@@ -132,7 +132,7 @@ export default function MarketSkillsPage() {
 
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
           <Link to="/market/skills"
-            className="flex-1 py-2 rounded-lg text-center text-xs font-medium bg-primary text-primary-foreground shadow-glow-xs transition">
+            className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">
             Skills
           </Link>
           <Link to="/market/skins"
@@ -152,7 +152,7 @@ export default function MarketSkillsPage() {
               const isInstalling = installing === s.id;
               return (
                 <motion.div key={s.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                  className="section-card !p-3 flex items-center gap-3">
+                  className="glass-card rounded-2xl p-3 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="material-icons-round text-primary text-lg">extension</span>
                   </div>
@@ -170,7 +170,7 @@ export default function MarketSkillsPage() {
                   <button type="button"
                     onClick={() => handleInstall(s)}
                     disabled={isInstalled || isInstalling}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0 shadow-glow-xs
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0
                       ${isInstalled
                         ? 'bg-secondary text-muted-foreground cursor-default'
                         : 'bg-primary text-primary-foreground hover:brightness-110'

@@ -19,6 +19,7 @@ import type { Message } from '@/lib/gyeol/types';
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
   const isUser = msg.role === 'user';
   const [reading, setReading] = useState(false);
+  const time = new Date((msg as any).created_at ?? Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const handleSpeak = () => {
     if (reading) { stopSpeaking(); setReading(false); }
@@ -30,31 +31,57 @@ function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) 
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full`}
+      className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} w-full`}
     >
+      {!isUser && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/10 mt-6">
+          <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
+            <span className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-[14px]">smart_toy</span>
+          </div>
+        </div>
+      )}
+
       {isUser ? (
-        <div className="max-w-[75%] user-bubble p-4 rounded-2xl rounded-br-sm">
-          <p className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">{msg.content}</p>
+        <div className="max-w-[75%]">
+          <div className="flex items-center justify-end gap-2 mb-1">
+            <span className="text-[10px] text-slate-500">{time}</span>
+            <span className="text-[10px] text-slate-400 font-medium">You</span>
+          </div>
+          <div className="user-bubble p-4 rounded-2xl rounded-br-sm">
+            <p className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">{msg.content}</p>
+          </div>
         </div>
       ) : (
         <div className="max-w-[85%]">
-          <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
-          <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
-            {(msg as any).metadata?.criticalLearning && (
-              <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
-                ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
-              </span>
-            )}
-            <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
-            <button type="button" onClick={handleSpeak}
-              className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
-              aria-label={reading ? 'Stop reading' : 'Read aloud'}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
-              </svg>
-            </button>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] text-foreground font-bold">{agentName}</span>
+            <span className="text-[10px] text-slate-500">{time}</span>
           </div>
+          <div className="flex gap-0">
+            <div className="w-[3px] rounded-full bg-gradient-to-b from-primary to-primary/30 mr-3 flex-shrink-0" />
+            <div className="glass-bubble p-4 rounded-2xl rounded-tl-sm flex-1">
+              {(msg as any).metadata?.criticalLearning && (
+                <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
+                  ⚡ Critical Learning! x{(msg as any).metadata.criticalMultiplier}
+                </span>
+              )}
+              <p className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">{msg.content}</p>
+              <button type="button" onClick={handleSpeak}
+                className={`mt-1 p-1 rounded-full transition ${reading ? 'text-primary' : 'text-white/15 hover:text-white/40'}`}
+                aria-label={reading ? 'Stop reading' : 'Read aloud'}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isUser && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center mt-6">
+          <span className="material-icons-round text-slate-300 text-[14px]">person</span>
         </div>
       )}
     </motion.div>
@@ -111,16 +138,25 @@ export default function GyeolPage() {
 
   return (
     <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative">
-      {/* Aurora background */}
       <div className="aurora-bg" />
 
-      {/* Top bar */}
+      {/* Top bar — Stitch 03 */}
       <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary shadow-glow-xs" />
-          <span className="text-[11px] font-semibold text-foreground/70 tracking-wider uppercase">{agentName}</span>
-        </div>
         <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/20">
+            <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
+              <span className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-sm">smart_toy</span>
+            </div>
+          </div>
+          <div>
+            <span className="text-sm font-bold text-foreground tracking-tight">{agentName}</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+              <span className="text-[10px] text-slate-400">Online</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           {(() => {
             const p = (agent?.settings as any)?.persona;
             if (p && p !== 'friend') {
@@ -129,14 +165,9 @@ export default function GyeolPage() {
             }
             return null;
           })()}
-          <GenBadge gen={agent?.gen ?? 1} size="sm" />
-          <div className="w-8 h-[2px] bg-border/30 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${Number(agent?.evolution_progress ?? 0)}%` }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
-            />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
+            <span className="material-icons-round text-secondary text-[12px]">verified</span>
+            <GenBadge gen={agent?.gen ?? 1} size="sm" />
           </div>
           <button type="button" onClick={() => setEvoOpen(true)} className="text-muted-foreground/40 hover:text-foreground transition">
             <span className="material-icons-round text-[14px]">trending_up</span>
@@ -156,8 +187,9 @@ export default function GyeolPage() {
               transition={{ duration: 0.4 }}
               className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
             >
-              {/* VoidCore with aurora glow */}
+              {/* VoidCore with enhanced aurora glow */}
               <div className="relative">
+                <div className="absolute inset-0 -m-16 bg-gradient-to-br from-primary/15 to-secondary/8 rounded-full blur-[60px] animate-pulse" style={{ animationDuration: '4s' }} />
                 <div className="absolute inset-0 -m-8 rounded-full bg-gradient-to-br from-primary/10 to-secondary/5 blur-3xl" />
                 <AnimatedCharacter
                   mood={(agent as any)?.mood ?? 'neutral'}
@@ -178,25 +210,17 @@ export default function GyeolPage() {
                   {agent?.total_conversations ?? 0} conversations
                 </p>
 
-                {/* Quick action buttons */}
                 <div className="flex items-center justify-center gap-2 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => setMemoryOpen(true)}
-                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1"
-                  >
+                  <button type="button" onClick={() => setMemoryOpen(true)}
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
                     <span className="text-xs">🧠</span> AI의 기억
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setEvoOpen(true)}
-                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1"
-                  >
+                  <button type="button" onClick={() => setEvoOpen(true)}
+                    className="px-3 py-1.5 rounded-xl glass-card text-primary/70 text-[10px] font-medium hover:border-white/15 transition flex items-center gap-1">
                     <span className="text-xs">🧬</span> 진화 현황
                   </button>
                 </div>
 
-                {/* 친밀도 + 감정 + 연속 접속 */}
                 {agent && (
                   <div className="flex items-center justify-center gap-3 text-[9px] text-white/25 mt-1">
                     <span>
@@ -219,7 +243,6 @@ export default function GyeolPage() {
                   </div>
                 )}
 
-                {/* 진화 시도 버튼 */}
                 {agent && Number((agent as any).evolution_progress) >= 100 && (agent as any).gen < 5 && (
                   <button
                     type="button"
@@ -265,6 +288,15 @@ export default function GyeolPage() {
                 ref={listRef}
                 className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-2"
               >
+                {/* Date glass pill */}
+                {messages.length > 0 && (
+                  <div className="flex justify-center py-4">
+                    <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
+                      Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
+
                 {messages.map((msg) => (
                   <MessageBubble key={msg.id} msg={msg} agentName={agentName} />
                 ))}
@@ -276,14 +308,16 @@ export default function GyeolPage() {
                     </button>
                   </motion.div>
                 )}
+                {/* PROCESSING indicator — Stitch 03 */}
                 {isLoading && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start px-1 py-2">
-                    <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
-                      <div className="flex items-end gap-1 h-4">
-                        <div className="typing-bar" />
-                        <div className="typing-bar" />
-                        <div className="typing-bar" />
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                        <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: '0.4s' }} />
                       </div>
+                      <span className="text-[10px] text-primary/60 font-medium tracking-[0.2em] uppercase">Processing</span>
                     </div>
                   </motion.div>
                 )}
@@ -293,29 +327,35 @@ export default function GyeolPage() {
         </AnimatePresence>
       </div>
 
-      {/* Input bar — floating pill */}
+      {/* Input bar — floating pill with + button */}
       <div className="relative z-[60] px-4 pb-[calc(56px+env(safe-area-inset-bottom,8px)+8px)] pt-2">
         <div className="bg-gradient-to-t from-background to-transparent pt-4">
-          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-3 py-1">
-            <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
+          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
+            <button type="button" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
+              <span className="material-icons-round text-[20px]">add_circle_outline</span>
+            </button>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               onFocus={() => messages.length > 0 && setChatExpanded(true)}
-              placeholder="Ask me anything..."
-              className="flex-1 bg-transparent text-foreground/90 placeholder:text-slate-500 text-sm py-2.5 outline-none min-w-0"
+              placeholder="Send a message to GYEOL..."
+              className="flex-1 bg-transparent text-foreground/90 placeholder:text-slate-500 text-sm py-2 outline-none min-w-0"
             />
+            <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 text-white flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
             >
               <span className="material-icons-round text-base">arrow_upward</span>
             </button>
           </div>
+          <p className="text-center text-[9px] text-slate-600 mt-1.5">
+            GYEOL can make mistakes. Verify important information.
+          </p>
         </div>
       </div>
 
