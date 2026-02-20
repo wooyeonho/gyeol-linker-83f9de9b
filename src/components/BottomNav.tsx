@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { to: '/', icon: 'blur_on', label: 'Home' },
+  { to: '/gamification', icon: 'military_tech', label: 'Quest' },
   { to: '/social', icon: 'group', label: 'Social' },
   { to: '/activity', icon: 'show_chart', label: 'Activity' },
-  { to: '/market/skins', icon: 'palette', label: 'Market' },
   { to: '/settings', icon: 'tune', label: 'Settings' },
 ] as const;
 

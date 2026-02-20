@@ -10,6 +10,7 @@ import ActivityPage from './views/Activity';
 import SocialPage from './views/Social';
 import SkillsPage from './views/MarketSkills';
 import SkinsPage from './views/MarketSkins';
+import GamificationPage from './views/Gamification';
 import NotFound from './views/NotFound';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
@@ -71,6 +72,7 @@ function App() {
         <Route path="/social" element={<ProtectedRoute><SimpleGuard><SocialPage /></SimpleGuard></ProtectedRoute>} />
         <Route path="/market/skills" element={<ProtectedRoute><SimpleGuard><SkillsPage /></SimpleGuard></ProtectedRoute>} />
         <Route path="/market/skins" element={<ProtectedRoute><SimpleGuard><SkinsPage /></SimpleGuard></ProtectedRoute>} />
+        <Route path="/gamification" element={<ProtectedRoute><SimpleGuard><GamificationPage /></SimpleGuard></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </ErrorBoundary>
