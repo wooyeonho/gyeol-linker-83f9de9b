@@ -5,7 +5,15 @@ import { decryptKey } from "../_shared/crypto.ts";
 const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
 function getCorsOrigin(req: Request): string {
   const origin = req.headers.get("origin") ?? "";
-  return allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  // Allow Lovable preview/published domains + configured origins
+  if (
+    allowedOrigins.includes(origin) ||
+    origin.endsWith(".lovable.app") ||
+    origin.endsWith(".lovableproject.com")
+  ) {
+    return origin;
+  }
+  return allowedOrigins[0];
 }
 function corsHeaders(req: Request) {
   return {
