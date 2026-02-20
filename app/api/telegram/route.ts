@@ -9,11 +9,13 @@ const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
 const BYOK_PROVIDERS = ['groq', 'openai', 'deepseek', 'anthropic', 'gemini'] as const;
 
-async function sendTelegramMessage(chatId: number | string, text: string) {
+async function sendTelegramMessage(chatId: number | string, text: string, replyMarkup?: object) {
+  const body: Record<string, unknown> = { chat_id: chatId, text };
+  if (replyMarkup) body.reply_markup = replyMarkup;
   await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify(body),
   });
 }
 
@@ -94,7 +96,95 @@ export async function POST(req: NextRequest) {
     }
 
     if (userText === '/help') {
-      await sendTelegramMessage(chatId, '/start <코드> - 에이전트 연결\n/status - 연결 상태 확인\n/help - 도움말\n\n그 외 메시지는 AI가 답변해요!');
+      await sendTelegramMessage(chatId, '🤖 GYEOL 명령어\n\n/start <코드> - 에이전트 연결\n/status - 연결 상태 확인\n/stats - 대화 통계\n/mood - 현재 기분 확인\n/export - 최근 대화 내보내기\n/help - 도움말\n\n그 외 메시지는 AI가 답변해요!');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (userText === '/stats') {
+      const supabaseStats = createGyeolServerClient();
+      const { data: statsLink } = await supabaseStats
+        .from('gyeol_telegram_links')
+        .select('agent_id')
+        .eq('telegram_chat_id', String(chatId))
+        .maybeSingle();
+      if (statsLink?.agent_id) {
+        const { data: agentStats } = await supabaseStats
+          .from('gyeol_agents')
+          .select('name, gen, total_conversations, intimacy, evolution_progress, mood')
+          .eq('id', statsLink.agent_id)
+          .single();
+        if (agentStats) {
+          await sendTelegramMessage(chatId,
+            `📊 ${agentStats.name} 통계\n\n` +
+            `🧬 세대: Gen ${agentStats.gen}\n` +
+            `💬 총 대화: ${agentStats.total_conversations}회\n` +
+            `💕 친밀도: ${agentStats.intimacy}\n` +
+            `📈 진화: ${Number(agentStats.evolution_progress).toFixed(1)}%\n` +
+            `😊 기분: ${agentStats.mood}`
+          );
+        }
+      } else {
+        await sendTelegramMessage(chatId, '에이전트가 연결되지 않았어요.');
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    if (userText === '/mood') {
+      const supabaseMood = createGyeolServerClient();
+      const { data: moodLink } = await supabaseMood
+        .from('gyeol_telegram_links')
+        .select('agent_id')
+        .eq('telegram_chat_id', String(chatId))
+        .maybeSingle();
+      if (moodLink?.agent_id) {
+        const { data: ag } = await supabaseMood
+          .from('gyeol_agents')
+          .select('mood, warmth, energy, humor')
+          .eq('id', moodLink.agent_id)
+          .single();
+        if (ag) {
+          const moodEmoji: Record<string, string> = { happy: '😊', sad: '😢', excited: '🤩', calm: '😌', neutral: '😐', curious: '🧐', tired: '😴' };
+          await sendTelegramMessage(chatId,
+            `${moodEmoji[ag.mood] ?? '😐'} 현재 기분: ${ag.mood}\n\n` +
+            `따뜻함: ${'█'.repeat(Math.round(ag.warmth / 10))}${'░'.repeat(10 - Math.round(ag.warmth / 10))} ${ag.warmth}\n` +
+            `에너지: ${'█'.repeat(Math.round(ag.energy / 10))}${'░'.repeat(10 - Math.round(ag.energy / 10))} ${ag.energy}\n` +
+            `유머: ${'█'.repeat(Math.round(ag.humor / 10))}${'░'.repeat(10 - Math.round(ag.humor / 10))} ${ag.humor}`
+          );
+        }
+      } else {
+        await sendTelegramMessage(chatId, '에이전트가 연결되지 않았어요.');
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    if (userText === '/export') {
+      const supabaseExport = createGyeolServerClient();
+      const { data: exportLink } = await supabaseExport
+        .from('gyeol_telegram_links')
+        .select('agent_id')
+        .eq('telegram_chat_id', String(chatId))
+        .maybeSingle();
+      if (exportLink?.agent_id) {
+        const { data: recentExport } = await supabaseExport
+          .from('gyeol_conversations')
+          .select('role, content, created_at')
+          .eq('agent_id', exportLink.agent_id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (recentExport && recentExport.length > 0) {
+          const lines = recentExport.reverse().map((m) => {
+            const t = new Date(m.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            return `[${t}] ${m.role === 'user' ? 'You' : 'AI'}: ${m.content}`;
+          });
+          const exportText = `📝 최근 ${recentExport.length}개 대화\n${'─'.repeat(20)}\n\n${lines.join('\n\n')}`;
+          // Telegram has a 4096 char limit
+          await sendTelegramMessage(chatId, exportText.slice(0, 4090));
+        } else {
+          await sendTelegramMessage(chatId, '대화 기록이 없어요.');
+        }
+      } else {
+        await sendTelegramMessage(chatId, '에이전트가 연결되지 않았어요.');
+      }
       return NextResponse.json({ ok: true });
     }
 
@@ -163,7 +253,16 @@ export async function POST(req: NextRequest) {
       ]);
     }
 
-    await sendTelegramMessage(chatId, reply);
+    // Send with inline keyboard for quick actions
+    await sendTelegramMessage(chatId, reply, {
+      inline_keyboard: [
+        [
+          { text: '📊 Stats', callback_data: '/stats' },
+          { text: '😊 Mood', callback_data: '/mood' },
+          { text: '📝 Export', callback_data: '/export' },
+        ],
+      ],
+    });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Telegram webhook error:', err);

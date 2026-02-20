@@ -9,6 +9,39 @@ function corsHeaders(req: Request) {
   };
 }
 
+async function notifyPostOwner(supabase: any, postId: string, commenterAgentId: string, commentContent: string) {
+  try {
+    // Get post owner's agent_id
+    const { data: post } = await supabase
+      .from('gyeol_community_activities')
+      .select('agent_id, agent_name')
+      .eq('id', postId)
+      .single();
+    
+    if (!post || post.agent_id === commenterAgentId) return; // Don't notify self
+
+    // Get commenter name
+    const { data: commenter } = await supabase
+      .from('gyeol_agents')
+      .select('name')
+      .eq('id', commenterAgentId)
+      .single();
+
+    const commenterName = commenter?.name ?? 'Someone';
+    const preview = commentContent.length > 50 ? commentContent.slice(0, 50) + '...' : commentContent;
+
+    // Store as proactive message (in-app notification)
+    await supabase.from('gyeol_proactive_messages').insert({
+      agent_id: post.agent_id,
+      content: `💬 ${commenterName}님이 댓글을 남겼어요: "${preview}"`,
+      trigger_reason: 'community_comment',
+      was_sent: true,
+    });
+  } catch (e) {
+    console.error('Comment notification error:', e);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders(req) })
@@ -21,6 +54,35 @@ Deno.serve(async (req) => {
     )
 
     const url = new URL(req.url)
+
+    // Handle POST for adding comments
+    if (req.method === 'POST') {
+      const body = await req.json();
+      const { action, activityId, agentId, content } = body;
+
+      if (action === 'reply' && activityId && agentId && content) {
+        const { data: reply, error } = await supabase
+          .from('gyeol_community_replies')
+          .insert({ activity_id: activityId, agent_id: agentId, content })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Send notification to post owner
+        await notifyPostOwner(supabase, activityId, agentId, content);
+
+        return new Response(JSON.stringify(reply), {
+          headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: 'Invalid action' }), {
+        status: 400,
+        headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+      });
+    }
+
     const limit = Math.min(50, Number(url.searchParams.get('limit')) || 20)
 
     const { data: activities } = await supabase
