@@ -24,27 +24,27 @@
 }
 
 .dark {
-  --background: 240 20% 4%;
+  --background: 260 30% 4%;
   --foreground: 240 5% 90%;
   --primary: 258 80% 58%;
   --primary-foreground: 0 0% 100%;
   --secondary: 189 90% 42%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 260 15% 10%;
+  --muted: 260 20% 11%;
   --muted-foreground: 240 5% 45%;
   --accent: 189 90% 42%;
   --accent-foreground: 0 0% 100%;
-  --card: 260 15% 7%;
+  --card: 260 25% 8%;
   --card-foreground: 240 5% 88%;
-  --border: 260 10% 14%;
+  --border: 260 15% 15%;
   --ring: 258 80% 58%;
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --surface: 260 15% 5%;
+  --surface: 260 25% 6%;
 }
 
 html {
-  background: #0a0a0c;
+  background: #0b0914;
 }
 
 body {
@@ -92,9 +92,9 @@ p, .text-base, .text-sm, .text-lg {
   position: absolute;
   top: -20%;
   left: -10%;
-  width: 600px;
-  height: 600px;
-  background: hsl(258 80% 58% / 0.15);
+  width: 700px;
+  height: 700px;
+  background: hsl(258 80% 58% / 0.2);
   border-radius: 50%;
   filter: blur(120px);
   animation: aurora-pulse 10s infinite ease-in-out;
@@ -104,9 +104,9 @@ p, .text-base, .text-sm, .text-lg {
   position: absolute;
   bottom: -20%;
   right: -10%;
-  width: 500px;
-  height: 500px;
-  background: hsl(189 90% 42% / 0.08);
+  width: 600px;
+  height: 600px;
+  background: hsl(189 90% 42% / 0.12);
   border-radius: 50%;
   filter: blur(120px);
   animation: aurora-pulse 10s infinite ease-in-out 2s;
@@ -133,32 +133,36 @@ p, .text-base, .text-sm, .text-lg {
 
 /* 글래스 카드 — 일반 콘텐츠 카드 */
 .glass-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+  background: linear-gradient(180deg, rgba(45, 40, 57, 0.5) 0%, rgba(21, 16, 34, 0.6) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(111, 57, 239, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(111, 57, 239, 0.1);
 }
 :root:not(.dark) .glass-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
   border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.06);
 }
 :root:not(.dark) .glass-card:hover {
-  border-color: rgba(0, 0, 0, 0.12);
+  border-color: rgba(120, 78, 218, 0.2);
+  box-shadow: 0 4px 16px 0 rgba(120, 78, 218, 0.08);
 }
 
 /* 글래스 카드 — 선택된 상태 */
 .glass-card-selected {
   border: 1px solid transparent;
   background-image: 
-    linear-gradient(180deg, rgba(30, 27, 41, 0.8), rgba(30, 27, 41, 0.8)),
+    linear-gradient(180deg, rgba(30, 27, 41, 0.9), rgba(21, 16, 34, 0.9)),
     linear-gradient(135deg, #784eda 0%, #06b6d4 100%);
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  box-shadow: 0 0 40px rgba(120, 78, 218, 0.2);
+  box-shadow: 0 0 40px rgba(120, 78, 218, 0.25), 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 :root:not(.dark) .glass-card-selected {
   background-image: 
@@ -172,8 +176,8 @@ p, .text-base, .text-sm, .text-lg {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
 }
 :root:not(.dark) .glass-bubble {
   background: rgba(255, 255, 255, 0.7);
