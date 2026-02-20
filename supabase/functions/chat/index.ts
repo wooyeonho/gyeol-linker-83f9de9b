@@ -306,23 +306,24 @@ async function doPostProcessing(
   db: any, agent: any, agentId: string, trimmedMessage: string,
   assistantContent: string, provider: string, authHeader: string, supabaseUrl: string, locale: string
 ) {
-  const groqKeyForMemory = Deno.env.get("GROQ_API_KEY");
+  const lovableKeyForProcessing = Deno.env.get("LOVABLE_API_KEY");
+  const aiEndpoint = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
   // Memory extraction
-  if (groqKeyForMemory && trimmedMessage.length > 3 && provider !== "builtin") {
+  if (lovableKeyForProcessing && trimmedMessage.length > 3 && provider !== "builtin") {
     try {
-      const memRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const memRes = await fetch(aiEndpoint, {
         method: "POST",
-        headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${lovableKeyForProcessing}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "google/gemini-2.5-flash-lite",
           messages: [
             { role: "system", content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
 각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
 없으면 빈 배열 []` },
             { role: "user", content: trimmedMessage },
           ],
-          max_tokens: 300, temperature: 0.3,
+          max_tokens: 300,
         }),
       });
       if (memRes.ok) {
@@ -353,17 +354,17 @@ async function doPostProcessing(
           .order("created_at", { ascending: false }).limit(30);
         if (recentMsgs && recentMsgs.length >= 5) {
           const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join("\n").slice(0, 3000);
-          const personaRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          const personaRes = await fetch(aiEndpoint, {
             method: "POST",
-            headers: { Authorization: `Bearer ${groqKeyForMemory}`, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${lovableKeyForProcessing}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              model: "llama-3.1-8b-instant",
+              model: "google/gemini-2.5-flash-lite",
               messages: [
                 { role: "system", content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
 {"persona":"고유한 정체성 1-2문장","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유"}` },
                 { role: "user", content: convText },
               ],
-              max_tokens: 200, temperature: 0.3,
+              max_tokens: 200,
             }),
           });
           if (personaRes.ok) {
@@ -680,6 +681,16 @@ serve(async (req) => {
           const status = res.status;
           console.error("Lovable AI error:", status);
           await res.text();
+          if (status === 429) {
+            return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
+              status: 429, headers: { ...ch, "Content-Type": "application/json" },
+            });
+          }
+          if (status === 402) {
+            return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
+              status: 402, headers: { ...ch, "Content-Type": "application/json" },
+            });
+          }
         }
       } catch (e) { console.error("Lovable AI failed:", e); }
     }
@@ -718,12 +729,7 @@ serve(async (req) => {
     doPostProcessing(db, agent, agentId, trimmedMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
 
     return new Response(
-      JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
-      { headers: { ...ch, "Content-Type": "application/json" } }
-    );
-
-    return new Response(
-      JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), conversationInsight }),
+      JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent) }),
       { headers: { ...ch, "Content-Type": "application/json" } }
     );
   } catch (e) {
