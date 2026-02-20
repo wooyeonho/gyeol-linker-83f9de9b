@@ -96,17 +96,17 @@ export default function ActivityPage() {
         {/* Stat Cards — Interaction Score + Total Growth */}
         <div className="grid grid-cols-2 gap-3">
           {/* Interaction Score */}
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-3">
+          <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
               <span className="material-icons-round text-primary/50 text-lg">bolt</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">
                 +{learningGrowth}%
               </span>
             </div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Interaction Score</p>
-            <p className="text-3xl font-bold text-foreground mt-1">
+            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">
               {interactionScore}
-              <span className="text-sm font-normal text-slate-400 ml-1">points</span>
+              <span className="text-[11px] font-normal text-slate-400 ml-1">pts</span>
             </p>
             <div className="w-full h-1 rounded-full bg-white/[0.06] mt-3">
               <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary" style={{ width: '72%' }} />
@@ -115,21 +115,21 @@ export default function ActivityPage() {
           </div>
 
           {/* Total Growth */}
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-3">
+          <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
               <span className="material-icons-round text-secondary/50 text-lg">trending_up</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
                 Lv. {growthLevel}
               </span>
             </div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total Growth</p>
-            <p className="text-3xl font-bold text-foreground mt-1">
-              Level {growthLevel}
+            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">
+              Lv.{growthLevel}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1">
-              You've unlocked <strong className="text-foreground">Deep Empathy</strong> module.
+            <p className="text-[9px] text-slate-400 mt-1 leading-tight">
+              <strong className="text-foreground">Deep Empathy</strong> unlocked
             </p>
-            <div className="flex gap-1.5 mt-3">
+            <div className="flex gap-1 mt-2">
               {[1,2,3,4,5].map(g => (
                 <div key={g} className={`flex-1 h-1 rounded-full ${g <= (agent?.gen ?? 1) ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`} />
               ))}
