@@ -659,6 +659,14 @@ serve(async (req) => {
 
       await db.from("gyeol_agents").update(updates).eq("id", agentId);
 
+      // Fire gamification tick (non-blocking)
+      const gamTickUrl = `${supabaseUrl}/functions/v1/gamification-tick`;
+      fetch(gamTickUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: authHeader },
+        body: JSON.stringify({ agentId }),
+      }).catch(e => console.warn("gamification-tick failed:", e));
+
       return new Response(
         JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent), evolved, newGen: evolved ? newGen : undefined, conversationInsight }),
         { headers: { ...ch, "Content-Type": "application/json" } }
