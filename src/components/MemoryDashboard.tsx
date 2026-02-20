@@ -39,6 +39,8 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
     if (!isOpen || !agentId) return;
@@ -99,9 +101,24 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
     return acc;
   }, {});
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    // Delete from DB
+    await supabase.from('gyeol_user_memories' as any).delete().eq('id', id);
     setMemories((prev) => prev.filter((m) => m.id !== id));
     setDeleteTarget(null);
+  };
+
+  const handleEdit = async (id: string) => {
+    if (!editValue.trim()) return;
+    await supabase.from('gyeol_user_memories' as any).update({ value: editValue.trim() } as any).eq('id', id);
+    setMemories((prev) => prev.map((m) => m.id === id ? { ...m, value: editValue.trim() } : m));
+    setEditTarget(null);
+    setEditValue('');
+  };
+
+  const startEdit = (mem: MemoryItem) => {
+    setEditTarget(mem.id);
+    setEditValue(mem.value);
   };
 
   return (
@@ -170,18 +187,45 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                             className="flex items-center justify-between px-3 py-2 glass-card rounded-xl group"
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-[12px] text-foreground/85 truncate">{mem.value}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <ConfidenceBadge confidence={mem.confidence} />
-                              </div>
+                              {editTarget === mem.id ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleEdit(mem.id)}
+                                    className="flex-1 bg-transparent border border-primary/30 rounded-lg px-2 py-1 text-[12px] text-foreground outline-none focus:border-primary"
+                                    autoFocus
+                                  />
+                                  <button onClick={() => handleEdit(mem.id)} className="text-primary text-[11px] font-medium">저장</button>
+                                  <button onClick={() => setEditTarget(null)} className="text-muted-foreground text-[11px]">취소</button>
+                                </div>
+                              ) : (
+                                <>
+                                  <p className="text-[12px] text-foreground/85 truncate">{mem.value}</p>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <ConfidenceBadge confidence={mem.confidence} />
+                                  </div>
+                                </>
+                              )}
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteTarget(mem.id)}
-                              className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive transition p-1 ml-2"
-                            >
-                              <span className="material-icons-round text-sm">close</span>
-                            </button>
+                            {editTarget !== mem.id && (
+                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition ml-2">
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(mem)}
+                                  className="text-muted-foreground/30 hover:text-primary transition p-1"
+                                >
+                                  <span className="material-icons-round text-sm">edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleteTarget(mem.id)}
+                                  className="text-muted-foreground/30 hover:text-destructive transition p-1"
+                                >
+                                  <span className="material-icons-round text-sm">close</span>
+                                </button>
+                              </div>
+                            )}
                           </motion.div>
                         ))}
                       </div>
