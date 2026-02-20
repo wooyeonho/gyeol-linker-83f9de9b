@@ -1,9 +1,10 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/src/hooks/useAuth';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/Toast';
 import { AchievementPopup } from './components/AchievementPopup';
+import { AnimatePresence, motion } from 'framer-motion';
 import AuthPage from './views/Auth';
 import GyeolPage from './views/Index';
 import SimpleChat from './views/SimpleChat';
@@ -17,6 +18,20 @@ import NotFound from './views/NotFound';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
 import ResetPasswordPage from './views/ResetPassword';
+
+const pageTransition = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+function PageWrap({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div {...pageTransition} transition={{ duration: 0.2, ease: 'easeOut' }} className="h-full">
+      {children}
+    </motion.div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -54,6 +69,7 @@ function SimpleGuard({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -67,20 +83,22 @@ function App() {
     <ErrorBoundary>
       <ToastContainer />
       <AchievementPopup />
-      <Routes>
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/" element={<ProtectedRoute><ModeRouter /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="/activity" element={<ProtectedRoute><SimpleGuard><ActivityPage /></SimpleGuard></ProtectedRoute>} />
-        <Route path="/social" element={<ProtectedRoute><SimpleGuard><SocialPage /></SimpleGuard></ProtectedRoute>} />
-        <Route path="/market/skills" element={<ProtectedRoute><SimpleGuard><SkillsPage /></SimpleGuard></ProtectedRoute>} />
-        <Route path="/market/skins" element={<ProtectedRoute><SimpleGuard><SkinsPage /></SimpleGuard></ProtectedRoute>} />
-        <Route path="/gamification" element={<ProtectedRoute><SimpleGuard><GamificationPage /></SimpleGuard></ProtectedRoute>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/auth" element={user ? <Navigate to="/" replace /> : <PageWrap><AuthPage /></PageWrap>} />
+          <Route path="/reset-password" element={<PageWrap><ResetPasswordPage /></PageWrap>} />
+          <Route path="/terms" element={<PageWrap><Terms /></PageWrap>} />
+          <Route path="/privacy" element={<PageWrap><Privacy /></PageWrap>} />
+          <Route path="/" element={<ProtectedRoute><ModeRouter /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><PageWrap><SettingsPage /></PageWrap></ProtectedRoute>} />
+          <Route path="/activity" element={<ProtectedRoute><SimpleGuard><PageWrap><ActivityPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/social" element={<ProtectedRoute><SimpleGuard><PageWrap><SocialPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/market/skills" element={<ProtectedRoute><SimpleGuard><PageWrap><SkillsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/market/skins" element={<ProtectedRoute><SimpleGuard><PageWrap><SkinsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/gamification" element={<ProtectedRoute><SimpleGuard><PageWrap><GamificationPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="*" element={<PageWrap><NotFound /></PageWrap>} />
+        </Routes>
+      </AnimatePresence>
     </ErrorBoundary>
   );
 }
