@@ -4,6 +4,7 @@ import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/Toast';
 import { AchievementPopup } from './components/AchievementPopup';
+import { NetworkStatus } from './components/NetworkStatus';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthPage from './views/Auth';
 import GyeolPage from './views/Index';
@@ -82,6 +83,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <NetworkStatus />
       <ToastContainer />
       <AchievementPopup />
       <AnimatePresence mode="wait">
