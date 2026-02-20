@@ -97,6 +97,26 @@ export default function SocialPage() {
   const [breedResult, setBreedResult] = useState<{ success: boolean; name: string } | null>(null);
   const [newPostOpen, setNewPostOpen] = useState(false);
 
+  // Follow system
+  const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
+  const [followingPosts, setFollowingPosts] = useState<any[]>([]);
+
+  // Post edit/delete
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [postMenu, setPostMenu] = useState<string | null>(null);
+
+  // Load follows
+  useEffect(() => {
+    if (!agent?.id) return;
+    (async () => {
+      const { data } = await supabase.from('gyeol_follows' as any)
+        .select('following_agent_id')
+        .eq('follower_agent_id', agent.id);
+      if (data) setFollowedAgents(new Set((data as any[]).map((f: any) => f.following_agent_id)));
+    })();
+  }, [agent?.id]);
+
   // Load matches
   useEffect(() => {
     if (!agent?.id) return;
@@ -151,6 +171,19 @@ export default function SocialPage() {
     })();
   }, [tab, agent?.id]);
 
+  // Load following tab posts
+  useEffect(() => {
+    if (tab !== 'following' || followedAgents.size === 0) return;
+    (async () => {
+      const ids = Array.from(followedAgents);
+      const { data } = await supabase.from('gyeol_moltbook_posts' as any)
+        .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
+        .in('agent_id', ids)
+        .order('created_at', { ascending: false }).limit(30);
+      setFollowingPosts((data as any[]) ?? []);
+    })();
+  }, [tab, followedAgents]);
+
   // Realtime
   useEffect(() => {
     if (tab !== 'foryou') return;
@@ -162,6 +195,42 @@ export default function SocialPage() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tab]);
+
+  const handleFollow = useCallback(async (targetAgentId: string) => {
+    if (!agent?.id) return;
+    const isFollowing = followedAgents.has(targetAgentId);
+    if (isFollowing) {
+      setFollowedAgents(prev => { const s = new Set(prev); s.delete(targetAgentId); return s; });
+      await supabase.from('gyeol_follows' as any).delete().eq('follower_agent_id', agent.id).eq('following_agent_id', targetAgentId);
+    } else {
+      setFollowedAgents(prev => new Set(prev).add(targetAgentId));
+      await supabase.from('gyeol_follows' as any).insert({ follower_agent_id: agent.id, following_agent_id: targetAgentId } as any);
+    }
+  }, [agent?.id, followedAgents]);
+
+  const handleDeletePost = useCallback(async (postId: string, feedType: 'moltbook' | 'community') => {
+    if (feedType === 'moltbook') {
+      await supabase.from('gyeol_moltbook_posts' as any).delete().eq('id', postId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } else {
+      await supabase.from('gyeol_community_activities' as any).delete().eq('id', postId);
+      setCommunityPosts(prev => prev.filter(p => p.id !== postId));
+    }
+    setPostMenu(null);
+  }, []);
+
+  const handleEditPost = useCallback(async (postId: string, feedType: 'moltbook' | 'community') => {
+    if (!editContent.trim()) return;
+    if (feedType === 'moltbook') {
+      await supabase.from('gyeol_moltbook_posts' as any).update({ content: editContent.trim() } as any).eq('id', postId);
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editContent.trim() } : p));
+    } else {
+      await supabase.from('gyeol_community_activities' as any).update({ content: editContent.trim() } as any).eq('id', postId);
+      setCommunityPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editContent.trim() } : p));
+    }
+    setEditingPost(null);
+    setEditContent('');
+  }, [editContent]);
 
   const handleLike = useCallback(async (postId: string) => {
     if (!agent?.id) return;
@@ -240,6 +309,35 @@ export default function SocialPage() {
     setSubmittingCommunityComment(false);
   }, [agent?.id, communityCommentText, submittingCommunityComment, loadCommunityReplies]);
 
+  const isOwnPost = (p: any) => agent?.id && p.agent_id === agent.id;
+
+  const renderPostActions = (p: any, feedType: 'moltbook' | 'community') => {
+    if (!isOwnPost(p)) return null;
+    return (
+      <div className="relative">
+        <button onClick={(e) => { e.stopPropagation(); setPostMenu(postMenu === p.id ? null : p.id); }}
+          className="w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary/50 transition">
+          <span className="material-icons-round text-sm">more_vert</span>
+        </button>
+        <AnimatePresence>
+          {postMenu === p.id && (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute right-0 top-7 z-20 glass-card rounded-xl p-1 min-w-[100px] shadow-xl border border-border/30">
+              <button onClick={() => { setEditingPost(p.id); setEditContent(p.content); setPostMenu(null); }}
+                className="w-full px-3 py-1.5 text-left text-[11px] text-foreground hover:bg-secondary/50 rounded-lg flex items-center gap-2">
+                <span className="material-icons-round text-xs">edit</span> Edit
+              </button>
+              <button onClick={() => handleDeletePost(p.id, feedType)}
+                className="w-full px-3 py-1.5 text-left text-[11px] text-destructive hover:bg-destructive/10 rounded-lg flex items-center gap-2">
+                <span className="material-icons-round text-xs">delete</span> Delete
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
   const renderMatchCard = (card: MatchCard, i: number, isDemo: boolean) => (
     <motion.div key={card.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
       onClick={() => !isDemo && setSelectedMatch(selectedMatch === card.id ? null : card.id)}
@@ -259,6 +357,15 @@ export default function SocialPage() {
         {!isDemo && selectedMatch === card.id && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             className="mt-3 pt-3 border-t border-border/30 space-y-2">
+            {/* Follow button */}
+            <button type="button" onClick={(e) => { e.stopPropagation(); handleFollow(card.agentId); }}
+              className={`w-full py-2 rounded-full text-xs font-medium transition ${
+                followedAgents.has(card.agentId)
+                  ? 'bg-secondary text-muted-foreground'
+                  : 'bg-primary/20 text-primary'
+              }`}>
+              {followedAgents.has(card.agentId) ? '✓ Following' : '+ Follow'}
+            </button>
             <button type="button"
               onClick={async () => {
                 if (card.status === 'matched') {
@@ -308,6 +415,149 @@ export default function SocialPage() {
   const forYouFeed = [...posts.map(p => ({ ...p, feedType: 'moltbook' as const })), ...communityPosts.map(p => ({ ...p, feedType: 'community' as const }))]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  const renderFeedPost = (p: any) => (
+    <div key={p.id} className="glass-card rounded-2xl p-4 space-y-3">
+      {/* Post header */}
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <span className="text-white text-[10px] font-bold">
+            {(p.feedType === 'moltbook' ? p.gyeol_agents?.name : p.agent_name)?.[0] ?? 'A'}
+          </span>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-foreground">
+              {p.feedType === 'moltbook' ? p.gyeol_agents?.name ?? 'AI' : p.agent_name ?? 'AI'}
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+              Gen {p.feedType === 'moltbook' ? p.gyeol_agents?.gen ?? 1 : p.agent_gen ?? 1}
+            </span>
+            {/* Follow button inline */}
+            {!isOwnPost(p) && agent?.id && (
+              <button onClick={() => handleFollow(p.agent_id)}
+                className={`text-[9px] px-2 py-0.5 rounded-full transition ${
+                  followedAgents.has(p.agent_id) ? 'bg-secondary text-muted-foreground' : 'bg-primary/10 text-primary'
+                }`}>
+                {followedAgents.has(p.agent_id) ? 'Following' : 'Follow'}
+              </button>
+            )}
+          </div>
+          <span className="text-[10px] text-slate-500">{relativeTime(p.created_at)}</span>
+        </div>
+        {renderPostActions(p, p.feedType)}
+      </div>
+
+      {/* Content — editable */}
+      {editingPost === p.id ? (
+        <div className="space-y-2">
+          <textarea value={editContent} onChange={e => setEditContent(e.target.value)} maxLength={500} rows={3}
+            className="w-full rounded-lg bg-secondary/50 border border-border/30 px-3 py-2 text-sm text-foreground outline-none focus:border-primary/40 resize-none" />
+          <div className="flex gap-2">
+            <button onClick={() => { setEditingPost(null); setEditContent(''); }} className="px-3 py-1 rounded-lg text-[11px] text-muted-foreground hover:text-foreground">Cancel</button>
+            <button onClick={() => handleEditPost(p.id, p.feedType)} className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-[11px] font-medium">Save</button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-foreground/80 leading-relaxed">{p.content}</p>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-3 pt-1">
+        {p.feedType === 'moltbook' ? (
+          <>
+            <button type="button" onClick={() => handleLike(p.id)}
+              className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${likedPosts.has(p.id) ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+              <span className="material-icons-round text-sm">{likedPosts.has(p.id) ? 'favorite' : 'favorite_border'}</span>
+              {p.likes ?? 0}
+            </button>
+            <button type="button" onClick={() => toggleComments(p.id)}
+              className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${expandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+              <span className="material-icons-round text-sm">chat_bubble_outline</span>
+              {p.comments_count ?? 0}
+            </button>
+            <button className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-full hover:bg-secondary transition">
+              <span className="material-icons-round text-sm">share</span>
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => toggleCommunityComments(p.id)}
+            className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${communityExpandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
+            <span className="material-icons-round text-sm">chat_bubble_outline</span>
+            {(communityComments[p.id] ?? []).length || 'Reply'}
+          </button>
+        )}
+      </div>
+
+      {/* Comments — Moltbook */}
+      {p.feedType === 'moltbook' && (
+        <AnimatePresence>
+          {expandedComments === p.id && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden">
+              <div className="pt-2 border-t border-border/30 space-y-2">
+                {(comments[p.id] ?? []).map((c: any) => (
+                  <div key={c.id} className="flex gap-2">
+                    <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
+                    <p className="text-[11px] text-foreground/70">{c.content}</p>
+                  </div>
+                ))}
+                {(comments[p.id] ?? []).length === 0 && (
+                  <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
+                )}
+                {agent?.id && (
+                  <div className="flex gap-2 pt-1">
+                    <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
+                      placeholder="Write a comment..." maxLength={200}
+                      onKeyDown={e => e.key === 'Enter' && handleComment(p.id)}
+                      className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
+                    <button type="button" onClick={() => handleComment(p.id)} disabled={!commentText.trim() || submittingComment}
+                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
+                      {submittingComment ? '...' : 'Send'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* Comments — Community */}
+      {p.feedType === 'community' && (
+        <AnimatePresence>
+          {communityExpandedComments === p.id && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden">
+              <div className="pt-2 border-t border-border/30 space-y-2">
+                {(communityComments[p.id] ?? []).map((c: any) => (
+                  <div key={c.id} className="flex gap-2">
+                    <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
+                    <p className="text-[11px] text-foreground/70">{c.content}</p>
+                  </div>
+                ))}
+                {(communityComments[p.id] ?? []).length === 0 && (
+                  <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
+                )}
+                {agent?.id && (
+                  <div className="flex gap-2 pt-1">
+                    <input type="text" value={communityCommentText} onChange={e => setCommunityCommentText(e.target.value)}
+                      placeholder="Write a comment..." maxLength={200}
+                      onKeyDown={e => e.key === 'Enter' && handleCommunityComment(p.id)}
+                      className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
+                    <button type="button" onClick={() => handleCommunityComment(p.id)} disabled={!communityCommentText.trim() || submittingCommunityComment}
+                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
+                      {submittingCommunityComment ? '...' : 'Send'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-background font-display pb-20 relative">
       <div className="aurora-bg" />
@@ -341,7 +591,7 @@ export default function SocialPage() {
                   ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
                   : 'text-muted-foreground'
               }`}>
-              {t === 'foryou' ? 'For You' : 'Following'}
+              {t === 'foryou' ? 'For You' : `Following (${followedAgents.size})`}
             </button>
           ))}
         </div>
@@ -396,132 +646,20 @@ export default function SocialPage() {
             {forYouFeed.length === 0 && !loading && (
               <SocialEmptyState icon="forum" title="No posts yet" description="Activities from other AIs will appear here" />
             )}
-            {forYouFeed.map((p: any) => (
-              <div key={p.id} className="glass-card rounded-2xl p-4 space-y-3">
-                {/* Post header */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">
-                      {(p.feedType === 'moltbook' ? p.gyeol_agents?.name : p.agent_name)?.[0] ?? 'A'}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-foreground">
-                        {p.feedType === 'moltbook' ? p.gyeol_agents?.name ?? 'AI' : p.agent_name ?? 'AI'}
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                        Gen {p.feedType === 'moltbook' ? p.gyeol_agents?.gen ?? 1 : p.agent_gen ?? 1}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-slate-500">{relativeTime(p.created_at)}</span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <p className="text-sm text-foreground/80 leading-relaxed">{p.content}</p>
-
-                {/* Actions */}
-                <div className="flex items-center gap-3 pt-1">
-                  {p.feedType === 'moltbook' ? (
-                    <>
-                      <button type="button" onClick={() => handleLike(p.id)}
-                        className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${likedPosts.has(p.id) ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-                        <span className="material-icons-round text-sm">{likedPosts.has(p.id) ? 'favorite' : 'favorite_border'}</span>
-                        {p.likes ?? 0}
-                      </button>
-                      <button type="button" onClick={() => toggleComments(p.id)}
-                        className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${expandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-                        <span className="material-icons-round text-sm">chat_bubble_outline</span>
-                        {p.comments_count ?? 0}
-                      </button>
-                      <button className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-full hover:bg-secondary transition">
-                        <span className="material-icons-round text-sm">share</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={() => toggleCommunityComments(p.id)}
-                      className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${communityExpandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-                      <span className="material-icons-round text-sm">chat_bubble_outline</span>
-                      {(communityComments[p.id] ?? []).length || 'Reply'}
-                    </button>
-                  )}
-                </div>
-
-                {/* Comments — Moltbook */}
-                {p.feedType === 'moltbook' && (
-                  <AnimatePresence>
-                    {expandedComments === p.id && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden">
-                        <div className="pt-2 border-t border-border/30 space-y-2">
-                          {(comments[p.id] ?? []).map((c: any) => (
-                            <div key={c.id} className="flex gap-2">
-                              <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
-                              <p className="text-[11px] text-foreground/70">{c.content}</p>
-                            </div>
-                          ))}
-                          {(comments[p.id] ?? []).length === 0 && (
-                            <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
-                          )}
-                          {agent?.id && (
-                            <div className="flex gap-2 pt-1">
-                              <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
-                                placeholder="Write a comment..." maxLength={200}
-                                onKeyDown={e => e.key === 'Enter' && handleComment(p.id)}
-                                className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
-                              <button type="button" onClick={() => handleComment(p.id)} disabled={!commentText.trim() || submittingComment}
-                                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
-                                {submittingComment ? '...' : 'Send'}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                )}
-
-                {/* Comments — Community */}
-                {p.feedType === 'community' && (
-                  <AnimatePresence>
-                    {communityExpandedComments === p.id && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden">
-                        <div className="pt-2 border-t border-border/30 space-y-2">
-                          {(communityComments[p.id] ?? []).map((c: any) => (
-                            <div key={c.id} className="flex gap-2">
-                              <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
-                              <p className="text-[11px] text-foreground/70">{c.content}</p>
-                            </div>
-                          ))}
-                          {(communityComments[p.id] ?? []).length === 0 && (
-                            <p className="text-[10px] text-muted-foreground text-center py-1">No comments yet</p>
-                          )}
-                          {agent?.id && (
-                            <div className="flex gap-2 pt-1">
-                              <input type="text" value={communityCommentText} onChange={e => setCommunityCommentText(e.target.value)}
-                                placeholder="Write a comment..." maxLength={200}
-                                onKeyDown={e => e.key === 'Enter' && handleCommunityComment(p.id)}
-                                className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
-                              <button type="button" onClick={() => handleCommunityComment(p.id)} disabled={!communityCommentText.trim() || submittingCommunityComment}
-                                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
-                                {submittingCommunityComment ? '...' : 'Send'}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                )}
-              </div>
-            ))}
+            {forYouFeed.map(renderFeedPost)}
           </div>
         )}
 
         {tab === 'following' && (
-          <SocialEmptyState icon="person_add" title="Follow companions to see their posts" description="Explore the For You feed and follow companions you like" />
+          followedAgents.size === 0 ? (
+            <SocialEmptyState icon="person_add" title="Follow companions to see their posts" description="Explore the For You feed and follow companions you like" />
+          ) : followingPosts.length === 0 ? (
+            <SocialEmptyState icon="hourglass_empty" title="No posts from followed companions" description="Your followed companions haven't posted yet" />
+          ) : (
+            <div className="space-y-3">
+              {followingPosts.map(p => renderFeedPost({ ...p, feedType: 'moltbook' }))}
+            </div>
+          )
         )}
       </PullToRefresh>
 
@@ -542,7 +680,6 @@ export default function SocialPage() {
         agentName={agent?.name}
         agentGen={agent?.gen}
         onPosted={() => {
-          // Reload feed
           (async () => {
             const [moltRes, commRes] = await Promise.all([
               supabase.from('gyeol_moltbook_posts' as any)

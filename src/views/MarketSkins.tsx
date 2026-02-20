@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/src/integrations/supabase/client';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useGamification } from '@/src/hooks/useGamification';
 import { BottomNav } from '../components/BottomNav';
 import { PurchaseConfirmModal } from '../components/PurchaseConfirmModal';
+import { showToast } from '../components/Toast';
 
 interface SkinItem {
   id: string; name: string; description: string | null; price: number;
@@ -21,6 +23,7 @@ export default function MarketSkinsPage() {
   const [appliedId, setAppliedId] = useState<string | null>(null);
   const { agent } = useInitAgent();
   const { user } = useAuth();
+  const { profile, reload: reloadGamification } = useGamification();
 
   const [showUpload, setShowUpload] = useState(false);
   const [uploadName, setUploadName] = useState('');
@@ -28,13 +31,12 @@ export default function MarketSkinsPage() {
   const [uploadCategory, setUploadCategory] = useState('Other');
   const [uploading, setUploading] = useState(false);
 
-  // Search & category
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
   const categories = ['All', 'Themes', 'Visual', 'Special'];
 
-  // Purchase confirm
   const [confirmSkin, setConfirmSkin] = useState<SkinItem | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
     if (agent?.skin_id) setAppliedId(agent.skin_id as string);
@@ -51,18 +53,45 @@ export default function MarketSkinsPage() {
     })();
   }, []);
 
-  const handleApply = async (skin: SkinItem) => {
-    if (!agent?.id || applying) return;
+  const handlePurchaseAndApply = async (skin: SkinItem) => {
+    if (!agent?.id || applying || purchasing) return;
+    setPurchasing(true);
+
+    // Check coin balance for non-free skins
+    if (skin.price > 0) {
+      if (!profile || profile.coins < skin.price) {
+        showToast({ type: 'warning', title: 'Insufficient coins', message: `Need ${skin.price} GP, you have ${profile?.coins ?? 0} GP` });
+        setPurchasing(false);
+        return;
+      }
+      // Deduct coins
+      await supabase.from('gyeol_gamification_profiles' as any)
+        .update({ coins: profile.coins - skin.price, updated_at: new Date().toISOString() } as any)
+        .eq('agent_id', agent.id);
+      // Log transaction
+      await supabase.from('gyeol_currency_logs' as any).insert({
+        agent_id: agent.id, currency_type: 'coins', amount: -skin.price, reason: `skin:${skin.name}`,
+      } as any);
+    }
+
+    // Apply skin
     setApplying(skin.id);
     try {
       await supabase.from('gyeol_agents' as any).update({ skin_id: skin.id } as any).eq('id', agent.id);
       await supabase.from('gyeol_agent_skins' as any)
         .upsert({ agent_id: agent.id, skin_id: skin.id, is_equipped: true } as any, { onConflict: 'agent_id,skin_id' });
+      // Increment downloads
+      await supabase.from('gyeol_skins' as any).update({ downloads: (skin.downloads ?? 0) + 1 } as any).eq('id', skin.id);
       setAppliedId(skin.id);
+      showToast({ type: 'success', title: 'Skin applied!', message: skin.price > 0 ? `${skin.price} GP deducted` : 'Free skin equipped' });
+      reloadGamification();
     } catch (err) {
       console.warn('Failed to apply skin:', err);
+      showToast({ type: 'warning', title: 'Failed to apply skin' });
     }
     setApplying(null);
+    setPurchasing(false);
+    setConfirmSkin(null);
   };
 
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -94,6 +123,7 @@ export default function MarketSkinsPage() {
         creator_id: user.id, is_approved: false, price: 0, preview_url: uploadedUrl,
       } as any);
       setUploadName(''); setUploadDesc(''); setPreviewFile(null); setPreviewUrl(null); setShowUpload(false);
+      showToast({ type: 'success', title: 'Skin submitted for review!' });
     } catch (err) { console.warn('Failed to upload skin:', err); }
     setUploading(false);
   };
@@ -111,13 +141,22 @@ export default function MarketSkinsPage() {
             <h1 className="text-xl font-bold text-foreground">Market</h1>
             <p className="text-xs text-muted-foreground mt-1">Customize your AI's appearance</p>
           </div>
-          {user && (
-            <button type="button" onClick={() => setShowUpload(!showUpload)}
-              className="flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition">
-              <span className="material-icons-round text-sm">add</span>
-              Submit
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Coin balance */}
+            {profile && (
+              <div className="flex items-center gap-1 px-3 py-1.5 rounded-full glass-card text-xs">
+                <span className="material-icons-round text-amber-400 text-sm">monetization_on</span>
+                <span className="font-medium text-foreground">{profile.coins.toLocaleString()}</span>
+              </div>
+            )}
+            {user && (
+              <button type="button" onClick={() => setShowUpload(!showUpload)}
+                className="flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition">
+                <span className="material-icons-round text-sm">add</span>
+                Submit
+              </button>
+            )}
+          </div>
         </header>
 
         {/* Upload Form */}
@@ -224,7 +263,14 @@ export default function MarketSkinsPage() {
                     <p className="font-medium text-foreground text-xs truncate">{s.name}</p>
                     <p className="text-[9px] text-muted-foreground truncate">{s.description ?? '-'}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-primary text-[10px] font-medium">{s.price === 0 ? 'Free' : `${s.price}P`}</span>
+                      <span className="text-primary text-[10px] font-medium">
+                        {s.price === 0 ? 'Free' : (
+                          <span className="flex items-center gap-0.5">
+                            <span className="material-icons-round text-amber-400 text-[10px]">monetization_on</span>
+                            {s.price}
+                          </span>
+                        )}
+                      </span>
                       <span className="text-[9px] text-muted-foreground">★ {s.rating}</span>
                     </div>
                     <button type="button" onClick={() => setConfirmSkin(s)}
@@ -232,7 +278,7 @@ export default function MarketSkinsPage() {
                       className={`w-full py-1.5 rounded-lg text-[10px] font-medium transition ${
                         isApplied ? 'bg-secondary text-muted-foreground cursor-default' : 'bg-primary text-primary-foreground hover:brightness-110'
                       } ${isApplying ? 'opacity-50' : ''}`}>
-                      {isApplying ? 'Applying...' : isApplied ? '✓ Applied' : 'Apply'}
+                      {isApplying ? 'Applying...' : isApplied ? '✓ Applied' : s.price > 0 ? `Buy & Apply` : 'Apply'}
                     </button>
                   </div>
                 </motion.div>
@@ -244,10 +290,12 @@ export default function MarketSkinsPage() {
       <PurchaseConfirmModal
         open={!!confirmSkin}
         onClose={() => setConfirmSkin(null)}
-        onConfirm={() => { if (confirmSkin) { handleApply(confirmSkin); setConfirmSkin(null); } }}
+        onConfirm={() => { if (confirmSkin) handlePurchaseAndApply(confirmSkin); }}
         itemName={confirmSkin?.name ?? ''}
         itemPrice={confirmSkin?.price ?? 0}
         itemDescription={confirmSkin?.description ?? undefined}
+        currentBalance={profile?.coins ?? 0}
+        loading={purchasing}
       />
       <BottomNav />
     </main>
