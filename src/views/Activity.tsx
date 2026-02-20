@@ -126,9 +126,9 @@ export default function ActivityPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-background font-display pb-16 relative">
+    <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
       <div className="aurora-bg" />
-      <PullToRefresh onRefresh={handleRefresh} className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10 overflow-y-auto h-screen">
+      <PullToRefresh onRefresh={handleRefresh} className="flex-1 overflow-y-auto max-w-md mx-auto px-5 pt-6 pb-24 space-y-4 relative z-10">
         {/* Header */}
         <div className="flex items-end justify-between mb-2">
           <div>
