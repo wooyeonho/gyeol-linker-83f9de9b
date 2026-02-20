@@ -13,6 +13,8 @@ interface ActivityLog {
   created_at: string;
   was_sandboxed: boolean;
   details: Record<string, unknown>;
+  security_flags?: string[] | null;
+  source?: string | null;
 }
 
 const TYPE_ICON: Record<string, string> = {
@@ -26,12 +28,20 @@ const TYPE_LABEL: Record<string, string> = {
   heartbeat: 'Heartbeat',
 };
 
+const SEVERITY_COLOR: Record<string, string> = {
+  error: 'text-destructive bg-destructive/10',
+  warning: 'text-amber-400 bg-amber-400/10',
+  info: 'text-primary bg-primary/10',
+};
+
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   if (isToday(d)) return 'Today';
   if (isYesterday(d)) return 'Yesterday';
   return format(d, 'MMM d');
 }
+
+type FilterType = 'all' | 'learning' | 'reflection' | 'social' | 'proactive_message' | 'skill_execution' | 'error' | 'heartbeat';
 
 export default function ActivityPage() {
   const { agent } = useInitAgent();
@@ -41,6 +51,8 @@ export default function ActivityPage() {
   const [reflectCount, setReflectCount] = useState(0);
   const [showLogs, setShowLogs] = useState(false);
   const [chartMode, setChartMode] = useState<'weekly' | 'monthly'>('weekly');
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [expandedLog, setExpandedLog] = useState<string | null>(null);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -71,12 +83,20 @@ export default function ActivityPage() {
     return () => { supabase.removeChannel(channel); };
   }, [agent?.id]);
 
+  const filteredLogs = useMemo(() =>
+    filter === 'all' ? logs : logs.filter(l => l.activity_type === filter),
+  [logs, filter]);
+
   const grouped = useMemo(() =>
-    logs.reduce<Record<string, ActivityLog[]>>((acc, log) => {
+    filteredLogs.reduce<Record<string, ActivityLog[]>>((acc, log) => {
       const key = formatDate(log.created_at);
       (acc[key] ??= []).push(log);
       return acc;
-    }, {}), [logs]);
+    }, {}), [filteredLogs]);
+
+  const securityLogs = useMemo(() =>
+    logs.filter(l => l.activity_type === 'error' || (l.security_flags && l.security_flags.length > 0)),
+  [logs]);
 
   const interactionScore = agent?.total_conversations ? agent.total_conversations * 10 : 0;
   const growthLevel = agent?.gen ? agent.gen * 10 + 2 : 1;
@@ -90,11 +110,19 @@ export default function ActivityPage() {
     setLogs((logsRes.data as ActivityLog[]) ?? []);
   }, [agent?.id]);
 
+  const filterOptions: { key: FilterType; label: string; icon: string }[] = [
+    { key: 'all', label: 'All', icon: 'dashboard' },
+    { key: 'learning', label: 'Learn', icon: 'school' },
+    { key: 'reflection', label: 'Reflect', icon: 'psychology' },
+    { key: 'error', label: 'Security', icon: 'shield' },
+    { key: 'skill_execution', label: 'Skills', icon: 'build' },
+  ];
+
   return (
     <main className="min-h-screen bg-background font-display pb-16 relative">
       <div className="aurora-bg" />
       <PullToRefresh onRefresh={handleRefresh} className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10 overflow-y-auto h-screen">
-        {/* Stitch header */}
+        {/* Header */}
         <div className="flex items-end justify-between mb-2">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Activity & Growth</h1>
@@ -102,42 +130,28 @@ export default function ActivityPage() {
           </div>
         </div>
 
-        {/* Stat Cards — Interaction Score + Total Growth */}
+        {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Interaction Score */}
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="material-icons-round text-primary/50 text-lg">bolt</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">
-                +{learningGrowth}%
-              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">+{learningGrowth}%</span>
             </div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Interaction Score</p>
-            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">
-              {interactionScore}
-              <span className="text-[11px] font-normal text-slate-400 ml-1">pts</span>
-            </p>
+            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">{interactionScore}<span className="text-[11px] font-normal text-slate-400 ml-1">pts</span></p>
             <div className="w-full h-1 rounded-full bg-white/[0.06] mt-3">
               <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary" style={{ width: '72%' }} />
             </div>
             <p className="text-[9px] text-slate-500 mt-1 text-right">High Resonance</p>
           </div>
-
-          {/* Total Growth */}
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="material-icons-round text-secondary/50 text-lg">trending_up</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
-                Lv. {growthLevel}
-              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Lv. {growthLevel}</span>
             </div>
             <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total Growth</p>
-            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">
-              Lv.{growthLevel}
-            </p>
-            <p className="text-[9px] text-slate-400 mt-1 leading-tight">
-              <strong className="text-foreground">Deep Empathy</strong> unlocked
-            </p>
+            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">Lv.{growthLevel}</p>
+            <p className="text-[9px] text-slate-400 mt-1 leading-tight"><strong className="text-foreground">Deep Empathy</strong> unlocked</p>
             <div className="flex gap-1 mt-2">
               {[1,2,3,4,5].map(g => (
                 <div key={g} className={`flex-1 h-1 rounded-full ${g <= (agent?.gen ?? 1) ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`} />
@@ -145,6 +159,44 @@ export default function ActivityPage() {
             </div>
           </div>
         </div>
+
+        {/* Security Audit Summary */}
+        {securityLogs.length > 0 && (
+          <div className="glass-card rounded-2xl p-4 border border-amber-500/20">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-icons-round text-amber-400 text-lg">security</span>
+              <h3 className="text-sm font-bold text-foreground">Security Audit</h3>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 font-medium">{securityLogs.length} events</span>
+            </div>
+            <div className="space-y-2">
+              {securityLogs.slice(0, 3).map(log => (
+                <div key={log.id} className="flex items-start gap-2">
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                    log.security_flags?.length ? 'bg-destructive/10' : 'bg-amber-400/10'
+                  }`}>
+                    <span className={`material-icons-round text-xs ${
+                      log.security_flags?.length ? 'text-destructive' : 'text-amber-400'
+                    }`}>
+                      {log.security_flags?.length ? 'warning' : 'info'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] text-foreground truncate">{log.summary ?? 'Security event'}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[9px] text-slate-500">{format(new Date(log.created_at), 'HH:mm')}</span>
+                      {log.security_flags?.map(flag => (
+                        <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
+                      ))}
+                      {log.was_sandboxed && (
+                        <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-500">sandboxed</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Interaction Volume Chart */}
         <div className="glass-card rounded-2xl p-5">
@@ -155,13 +207,9 @@ export default function ActivityPage() {
             </div>
             <div className="flex gap-1 glass-card rounded-lg p-0.5">
               <button onClick={() => setChartMode('weekly')}
-                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${
-                  chartMode === 'weekly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'
-                }`}>Weekly</button>
+                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'weekly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'}`}>Weekly</button>
               <button onClick={() => setChartMode('monthly')}
-                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${
-                  chartMode === 'monthly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'
-                }`}>Monthly</button>
+                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'monthly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'}`}>Monthly</button>
             </div>
           </div>
           <div className="flex items-end gap-2 h-32 mt-2">
@@ -169,8 +217,7 @@ export default function ActivityPage() {
               const height = [40, 55, 35, 60, 80, 45, 70][i];
               return (
                 <div key={day} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-md bg-gradient-to-t from-primary/60 to-primary/20 transition-all"
-                    style={{ height: `${height}%` }} />
+                  <div className="w-full rounded-t-md bg-gradient-to-t from-primary/60 to-primary/20 transition-all" style={{ height: `${height}%` }} />
                   <span className="text-[8px] text-slate-500">{day}</span>
                 </div>
               );
@@ -178,9 +225,8 @@ export default function ActivityPage() {
           </div>
         </div>
 
-        {/* Activity Levels Heatmap + Recent Memories */}
+        {/* Activity Levels + Recent Memories */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Activity Levels */}
           <div className="glass-card rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold text-foreground">Activity Levels</h3>
@@ -194,13 +240,10 @@ export default function ActivityPage() {
             </div>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({length: 28}).map((_, i) => (
-                <div key={i} className="w-full aspect-square rounded-sm"
-                  style={{ background: `rgba(120,78,218,${Math.random() * 0.8 + 0.05})` }} />
+                <div key={i} className="w-full aspect-square rounded-sm" style={{ background: `rgba(120,78,218,${Math.random() * 0.8 + 0.05})` }} />
               ))}
             </div>
           </div>
-
-          {/* Recent Memories */}
           <div className="glass-card rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold text-foreground">Recent Memories</h3>
@@ -218,26 +261,34 @@ export default function ActivityPage() {
                   </div>
                 </div>
               ))}
-              {logs.length === 0 && (
-                <p className="text-[10px] text-slate-500 text-center py-2">No activity yet</p>
-              )}
+              {logs.length === 0 && <p className="text-[10px] text-slate-500 text-center py-2">No activity yet</p>}
             </div>
           </div>
         </div>
 
-        {/* Collapsible Activity Log */}
-        <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-slate-400 mt-2">
-          <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
-          {showLogs ? 'Hide' : 'Show'} Activity Log
-        </button>
+        {/* Activity Log with Filter */}
+        <div className="flex items-center justify-between">
+          <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-slate-400">
+            <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
+            {showLogs ? 'Hide' : 'Show'} Activity Log
+          </button>
+          {showLogs && (
+            <div className="flex gap-1">
+              {filterOptions.map(f => (
+                <button key={f.key} onClick={() => setFilter(f.key)}
+                  className={`px-2 py-1 rounded-lg text-[9px] font-medium transition ${
+                    filter === f.key ? 'bg-primary/20 text-primary' : 'text-slate-500 hover:bg-secondary/50'
+                  }`}>{f.label}</button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {showLogs && (
           <>
             {loading ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="void-dot" />
-              </div>
-            ) : logs.length === 0 ? (
+              <div className="flex items-center justify-center py-16"><div className="void-dot" /></div>
+            ) : filteredLogs.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-10">
                 <div className="void-dot" />
                 <p className="text-[11px] text-white/20 mt-4">No activity yet</p>
@@ -250,24 +301,49 @@ export default function ActivityPage() {
                     <div className="glass-card rounded-2xl p-4">
                       {items.map((log, i) => (
                         <motion.div key={log.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-                          className="flex items-start gap-3 py-3 border-b border-white/[0.04] last:border-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                            log.activity_type === 'heartbeat' ? 'bg-rose-500/[0.07]' : 'bg-primary/[0.07]'
-                          }`}>
-                            <span className={`material-icons-round text-sm ${
-                              log.activity_type === 'heartbeat' ? 'text-rose-500/50' : 'text-primary/50'
-                            }`}>{TYPE_ICON[log.activity_type] ?? 'info'}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] text-white/20">{format(new Date(log.created_at), 'HH:mm')}</span>
-                              <span className="text-[10px] text-white/30">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</span>
-                              {log.was_sandboxed && (
-                                <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/5 text-amber-500/50">sandbox</span>
-                              )}
+                          onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                          className="flex flex-col py-3 border-b border-white/[0.04] last:border-0 cursor-pointer">
+                          <div className="flex items-start gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                              log.activity_type === 'heartbeat' ? 'bg-rose-500/[0.07]' :
+                              log.activity_type === 'error' ? 'bg-destructive/[0.07]' : 'bg-primary/[0.07]'
+                            }`}>
+                              <span className={`material-icons-round text-sm ${
+                                log.activity_type === 'heartbeat' ? 'text-rose-500/50' :
+                                log.activity_type === 'error' ? 'text-destructive/50' : 'text-primary/50'
+                              }`}>{TYPE_ICON[log.activity_type] ?? 'info'}</span>
                             </div>
-                            <p className="text-[12px] text-foreground/50 mt-1 leading-relaxed">{log.summary ?? '(no details)'}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] text-white/20">{format(new Date(log.created_at), 'HH:mm')}</span>
+                                <span className="text-[10px] text-white/30">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</span>
+                                {log.source && log.source !== 'nextjs' && (
+                                  <span className="text-[8px] px-1 py-0.5 rounded bg-primary/5 text-primary/50">{log.source}</span>
+                                )}
+                                {log.was_sandboxed && (
+                                  <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/5 text-amber-500/50">sandbox</span>
+                                )}
+                                {log.security_flags?.map(flag => (
+                                  <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
+                                ))}
+                              </div>
+                              <p className="text-[12px] text-foreground/50 mt-1 leading-relaxed">{log.summary ?? '(no details)'}</p>
+                            </div>
                           </div>
+                          {/* Expanded details */}
+                          <AnimatePresence>
+                            {expandedLog === log.id && Object.keys(log.details).length > 0 && (
+                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden">
+                                <div className="mt-2 ml-11 p-3 rounded-lg bg-secondary/30 border border-border/20">
+                                  <p className="text-[9px] text-slate-400 uppercase tracking-wider mb-2">Details</p>
+                                  <pre className="text-[10px] text-foreground/60 whitespace-pre-wrap break-all font-mono leading-relaxed">
+                                    {JSON.stringify(log.details, null, 2)}
+                                  </pre>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
                       ))}
                     </div>

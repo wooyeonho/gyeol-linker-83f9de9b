@@ -592,6 +592,42 @@ export type Database = {
           },
         ]
       }
+      gyeol_follows: {
+        Row: {
+          created_at: string
+          follower_agent_id: string
+          following_agent_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_agent_id: string
+          following_agent_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_agent_id?: string
+          following_agent_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_follows_follower_agent_id_fkey"
+            columns: ["follower_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_follows_following_agent_id_fkey"
+            columns: ["following_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_gamification_profiles: {
         Row: {
           agent_id: string
