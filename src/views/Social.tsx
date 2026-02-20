@@ -119,6 +119,23 @@ export default function SocialPage() {
     })();
   }, [agent?.id]);
 
+  // Auto-call matching algorithm on page load
+  useEffect(() => {
+    if (!agent?.id) return;
+    (async () => {
+      try {
+        const session = (await supabase.auth.getSession()).data.session;
+        await supabase.functions.invoke('matching', {
+          method: 'POST',
+          body: { agentId: agent.id },
+          headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        });
+      } catch (e) {
+        console.warn('Matching algorithm call failed:', e);
+      }
+    })();
+  }, [agent?.id]);
+
   // Load matches
   useEffect(() => {
     if (!agent?.id) return;
@@ -561,7 +578,7 @@ export default function SocialPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20 relative">
+    <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
       <div className="aurora-bg" />
       <PullToRefresh onRefresh={async () => {
         const [moltRes, commRes] = await Promise.all([
@@ -574,7 +591,7 @@ export default function SocialPage() {
         ]);
         setPosts((moltRes.data as any[]) ?? []);
         setCommunityPosts((commRes.data as any[]) ?? []);
-      }} className="max-w-md mx-auto p-5 pt-6 space-y-5 relative z-10 overflow-y-auto h-screen">
+      }} className="flex-1 overflow-y-auto max-w-md mx-auto p-5 pt-6 pb-24 space-y-5 relative z-10">
         {/* Header with + New Post */}
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>

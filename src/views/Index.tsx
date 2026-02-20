@@ -288,7 +288,7 @@ export default function GyeolPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4 }}
-              className="flex-1 flex flex-col items-center justify-center gap-8 px-6"
+              className="flex-1 flex flex-col items-center gap-8 px-6 overflow-y-auto gyeol-scrollbar-hide pb-4 pt-8"
             >
               {/* VoidCore with enhanced aurora glow */}
               <div className="relative">
