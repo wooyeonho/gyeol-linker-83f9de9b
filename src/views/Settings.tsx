@@ -9,6 +9,8 @@ import { BottomNav } from '../components/BottomNav';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
 import { ModeSwitchGuide } from '@/src/components/ModeSwitchGuide';
+import { DeleteAccountModal } from '@/src/components/DeleteAccountModal';
+import { AgentShareCard } from '@/src/components/AgentShareCard';
 
 const PERSONALITY_PRESETS = [
   { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
@@ -100,6 +102,8 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<string | null>('personality');
   const [modeSwitchOpen, setModeSwitchOpen] = useState(false);
   const [modeSwitchTarget, setModeSwitchTarget] = useState<'simple' | 'advanced'>('simple');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   useEffect(() => {
     if (!agent) return;
@@ -245,11 +249,16 @@ export default function SettingsPage() {
               </div>
               <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-card shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
             </div>
-            <div className="pb-1">
+            <div className="pb-1 flex-1">
               <p className="text-sm font-bold text-foreground">{agent?.name ?? 'GYEOL'}</p>
               <p className="text-[10px] text-primary/60">Generation {agent?.gen ?? 1}</p>
-              <p className="text-[9px] text-slate-500">Status: Evolving & Learning</p>
+              <p className="text-[9px] text-muted-foreground/50">Status: Evolving & Learning</p>
             </div>
+            <button onClick={() => setShareCardOpen(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition"
+              aria-label="프로필 공유">
+              <span className="material-icons-round text-sm">share</span>
+            </button>
           </div>
         </div>
 
@@ -740,30 +749,9 @@ export default function SettingsPage() {
                 </button>
 
                 {/* Account Deletion */}
-                <div className="mt-4 pt-4 border-t border-white/[0.04]">
-                  <button type="button" onClick={async () => {
-                    const confirmed = window.confirm(
-                      'Are you sure? This will permanently delete your account and ALL data including conversations, memories, and AI personality. This cannot be undone.'
-                    );
-                    if (!confirmed) return;
-                    const doubleConfirm = window.confirm('This is your LAST chance. Delete everything?');
-                    if (!doubleConfirm) return;
-                    try {
-                      const { data: { session } } = await supabase.auth.getSession();
-                      await fetch(`${supabaseUrl}/functions/v1/delete-account`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${session?.access_token}`,
-                        },
-                      });
-                      await supabase.auth.signOut();
-                      window.location.href = '/auth';
-                    } catch {
-                      alert('Failed to delete account. Please try again.');
-                    }
-                  }}
-                    className="w-full py-2.5 rounded-xl text-xs font-medium border border-red-500/20 bg-red-500/5 text-red-400/70">
+                <div className="mt-4 pt-4 border-t border-border/10">
+                  <button type="button" onClick={() => setDeleteModalOpen(true)}
+                    className="w-full py-2.5 rounded-xl text-xs font-medium border border-destructive/20 bg-destructive/5 text-destructive/70 hover:bg-destructive/10 transition">
                     Delete Account & All Data
                   </button>
                 </div>
@@ -790,6 +778,31 @@ export default function SettingsPage() {
           window.location.href = '/';
         }}
       />
+
+      <DeleteAccountModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onDeleted={() => { window.location.href = '/auth'; }}
+      />
+
+      {/* Share Card Modal */}
+      <AnimatePresence>
+        {shareCardOpen && agent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={() => setShareCardOpen(false)}>
+            <div onClick={e => e.stopPropagation()}>
+              <AgentShareCard
+                name={agent.name} gen={agent.gen}
+                warmth={agent.warmth} logic={agent.logic} creativity={agent.creativity}
+                energy={agent.energy} humor={agent.humor}
+                intimacy={agent.intimacy} totalConversations={agent.total_conversations}
+                mood={agent.mood} level={1}
+                onClose={() => setShareCardOpen(false)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </main>
