@@ -119,11 +119,11 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="w-full max-w-md max-h-[85vh] bg-card/95 backdrop-blur-md rounded-t-2xl border-t border-border/30 overflow-hidden"
+            className="w-full max-w-md max-h-[85vh] glass-panel rounded-t-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 bg-card/95 backdrop-blur-md px-5 pt-4 pb-3 border-b border-border/20 z-10">
+            <div className="sticky top-0 glass-panel px-5 pt-4 pb-3 border-b border-white/[0.06] z-10">
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                           <motion.div
                             key={mem.id}
                             layout
-                            className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface/60 border border-border/20 group"
+                            className="flex items-center justify-between px-3 py-2 glass-card rounded-xl group"
                           >
                             <div className="flex-1 min-w-0">
                               <p className="text-[12px] text-foreground/85 truncate">{mem.value}</p>

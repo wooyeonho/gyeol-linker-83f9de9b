@@ -77,7 +77,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 22 }}
-            className="w-full max-w-sm bg-card/95 backdrop-blur-md rounded-2xl border border-border/30 overflow-hidden"
+            className="w-full max-w-sm glass-panel rounded-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

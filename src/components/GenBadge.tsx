@@ -53,7 +53,7 @@ export function GenBadge({ gen, size = 'md', showTooltip = true }: GenBadgeProps
         onClick={() => showTooltip && setOpen((p) => !p)}
         onMouseEnter={() => showTooltip && setOpen(true)}
         onMouseLeave={() => showTooltip && setOpen(false)}
-        className={`inline-flex items-center rounded-full font-semibold border transition-all ${sizeClasses[size]}`}
+        className={`inline-flex items-center rounded-full font-semibold border backdrop-blur-sm transition-all ${sizeClasses[size]}`}
         style={{
           color: cfg.color,
           borderColor: `${cfg.color}40`,

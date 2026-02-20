@@ -34,7 +34,7 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
         transition={{ type: 'spring', damping: 22, stiffness: 200 }}
         className="fixed bottom-[calc(56px+env(safe-area-inset-bottom,8px)+70px)] left-3 right-3 z-40 max-w-md mx-auto"
       >
-        <div className="rounded-2xl bg-card/95 backdrop-blur-md border border-border/30 p-4 shadow-lg">
+        <div className="glass-panel rounded-2xl p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">

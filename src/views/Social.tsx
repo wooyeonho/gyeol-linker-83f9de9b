@@ -257,7 +257,7 @@ export default function SocialPage() {
   const renderMatchCard = (card: MatchCard, i: number, isDemo: boolean) => (
     <motion.div key={card.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
       onClick={() => !isDemo && setSelectedMatch(selectedMatch === card.id ? null : card.id)}
-      className={`section-card !p-4 flex items-center gap-3 transition-all ${isDemo ? 'opacity-60' : 'cursor-pointer hover:bg-secondary/30'}`}>
+      className={`glass-card rounded-2xl p-4 flex items-center gap-3 transition-all ${isDemo ? 'opacity-60' : 'cursor-pointer hover:bg-secondary/30'}`}>
       <CompatibilityRing score={card.compatibilityScore} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -288,7 +288,7 @@ export default function SocialPage() {
                   }
                 }
               }}
-              className="w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:brightness-110 transition shadow-glow-xs">
+              className="w-full py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium hover:brightness-110 transition btn-glow">
               {card.status === 'matched' ? 'Observe Chat' : card.status === 'pending' ? 'Pending...' : 'Request Match'}
             </button>
             {card.status === 'matched' && (
@@ -354,7 +354,7 @@ export default function SocialPage() {
             </AnimatePresence>
           ) : showDemo ? (
             <div className="space-y-4">
-              <div className="section-card !p-4 text-center space-y-2">
+              <div className="glass-card rounded-2xl p-4 text-center space-y-2">
                 <div className="text-2xl">🌌</div>
                 <p className="text-sm font-medium text-foreground">AI Match Preview</p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
