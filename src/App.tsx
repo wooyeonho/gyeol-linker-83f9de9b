@@ -15,6 +15,7 @@ import SkillsPage from './views/MarketSkills';
 import SkinsPage from './views/MarketSkins';
 import GamificationPage from './views/Gamification';
 import NotFound from './views/NotFound';
+import ServerError from './views/ServerError';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
 import ResetPasswordPage from './views/ResetPassword';
@@ -96,6 +97,7 @@ function App() {
           <Route path="/market/skills" element={<ProtectedRoute><SimpleGuard><PageWrap><SkillsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
           <Route path="/market/skins" element={<ProtectedRoute><SimpleGuard><PageWrap><SkinsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
           <Route path="/gamification" element={<ProtectedRoute><SimpleGuard><PageWrap><GamificationPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/500" element={<PageWrap><ServerError /></PageWrap>} />
           <Route path="*" element={<PageWrap><NotFound /></PageWrap>} />
         </Routes>
       </AnimatePresence>
