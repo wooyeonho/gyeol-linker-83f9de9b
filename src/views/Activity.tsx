@@ -4,6 +4,7 @@ import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
+import { ActivityFilter } from '@/src/components/ActivityFilter';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ActivityLog {
@@ -52,6 +53,7 @@ export default function ActivityPage() {
   const [showLogs, setShowLogs] = useState(false);
   const [chartMode, setChartMode] = useState<'weekly' | 'monthly'>('weekly');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [activitySearch, setActivitySearch] = useState('');
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,9 +85,14 @@ export default function ActivityPage() {
     return () => { supabase.removeChannel(channel); };
   }, [agent?.id]);
 
-  const filteredLogs = useMemo(() =>
-    filter === 'all' ? logs : logs.filter(l => l.activity_type === filter),
-  [logs, filter]);
+  const filteredLogs = useMemo(() => {
+    let result = filter === 'all' ? logs : logs.filter(l => l.activity_type === filter);
+    if (activitySearch.trim()) {
+      const q = activitySearch.toLowerCase();
+      result = result.filter(l => (l.summary ?? '').toLowerCase().includes(q) || l.activity_type.toLowerCase().includes(q));
+    }
+    return result;
+  }, [logs, filter, activitySearch]);
 
   const grouped = useMemo(() =>
     filteredLogs.reduce<Record<string, ActivityLog[]>>((acc, log) => {
@@ -267,20 +274,20 @@ export default function ActivityPage() {
         </div>
 
         {/* Activity Log with Filter */}
-        <div className="flex items-center justify-between">
-          <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-slate-400">
-            <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
-            {showLogs ? 'Hide' : 'Show'} Activity Log
-          </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-slate-400">
+              <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
+              {showLogs ? 'Hide' : 'Show'} Activity Log
+            </button>
+          </div>
           {showLogs && (
-            <div className="flex gap-1">
-              {filterOptions.map(f => (
-                <button key={f.key} onClick={() => setFilter(f.key)}
-                  className={`px-2 py-1 rounded-lg text-[9px] font-medium transition ${
-                    filter === f.key ? 'bg-primary/20 text-primary' : 'text-slate-500 hover:bg-secondary/50'
-                  }`}>{f.label}</button>
-              ))}
-            </div>
+            <ActivityFilter
+              onFilterChange={(cat) => setFilter(cat as FilterType)}
+              onSearchChange={setActivitySearch}
+              activeFilter={filter}
+              searchQuery={activitySearch}
+            />
           )}
         </div>
 

@@ -33,6 +33,7 @@ import { StreakBonus } from '@/src/components/StreakBonus';
 import { StreakCalendar } from '@/src/components/StreakCalendar';
 import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
 import { OnboardingTutorial } from '@/src/components/OnboardingTutorial';
+import { EvolutionGuide } from '@/src/components/EvolutionGuide';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -351,6 +352,18 @@ export default function GyeolPage() {
                     <StreakCalendar
                       streakDays={(agent as any).consecutive_days}
                       longestStreak={(agent as any).consecutive_days}
+                    />
+                  </div>
+                )}
+
+                {/* Evolution Guide */}
+                {agent && (
+                  <div className="w-full max-w-[280px] mt-3">
+                    <EvolutionGuide
+                      gen={agent.gen ?? 1}
+                      evolutionProgress={Number(agent.evolution_progress ?? 0)}
+                      totalConversations={agent.total_conversations ?? 0}
+                      intimacy={(agent as any).intimacy ?? 0}
                     />
                   </div>
                 )}
