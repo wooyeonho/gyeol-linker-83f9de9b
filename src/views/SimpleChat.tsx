@@ -9,6 +9,8 @@ import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import { supabase } from '@/src/lib/supabase';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function SimpleChat() {
   const navigate = useNavigate();
@@ -133,7 +135,7 @@ export default function SimpleChat() {
                   <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You</span>
                   <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
                     style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                    {msg.content}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   </div>
                 </div>
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
@@ -149,7 +151,7 @@ export default function SimpleChat() {
                   <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName}</span>
                   <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
                     style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                    {msg.content}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">{msg.content}</ReactMarkdown>
                   </div>
                 </div>
               </div>

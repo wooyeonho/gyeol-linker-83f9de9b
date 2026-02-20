@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BottomNav } from '@/src/components/BottomNav';
 import { useGamification, expToNextLevel, RARITY_COLORS, RARITY_BG, RARITY_GLOW } from '@/src/hooks/useGamification';
 import { SeasonPass } from '@/src/components/SeasonPass';
+import { InventoryPanel } from '@/src/components/InventoryPanel';
 import { useGyeolStore } from '@/store/gyeol-store';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
@@ -23,7 +24,8 @@ export default function GamificationPage() {
   const [tab, setTab] = useState<Tab>('quests');
   const agent = useGyeolStore((s) => s.agent);
   const gam = useGamification();
-  const { profile, loading } = gam;
+  const { profile, loading, inventory, shopItems, reload } = gam;
+  const [inventoryOpen, setInventoryOpen] = useState(false);
 
   if (loading) {
     return (
@@ -45,6 +47,10 @@ export default function GamificationPage() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-bold text-foreground">게이미피케이션</h1>
           <div className="flex items-center gap-3">
+            <button onClick={() => setInventoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
+              <span className="material-icons-round text-primary text-[12px]">inventory_2</span>
+              <span className="font-bold text-foreground">{inventory.length}</span>
+            </button>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
               <span className="material-icons-round text-amber-400 text-[12px]">monetization_on</span>
               <span className="font-bold text-foreground">{profile?.coins ?? 0}</span>
@@ -124,6 +130,13 @@ export default function GamificationPage() {
         </AnimatePresence>
       </div>
 
+      <InventoryPanel
+        isOpen={inventoryOpen}
+        onClose={() => setInventoryOpen(false)}
+        inventory={inventory}
+        shopItems={shopItems}
+        onReload={reload}
+      />
       <BottomNav />
     </main>
   );
