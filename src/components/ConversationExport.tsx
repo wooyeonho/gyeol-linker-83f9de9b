@@ -15,6 +15,7 @@ const FORMATS = [
   { id: 'txt', icon: 'description', color: 'text-primary', label: '텍스트 (.txt)', desc: '읽기 쉬운 텍스트 형식' },
   { id: 'md', icon: 'article', color: 'text-emerald-400', label: '마크다운 (.md)', desc: '포맷 유지 마크다운' },
   { id: 'json', icon: 'code', color: 'text-secondary', label: 'JSON (.json)', desc: '구조화된 데이터 형식' },
+  { id: 'pdf', icon: 'picture_as_pdf', color: 'text-red-400', label: 'PDF (.pdf)', desc: '인쇄/공유용 PDF 형식' },
 ] as const;
 
 export function ConversationExport({ isOpen, onClose, messages, agentName }: ConversationExportProps) {
@@ -43,6 +44,21 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
         return `### ${sender} _${time}_\n\n${m.content}`;
       });
       download(`# ${header.replace(/\n/g, '\n\n')}\n\n---\n\n${lines.join('\n\n---\n\n')}`, `gyeol-chat-${ts}.md`, 'text/markdown');
+    } else if (fmt === 'pdf') {
+      // Generate printable HTML and trigger browser print as PDF
+      const htmlLines = messages.map(m => {
+        const sender = m.role === 'user' ? 'You' : agentName;
+        const time = new Date(m.created_at).toLocaleString('ko-KR');
+        const bg = m.role === 'user' ? '#e8eaf6' : '#f3e5f5';
+        return `<div style="margin:8px 0;padding:12px;border-radius:12px;background:${bg}"><strong>${sender}</strong> <small style="color:#888">${time}</small><p style="margin:4px 0 0;white-space:pre-wrap">${m.content.replace(/</g,'&lt;')}</p></div>`;
+      }).join('');
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>GYEOL Chat - ${agentName}</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px}h1{font-size:18px}small{color:#888}</style></head><body><h1>🔮 GYEOL 대화 기록</h1><p>에이전트: ${agentName} | 날짜: ${ts} | 메시지: ${messages.length}개</p><hr>${htmlLines}</body></html>`;
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(html);
+        w.document.close();
+        setTimeout(() => w.print(), 500);
+      }
     } else {
       const lines = messages.map(m => {
         const time = new Date(m.created_at).toLocaleString();
