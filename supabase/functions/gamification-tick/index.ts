@@ -2,11 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { isValidUUID } from "../_shared/validate-uuid.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function corsHeaders(req: Request) {
+  const o = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": _origins.includes(o) || o.endsWith(".lovable.app") || o.endsWith(".lovableproject.com") ? o : _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 /**
  * 게이미피케이션 틱 — 대화 후 호출
@@ -18,12 +21,12 @@ const corsHeaders = {
  * 6. EXP/코인 보상 지급
  */
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(req) });
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     let userId: string;
@@ -32,12 +35,12 @@ serve(async (req) => {
       userId = payload.sub;
       if (!userId) throw new Error("No sub");
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const { agentId } = await req.json();
     if (!agentId || !isValidUUID(agentId)) {
-      return new Response(JSON.stringify({ error: "Valid agentId required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Valid agentId required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -45,7 +48,7 @@ serve(async (req) => {
     // Verify ownership
     const { data: agent } = await db.from("gyeol_agents").select("*").eq("id", agentId).single();
     if (!agent || agent.user_id !== userId) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     // ── 1. Ensure gamification profile ──
@@ -55,7 +58,7 @@ serve(async (req) => {
       profile = created;
     }
     if (!profile) {
-      return new Response(JSON.stringify({ error: "Profile creation failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Profile creation failed" }), { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const rewards: { type: string; amount: number; reason: string }[] = [];
@@ -377,10 +380,10 @@ serve(async (req) => {
       coins: finalProfile?.coins,
       totalExp: finalProfile?.total_exp,
       streakDays: finalProfile?.streak_days,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
 
   } catch (e) {
     console.error("gamification-tick error:", e);
-    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
   }
 });

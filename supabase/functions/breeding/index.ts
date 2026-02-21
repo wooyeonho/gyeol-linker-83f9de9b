@@ -155,6 +155,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    console.error("breeding error:", e);
+    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
   }
 });
