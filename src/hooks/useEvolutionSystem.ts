@@ -62,16 +62,21 @@ export function useEvolutionSystem(agentId?: string) {
   const setCustomThreshold = useCallback(async (threshold: number) => {
     if (!agentId) return;
     setEvolutionThreshold(threshold);
+    const { data: current } = await supabase.from('gyeol_agents' as any).select('settings').eq('id', agentId).single();
+    const existingSettings = (current as any)?.settings ?? {};
     await supabase.from('gyeol_agents' as any).update({
-      settings: { evolution_threshold: threshold },
+      settings: { ...existingSettings, evolution_threshold: threshold },
     } as any).eq('id', agentId);
   }, [agentId]);
 
   const toggleProtection = useCallback(async () => {
     if (!agentId) return;
-    setHasProtection(p => !p);
+    const newVal = !hasProtection;
+    setHasProtection(newVal);
+    const { data: current } = await supabase.from('gyeol_agents' as any).select('settings').eq('id', agentId).single();
+    const existingSettings = (current as any)?.settings ?? {};
     await supabase.from('gyeol_agents' as any).update({
-      settings: { evolution_protection: !hasProtection },
+      settings: { ...existingSettings, evolution_protection: newVal },
     } as any).eq('id', agentId);
   }, [agentId, hasProtection]);
 

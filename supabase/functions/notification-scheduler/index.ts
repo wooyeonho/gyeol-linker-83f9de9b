@@ -15,7 +15,8 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { action = "process" } = await req.json();
+    const body = await req.json();
+    const action = body.action ?? "process";
 
     if (action === "process") {
       const now = new Date().toISOString();
@@ -79,7 +80,6 @@ serve(async (req) => {
       const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
       if (!user) throw new Error("Unauthorized");
 
-      const body = await req.json();
       const { title, bodyText, scheduledAt, notifType = "reminder", data: notifData } = body;
 
       const { error } = await supabase.from("gyeol_scheduled_notifications").insert({
