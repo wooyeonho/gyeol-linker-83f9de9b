@@ -1,6 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PersonalityParams } from './types';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function assertUUID(value: string, name: string): void {
+  if (!UUID_REGEX.test(value)) throw new Error(`Invalid UUID for ${name}: ${value}`);
+}
+
 export interface BreedingResult {
   success: boolean;
   childId: string | null;
@@ -36,6 +41,8 @@ export async function checkBreedingEligibility(
   agent1Id: string,
   agent2Id: string,
 ): Promise<{ eligible: boolean; reason: string }> {
+  assertUUID(agent1Id, 'agent1Id');
+  assertUUID(agent2Id, 'agent2Id');
   const { data: agents } = await supabase
     .from('gyeol_agents')
     .select('id, gen, intimacy, name')
@@ -88,6 +95,8 @@ export async function attemptBreeding(
   agent2Id: string,
   ownerUserId: string,
 ): Promise<BreedingResult> {
+  assertUUID(agent1Id, 'agent1Id');
+  assertUUID(agent2Id, 'agent2Id');
   const eligibility = await checkBreedingEligibility(supabase, agent1Id, agent2Id);
   if (!eligibility.eligible) {
     return {

@@ -8,6 +8,7 @@
  * lib/gyeol/heartbeat/: Next.js API에서 수동 트리거용
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isValidUUID } from "../_shared/validate-uuid.ts";
 
 const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
 function corsHeaders(req: Request) {

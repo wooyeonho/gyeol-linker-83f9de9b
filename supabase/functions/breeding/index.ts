@@ -1,11 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isValidUUID } from "../_shared/validate-uuid.ts";
 
 const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
 function corsHeaders(req: Request) {
   const o = req.headers.get("origin") ?? "";
   return {
-    "Access-Control-Allow-Origin": _origins.includes(o) ? o : _origins[0],
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Origin": _origins.includes(o) || o.endsWith(".lovable.app") || o.endsWith(".lovableproject.com") ? o : _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   };
 }
 
@@ -30,12 +31,26 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
+    // ── Auth: extract userId from JWT (not from body!) ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    }
+    let userId: string;
+    try {
+      const payload = JSON.parse(atob(authHeader.replace("Bearer ", "").split(".")[1]));
+      userId = payload.sub;
+      if (!userId) throw new Error("No sub");
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    }
+
     if (req.method === "GET") {
       const url = new URL(req.url);
       const agent1Id = url.searchParams.get("agent1Id");
       const agent2Id = url.searchParams.get("agent2Id");
-      if (!agent1Id || !agent2Id) {
-        return new Response(JSON.stringify({ error: "agent1Id, agent2Id required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      if (!agent1Id || !agent2Id || !isValidUUID(agent1Id) || !isValidUUID(agent2Id)) {
+        return new Response(JSON.stringify({ error: "Valid agent1Id, agent2Id required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
       }
 
       const { data: agents } = await supabase.from("gyeol_agents").select("id, gen").in("id", [agent1Id, agent2Id]);
@@ -51,24 +66,29 @@ Deno.serve(async (req) => {
     }
 
     // POST — attempt breeding
-    const { agent1Id, agent2Id, userId } = await req.json();
-    if (!agent1Id || !agent2Id || !userId) {
-      return new Response(JSON.stringify({ error: "agent1Id, agent2Id, userId required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    const { agent1Id, agent2Id } = await req.json();
+    if (!agent1Id || !agent2Id || !isValidUUID(agent1Id) || !isValidUUID(agent2Id)) {
+      return new Response(JSON.stringify({ error: "Valid agent1Id, agent2Id required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
-    // Check gen
-    const { data: agents } = await supabase.from("gyeol_agents").select("id, name, gen, warmth, logic, creativity, energy, humor").in("id", [agent1Id, agent2Id]);
+    // Verify at least one agent belongs to the authenticated user
+    const { data: agents } = await supabase.from("gyeol_agents").select("id, name, gen, warmth, logic, creativity, energy, humor, user_id").in("id", [agent1Id, agent2Id]);
     if (!agents || agents.length !== 2) {
       return new Response(JSON.stringify({ success: false, message: "에이전트를 찾을 수 없습니다" }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
+    const ownsAtLeastOne = agents.some((a: any) => a.user_id === userId);
+    if (!ownsAtLeastOne) {
+      return new Response(JSON.stringify({ error: "Access denied: you must own at least one agent" }), { status: 403, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    }
+
     const p1 = agents.find((a: any) => a.id === agent1Id)!;
     const p2 = agents.find((a: any) => a.id === agent2Id)!;
 
     if (p1.gen < MIN_GEN || p2.gen < MIN_GEN) {
-      return new Response(JSON.stringify({ success: false, message: `번식하려면 Gen ${MIN_GEN} 이상이어야 합니다 (현재: Gen ${p1.gen}, Gen ${p2.gen})` }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ success: false, message: `번식하려면 Gen ${MIN_GEN} 이상이어야 합니다` }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
-    // Check compatibility
+    // Check compatibility (UUID-safe .or() using validated IDs)
     const { data: match } = await supabase.from("gyeol_matches").select("compatibility_score")
       .or(`and(agent_1_id.eq.${agent1Id},agent_2_id.eq.${agent2Id}),and(agent_1_id.eq.${agent2Id},agent_2_id.eq.${agent1Id})`)
       .limit(1).maybeSingle();
@@ -116,6 +136,7 @@ Deno.serve(async (req) => {
     const childName = p1.name.slice(0, Math.ceil(p1.name.length / 2)) + p2.name.slice(Math.floor(p2.name.length / 2));
     const childGen = Math.max(p1.gen, p2.gen);
 
+    // Use authenticated userId instead of body-provided userId
     const { data: child } = await supabase.from("gyeol_agents").insert({
       user_id: userId, name: childName, gen: childGen,
       ...traits, mood: "excited", evolution_progress: 0, total_conversations: 0,
