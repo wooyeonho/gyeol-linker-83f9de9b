@@ -57,31 +57,25 @@ export default function MarketSkinsPage() {
     if (!agent?.id || applying || purchasing) return;
     setPurchasing(true);
 
-    // Check coin balance for non-free skins
-    if (skin.price > 0) {
-      if (!profile || profile.coins < skin.price) {
-        showToast({ type: 'warning', title: 'Insufficient coins', message: `Need ${skin.price} GP, you have ${profile?.coins ?? 0} GP` });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showToast({ type: 'warning', title: 'Login required' });
         setPurchasing(false);
         return;
       }
-      // Deduct coins
-      await supabase.from('gyeol_gamification_profiles' as any)
-        .update({ coins: profile.coins - skin.price, updated_at: new Date().toISOString() } as any)
-        .eq('agent_id', agent.id);
-      // Log transaction
-      await supabase.from('gyeol_currency_logs' as any).insert({
-        agent_id: agent.id, currency_type: 'coins', amount: -skin.price, reason: `skin:${skin.name}`,
-      } as any);
-    }
 
-    // Apply skin
-    setApplying(skin.id);
-    try {
-      await supabase.from('gyeol_agents' as any).update({ skin_id: skin.id } as any).eq('id', agent.id);
-      await supabase.from('gyeol_agent_skins' as any)
-        .upsert({ agent_id: agent.id, skin_id: skin.id, is_equipped: true } as any, { onConflict: 'agent_id,skin_id' });
-      // Increment downloads
-      await supabase.from('gyeol_skins' as any).update({ downloads: (skin.downloads ?? 0) + 1 } as any).eq('id', skin.id);
+      // Use server-side Edge Function for secure purchase
+      const res = await supabase.functions.invoke('market-purchase', {
+        body: { action: 'buy_skin', agentId: agent.id, skinId: skin.id },
+      });
+
+      if (res.error || res.data?.error) {
+        showToast({ type: 'warning', title: res.data?.error || 'Purchase failed' });
+        setPurchasing(false);
+        return;
+      }
+
       setAppliedId(skin.id);
       showToast({ type: 'success', title: 'Skin applied!', message: skin.price > 0 ? `${skin.price} GP deducted` : 'Free skin equipped' });
       reloadGamification();

@@ -297,7 +297,7 @@ export function useGamification() {
     return true;
   }, [agentId, profile, quests, loadProfile, loadQuests]);
 
-  // 상점 구매
+  // 상점 구매 (서버사이드)
   const purchaseItem = useCallback(async (itemId: string) => {
     if (!agentId || !profile) return { success: false, error: '프로필 없음' };
     const item = shopItems.find((i) => i.id === itemId);
@@ -305,32 +305,21 @@ export function useGamification() {
     if (profile.coins < item.price_coins) return { success: false, error: '코인 부족' };
     if (profile.level < item.min_level) return { success: false, error: `레벨 ${item.min_level} 필요` };
 
-    // 이미 보유 여부
-    const existing = inventory.find((i) => i.item_id === itemId);
-    if (existing) {
-      await supabase
-        .from('gyeol_inventory')
-        .update({ quantity: existing.quantity + 1 })
-        .eq('id', existing.id);
-    } else {
-      await supabase
-        .from('gyeol_inventory')
-        .insert({ agent_id: agentId, item_id: itemId });
+    try {
+      const res = await supabase.functions.invoke('market-purchase', {
+        body: { action: 'buy_item', agentId, itemId },
+      });
+
+      if (res.error || res.data?.error) {
+        return { success: false, error: res.data?.error || 'Purchase failed' };
+      }
+
+      await Promise.all([loadProfile(), loadShop()]);
+      return { success: true, error: null };
+    } catch {
+      return { success: false, error: 'Server error' };
     }
-
-    // 코인 차감
-    await supabase
-      .from('gyeol_gamification_profiles')
-      .update({ coins: profile.coins - item.price_coins, updated_at: new Date().toISOString() })
-      .eq('agent_id', agentId);
-
-    await supabase.from('gyeol_currency_logs').insert({
-      agent_id: agentId, currency_type: 'coins', amount: -item.price_coins, reason: `shop:${item.name}`,
-    });
-
-    await Promise.all([loadProfile(), loadShop()]);
-    return { success: true, error: null };
-  }, [agentId, profile, shopItems, inventory, loadProfile, loadShop]);
+  }, [agentId, profile, shopItems, loadProfile, loadShop]);
 
   // 초기 로드
   useEffect(() => {

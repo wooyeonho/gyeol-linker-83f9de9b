@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { decryptKey } from "../_shared/crypto.ts";
+import { filterInput, filterOutput } from "../_shared/content-filter.ts";
+import { isValidUUID } from "../_shared/validate-uuid.ts";
 
 const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
 function getCorsOrigin(req: Request): string {
@@ -453,13 +455,21 @@ serve(async (req) => {
     const user = { id: userId };
 
     const { agentId, message, locale: rawLocale, stream: wantStream } = await req.json();
-    if (!agentId || typeof message !== "string") {
-      return new Response(JSON.stringify({ error: "agentId and message required" }), {
+    if (!agentId || typeof message !== "string" || !isValidUUID(agentId)) {
+      return new Response(JSON.stringify({ error: "Valid agentId and message required" }), {
         status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
     const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
     const useStream = wantStream === true;
+
+    // ── Kill Switch check ──
+    const { data: systemState } = await db.from("gyeol_system_state").select("kill_switch, reason").eq("id", "global").maybeSingle();
+    if (systemState?.kill_switch === true) {
+      return new Response(JSON.stringify({ error: "System temporarily disabled", reason: systemState.reason ?? "maintenance" }), {
+        status: 503, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
 
     // ── 2. Ownership: verify agent belongs to user ──
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -471,8 +481,26 @@ serve(async (req) => {
       });
     }
 
-    // ── 3. Message length limit (2000 chars) ──
+    // ── 3. Message length limit + content filter ──
     const trimmedMessage = message.slice(0, 2000);
+    const inputFilter = filterInput(trimmedMessage);
+    if (!inputFilter.safe) {
+      // Log the filtered content attempt
+      await db.from("gyeol_autonomous_logs").insert({
+        agent_id: agentId, activity_type: "error",
+        summary: "Content filter blocked input",
+        details: { flags: inputFilter.flags },
+        was_sandboxed: true, security_flags: inputFilter.flags,
+      }).catch(() => {});
+
+      if (inputFilter.flags.includes("danger")) {
+        return new Response(JSON.stringify({ error: "해당 내용은 답변할 수 없어요.", filtered: true }), {
+          status: 400, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+    }
+    // Use filtered message (PII removed)
+    const safeMessage = inputFilter.filtered;
 
     // ── 4. Rate limit (in-memory, 10 per agent per minute) ──
     const rateLimitKey = `chat:${agentId}`;
@@ -568,11 +596,11 @@ serve(async (req) => {
 
     // ── Real-time search (Perplexity → DDG fallback) ──
     let searchContext = "";
-    if (needsSearch(trimmedMessage)) {
-      console.log("[chat] Real-time search triggered for:", trimmedMessage);
-      const searchQuery = isFinancialAnalysisQuery(trimmedMessage)
-        ? `${trimmedMessage} 금융 시장 지표 현재값 데이터 분석`
-        : trimmedMessage;
+    if (needsSearch(safeMessage)) {
+      console.log("[chat] Real-time search triggered for:", safeMessage);
+      const searchQuery = isFinancialAnalysisQuery(safeMessage)
+        ? `${safeMessage} 금융 시장 지표 현재값 데이터 분석`
+        : safeMessage;
       searchContext = await searchRealtime(searchQuery);
       if (searchContext) {
         console.log("[chat] Search results found, length:", searchContext.length);
@@ -583,12 +611,12 @@ serve(async (req) => {
     const chatMessages: ChatMessage[] = [
       { role: "system", content: systemPrompt },
       ...((history ?? []).reverse().map((h: any) => ({ role: h.role, content: h.content }))),
-      { role: "user", content: trimmedMessage },
+      { role: "user", content: safeMessage },
     ];
 
     // Save user message
     await db.from("gyeol_conversations").insert({
-      agent_id: agentId, role: "user", content: trimmedMessage, channel: "web",
+      agent_id: agentId, role: "user", content: safeMessage, channel: "web",
     });
 
     let assistantContent = "";
@@ -653,7 +681,7 @@ serve(async (req) => {
                   controller.close();
 
                   // Fire post-processing (stats, gamification, memory) in background
-                  doPostProcessing(db, agent, agentId, trimmedMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
+                  doPostProcessing(db, agent, agentId, safeMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
                 } catch (e) {
                   console.error("Stream error:", e);
                   controller.error(e);
@@ -715,7 +743,11 @@ serve(async (req) => {
     }
 
     // Builtin fallback
-    if (!assistantContent) { assistantContent = generateBuiltinResponse(trimmedMessage); provider = "builtin"; }
+    if (!assistantContent) { assistantContent = generateBuiltinResponse(safeMessage); provider = "builtin"; }
+
+    // ── Output content filter ──
+    const outputFilter = filterOutput(assistantContent);
+    assistantContent = outputFilter.filtered;
 
     const responseTime = Date.now() - startTime;
 
@@ -726,7 +758,7 @@ serve(async (req) => {
     });
 
     // Fire post-processing (stats, gamification, memory) in background
-    doPostProcessing(db, agent, agentId, trimmedMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
+    doPostProcessing(db, agent, agentId, safeMessage, assistantContent, provider, authHeader, supabaseUrl, locale).catch(e => console.warn("post-processing error:", e));
 
     return new Response(
       JSON.stringify({ message: assistantContent, provider, reaction: detectReaction(assistantContent) }),
