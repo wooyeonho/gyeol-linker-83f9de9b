@@ -17,6 +17,7 @@ import { getLocale, setLocale, getAvailableLocales, type Locale } from '@/src/li
 import { NotificationSettings } from '@/src/components/NotificationSettings';
 import { ProfileCustomizer } from '@/src/components/ProfileCustomizer';
 import { AgentStatsDashboard } from '@/src/components/AgentStatsDashboard';
+import { SystemPromptEditor } from '@/src/components/SystemPromptEditor';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -402,6 +403,23 @@ export default function SettingsPage() {
                     </button>
                   ))}
                 </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== SYSTEM PROMPT ====== */}
+        <section>
+          <SectionHeader id="systemprompt" icon="terminal" title="System Prompt" />
+          <AnimatePresence>
+            {activeSection === 'systemprompt' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                <SystemPromptEditor agent={agent} onUpdate={(ns) => {
+                  if (agent) setAgent({ ...agent, settings: ns } as any);
+                }} />
               </motion.div>
             )}
           </AnimatePresence>
