@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
-import { OnboardingDeep } from '@/src/components/OnboardingDeep';
+import { NameDuplicateCheck, PersonalitySliders } from '@/src/components/OnboardingDeep';
 
 const PRESETS = [
   { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
@@ -179,6 +179,10 @@ export default function Onboarding({ userId, onComplete }: Props) {
                   className="w-full px-5 py-3.5 bg-transparent rounded-full text-foreground/90 placeholder:text-slate-600 outline-none text-sm"
                 />
               </div>
+              {/* B21: Name Duplicate Check */}
+              {name.trim().length >= 2 && (
+                <NameDuplicateCheck name={name.trim()} onCheck={(available) => console.log('Name available:', available)} />
+              )}
             </div>
 
             <div className="flex gap-3 w-full">

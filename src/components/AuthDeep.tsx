@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, User, Camera, Shield, Clock, Smartphone, Download, Trash2, LogOut, Key, Globe } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/src/lib/supabase';
 
 export function SocialLoginButtons({ onLogin }: { onLogin: (provider: string) => void }) {
   const providers = [
