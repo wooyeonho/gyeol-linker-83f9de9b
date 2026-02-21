@@ -27,7 +27,7 @@ import { ConversationStats } from '@/src/components/ConversationStats';
 import { SummaryHistory } from '@/src/components/SummaryHistory';
 import { ConversationFilter } from '@/src/components/ConversationFilter';
 import { parseSettings } from '@/src/utils/agent-settings';
-import { Bot, Menu, Search, History, BarChart3, BookOpen, Bell, Brain, Download, TrendingUp, UserCircle, Gift, X } from 'lucide-react';
+import { MessageCircle, Menu, Search, History, BarChart3, BookOpen, Bell, Brain, Download, TrendingUp, UserCircle, Gift, X } from 'lucide-react';
 
 export default function GyeolPage() {
   const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight, lastReaction } = useGyeolStore();
@@ -123,7 +123,6 @@ export default function GyeolPage() {
   if (agentLoading) {
     return (
       <main className="h-[100dvh] bg-background flex items-center justify-center">
-        <div className="aurora-bg" />
         <div className="void-dot" />
       </main>
     );
@@ -133,81 +132,62 @@ export default function GyeolPage() {
     return <Onboarding userId={user.id} onComplete={completeOnboarding} />;
   }
 
+  const menuItems = [
+    { icon: Search, label: 'Search', action: () => { setSearchOpen(!searchOpen); setMenuOpen(false); } },
+    { icon: History, label: 'Conversations', action: () => { setConvListOpen(true); setMenuOpen(false); } },
+    { icon: BarChart3, label: 'Stats', action: () => { setStatsOpen(true); setMenuOpen(false); } },
+    { icon: BookOpen, label: 'Summaries', action: () => { setSummaryHistoryOpen(true); setMenuOpen(false); } },
+    { icon: Bell, label: 'Notifications', action: () => { setNotifOpen(true); setMenuOpen(false); } },
+    { icon: Brain, label: 'Memory', action: () => { setMemoryOpen(true); setMenuOpen(false); } },
+    { icon: Download, label: 'Export', action: () => { setExportOpen(true); setMenuOpen(false); } },
+    { icon: TrendingUp, label: 'Evolution', action: () => { setEvoOpen(true); setMenuOpen(false); } },
+    { icon: UserCircle, label: 'Profile', action: () => { setProfileOpen(true); setMenuOpen(false); } },
+    { icon: Gift, label: 'Daily Reward', action: () => { setDailyRewardOpen(true); setMenuOpen(false); } },
+  ];
+
   return (
-    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative" role="main" aria-label="GYEOL Home"
+    <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative" role="main" aria-label="GYEOL Home"
       {...swipeHandlers}>
-      <div className="aurora-bg" aria-hidden="true" />
 
       {/* Top bar */}
-      <div className="relative z-20 flex items-center justify-between px-5 pt-safe pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/20">
-            <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-              <Bot size={16} className="text-primary" aria-hidden="true" />
-            </div>
+      <div className="relative z-20 flex items-center justify-between px-4 h-14 border-b border-border bg-card"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <MessageCircle size={16} className="text-primary" />
           </div>
           <div>
-            <span className="text-sm font-bold text-foreground tracking-tight">{agentName}</span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_hsl(var(--success)/0.6)]" />
-              <span className="text-[10px] text-muted-foreground">Online</span>
-              <span className="text-[10px] text-muted-foreground/50 ml-1">Gen {agent?.gen ?? 1}</span>
+            <span className="text-sm font-semibold text-foreground">{agentName}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              <span className="text-[10px] text-muted-foreground">Online · Gen {agent?.gen ?? 1}</span>
             </div>
           </div>
         </div>
         <button type="button" onClick={() => setMenuOpen(!menuOpen)}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition"
           aria-label="Menu">
-          <Menu size={20} aria-hidden="true" />
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Hamburger menu */}
+      {/* Dropdown menu */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="absolute right-4 top-16 z-50 glass-card rounded-2xl p-2 min-w-[180px] shadow-xl border border-border/30">
-            <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <Search size={16} className="text-muted-foreground" /> Search
-            </button>
-            <button onClick={() => { setConvListOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <History size={16} className="text-muted-foreground" /> Conversations
-            </button>
-            <button onClick={() => { setStatsOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <BarChart3 size={16} className="text-muted-foreground" /> Stats
-            </button>
-            <button onClick={() => { setSummaryHistoryOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <BookOpen size={16} className="text-muted-foreground" /> Summaries
-            </button>
-            <button onClick={() => { setNotifOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <Bell size={16} className="text-muted-foreground" /> Notifications
-            </button>
-            <button onClick={() => { setMemoryOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <Brain size={16} className="text-muted-foreground" /> Memory
-            </button>
-            <button onClick={() => { setExportOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <Download size={16} className="text-muted-foreground" /> Export
-            </button>
-            <button onClick={() => { setEvoOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <TrendingUp size={16} className="text-muted-foreground" /> Evolution
-            </button>
-            <button onClick={() => { setProfileOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <UserCircle size={16} className="text-muted-foreground" /> Profile
-            </button>
-            <button onClick={() => { setDailyRewardOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
-              <Gift size={16} className="text-muted-foreground" /> Daily Reward
-            </button>
-          </motion.div>
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+              className="absolute right-3 top-14 z-50 bg-card border border-border rounded-xl p-1.5 min-w-[200px] shadow-lg"
+              style={{ marginTop: 'env(safe-area-inset-top, 0px)' }}>
+              {menuItems.map(({ icon: Icon, label, action }) => (
+                <button key={label} onClick={action}
+                  className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted rounded-lg flex items-center gap-3 transition">
+                  <Icon size={16} className="text-muted-foreground" /> {label}
+                </button>
+              ))}
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -215,15 +195,14 @@ export default function GyeolPage() {
       <AnimatePresence>
         {searchOpen && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="relative z-20 px-5 overflow-hidden">
-            <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2">
+            className="relative z-20 px-4 py-2 overflow-hidden border-b border-border bg-card">
+            <div className="flex items-center gap-2">
               <Search size={14} className="text-muted-foreground" />
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search conversations..." autoFocus
-                aria-label="Search conversations"
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
+                placeholder="Search conversations..." autoFocus aria-label="Search conversations"
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
               <ConversationFilter onFilter={() => {}} availableTags={[]} />
-              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground hover:text-foreground" aria-label="Close search">
                 <X size={14} />
               </button>
             </div>
@@ -231,7 +210,7 @@ export default function GyeolPage() {
         )}
       </AnimatePresence>
 
-      {/* Main chat area using ChatCore */}
+      {/* Chat area */}
       <div className="flex-1 flex flex-col min-h-0 relative z-10">
         <ChatCore
           messages={searchQuery ? messages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages}
@@ -241,20 +220,19 @@ export default function GyeolPage() {
           onSendMessage={sendMessage}
           error={error}
           onClearError={() => setError(null)}
-          inputPlaceholder={`Send a message to ${agentName}...`}
+          inputPlaceholder={`Message ${agentName}...`}
           showModelSelector={true}
           showFileAttach={true}
           showContinuousVoice={false}
           readSpeed={parseSettings(agent?.settings)?.readSpeed ?? 0.95}
         >
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-4 py-20 px-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary p-[1px]">
-                <div className="w-full h-full rounded-[15px] bg-background flex items-center justify-center">
-                  <Bot size={24} className="text-primary" aria-hidden="true" />
-                </div>
+            <div className="flex flex-col items-center justify-center gap-3 py-24 px-6">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageCircle size={24} className="text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground text-center">{getGreeting(agent)}</p>
+              <p className="text-sm text-foreground font-medium">{agentName}</p>
+              <p className="text-xs text-muted-foreground text-center">{getGreeting(agent)}</p>
               <p className="text-[11px] text-muted-foreground/50">Send a message to start chatting</p>
             </div>
           )}
@@ -265,10 +243,7 @@ export default function GyeolPage() {
       <EvolutionCeremony />
       <MemoryDashboard isOpen={memoryOpen} onClose={() => setMemoryOpen(false)} agentId={agent?.id} />
       <EvolutionProgress
-        isOpen={evoOpen}
-        onClose={() => setEvoOpen(false)}
-        currentGen={agent?.gen ?? 1}
-        agent={agent}
+        isOpen={evoOpen} onClose={() => setEvoOpen(false)} currentGen={agent?.gen ?? 1} agent={agent}
         onEvolve={async () => {
           if (!agent?.id) return;
           try {
@@ -289,10 +264,8 @@ export default function GyeolPage() {
       <BreedingResult isOpen={breedingOpen} onClose={() => setBreedingOpen(false)} />
       <AchievementPopup />
       <DailyReward
-        isOpen={dailyRewardOpen}
-        onClose={() => setDailyRewardOpen(false)}
-        streakDays={agent?.consecutive_days ?? 1}
-        alreadyClaimed={dailyClaimed}
+        isOpen={dailyRewardOpen} onClose={() => setDailyRewardOpen(false)}
+        streakDays={agent?.consecutive_days ?? 1} alreadyClaimed={dailyClaimed}
         onClaim={async () => {
           if (!agent?.id) return;
           try {
@@ -304,9 +277,7 @@ export default function GyeolPage() {
               body: JSON.stringify({ agentId: agent.id, action: 'daily_claim' }),
             });
             if (res.ok) setDailyClaimed(true);
-          } catch (err) {
-            console.warn('Daily claim failed:', err);
-          }
+          } catch (err) { console.warn('Daily claim failed:', err); }
         }}
       />
       <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} onShareCard={() => { setProfileOpen(false); setShareCardOpen(true); }} />
@@ -316,39 +287,21 @@ export default function GyeolPage() {
             className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-sm"
             onClick={() => setShareCardOpen(false)}>
             <div onClick={e => e.stopPropagation()}>
-              <AgentShareCard
-                name={agent.name}
-                gen={agent.gen ?? 1}
-                warmth={agent.warmth}
-                logic={agent.logic}
-                creativity={agent.creativity}
-                energy={agent.energy}
-                humor={agent.humor}
-                intimacy={agent?.intimacy ?? 0}
-                totalConversations={agent.total_conversations ?? 0}
-                mood={(agent as any).mood ?? 'neutral'}
-                onClose={() => setShareCardOpen(false)}
-              />
+              <AgentShareCard name={agent.name} gen={agent.gen ?? 1} warmth={agent.warmth} logic={agent.logic}
+                creativity={agent.creativity} energy={agent.energy} humor={agent.humor} intimacy={agent?.intimacy ?? 0}
+                totalConversations={agent.total_conversations ?? 0} mood={(agent as any).mood ?? 'neutral'}
+                onClose={() => setShareCardOpen(false)} />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
       <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
       <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
-      <IntimacyLevelUp
-        show={intimacyPopup.show}
-        intimacy={intimacyPopup.value}
-        onClose={() => setIntimacyPopup({ show: false, value: 0 })}
-      />
+      <IntimacyLevelUp show={intimacyPopup.show} intimacy={intimacyPopup.value} onClose={() => setIntimacyPopup({ show: false, value: 0 })} />
       <OnboardingTutorial isOpen={tutorialOpen} onClose={handleTutorialClose} />
-      <PersonalityChangeNotif
-        show={personalityNotif.show}
-        changes={personalityNotif.changes}
-        onClose={() => setPersonalityNotif({ show: false, changes: {} })}
-      />
-      {agent?.id && (
-        <ConversationList isOpen={convListOpen} onClose={() => setConvListOpen(false)} agentId={agent.id} />
-      )}
+      <PersonalityChangeNotif show={personalityNotif.show} changes={personalityNotif.changes}
+        onClose={() => setPersonalityNotif({ show: false, changes: {} })} />
+      {agent?.id && <ConversationList isOpen={convListOpen} onClose={() => setConvListOpen(false)} agentId={agent.id} />}
       <ConversationStats isOpen={statsOpen} onClose={() => setStatsOpen(false)} agentId={agent?.id} />
       <SummaryHistory isOpen={summaryHistoryOpen} onClose={() => setSummaryHistoryOpen(false)} agentId={agent?.id} />
     </main>
@@ -358,10 +311,8 @@ export default function GyeolPage() {
 function getGreeting(agent?: any): string {
   const h = new Date().getHours();
   const mood = agent?.mood ?? 'neutral';
-  const warmth = agent?.warmth ?? 50;
   const humor = agent?.humor ?? 50;
   const name = agent?.name ?? 'GYEOL';
-  const intimacy = agent?.intimacy ?? 0;
 
   const moodGreetings: Record<string, string[]> = {
     happy: ['Feeling great today!', 'So happy to see you', 'Having a wonderful day!'],

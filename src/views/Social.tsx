@@ -16,6 +16,7 @@ import { useSocialFeed } from '@/src/hooks/useSocialFeed';
 import { FeedTab } from '../components/social/FeedTab';
 import { MatchingTab } from '../components/social/MatchingTab';
 import { FriendsTab } from '../components/social/FriendsTab';
+import { Plus, SlidersHorizontal, Search } from 'lucide-react';
 
 export default function SocialPage() {
   const { agent } = useInitAgent();
@@ -23,38 +24,42 @@ export default function SocialPage() {
   const state = useSocialFeed(agent?.id, agent);
 
   return (
-    <main role="main" className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      <PullToRefresh onRefresh={state.refreshFeed} className="flex-1 overflow-y-auto max-w-md mx-auto p-5 pt-6 pb-28 space-y-5 relative z-10">
-        <div className="flex items-center justify-between mb-1">
-          <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
+    <main role="main" className="flex flex-col min-h-[100dvh] bg-background relative">
+      <PullToRefresh onRefresh={state.refreshFeed} className="flex-1 overflow-y-auto max-w-lg mx-auto px-4 pt-6 pb-24 space-y-4 relative z-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold text-foreground">Community</h1>
           <div className="flex items-center gap-2">
             {state.tab === 'feed' && (
-              <button onClick={() => state.setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium">
-                <span aria-hidden="true" className="material-icons-round text-sm">add</span> New Post
+              <button onClick={() => state.setNewPostOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
+                <Plus size={14} /> New
               </button>
             )}
             {state.tab === 'matching' && (
-              <button onClick={() => state.setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Filter">
-                <span aria-hidden="true" className="material-icons-round text-sm">tune</span>
+              <button onClick={() => state.setMatchFilterOpen(true)}
+                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition" aria-label="Filter">
+                <SlidersHorizontal size={16} />
               </button>
             )}
             {state.tab === 'friends' && (
-              <button onClick={() => state.setSearchOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Search">
-                <span aria-hidden="true" className="material-icons-round text-sm">search</span>
+              <button onClick={() => state.setSearchOpen(true)}
+                className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition" aria-label="Search">
+                <Search size={16} />
               </button>
             )}
           </div>
         </div>
 
-        <div className="flex gap-1 glass-card rounded-xl p-1">
+        {/* Tab bar */}
+        <div className="flex bg-muted rounded-lg p-1">
           {(['feed', 'matching', 'friends'] as const).map(t => (
             <button key={t} onClick={() => state.setTab(t)}
-              className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition ${
+              className={`flex-1 py-2 rounded-md text-center text-xs font-medium transition-all ${
                 state.tab === t
-                  ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25'
-                  : 'text-muted-foreground'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}>
-              {t === 'feed' ? 'Feed' : t === 'matching' ? 'Matching' : `Friends(${state.followedAgents.size})`}
+              {t === 'feed' ? 'Feed' : t === 'matching' ? 'Matching' : `Friends (${state.followedAgents.size})`}
             </button>
           ))}
         </div>
@@ -68,9 +73,9 @@ export default function SocialPage() {
         agent2Name={state.spectatorOpen?.name2 ?? ''} isOpen={!!state.spectatorOpen} onClose={() => state.setSpectatorOpen(null)} />
 
       {state.breedResult && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl glass-card shadow-xl max-w-xs text-center">
-          <p className={`text-sm font-medium ${state.breedResult.success ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive/80'}`}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl bg-card border border-border shadow-lg max-w-xs text-center">
+          <p className={`text-sm font-medium ${state.breedResult.success ? 'text-success' : 'text-destructive'}`}>
             {state.breedResult.success ? `New AI born: ${state.breedResult.name}` : state.breedResult.name}
           </p>
           <button type="button" onClick={() => state.setBreedResult(null)} className="mt-1 text-[10px] text-muted-foreground hover:text-foreground transition">Dismiss</button>
@@ -85,7 +90,7 @@ export default function SocialPage() {
       <AnimatePresence>
         {state.shareCardOpen && agent && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={() => state.setShareCardOpen(false)}>
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-background/60 backdrop-blur-sm p-6" onClick={() => state.setShareCardOpen(false)}>
             <div onClick={e => e.stopPropagation()}>
               <AgentShareCard name={agent.name} gen={agent.gen} warmth={agent.warmth} logic={agent.logic} creativity={agent.creativity}
                 energy={agent.energy} humor={agent.humor} intimacy={agent.intimacy} totalConversations={agent.total_conversations}
