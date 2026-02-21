@@ -29,15 +29,39 @@ export function SeasonPass() {
     (async () => {
       const { data: s } = await supabase.from('gyeol_seasons')
         .select('*').eq('is_active', true).maybeSingle();
+      let progressData: any = null;
       if (s) {
         setSeason(s as any);
         if (agent?.id) {
           const { data: p } = await supabase.from('gyeol_season_progress')
             .select('*').eq('agent_id', agent.id).eq('season_id', (s as any).id).maybeSingle();
+          progressData = p;
           setProgress(p as any);
         }
       }
       setLoading(false);
+
+      // Auto-claim unlocked but unclaimed rewards
+      if (s && progressData && agent?.id) {
+        const claimed = Array.isArray(progressData.rewards_claimed) ? progressData.rewards_claimed : [];
+        const exp = progressData.season_exp ?? 0;
+        const autoClaimed: number[] = [];
+        for (const t of TIER_REWARDS) {
+          if (exp >= t.exp && !claimed.includes(t.tier)) {
+            autoClaimed.push(t.tier);
+          }
+        }
+        if (autoClaimed.length > 0) {
+          const newClaimed = [...claimed, ...autoClaimed];
+          const maxTier = Math.max(...newClaimed);
+          await supabase.from('gyeol_season_progress')
+            .update({ rewards_claimed: newClaimed, tier: maxTier } as any)
+            .eq('agent_id', agent.id).eq('season_id', (s as any).id);
+          setProgress({ ...progressData, rewards_claimed: newClaimed, tier: maxTier });
+          setClaimMsg(`🎉 Tier ${autoClaimed.join(', ')} 보상 자동 지급!`);
+          setTimeout(() => setClaimMsg(null), 4000);
+        }
+      }
     })();
   }, [agent?.id]);
 

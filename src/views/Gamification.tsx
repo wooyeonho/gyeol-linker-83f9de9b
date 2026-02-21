@@ -2,7 +2,7 @@
  * GYEOL 게이미피케이션 메인 페이지
  * 탭: 퀘스트 | 업적 | 리더보드 | 상점
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BottomNav } from '@/src/components/BottomNav';
 import { useGamification, expToNextLevel, RARITY_COLORS, RARITY_BG, RARITY_GLOW } from '@/src/hooks/useGamification';
@@ -411,7 +411,29 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
 function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamification>; agentId?: string }) {
   const { leaderboard, profile } = gam;
   const [period, setPeriod] = useState<string>('alltime');
+  const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
   const filteredBoard = leaderboard.filter(e => e.period === period || period === 'alltime');
+
+  // Track rank changes
+  useEffect(() => {
+    const currentRanks: Record<string, number> = {};
+    filteredBoard.forEach((e, i) => { currentRanks[e.agent_id] = i + 1; });
+    // Only update prevRanks after first render
+    if (Object.keys(prevRanks).length > 0) {
+      // prevRanks stays as previous snapshot for comparison
+    }
+    const timer = setTimeout(() => setPrevRanks(currentRanks), 5000);
+    return () => clearTimeout(timer);
+  }, [filteredBoard.length, period]);
+
+  const getRankChange = (agentId: string, currentRank: number) => {
+    const prev = prevRanks[agentId];
+    if (!prev) return null;
+    const diff = prev - currentRank;
+    if (diff > 0) return { dir: 'up' as const, val: diff };
+    if (diff < 0) return { dir: 'down' as const, val: Math.abs(diff) };
+    return null;
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
@@ -465,9 +487,14 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
         filteredBoard.map((entry, i) => {
           const isMe = entry.agent_id === agentId;
           const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+          const rankChange = getRankChange(entry.agent_id, i + 1);
           return (
-            <div
+            <motion.div
               key={entry.id}
+              layout
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.03 }}
               className={`glass-card rounded-2xl p-3 flex items-center gap-3 ${isMe ? 'glass-card-selected' : ''}`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -481,8 +508,19 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
                 </span>
                 <span className="text-[9px] text-muted-foreground ml-2">Gen {entry.agent_gen}</span>
               </div>
+              {/* Rank change indicator */}
+              {rankChange && (
+                <span className={`text-[9px] font-bold flex items-center gap-0.5 ${
+                  rankChange.dir === 'up' ? 'text-emerald-400' : 'text-destructive'
+                }`}>
+                  <span className="material-icons-round text-[10px]">
+                    {rankChange.dir === 'up' ? 'arrow_upward' : 'arrow_downward'}
+                  </span>
+                  {rankChange.val}
+                </span>
+              )}
               <span className="text-sm font-bold text-foreground">{entry.score.toLocaleString()}</span>
-            </div>
+            </motion.div>
           );
         })
       )}
