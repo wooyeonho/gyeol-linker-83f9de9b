@@ -16,6 +16,10 @@ import remarkGfm from 'remark-gfm';
 import { ConversationList } from '@/src/components/ConversationList';
 import { StreakBonus } from '@/src/components/StreakBonus';
 import { SummaryHistory, saveSummaryToHistory } from '@/src/components/SummaryHistory';
+import { ConversationStats } from '@/src/components/ConversationStats';
+import { ConversationShare } from '@/src/components/ConversationShare';
+import { ReplyPreview, ReplyBubble } from '@/src/components/MessageReply';
+import type { Message as Msg } from '@/lib/gyeol/types';
 
 // Emoji reactions for messages
 const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
@@ -76,7 +80,12 @@ export default function SimpleChat() {
   const [summaryText, setSummaryText] = useState('');
   const [summarizing, setSummarizing] = useState(false);
   const [summaryHistoryOpen, setSummaryHistoryOpen] = useState(false);
-
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [replyMap, setReplyMap] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem('gyeol_replies') ?? '{}'); } catch { return {}; }
+  });
   const toggleBookmark = (msgId: string) => {
     setBookmarks(prev => {
       const next = new Set(prev);
@@ -224,7 +233,19 @@ export default function SimpleChat() {
     if (!text || isLoading || !agent?.id) return;
     setInput('');
     stopSpeaking();
-    await sendMessage(text);
+    // If replying, prefix with reply context
+    const prefix = replyTo ? `[↩ ${replyTo.role === 'user' ? 'You' : agentName}: "${replyTo.content.slice(0, 40)}..."]\n` : '';
+    if (replyTo) {
+      // Save reply mapping for the next message
+      const localId = `pending-reply-${Date.now()}`;
+      setReplyMap(prev => {
+        const next = { ...prev, [localId]: replyTo.id };
+        localStorage.setItem('gyeol_replies', JSON.stringify(next));
+        return next;
+      });
+      setReplyTo(null);
+    }
+    await sendMessage(prefix + text);
   };
 
   const handleDeleteMessage = (msgId: string) => {
@@ -277,6 +298,16 @@ export default function SimpleChat() {
             <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
           </button>
           <div className="absolute top-4 right-4 flex gap-2">
+            <button onClick={() => setStatsOpen(true)}
+              aria-label="Stats"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">bar_chart</span>
+            </button>
+            <button onClick={() => setShareOpen(true)}
+              aria-label="Share conversation"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">share</span>
+            </button>
             <button onClick={() => setSummaryHistoryOpen(true)}
               aria-label="Summary history"
               className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
@@ -421,6 +452,11 @@ export default function SimpleChat() {
                           className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
                           <span className="material-icons-round text-[12px]">delete</span>
                         </button>
+                        <button onClick={() => setReplyTo(msg)}
+                          aria-label="Reply"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">reply</span>
+                        </button>
                         <button onClick={() => togglePin(msg.id)}
                           aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
                           className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
@@ -514,6 +550,11 @@ export default function SimpleChat() {
                           className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
                           <span className="material-icons-round text-[12px]" aria-hidden="true">translate</span>
                         </button>
+                        <button onClick={() => setReplyTo(msg)}
+                          aria-label="Reply"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">reply</span>
+                        </button>
                         <button onClick={() => toggleBookmark(msg.id)}
                           aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
                           className={`text-[9px] px-1.5 py-0.5 rounded transition focus-visible:outline-2 focus-visible:outline-primary ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
@@ -590,6 +631,10 @@ export default function SimpleChat() {
       <div className="flex-shrink-0 relative z-10"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}>
         <div className="bg-gradient-to-t from-background to-transparent pt-6 px-4">
+          {/* Reply preview */}
+          <AnimatePresence>
+            {replyTo && <ReplyPreview replyTo={replyTo} onClear={() => setReplyTo(null)} />}
+          </AnimatePresence>
           {/* Image preview */}
           {imagePreview && (
             <div className="mb-2 relative inline-block">
@@ -670,6 +715,12 @@ export default function SimpleChat() {
           agentId={agent.id}
         />
       )}
+
+      {/* Conversation Stats */}
+      <ConversationStats isOpen={statsOpen} onClose={() => setStatsOpen(false)} agentId={agent?.id} />
+
+      {/* Conversation Share */}
+      <ConversationShare isOpen={shareOpen} onClose={() => setShareOpen(false)} messages={messages} agentName={agentName} />
     </main>
   );
 }

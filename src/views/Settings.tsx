@@ -16,6 +16,7 @@ import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
 import { getLocale, setLocale, getAvailableLocales, type Locale } from '@/src/lib/i18n';
 import { NotificationSettings } from '@/src/components/NotificationSettings';
 import { ProfileCustomizer } from '@/src/components/ProfileCustomizer';
+import { AgentStatsDashboard } from '@/src/components/AgentStatsDashboard';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -130,7 +131,7 @@ export default function SettingsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [profileCustomOpen, setProfileCustomOpen] = useState(false);
-
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   useEffect(() => {
     if (!agent) return;
     setWarmth(agent.warmth);
@@ -288,6 +289,11 @@ export default function SettingsPage() {
               <p className="text-[10px] text-primary/60">Generation {agent?.gen ?? 1}</p>
               <p className="text-[9px] text-muted-foreground/50">Status: Evolving & Learning</p>
             </div>
+            <button onClick={() => setDashboardOpen(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition"
+              aria-label="대시보드">
+              <span className="material-icons-round text-sm">dashboard</span>
+            </button>
             <button onClick={() => setProfileCustomOpen(true)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition"
               aria-label="프로필 커스터마이즈">
@@ -1162,6 +1168,11 @@ export default function SettingsPage() {
           agent={agent}
           onUpdate={(updated) => setAgent(updated)}
         />
+      )}
+
+      {/* Agent Stats Dashboard */}
+      {agent?.id && (
+        <AgentStatsDashboard isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} agentId={agent.id} />
       )}
 
       <BottomNav />
