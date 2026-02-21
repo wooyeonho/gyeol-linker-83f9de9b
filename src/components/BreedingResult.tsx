@@ -102,7 +102,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                 </div>
                 <span className="text-muted-foreground/20 text-lg">+</span>
                 <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-pink-500/30 flex items-center justify-center mx-auto">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-accent-pink/30 flex items-center justify-center mx-auto">
                     <span className="text-[10px] text-primary font-bold">B</span>
                   </div>
                   <p className="text-[9px] text-muted-foreground/50 mt-1">{parentB.name}</p>
@@ -150,7 +150,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                   </div>
                 ))}
                 {child.memories.length > 4 && (
-                  <p className="text-[9px] text-muted-foreground/40">... and {child.memories.length - 4}개</p>
+                  <p className="text-[9px] text-muted-foreground/40">... and {child.memories.length - 4} more</p>
                 )}
               </div>
             </div>
@@ -158,7 +158,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
             {/* Mutation */}
             {child.mutation && (
               <motion.div
-                className="mx-5 mb-3 px-3 py-2 rounded-xl bg-[hsl(var(--warning)/0.1)] border border-yellow-500/20 text-center"
+                className="mx-5 mb-3 px-3 py-2 rounded-xl bg-[hsl(var(--warning)/0.1)] border border-[hsl(var(--warning))]/20 text-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}

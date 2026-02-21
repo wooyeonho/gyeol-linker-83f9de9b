@@ -130,7 +130,7 @@ export default function ActivityPage() {
 
   return (
     <main role="main" className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      <div className="aurora-bg" />
+      {/* aurora-bg removed — home only */}
       <PullToRefresh onRefresh={handleRefresh} className="flex-1 overflow-y-auto max-w-md mx-auto px-5 pt-6 pb-24 space-y-4 relative z-10">
         {/* B24: Breadcrumbs */}
         <Breadcrumbs items={[{ label: 'Home', path: '/' }, { label: 'Activity' }]} />
