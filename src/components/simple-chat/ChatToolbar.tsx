@@ -70,7 +70,7 @@ export function ChatToolbar({ state }: ChatToolbarProps) {
           mood={(agent as any)?.mood ?? 'neutral'}
           isThinking={isLoading}
           reaction={lastReaction}
-          characterPreset={settings.characterPreset}
+          characterPreset={settings.characterPreset as string | undefined}
           skinId={(agent as any)?.skin_id}
           gen={agent?.gen ?? 1}
           size="lg"

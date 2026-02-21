@@ -31,7 +31,7 @@ interface Props {
 
 export function NotificationSettings({ agent, onUpdate }: Props) {
   const settings = parseSettings(agent?.settings);
-  const notifSettings = settings.notifications ?? {};
+  const notifSettings = (settings.notifications ?? {}) as Record<string, any>;
 
   const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
     const defaults: Record<string, boolean> = {};
@@ -43,7 +43,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
   const [quietEnd, setQuietEnd] = useState<number>(notifSettings.quietEnd ?? 7);
 
   useEffect(() => {
-    const ns = settings.notifications ?? {};
+    const ns = (settings.notifications ?? {}) as Record<string, any>;
     const defaults: Record<string, boolean> = {};
     NOTIF_CATEGORIES.forEach(c => { defaults[c.key] = ns[c.key] !== false; });
     setToggles(defaults);
@@ -56,7 +56,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
     setToggles(updated);
     const ns = { ...notifSettings, ...updated };
     const newSettings = { ...settings, notifications: ns };
-    await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
+    await supabase.from('gyeol_agents').update({ settings: newSettings as any }).eq('id', agent?.id);
     onUpdate(newSettings);
   };
 
@@ -65,7 +65,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
     setQuietEnd(end);
     const ns = { ...notifSettings, ...toggles, quietStart: start, quietEnd: end };
     const newSettings = { ...settings, notifications: ns };
-    await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
+    await supabase.from('gyeol_agents').update({ settings: newSettings as any }).eq('id', agent?.id);
     onUpdate(newSettings);
   };
 
@@ -86,7 +86,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
           setToggles(updated);
           const ns = { ...notifSettings, ...updated };
           const newSettings = { ...settings, notifications: ns };
-          supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
+          supabase.from('gyeol_agents').update({ settings: newSettings as any }).eq('id', agent?.id);
           onUpdate(newSettings);
         }}
           className={`w-10 h-6 rounded-full transition ${allOn ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>

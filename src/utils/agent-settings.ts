@@ -1,4 +1,4 @@
-import type { Json } from '@/integrations/supabase/types';
+import type { Json } from '@/src/integrations/supabase/types';
 
 export type AgentSettings = {
   mode?: string;
@@ -15,8 +15,11 @@ export type AgentSettings = {
   tts_speed?: number;
   ttsSpeed?: number;
   personalityLocked?: boolean;
-  savedPresets?: unknown[];
+  savedPresets?: Json[];
   kidsSafe?: boolean;
+  notifications?: Record<string, Json | undefined>;
+  profileCustom?: Record<string, Json | undefined>;
+  characterPreset?: string;
   analysisDomains?: string[];
   customChar?: {
     color1?: string;

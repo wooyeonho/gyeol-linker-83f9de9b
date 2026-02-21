@@ -37,7 +37,7 @@ interface Props {
 
 export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
   const settings = parseSettings(agent?.settings);
-  const profile = settings.profileCustom ?? {};
+  const profile = (settings.profileCustom ?? {}) as Record<string, any>;
 
   const [banner, setBanner] = useState(profile.banner ?? BANNER_GRADIENTS[0].value);
   const [statusMsg, setStatusMsg] = useState(profile.statusMsg ?? STATUS_MESSAGES[0]);
@@ -48,7 +48,7 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
   const save = async () => {
     const profileCustom = { banner, statusMsg: customStatus || statusMsg, customStatus, badge, bio };
     const ns = { ...settings, profileCustom };
-    await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
+    await supabase.from('gyeol_agents').update({ settings: ns as any }).eq('id', agent?.id);
     onUpdate({ ...agent, settings: ns });
     onClose();
   };
