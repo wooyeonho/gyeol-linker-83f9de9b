@@ -7,9 +7,8 @@ import type { Agent, Message, AutonomousLog } from '@/lib/gyeol/types';
 import { supabase } from '@/src/lib/supabase';
 import { showToast } from '@/src/components/Toast';
 
-/** Strip CJK Unified Ideographs from Korean responses to prevent Chinese chars leaking through */
-function cleanChinese(text: string): string {
-  // Replace CJK Unified Ideographs (U+4E00–U+9FFF) that aren't common in Korean
+function cleanChinese(text: string, locale?: string): string {
+  if (locale && (locale.startsWith('ja') || locale.startsWith('zh'))) return text;
   return text.replace(/[\u4E00-\u9FFF]/g, '');
 }
 export type GyeolError = { message: string; code?: string } | null;
@@ -135,39 +134,55 @@ export const useGyeolStore = create<GyeolState>((set) => ({
         const decoder = new TextDecoder();
         let fullContent = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (!data) continue;
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.token) {
-                  fullContent += parsed.token;
-                  set((s) => ({
-                    messages: s.messages.map(m =>
-                      m.id === assistantId ? { ...m, content: cleanChinese(fullContent) } : m
-                    ),
-                  }));
-                }
-                if (parsed.done) {
-                  set((s) => ({
-                    isLoading: false,
-                    lastReaction: parsed.reaction ?? null,
-                  }));
-                  if (parsed.reaction) {
-                    setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+                if (!data) continue;
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.token) {
+                    fullContent += parsed.token;
+                    set((s) => ({
+                      messages: s.messages.map(m =>
+                        m.id === assistantId ? { ...m, content: cleanChinese(fullContent) } : m
+                      ),
+                    }));
                   }
+                  if (parsed.done) {
+                    set((s) => ({
+                      isLoading: false,
+                      lastReaction: parsed.reaction ?? null,
+                      ...(parsed.evolved && parsed.newGen
+                        ? { evolutionCeremony: { show: true, newGen: parsed.newGen } }
+                        : {}),
+                      ...(parsed.conversationInsight
+                        ? { lastInsight: parsed.conversationInsight }
+                        : {}),
+                      ...(parsed.newVisualState && s.agent
+                        ? { agent: { ...s.agent, visual_state: parsed.newVisualState } }
+                        : {}),
+                    }));
+                    if (parsed.reaction) {
+                      setTimeout(() => useGyeolStore.getState().setReaction(null), 3000);
+                    }
+                  }
+                } catch (parseErr) {
+                  console.warn('[SSE] parse error:', parseErr);
                 }
-              } catch {}
+              }
             }
           }
+        } catch (streamErr) {
+          console.warn('[SSE] stream read error:', streamErr);
+        } finally {
+          set({ isLoading: false });
         }
-        set({ isLoading: false });
       } else {
         // Non-streaming JSON response fallback
         const data = await res.json();
@@ -204,7 +219,7 @@ export const useGyeolStore = create<GyeolState>((set) => ({
     } catch (err) {
       const message = err instanceof Error ? err.message : '전송에 실패했어요. 다시 시도해 주세요.';
       set((s) => ({ isLoading: false, error: { message, code: 'SEND_FAILED' } }));
-      setTimeout(() => useGyeolStore.getState().setError(null), 4000);
+      setTimeout(() => useGyeolStore.getState().setError(null), 10000);
     }
   },
   subscribeToUpdates: (agentId) => {

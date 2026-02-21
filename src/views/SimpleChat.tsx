@@ -56,7 +56,7 @@ export default function SimpleChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const settings = (agent?.settings as any) ?? {};
   const fontSize = settings.fontSize ?? 18;
-  const autoTTS = settings.autoTTS !== false;
+  const autoTTS = settings.autoTTS === true;
   const hasCharacter = settings.characterPreset != null;
 
   const [reactions, setReactions] = useState<Record<string, string>>({});
