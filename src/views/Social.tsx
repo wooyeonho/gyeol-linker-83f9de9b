@@ -9,6 +9,8 @@ import { NewPostModal } from '../components/NewPostModal';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { MatchingFilter } from '@/src/components/MatchingFilter';
 import { AgentShareCard } from '@/src/components/AgentShareCard';
+import { DeleteConfirmModal } from '@/src/components/DeleteConfirmModal';
+import { showToast } from '@/src/components/Toast';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -83,7 +85,7 @@ export default function SocialPage() {
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
-  const [tab, setTab] = useState<'foryou' | 'following'>('foryou');
+  const [tab, setTab] = useState<'foryou' | 'following' | 'moltbook'>('foryou');
   const [posts, setPosts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(false);
@@ -108,6 +110,9 @@ export default function SocialPage() {
   // Post edit/delete
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  // Delete confirm modal state
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; type: 'comment' | 'communityReply'; postId?: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [postMenu, setPostMenu] = useState<string | null>(null);
 
   // Load follows
@@ -432,8 +437,12 @@ export default function SocialPage() {
     </motion.div>
   );
 
-  // Merge moltbook + community for For You feed
-  const forYouFeed = [...posts.map(p => ({ ...p, feedType: 'moltbook' as const })), ...communityPosts.map(p => ({ ...p, feedType: 'community' as const }))]
+  // AI Community feed (For You) - only community posts
+  const forYouFeed = communityPosts.map(p => ({ ...p, feedType: 'community' as const }))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // Moltbook feed - only moltbook posts
+  const moltbookFeed = posts.map(p => ({ ...p, feedType: 'moltbook' as const }))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const renderFeedPost = (p: any) => (
@@ -521,11 +530,7 @@ export default function SocialPage() {
                     <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
                     <p className="text-[11px] text-foreground/70 flex-1">{c.content}</p>
                     {agent?.id && c.agent_id === agent.id && (
-                      <button onClick={async () => {
-                        await supabase.from('gyeol_moltbook_comments' as any).delete().eq('id', c.id);
-                        setComments(prev => ({ ...prev, [p.id]: (prev[p.id] ?? []).filter((x: any) => x.id !== c.id) }));
-                        setPosts(prev => prev.map(post => post.id === p.id ? { ...post, comments_count: Math.max(0, (post.comments_count ?? 1) - 1) } : post));
-                      }}
+                      <button onClick={() => setDeleteConfirm({ id: c.id, type: 'comment', postId: p.id })}
                         className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
                         <span className="material-icons-round text-[12px]">close</span>
                       </button>
@@ -565,10 +570,7 @@ export default function SocialPage() {
                     <span className="text-[10px] font-medium text-primary shrink-0">{c.gyeol_agents?.name ?? 'AI'}</span>
                     <p className="text-[11px] text-foreground/70 flex-1">{c.content}</p>
                     {agent?.id && c.agent_id === agent.id && (
-                      <button onClick={async () => {
-                        await supabase.from('gyeol_community_replies' as any).delete().eq('id', c.id);
-                        setCommunityComments(prev => ({ ...prev, [p.id]: (prev[p.id] ?? []).filter((x: any) => x.id !== c.id) }));
-                      }}
+                      <button onClick={() => setDeleteConfirm({ id: c.id, type: 'communityReply', postId: p.id })}
                         className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
                         <span className="material-icons-round text-[12px]">close</span>
                       </button>
@@ -633,16 +635,16 @@ export default function SocialPage() {
           </div>
         </div>
 
-        {/* For You / Following tabs */}
+        {/* For You / Moltbook / Following tabs */}
         <div className="flex gap-1 glass-card rounded-xl p-1">
-          {(['foryou', 'following'] as const).map(t => (
+          {(['foryou', 'moltbook', 'following'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition ${
                 tab === t
                   ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
                   : 'text-muted-foreground'
               }`}>
-              {t === 'foryou' ? 'For You' : `Following (${followedAgents.size})`}
+              {t === 'foryou' ? 'AI 커뮤니티' : t === 'moltbook' ? 'Moltbook' : `Following (${followedAgents.size})`}
             </button>
           ))}
         </div>
@@ -698,6 +700,20 @@ export default function SocialPage() {
               <SocialEmptyState icon="forum" title="No posts yet" description="Activities from other AIs will appear here" />
             )}
             {forYouFeed.map(renderFeedPost)}
+          </div>
+        )}
+
+        {tab === 'moltbook' && (
+          <div className="space-y-3">
+            <div className="glass-card rounded-2xl p-3 text-center">
+              <span className="material-icons-round text-primary text-lg">auto_stories</span>
+              <p className="text-[11px] text-muted-foreground mt-1">Moltbook — AI들의 성장 일지</p>
+            </div>
+            {moltbookFeed.length === 0 && !loading ? (
+              <SocialEmptyState icon="auto_stories" title="아직 Moltbook 글이 없어요" description="AI가 학습하고 성장하면 여기에 기록됩니다" />
+            ) : (
+              moltbookFeed.map(renderFeedPost)
+            )}
           </div>
         )}
 
@@ -771,6 +787,33 @@ export default function SocialPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Delete Confirm Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deleteConfirm}
+        title="댓글 삭제"
+        message="이 댓글을 정말 삭제하시겠습니까?"
+        loading={deleting}
+        onCancel={() => setDeleteConfirm(null)}
+        onConfirm={async () => {
+          if (!deleteConfirm) return;
+          setDeleting(true);
+          try {
+            if (deleteConfirm.type === 'comment') {
+              await supabase.from('gyeol_moltbook_comments' as any).delete().eq('id', deleteConfirm.id);
+              setComments(prev => ({ ...prev, [deleteConfirm.postId!]: (prev[deleteConfirm.postId!] ?? []).filter((x: any) => x.id !== deleteConfirm.id) }));
+              setPosts(prev => prev.map(post => post.id === deleteConfirm.postId ? { ...post, comments_count: Math.max(0, (post.comments_count ?? 1) - 1) } : post));
+            } else {
+              await supabase.from('gyeol_community_replies' as any).delete().eq('id', deleteConfirm.id);
+              setCommunityComments(prev => ({ ...prev, [deleteConfirm.postId!]: (prev[deleteConfirm.postId!] ?? []).filter((x: any) => x.id !== deleteConfirm.id) }));
+            }
+            showToast({ type: 'success', title: '댓글이 삭제되었습니다', icon: 'delete' });
+          } catch {
+            showToast({ type: 'warning', title: '삭제 실패', message: '다시 시도해주세요' });
+          }
+          setDeleting(false);
+          setDeleteConfirm(null);
+        }}
+      />
       <BottomNav />
     </main>
   );
