@@ -72,6 +72,7 @@ async function searchPerplexity(query: string): Promise<string> {
         max_tokens: 512,
         search_recency_filter: "day",
       }),
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) { await res.text(); return ""; }
     const data = await res.json();
@@ -88,7 +89,7 @@ async function searchPerplexity(query: string): Promise<string> {
 
 async function searchDDG(query: string): Promise<string> {
   try {
-    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return "";
     const data = await res.json();
     const results: string[] = [];
@@ -106,6 +107,7 @@ async function searchDDGHtml(query: string): Promise<string> {
   try {
     const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; GYEOL/1.0)" },
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return "";
     const html = await res.text();
@@ -386,13 +388,10 @@ async function doPostProcessing(
     } catch (e) { console.warn("auto-persona evolution failed:", e); }
   }
 
-  // Update agent stats
-  const newTotal = (agent.total_conversations ?? 0) + 1;
-  const newProgress = Math.min(100, (agent.evolution_progress ?? 0) + 3);
-  const updates: Record<string, any> = {
-    total_conversations: newTotal, evolution_progress: newProgress,
-    last_active: new Date().toISOString(),
-  };
+  // Update agent stats (atomic increment via RPC to prevent race condition)
+  const { data: rpcResult } = await db.rpc("increment_agent_conversations", { p_agent_id: agentId, p_progress_delta: 3 }).single();
+  const newTotal = rpcResult?.total_conversations ?? ((agent.total_conversations ?? 0) + 1);
+  const newProgress = rpcResult?.evolution_progress ?? Math.min(100, (agent.evolution_progress ?? 0) + 3);
 
   const BASE_RATES: Record<number, number> = { 1: 60, 2: 40, 3: 20, 4: 5 };
   if (newProgress >= 100) {
@@ -402,14 +401,11 @@ async function doPostProcessing(
     const probability = Math.min(95, Math.floor((baseRate + bonus) * (newProgress / 100)));
     const roll = Math.random() * 100;
     if (roll < probability) {
-      updates.gen = agent.gen + 1;
-      updates.evolution_progress = 0;
+      await db.from("gyeol_agents").update({ gen: agent.gen + 1, evolution_progress: 0 }).eq("id", agentId);
     } else {
-      updates.evolution_progress = 80;
+      await db.from("gyeol_agents").update({ evolution_progress: 80 }).eq("id", agentId);
     }
   }
-
-  await db.from("gyeol_agents").update(updates).eq("id", agentId);
 
   // Fire gamification tick (non-blocking)
   const gamTickUrl = `${supabaseUrl}/functions/v1/gamification-tick`;
@@ -633,6 +629,7 @@ serve(async (req) => {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
             body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: chatMessages, max_tokens: 1024, stream: true }),
+            signal: AbortSignal.timeout(15000),
           });
           if (res.ok && res.body) {
             const reader = res.body.getReader();
@@ -700,6 +697,7 @@ serve(async (req) => {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${lovableKey}` },
           body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: chatMessages, max_tokens: 1024 }),
+          signal: AbortSignal.timeout(15000),
         });
         if (res.ok) {
           const data = await res.json();
@@ -732,6 +730,7 @@ serve(async (req) => {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
             body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: chatMessages, max_tokens: 512 }),
+            signal: AbortSignal.timeout(12000),
           });
           if (res.ok) {
             const data = await res.json();
