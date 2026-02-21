@@ -20,7 +20,10 @@ import ServerError from './views/ServerError';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
 import ResetPasswordPage from './views/ResetPassword';
+import AdminPage from './views/Admin';
 import { OfflineBanner, useOnlineStatus } from './components/PWADeep';
+import { ErrorToastContainer, OfflineIndicator } from './components/ErrorUX';
+import { JsonLdSchema } from './components/SEO';
 
 const pageTransition = {
   initial: { opacity: 0, y: 10 },
@@ -89,6 +92,9 @@ function App() {
       <ToastContainer />
       <AchievementPopup />
       <OfflineBanner isOnline={isOnline} />
+      <ErrorToastContainer />
+      <OfflineIndicator />
+      <JsonLdSchema />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <PageWrap><AuthPage /></PageWrap>} />
@@ -102,6 +108,7 @@ function App() {
           <Route path="/market/skills" element={<ProtectedRoute><SimpleGuard><PageWrap><SkillsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
           <Route path="/market/skins" element={<ProtectedRoute><SimpleGuard><PageWrap><SkinsPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
           <Route path="/gamification" element={<ProtectedRoute><SimpleGuard><PageWrap><GamificationPage /></PageWrap></SimpleGuard></ProtectedRoute>} />
+          <Route path="/admin" element={<PageWrap><AdminPage /></PageWrap>} />
           <Route path="/500" element={<PageWrap><ServerError /></PageWrap>} />
           <Route path="*" element={<PageWrap><NotFound /></PageWrap>} />
         </Routes>
