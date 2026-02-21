@@ -26,6 +26,7 @@ import { ConversationList } from '@/src/components/ConversationList';
 import { ConversationStats } from '@/src/components/ConversationStats';
 import { SummaryHistory } from '@/src/components/SummaryHistory';
 import { ConversationFilter } from '@/src/components/ConversationFilter';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 export default function GyeolPage() {
   const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight, lastReaction } = useGyeolStore();
@@ -243,7 +244,7 @@ export default function GyeolPage() {
           showModelSelector={true}
           showFileAttach={true}
           showContinuousVoice={false}
-          readSpeed={(agent?.settings as any)?.readSpeed ?? 0.95}
+          readSpeed={parseSettings(agent?.settings)?.readSpeed ?? 0.95}
         >
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-4 py-20 px-3">

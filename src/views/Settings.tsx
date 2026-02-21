@@ -23,6 +23,7 @@ import { ModeCharacterSection } from '@/src/components/settings/ModeCharacterSec
 import { AppearanceSection } from '@/src/components/settings/AppearanceSection';
 import { PreferencesSection } from '@/src/components/settings/PreferencesSection';
 import { InfoSection } from '@/src/components/settings/InfoSection';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 export default function SettingsPage() {
   const state = useSettingsState();
@@ -126,7 +127,7 @@ export default function SettingsPage() {
               {activeSection === 'systemprompt' && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
-                  <SystemPromptEditor agent={agent} onUpdate={(ns) => { if (agent) setAgent({ ...agent, settings: ns } as any); }} />
+                  <SystemPromptEditor agent={agent} onUpdate={(ns) => { if (agent) setAgent({ ...agent, settings: ns } as never); }} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -160,15 +161,15 @@ export default function SettingsPage() {
                   <p className="text-[10px] text-foreground/30 mb-2">Current Mood</p>
                   <MoodSelector currentMood={(agent?.mood as any) ?? 'neutral'} onChange={async (mood) => {
                     await supabase.from('gyeol_agents').update({ mood }).eq('id', agent?.id);
-                    if (agent) setAgent({ ...agent, mood } as any);
+                    if (agent) setAgent({ ...agent, mood } as never);
                   }} />
                 </div>
                 <div>
                   <p className="text-[10px] text-foreground/30 mb-2">Persona</p>
-                  <PersonaSelector current={(agent?.settings as any)?.persona ?? 'friend'} onSelect={async (id) => {
-                    const s = { ...(agent?.settings as any), persona: id };
+                  <PersonaSelector current={parseSettings(agent?.settings)?.persona ?? 'friend'} onSelect={async (id) => {
+                    const s = { ...parseSettings(agent?.settings), persona: id };
                     await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-                    if (agent) setAgent({ ...agent, settings: s } as any);
+                    if (agent) setAgent({ ...agent, settings: s } as never);
                   }} />
                 </div>
               </motion.div>
@@ -215,7 +216,7 @@ export default function SettingsPage() {
 
       <ModeSwitchGuide isOpen={modeSwitchOpen} onClose={() => setModeSwitchOpen(false)} targetMode={modeSwitchTarget}
         onConfirm={async () => {
-          const s = (agent?.settings as any) ?? {};
+          const s = parseSettings(agent?.settings);
           await supabase.from('gyeol_agents').update({ settings: { ...s, mode: modeSwitchTarget } } as any).eq('id', agent?.id);
           window.location.href = '/';
         }} />

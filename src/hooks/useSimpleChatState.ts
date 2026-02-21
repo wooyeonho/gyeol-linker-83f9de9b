@@ -7,6 +7,7 @@ import { supabase } from '@/src/lib/supabase';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { saveSummaryToHistory } from '@/src/components/SummaryHistory';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const TRANSLATE_LANGS = [
   { code: 'ko', label: '한국어' }, { code: 'en', label: 'English' },
@@ -21,7 +22,7 @@ export function useSimpleChatState() {
   const { messages, sendMessage, isLoading, error, setError, lastReaction, addMessage, setMessages } = useGyeolStore();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const settings = (agent?.settings as any) ?? {};
+  const settings = parseSettings(agent?.settings);
   const fontSize = settings.fontSize ?? 18;
   const autoTTS = settings.autoTTS === true;
   const hasCharacter = settings.characterPreset != null;

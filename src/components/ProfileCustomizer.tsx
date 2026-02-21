@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/integrations/supabase/client';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const BANNER_GRADIENTS = [
   { label: 'Indigo', value: 'from-indigo-500/30 to-primary/20' },
@@ -35,7 +36,7 @@ interface Props {
 }
 
 export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
-  const settings = (agent?.settings as any) ?? {};
+  const settings = parseSettings(agent?.settings);
   const profile = settings.profileCustom ?? {};
 
   const [banner, setBanner] = useState(profile.banner ?? BANNER_GRADIENTS[0].value);

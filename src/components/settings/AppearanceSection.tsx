@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ThemeToggle } from '../ThemeToggle';
 import { supabase } from '@/src/lib/supabase';
 import { getLocale, setLocale, getAvailableLocales } from '@/src/lib/i18n';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -43,13 +44,13 @@ export function AppearanceSection({ agent, setAgent, activeSection, SectionHeade
             <p className="text-[9px] text-foreground/25">Customize theme color</p>
           </div>
           <input type="color"
-            defaultValue={(() => { const c = (agent?.settings as any)?.customThemeColor; return c || '#784EDC'; })()}
+            defaultValue={(() => { const c = parseSettings(agent?.settings)?.customThemeColor; return c || '#784EDC'; })()}
             onChange={async (e) => {
               const color = e.target.value;
               document.documentElement.style.setProperty('--primary', `${hexToHSL(color)}`);
-              const s = { ...(agent?.settings as any), customThemeColor: color };
+              const s = { ...parseSettings(agent?.settings), customThemeColor: color };
               await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-              if (agent) setAgent({ ...agent, settings: s } as any);
+              if (agent) setAgent({ ...agent, settings: s } as never);
             }}
             className="w-8 h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
         </div>

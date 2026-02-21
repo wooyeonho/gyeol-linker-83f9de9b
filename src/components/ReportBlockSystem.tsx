@@ -98,7 +98,7 @@ export function useBlockSystem() {
 
   const blockAgent = useCallback(async (targetAgentId: string) => {
     if (!agent?.id) return;
-    await supabase.from('gyeol_blocks' as any).upsert({ blocker_agent_id: agent.id, blocked_agent_id: targetAgentId } as any, { onConflict: 'blocker_agent_id,blocked_agent_id' });
+    await supabase.from('gyeol_blocks' as any).upsert({ blocker_agent_id: agent.id, blocked_agent_id: targetAgentId }, { onConflict: 'blocker_agent_id,blocked_agent_id' });
     setBlockedIds(prev => new Set([...prev, targetAgentId]));
   }, [agent?.id]);
 

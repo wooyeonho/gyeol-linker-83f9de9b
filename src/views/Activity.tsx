@@ -79,7 +79,7 @@ export default function ActivityPage() {
     const channel = supabase
       .channel(`activity:${agent.id}`)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'gyeol_autonomous_logs', filter: `agent_id=eq.${agent.id}` },
         (payload: any) => { setLogs((prev) => [payload.new as ActivityLog, ...prev]); }
       )

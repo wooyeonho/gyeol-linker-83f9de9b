@@ -78,7 +78,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
         await supabase.from('gyeol_inventory')
           .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
-        setMessage(newEquipped ? `${item.name} Equip! ✨` : `${item.name} 해제`);
+        setMessage(newEquipped ? `${item.name} Equip! ✨` : `${item.name} Unequip`);
       } else if (item.category === 'boost') {
         // Consume: reduce quantity
         if (inv.quantity <= 1) {
@@ -100,7 +100,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
           await supabase.from('gyeol_agents')
             .update({ evolution_progress: newProgress })
             .eq('id', agent.id);
-          setAgent({ ...agent, evolution_progress: newProgress } as any);
+          setAgent({ ...agent, evolution_progress: newProgress } as never);
         }
         setMessage(`${item.name} Use! 🎉`);
       } else {
@@ -109,7 +109,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
         await supabase.from('gyeol_inventory')
           .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
-        setMessage(newEquipped ? `${item.name} Equip!` : `${item.name} 해제`);
+        setMessage(newEquipped ? `${item.name} Equip!` : `${item.name} Unequip`);
       }
 
       onReload();
@@ -143,7 +143,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <span>📦</span> Inventory
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{inventory.length}개</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{inventory.length} items</span>
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
                   <span aria-hidden="true" className="material-icons-round text-lg">close</span>
@@ -165,14 +165,14 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                       <button key={cat} onClick={() => setFilterCat(cat)}
                         className={`px-2 py-1 rounded-lg text-[9px] font-medium whitespace-nowrap transition ${
                           filterCat === cat ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
-                        }`}>{cat === 'all' ? '전체' : cat === 'boost' ? '부스터' : cat === 'cosmetic' ? '꾸미기' : cat}</button>
+                        }`}>{cat === 'all' ? 'All' : cat === 'boost' ? 'Booster' : cat === 'cosmetic' ? 'Cosmetic' : cat}</button>
                     ))}
                   </div>
                   <select value={sortBy} onChange={e => setSortBy(e.target.value as any)}
                     className="bg-transparent text-[9px] text-muted-foreground border border-border/20 rounded-lg px-1.5 py-1">
-                    <option value="recent">최신순</option>
-                    <option value="name">이름순</option>
-                    <option value="quantity">수량순</option>
+                    <option value="recent">Latest</option>
+                    <option value="name">By Name</option>
+                    <option value="quantity">By Qty</option>
                   </select>
                 </div>
               )}
@@ -181,9 +181,9 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                 <div className="text-center py-12">
                   <span className="text-3xl">📦</span>
                   <p className="text-[11px] text-muted-foreground/50 mt-2">
-                    {inventory.length === 0 ? '아이템이 없어요' : '해당 카테고리에 아이템이 없어요'}
+                    {inventory.length === 0 ? 'No items yet' : 'No items in this category'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/30 mt-1">Shop에서 아이템을 구매해보세요</p>
+                  <p className="text-[10px] text-muted-foreground/30 mt-1">Purchase items from the Shop</p>
                 </div>
               ) : (
                 sortedInventory.map(inv => {
@@ -198,9 +198,9 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-foreground">{item?.name ?? '아이템'}</span>
+                          <span className="text-[11px] font-bold text-foreground">{item?.name ?? 'Item'}</span>
                           {inv.is_equipped && (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Equip중</span>
+                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Equipped</span>
                           )}
                         </div>
                         <p className="text-[9px] text-muted-foreground truncate">{item?.description ?? ''}</p>

@@ -1,5 +1,5 @@
 /**
- * Personality 변화 히스토리 — 시간별 Personality 변화 추이 차트
+ * Personality Change History — 시간별 Personality 변화 추이 차트
  */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -50,7 +50,7 @@ export function PersonalityHistory({ agentId }: Props) {
     return (
       <div className="glass-card rounded-2xl p-4 text-center">
         <span className="text-2xl">📊</span>
-        <p className="text-[11px] text-muted-foreground mt-2">아직 Personality 변화 데이터가 없어요</p>
+        <p className="text-[11px] text-muted-foreground mt-2">No personality change data yet</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export function PersonalityHistory({ agentId }: Props) {
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
           <span aria-hidden="true" className="material-icons-round text-primary text-sm">timeline</span>
-          Personality 변화 히스토리
+          Personality Change History
         </h3>
         <span className="text-[9px] text-muted-foreground">{entries.length}건</span>
       </div>

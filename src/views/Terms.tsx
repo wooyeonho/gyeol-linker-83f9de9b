@@ -33,7 +33,7 @@ const TERMS_EN = {
 };
 
 export default function Terms() {
-  const [lang, setLang] = useState<'ko' | 'en'>('ko');
+  const [lang, setLang] = useState<'ko' | 'en'>('en');
   const t = lang === 'ko' ? TERMS_KO : TERMS_EN;
 
   return (

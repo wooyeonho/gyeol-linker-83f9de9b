@@ -9,38 +9,38 @@ const STEPS = [
   {
     icon: '💬',
     title: 'Chat',
-    desc: '하단 입력창에 메시지를 입력하세요. AI가 당신의 말투와 관심사를 학습합니다.',
-    tip: '한국어, 영어, 일본어 등 Supports multiple languages!',
+    desc: 'Type a message in the input box below. The AI learns your style and interests.',
+    tip: 'Supports Korean, English, Japanese and more!',
   },
   {
     icon: '🧬',
     title: 'Evolution 시스템',
-    desc: '대화를 나눌수록 AI가 성장합니다. Gen 1부터 시작해 최대 Gen 5까지 Evolution할 수 있어요.',
-    tip: 'Evolution할 때마다 새로운 Personality 특성이 해금됩니다.',
+    desc: 'The more you chat, the more your AI grows. Start from Gen 1 and evolve up to Gen 5.',
+    tip: 'New personality traits unlock with each evolution.',
   },
   {
     icon: '💜',
     title: 'Intimacy',
-    desc: '꾸준히 대화하면 Intimacy가 올라갑니다. 높을수록 AI가 더 깊은 대화를 나눠요.',
-    tip: '20/40/60/80 Level 달성 시 특별 이벤트!',
+    desc: 'Regular conversations increase intimacy. Higher intimacy unlocks deeper conversations.',
+    tip: 'Special events at levels 20/40/60/80!',
   },
   {
     icon: '🔥',
     title: 'Login Streak',
-    desc: '매일 접속하면 스트릭 보너스를 받아요. Login Streak이 길어질수록 보상이 커집니다.',
-    tip: '7일 연속 → EXP 2배 보너스!',
+    desc: 'Daily logins earn streak bonuses. Longer streaks mean bigger rewards.',
+    tip: '7-day streak → 2x EXP bonus!',
   },
   {
     icon: '🏆',
     title: 'Quest & Achievement',
-    desc: '하단 내비게이션의 Quest 탭에서 일일/주간 미션을 Confirm하고 보상을 받으세요.',
-    tip: 'Done된 Quest는 "Claim Reward" 버튼을 눌러 claim your reward.',
+    desc: 'Check daily/weekly missions in the Quest tab and claim your rewards.',
+    tip: 'Completed quests can be claimed with the "Claim Reward" button.',
   },
   {
     icon: '⚙️',
     title: 'Settings',
-    desc: 'Simple/Advanced 모드 전환, 캐릭터 변경, Personality 조절 등을 Settings에서 할 수 있어요.',
-    tip: 'BYOK로 자신의 API 키를 등록할 수도 있어요.',
+    desc: 'Switch between Simple/Advanced mode, change characters, and adjust personality in Settings.',
+    tip: 'You can also register your own API key with BYOK.',
   },
 ];
 
@@ -66,7 +66,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md"
         onClick={onClose}
         role="dialog"
-        aria-label="온보딩 Tutorial"
+        aria-label="Onboarding Tutorial"
       >
         <motion.div
           key={step}

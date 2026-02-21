@@ -43,7 +43,7 @@ export function AchievementPopup() {
     const channel = supabase
       .channel(`achievement-popup:${agent.id}`)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'gyeol_achievement_unlocks', filter: `agent_id=eq.${agent.id}` },
         async (payload: any) => {
           const { data } = await supabase

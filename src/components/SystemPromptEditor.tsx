@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 interface SystemPromptEditorProps {
   agent: any;
@@ -21,7 +22,7 @@ const TEMPLATES = [
 ];
 
 export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps) {
-  const settings = (agent?.settings as any) ?? {};
+  const settings = parseSettings(agent?.settings);
   const [prompt, setPrompt] = useState(settings.customSystemPrompt ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -32,7 +33,7 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
     setSaving(true);
     const ns = { ...settings, customSystemPrompt: newPrompt };
     await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent.id);
-    setAgent({ ...agent, settings: ns } as any);
+    setAgent({ ...agent, settings: ns } as never);
     onUpdate(ns);
     setSaving(false);
     setSaved(true);

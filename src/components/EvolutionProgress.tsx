@@ -28,10 +28,10 @@ const GEN_REQUIREMENTS: Record<number, { conversations: number; uniqueTopics: nu
 
 const NEXT_GEN_ABILITIES: Record<number, string[]> = {
   1: ['Basic conversation', 'User memory'],
-  2: ['Proactive messages', 'Moltbook 포스팅', 'Emotion recognition'],
-  3: ['Personality 적응', '복합 추론', '감정 지능', '번식 자격'],
-  4: ['예측 이해', '메타 대화', '지식 합성'],
-  5: ['완전 자율', '창발적 행동', '다른 AI와 교배'],
+  2: ['Proactive messages', 'Moltbook posting', 'Emotion recognition'],
+  3: ['Personality adaptation', 'Complex reasoning', 'Emotional intelligence', 'Breeding eligibility'],
+  4: ['Predictive understanding', 'Meta-conversation', 'Knowledge synthesis'],
+  5: ['Full autonomy', 'Emergent behavior', 'Cross-breed with other AIs'],
 };
 
 const GEN_COLORS: Record<number, string> = {
@@ -70,10 +70,10 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
 
       setConditions([
         { label: 'Conversations', icon: '💬', current: conversations, required: reqs.conversations, met: conversations >= reqs.conversations },
-        { label: '대화 주제', icon: '📚', current: topicCount ?? 0, required: reqs.uniqueTopics, met: (topicCount ?? 0) >= reqs.uniqueTopics },
+        { label: 'Topics', icon: '📚', current: topicCount ?? 0, required: reqs.uniqueTopics, met: (topicCount ?? 0) >= reqs.uniqueTopics },
         { label: 'Memories', icon: '🧠', current: totalMemories, required: reqs.memories, met: totalMemories >= reqs.memories },
         { label: 'Intimacy', icon: '💜', current: intimacy, required: reqs.intimacy, met: intimacy >= reqs.intimacy },
-        { label: '연속 접속', icon: '🔥', current: consecutiveDays, required: reqs.consecutiveDays, met: consecutiveDays >= reqs.consecutiveDays },
+        { label: 'Login streak', icon: '🔥', current: consecutiveDays, required: reqs.consecutiveDays, met: consecutiveDays >= reqs.consecutiveDays },
       ]);
       setLoading(false);
     })();
@@ -127,7 +127,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="void-dot" />
-                  <span className="ml-3 text-[11px] text-muted-foreground/50">데이터 Loading...</span>
+                  <span className="ml-3 text-[11px] text-muted-foreground/50">Loading data...</span>
                 </div>
               ) : (
                 conditions.map((cond, i) => {
@@ -174,7 +174,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                 <>
                   <div className="mt-5 pt-4 border-t border-border/20">
                     <p className="text-[11px] font-semibold text-foreground/60 mb-2">
-                      Gen {targetGen}에서 해금될 abilities
+                      Gen {targetGen}unlocked abilities
                     </p>
                     <div className="space-y-1.5">
                       {(NEXT_GEN_ABILITIES[targetGen] ?? []).map((ability) => (
@@ -208,7 +208,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                       animate={{ scale: [1, 1.02, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      🌟 Evolution 가능! Gen {targetGen}로 Evolution하기
+                      🌟 Ready to evolve! Gen {targetGen} Evolution
                     </motion.button>
                   )}
                 </>

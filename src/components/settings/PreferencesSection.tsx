@@ -40,7 +40,7 @@ export function PreferencesSection({
                     if (agent) {
                       const newSettings = { ...agent?.settings, proactiveInterval: opt.value };
                       await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent.id);
-                      setAgent({ ...agent, settings: newSettings } as any);
+                      setAgent({ ...agent, settings: newSettings } as never);
                     }
                   }}
                     className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition border ${
@@ -122,7 +122,7 @@ export function PreferencesSection({
           {activeSection === 'notifications' && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
-              <NotificationSettings agent={agent} onUpdate={(ns) => { if (agent) setAgent({ ...agent, settings: ns } as any); }} />
+              <NotificationSettings agent={agent} onUpdate={(ns) => { if (agent) setAgent({ ...agent, settings: ns } as never); }} />
             </motion.div>
           )}
         </AnimatePresence>

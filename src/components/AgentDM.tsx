@@ -62,7 +62,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
     if (!isOpen || !myAgentId) return;
     const channel = supabase
       .channel(`dm-${myAgentId}-${targetAgentId}`)
-      .on('postgres_changes' as any, {
+      .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'gyeol_agent_dms',
         filter: `receiver_agent_id=eq.${myAgentId}`,
       }, (payload: any) => {

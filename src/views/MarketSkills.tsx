@@ -75,7 +75,7 @@ export default function MarketSkillsPage() {
     setInstalling(skill.id);
     try {
       await supabase.from('gyeol_agent_skills')
-        .upsert({ agent_id: agent.id, skill_id: skill.id, is_active: true } as any, { onConflict: 'agent_id,skill_id' });
+        .upsert({ agent_id: agent.id, skill_id: skill.id, is_active: true }, { onConflict: 'agent_id,skill_id' });
       setInstalledIds(prev => new Set(prev).add(skill.id));
       setActiveSkills(prev => ({ ...prev, [skill.id]: true }));
     } catch (err) { console.warn('Failed to install skill:', err); }
