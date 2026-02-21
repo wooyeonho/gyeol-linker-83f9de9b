@@ -41,7 +41,6 @@ export default function GamificationPage() {
   if (loading) {
     return (
       <main role="main" className="min-h-screen bg-background flex items-center justify-center">
-        <div className="aurora-bg" />
         <div className="void-dot" />
       </main>
     );
@@ -51,7 +50,7 @@ export default function GamificationPage() {
 
   return (
     <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      <div className="aurora-bg" />
+      {/* aurora-bg removed — home only */}
 
       {/* Header */}
       <div className="relative z-20 px-5 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>

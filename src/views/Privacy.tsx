@@ -42,7 +42,7 @@ export default function Privacy() {
 
   return (
     <main role="main" className="min-h-screen bg-background p-4 sm:p-6 font-display relative">
-      <div className="aurora-bg" />
+      {/* aurora-bg removed — home only */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
         className="glass-panel rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto relative z-10">
         <div className="flex items-center justify-between mb-4">
