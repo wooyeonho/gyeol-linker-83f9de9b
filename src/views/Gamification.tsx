@@ -8,6 +8,7 @@ import { BottomNav } from '@/src/components/BottomNav';
 import { useGamification, expToNextLevel, RARITY_COLORS, RARITY_BG, RARITY_GLOW } from '@/src/hooks/useGamification';
 import { SeasonPass } from '@/src/components/SeasonPass';
 import { InventoryPanel } from '@/src/components/InventoryPanel';
+import { InsightDashboard } from '@/src/components/InsightDashboard';
 import { LevelUpCeremony } from '@/src/components/LevelUpCeremony';
 import { CoinHistory } from '@/src/components/CoinHistory';
 import { QuestTimer } from '@/src/components/QuestTimer';
@@ -30,6 +31,7 @@ export default function GamificationPage() {
   const { profile, loading, inventory, shopItems, reload } = gam;
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [coinHistoryOpen, setCoinHistoryOpen] = useState(false);
+  const [insightOpen, setInsightOpen] = useState(false);
   const [levelUpShow, setLevelUpShow] = useState(false);
   const [levelUpLevel, setLevelUpLevel] = useState(1);
 
@@ -53,6 +55,10 @@ export default function GamificationPage() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-bold text-foreground">게이미피케이션</h1>
           <div className="flex items-center gap-3">
+            <button onClick={() => setInsightOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
+              <span className="material-icons-round text-primary text-[12px]">insights</span>
+              <span className="font-bold text-foreground">인사이트</span>
+            </button>
             <button onClick={() => setInventoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
               <span className="material-icons-round text-primary text-[12px]">inventory_2</span>
               <span className="font-bold text-foreground">{inventory.length}</span>
@@ -138,6 +144,7 @@ export default function GamificationPage() {
 
       <InventoryPanel isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} inventory={inventory} shopItems={shopItems} onReload={reload} />
       <CoinHistory isOpen={coinHistoryOpen} onClose={() => setCoinHistoryOpen(false)} agentId={agent?.id} />
+      <InsightDashboard isOpen={insightOpen} onClose={() => setInsightOpen(false)} />
       <LevelUpCeremony show={levelUpShow} newLevel={levelUpLevel} onClose={() => setLevelUpShow(false)} />
       <BottomNav />
     </main>
