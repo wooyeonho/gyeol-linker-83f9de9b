@@ -298,7 +298,7 @@ export default function SettingsPage() {
         <header className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-foreground/80">Settings</h1>
           <button type="button" onClick={signOut}
-            className="text-[10px] text-slate-500 hover:text-foreground transition">Sign out</button>
+            className="text-[10px] text-muted-foreground hover:text-foreground transition">Sign out</button>
         </header>
 
         {/* Profile Card */}
@@ -338,7 +338,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">settings</span><h2 className="text-sm font-semibold text-foreground">General</h2></div>
           {/* Account */}
         <section className="space-y-1">
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Account</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Account</p>
           <p className="text-sm text-foreground/60">{user?.email}</p>
         </section>
 
