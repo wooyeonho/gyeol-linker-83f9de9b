@@ -277,6 +277,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
   const { achievements } = gam;
   const [filter, setFilter] = useState<string>('all');
+  const [shareAch, setShareAch] = useState<any>(null);
 
   const categories = ['all', 'general', 'chat', 'evolution', 'social', 'market'];
   const filtered = filter === 'all' ? achievements : achievements.filter((a) => a.category === filter);
@@ -317,7 +318,8 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
             <motion.div
               key={ach.id}
               layout
-              className={`glass-card rounded-2xl p-3 border ${
+              onClick={() => { if (unlocked) setShareAch(ach); }}
+              className={`glass-card rounded-2xl p-3 border cursor-pointer ${
                 unlocked ? RARITY_BG[ach.rarity] : 'border-transparent'
               } ${unlocked ? RARITY_GLOW[ach.rarity] : 'opacity-60'}`}
             >
@@ -346,6 +348,11 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                       🏷 {ach.reward_title}
                     </span>
                   )}
+                  {unlocked && (
+                    <span className="text-[8px] px-1 py-0.5 rounded-full bg-secondary/10 text-secondary ml-auto">
+                      📤
+                    </span>
+                  )}
                 </div>
               )}
               {unlocked && ach.unlocked?.is_new && (
@@ -357,6 +364,45 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           );
         })}
       </div>
+
+      {/* Achievement Share Modal */}
+      {shareAch && (
+        <AchievementShareModal ach={shareAch} onClose={() => setShareAch(null)} />
+      )}
+    </motion.div>
+  );
+}
+
+function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void }) {
+  const shareText = `🏆 GYEOL 업적 달성!\n${ach.name}\n${ach.description ?? ''}\n\n#GYEOL #AI동반자`;
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={onClose}>
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
+        className="glass-card rounded-2xl p-6 w-full max-w-[280px] text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto">
+          <span className="material-icons-round text-3xl text-primary">{ach.icon}</span>
+        </div>
+        <div>
+          <span className={`text-[8px] px-2 py-0.5 rounded-full font-bold uppercase ${RARITY_BG[ach.rarity]} ${RARITY_COLORS[ach.rarity]}`}>{ach.rarity}</span>
+          <h3 className="text-lg font-bold text-foreground mt-2">{ach.name}</h3>
+          <p className="text-[11px] text-muted-foreground mt-1">{ach.description}</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">닫기</button>
+          <button onClick={async () => {
+            if (navigator.share) {
+              await navigator.share({ title: `GYEOL 업적: ${ach.name}`, text: shareText });
+            } else {
+              await navigator.clipboard.writeText(shareText);
+            }
+            onClose();
+          }}
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold flex items-center justify-center gap-1">
+            <span className="material-icons-round text-sm">share</span> 공유
+          </button>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

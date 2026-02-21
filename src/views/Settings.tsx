@@ -12,6 +12,25 @@ import { ModeSwitchGuide } from '@/src/components/ModeSwitchGuide';
 import { DeleteAccountModal } from '@/src/components/DeleteAccountModal';
 import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { StreakCalendar } from '@/src/components/StreakCalendar';
+import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
+
+function hexToHSL(hex: string): string {
+  let r = parseInt(hex.slice(1, 3), 16) / 255;
+  let g = parseInt(hex.slice(3, 5), 16) / 255;
+  let b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
 
 const PERSONALITY_PRESETS = [
   { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
@@ -65,6 +84,8 @@ export default function SettingsPage() {
   const [killSwitchActive, setKillSwitchActive] = useState(false);
   const [telegramLinked, setTelegramLinked] = useState(false);
   const [telegramCode, setTelegramCode] = useState('');
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [error, setError] = useState<{ message: string } | null>(null);
 
   // Proactive message interval
   const PROACTIVE_OPTIONS = [
@@ -322,6 +343,26 @@ export default function SettingsPage() {
         {/* ====== THEME ====== */}
         <section className="px-1">
           <ThemeToggle />
+          {/* Custom Theme Color */}
+          <div className="flex items-center justify-between mt-3">
+            <div>
+              <p className="text-[11px] text-foreground/80">Custom Primary Color</p>
+              <p className="text-[9px] text-white/25">테마 색상 커스터마이즈</p>
+            </div>
+            <input type="color"
+              defaultValue={(() => {
+                const c = (agent?.settings as any)?.customThemeColor;
+                return c || '#784EDC';
+              })()}
+              onChange={async (e) => {
+                const color = e.target.value;
+                document.documentElement.style.setProperty('--primary', `${hexToHSL(color)}`);
+                const s = { ...(agent?.settings as any), customThemeColor: color };
+                await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                if (agent) setAgent({ ...agent, settings: s } as any);
+              }}
+              className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+          </div>
         </section>
 
         <div className="h-px bg-white/[0.04]" />
@@ -401,12 +442,24 @@ export default function SettingsPage() {
             {activeSection === 'personality' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-4 pt-2">
-                {/* Name */}
+                {/* Name with duplicate check */}
                 <div className="flex items-center gap-2">
                   {nameEditing ? (
-                    <input type="text" value={agentName} onChange={e => setAgentName(e.target.value)}
-                      onBlur={() => setNameEditing(false)} autoFocus maxLength={20}
-                      className="flex-1 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary/30" />
+                    <div className="flex-1 space-y-1">
+                      <input type="text" value={agentName} onChange={e => setAgentName(e.target.value)}
+                        onBlur={async () => {
+                          if (agentName.trim() && agentName !== agent?.name) {
+                            const { data: dup } = await supabase.from('gyeol_agents' as any)
+                              .select('id').eq('name', agentName.trim()).neq('id', agent?.id ?? '').limit(1);
+                            if (dup && (dup as any[]).length > 0) {
+                              setError?.({ message: '이미 사용 중인 이름입니다' });
+                              setAgentName(agent?.name ?? 'GYEOL');
+                            }
+                          }
+                          setNameEditing(false);
+                        }} autoFocus maxLength={20}
+                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary/30" />
+                    </div>
                   ) : (
                     <button type="button" onClick={() => setNameEditing(true)}
                       className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary/80 transition">
@@ -415,6 +468,66 @@ export default function SettingsPage() {
                     </button>
                   )}
                   <span className="text-[10px] text-white/20 bg-white/[0.03] px-2 py-0.5 rounded">Gen {agent?.gen ?? 1}</span>
+                </div>
+
+                {/* Personality Lock Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-foreground/80">Personality Lock 🔒</p>
+                    <p className="text-[9px] text-white/25">잠그면 대화로 성격이 변하지 않아요</p>
+                  </div>
+                  <button type="button" onClick={async () => {
+                    const locked = !((agent?.settings as any)?.personalityLocked);
+                    const s = { ...(agent?.settings as any), personalityLocked: locked };
+                    await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                    if (agent) setAgent({ ...agent, settings: s } as any);
+                  }}
+                    className={`w-10 h-6 rounded-full transition ${(agent?.settings as any)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${(agent?.settings as any)?.personalityLocked ? 'translate-x-4' : ''}`} />
+                  </button>
+                </div>
+
+                {/* Custom Persona Text */}
+                <div className="space-y-1">
+                  <p className="text-[10px] text-white/30">Custom Persona</p>
+                  <select value={(agent?.settings as any)?.persona ?? 'friend'} onChange={async (e) => {
+                    const s = { ...(agent?.settings as any), persona: e.target.value };
+                    await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                    if (agent) setAgent({ ...agent, settings: s } as any);
+                  }}
+                    className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground outline-none">
+                    <option value="friend">친구</option>
+                    <option value="mentor">멘토</option>
+                    <option value="assistant">비서</option>
+                    <option value="philosopher">철학자</option>
+                    <option value="comedian">코미디언</option>
+                    <option value="teacher">선생님</option>
+                  </select>
+                  <input type="text" placeholder="또는 직접 입력 (예: 츤데레 고양이)"
+                    defaultValue={(agent?.settings as any)?.personaCustom ?? ''}
+                    onBlur={async (e) => {
+                      const val = e.target.value.trim();
+                      const s = { ...(agent?.settings as any), personaCustom: val, ...(val ? { persona: val } : {}) };
+                      await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, settings: s } as any);
+                    }}
+                    className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-white/20 outline-none" />
+                </div>
+
+                {/* Personality Balance Score */}
+                <div className="glass-card rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] text-white/30">Balance Score</p>
+                    <span className="text-sm font-bold text-primary">
+                      {(() => {
+                        const vals = [warmth, logic, creativity, energy, humor];
+                        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                        const variance = vals.reduce((a, v) => a + Math.pow(v - avg, 2), 0) / vals.length;
+                        return Math.round(100 - Math.sqrt(variance));
+                      })()}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-white/20">수치가 높을수록 균형 잡힌 성격</p>
                 </div>
 
                 {/* Personality Presets */}
@@ -444,15 +557,16 @@ export default function SettingsPage() {
                       </div>
                       <input type="range" min={0} max={100} value={personality[i]}
                         onChange={e => setters[i](Number(e.target.value))}
+                        disabled={(agent?.settings as any)?.personalityLocked}
                         aria-label={label}
-                        className="w-full" />
+                        className="w-full disabled:opacity-30" />
                     </div>
                   ))}
                 </div>
 
-                <button type="button" onClick={savePersonality} disabled={personalitySaving}
+                <button type="button" onClick={savePersonality} disabled={personalitySaving || (agent?.settings as any)?.personalityLocked}
                   className="w-full py-2 rounded-xl text-xs font-medium bg-primary/10 text-primary/80 border border-primary/10 hover:bg-primary/15 transition disabled:opacity-40">
-                  {personalitySaving ? 'Saving...' : 'Save Personality'}
+                  {personalitySaving ? 'Saving...' : (agent?.settings as any)?.personalityLocked ? '🔒 Locked' : 'Save Personality'}
                 </button>
               </motion.div>
             )}
@@ -690,6 +804,39 @@ export default function SettingsPage() {
                       }}
                       className="w-20 accent-primary" />
                   </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== PUSH NOTIFICATIONS ====== */}
+        <section>
+          <SectionHeader id="push" icon="notifications" title="Push Notifications" />
+          <AnimatePresence>
+            {activeSection === 'push' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
+                <p className="text-[10px] text-white/25 leading-relaxed">
+                  브라우저 푸시 알림을 활성화하면 AI가 먼저 말을 걸 때 알림을 받아요.
+                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-foreground/80">Push Notifications</p>
+                  <button type="button" onClick={async () => {
+                    if (!agent?.id) return;
+                    if (pushEnabled) {
+                      await unsubscribePush();
+                      setPushEnabled(false);
+                    } else {
+                      const ok = await subscribePush(agent.id);
+                      setPushEnabled(ok);
+                    }
+                  }}
+                    className={`w-10 h-6 rounded-full transition ${pushEnabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${pushEnabled ? 'translate-x-4' : ''}`} />
+                  </button>
                 </div>
               </motion.div>
             )}

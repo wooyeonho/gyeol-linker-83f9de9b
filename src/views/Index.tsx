@@ -36,6 +36,10 @@ import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
 import { OnboardingTutorial } from '@/src/components/OnboardingTutorial';
 import { EvolutionGuide } from '@/src/components/EvolutionGuide';
 import { DataVisualization } from '@/src/components/DataVisualization';
+import { MoodStats } from '@/src/components/MoodStats';
+import { ConversationStats } from '@/src/components/ConversationStats';
+import { PersonalityChangeNotif } from '@/src/components/PersonalityChangeNotif';
+import { useSwipeNavigation } from '@/src/components/SwipeNavigation';
 import type { Message } from '@/lib/gyeol/types';
 
 function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
@@ -147,8 +151,12 @@ export default function GyeolPage() {
   const [intimacyPopup, setIntimacyPopup] = useState<{ show: boolean; value: number }>({ show: false, value: 0 });
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
+  const [convStatsOpen, setConvStatsOpen] = useState(false);
+  const [personalityNotif, setPersonalityNotif] = useState<{ show: boolean; changes: Record<string, number> }>({ show: false, changes: {} });
   const prevIntimacyRef = useRef<number | null>(null);
+  const prevPersonalityRef = useRef<{ w: number; l: number; c: number; e: number; h: number } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const swipeHandlers = useSwipeNavigation();
 
   // Track intimacy level-up
   useEffect(() => {
@@ -162,6 +170,26 @@ export default function GyeolPage() {
     }
     prevIntimacyRef.current = intimacy;
   }, [(agent as any)?.intimacy]);
+
+  // Track personality changes
+  useEffect(() => {
+    if (!agent) return;
+    const curr = { w: agent.warmth, l: agent.logic, c: agent.creativity, e: agent.energy, h: agent.humor };
+    if (prevPersonalityRef.current) {
+      const prev = prevPersonalityRef.current;
+      const changes: Record<string, number> = {};
+      if (curr.w !== prev.w) changes.warmth = curr.w - prev.w;
+      if (curr.l !== prev.l) changes.logic = curr.l - prev.l;
+      if (curr.c !== prev.c) changes.creativity = curr.c - prev.c;
+      if (curr.e !== prev.e) changes.energy = curr.e - prev.e;
+      if (curr.h !== prev.h) changes.humor = curr.h - prev.h;
+      if (Object.keys(changes).length > 0) {
+        setPersonalityNotif({ show: true, changes });
+        setTimeout(() => setPersonalityNotif({ show: false, changes: {} }), 6000);
+      }
+    }
+    prevPersonalityRef.current = curr;
+  }, [agent?.warmth, agent?.logic, agent?.creativity, agent?.energy, agent?.humor]);
 
   // Auto-show tutorial on first visit
   useEffect(() => {
@@ -215,7 +243,8 @@ export default function GyeolPage() {
   }
 
   return (
-    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative" role="main" aria-label="GYEOL Home">
+    <main className="flex flex-col h-[100dvh] bg-background font-display overflow-hidden relative" role="main" aria-label="GYEOL Home"
+      {...swipeHandlers}>
       <div className="aurora-bg" aria-hidden="true" />
 
       {/* Top bar — Stitch 03 */}
@@ -388,12 +417,19 @@ export default function GyeolPage() {
                   </div>
                 )}
 
-                {/* Mood History */}
+                {/* Mood History + Mood Stats */}
                 {agent && (
-                  <div className="w-full max-w-[280px] mt-3">
+                  <div className="w-full max-w-[280px] mt-3 space-y-3">
                     <MoodHistory agentId={agent.id} />
+                    <MoodStats agentId={agent.id} />
                   </div>
                 )}
+
+                {/* Conversation Stats button */}
+                <button onClick={() => setConvStatsOpen(true)}
+                  className="mt-3 px-4 py-2 rounded-xl glass-card text-[10px] text-primary/70 font-medium hover:bg-primary/5 transition flex items-center gap-1.5">
+                  <span className="material-icons-round text-[14px]">bar_chart</span> 대화 통계
+                </button>
 
                 {/* Data Visualization */}
                 {agent && (
@@ -632,6 +668,12 @@ export default function GyeolPage() {
         onClose={() => setIntimacyPopup({ show: false, value: 0 })}
       />
       <OnboardingTutorial isOpen={tutorialOpen} onClose={handleTutorialClose} />
+      <ConversationStats agentId={agent?.id} isOpen={convStatsOpen} onClose={() => setConvStatsOpen(false)} />
+      <PersonalityChangeNotif
+        show={personalityNotif.show}
+        changes={personalityNotif.changes}
+        onClose={() => setPersonalityNotif({ show: false, changes: {} })}
+      />
     </main>
   );
 }

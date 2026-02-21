@@ -5,6 +5,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { BottomNav } from '../components/BottomNav';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { ActivityFilter } from '@/src/components/ActivityFilter';
+import { ActivityExport } from '@/src/components/ActivityExport';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ActivityLog {
@@ -55,6 +56,7 @@ export default function ActivityPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [activitySearch, setActivitySearch] = useState('');
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -135,6 +137,10 @@ export default function ActivityPage() {
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Activity & Growth</h1>
             <p className="text-sm text-slate-400 mt-1">Track your interaction depth and shared journey.</p>
           </div>
+          <button onClick={() => setExportOpen(true)}
+            className="w-8 h-8 rounded-full flex items-center justify-center glass-card text-muted-foreground hover:text-primary transition">
+            <span className="material-icons-round text-sm">download</span>
+          </button>
         </div>
 
         {/* Stat Cards */}
@@ -361,6 +367,7 @@ export default function ActivityPage() {
           </>
         )}
       </PullToRefresh>
+      <ActivityExport isOpen={exportOpen} onClose={() => setExportOpen(false)} logs={logs} />
       <BottomNav />
     </main>
   );
