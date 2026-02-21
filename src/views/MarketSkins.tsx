@@ -172,7 +172,7 @@ export default function MarketSkinsPage() {
                   <label className="text-[10px] text-muted-foreground">Preview Image (optional)</label>
                   <input type="file" accept="image/*" onChange={handleFileChange}
                     className="w-full text-xs text-muted-foreground file:mr-2 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:px-3 file:py-1.5 file:text-xs file:font-medium" />
-                  {previewUrl && <img src={previewUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border/30" />}
+                  {previewUrl && <img loading="lazy" src={previewUrl} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border/30" />}
                 </div>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setShowUpload(false)} className="flex-1 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition">Cancel</button>
@@ -244,7 +244,7 @@ export default function MarketSkinsPage() {
                   className="glass-card rounded-2xl p-0 overflow-hidden">
                   <div className="aspect-square bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center relative overflow-hidden">
                     {s.preview_url ? (
-                      <img src={s.preview_url} alt={s.name} className="w-full h-full object-cover" />
+                      <img loading="lazy" src={s.preview_url} alt={s.name} className="w-full h-full object-cover" />
                     ) : (
                       <motion.div className="w-10 h-10 rounded-full pearl-sphere"
                         animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }} />
