@@ -1,5 +1,5 @@
 /**
- * GYEOL 게이미피케이션 훅 — EXP, 코인, 퀘스트, 업적, 리더보드
+ * GYEOL 게이미피케이션 훅 — EXP, Coins, Quest, Achievement, Leaderboard
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/src/lib/supabase';
@@ -119,9 +119,9 @@ export interface Season {
   reward_summary: string | null;
 }
 
-// ========== EXP → 레벨 계산 ==========
+// ========== EXP → Level 계산 ==========
 export function expForLevel(level: number): number {
-  // 레벨 1→2: 100 EXP, 이후 1.15배씩 증가
+  // Level 1→2: 100 EXP, 이후 1.15배씩 증가
   return Math.floor(100 * Math.pow(1.15, level - 1));
 }
 
@@ -170,7 +170,7 @@ export function useGamification() {
 
   const agentId = agent?.id;
 
-  // 프로필 로드 (없으면 생성)
+  // Profile 로드 (없으면 생성)
   const loadProfile = useCallback(async () => {
     if (!agentId) return;
     const { data } = await supabase
@@ -182,7 +182,7 @@ export function useGamification() {
     if (data) {
       setProfile(data as any);
     } else {
-      // 자동 생성
+      // Auto
       const { data: created } = await supabase
         .from('gyeol_gamification_profiles')
         .insert({ agent_id: agentId })
@@ -192,7 +192,7 @@ export function useGamification() {
     }
   }, [agentId]);
 
-  // 퀘스트 + 진행 상태 로드
+  // Quest + 진행 상태 로드
   const loadQuests = useCallback(async () => {
     if (!agentId) return;
     const [{ data: questData }, { data: progressData }] = await Promise.all([
@@ -208,7 +208,7 @@ export function useGamification() {
     setQuests(merged);
   }, [agentId]);
 
-  // 업적 + 달성 로드
+  // Achievement + 달성 로드
   const loadAchievements = useCallback(async () => {
     if (!agentId) return;
     const [{ data: achData }, { data: unlockData }] = await Promise.all([
@@ -224,7 +224,7 @@ export function useGamification() {
     setAchievements(merged);
   }, [agentId]);
 
-  // 리더보드 로드
+  // Leaderboard 로드
   const loadLeaderboard = useCallback(async () => {
     const { data } = await supabase
       .from('gyeol_leaderboard')
@@ -234,7 +234,7 @@ export function useGamification() {
     setLeaderboard((data ?? []) as any);
   }, []);
 
-  // 상점 로드
+  // Shop 로드
   const loadShop = useCallback(async () => {
     if (!agentId) return;
     const [{ data: items }, { data: inv }] = await Promise.all([
@@ -257,18 +257,18 @@ export function useGamification() {
     const quest = quests.find((q) => q.id === questId);
     if (!quest) return false;
 
-    // 퀘스트 완료 & 보상 수령 표시
+    // Quest Done & 보상 수령 표시
     await supabase
       .from('gyeol_quest_progress')
       .update({ is_claimed: true, claimed_at: new Date().toISOString() })
       .eq('id', questProgressId);
 
-    // EXP + 코인 지급
+    // EXP + Coins 지급
     const newExp = profile.exp + quest.reward_exp;
     const newCoins = profile.coins + quest.reward_coins;
     const newTotalExp = profile.total_exp + quest.reward_exp;
 
-    // 레벨업 체크
+    // Level업 체크
     let newLevel = profile.level;
     let remainExp = newExp;
     while (remainExp >= expForLevel(newLevel)) {
@@ -297,13 +297,13 @@ export function useGamification() {
     return true;
   }, [agentId, profile, quests, loadProfile, loadQuests]);
 
-  // 상점 구매 (서버사이드)
+  // Shop 구매 (서버사이드)
   const purchaseItem = useCallback(async (itemId: string) => {
-    if (!agentId || !profile) return { success: false, error: '프로필 없음' };
+    if (!agentId || !profile) return { success: false, error: 'Profile None' };
     const item = shopItems.find((i) => i.id === itemId);
-    if (!item) return { success: false, error: '아이템 없음' };
-    if (profile.coins < item.price_coins) return { success: false, error: '코인 부족' };
-    if (profile.level < item.min_level) return { success: false, error: `레벨 ${item.min_level} 필요` };
+    if (!item) return { success: false, error: '아이템 None' };
+    if (profile.coins < item.price_coins) return { success: false, error: 'Coins 부족' };
+    if (profile.level < item.min_level) return { success: false, error: `Level ${item.min_level} 필요` };
 
     try {
       const res = await supabase.functions.invoke('market-purchase', {

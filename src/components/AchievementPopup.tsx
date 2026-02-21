@@ -1,5 +1,5 @@
 /**
- * Phase 4: 업적 달성 축하 팝업 애니메이션
+ * Phase 4: Achievement 달성 축하 팝업 애니메이션
  */
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

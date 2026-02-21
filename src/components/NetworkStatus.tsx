@@ -1,5 +1,5 @@
 /**
- * 네트워크 상태 감지 — 오프라인 시 배너 표시
+ * 네트워크 상태 감지 — Offline 시 배너 표시
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +28,7 @@ export function NetworkStatus() {
           className="fixed top-0 left-0 right-0 z-[200] bg-destructive/90 backdrop-blur-sm px-4 py-2 flex items-center justify-center gap-2"
         >
           <span aria-hidden="true" className="material-icons-round text-foreground text-sm">wifi_off</span>
-          <span className="text-white text-xs font-medium">오프라인 상태입니다. 인터넷 연결을 확인해주세요.</span>
+          <span className="text-white text-xs font-medium">Offline 상태입니다. 인터넷 연결을 Confirm해주세요.</span>
         </motion.div>
       )}
     </AnimatePresence>

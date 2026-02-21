@@ -1,5 +1,5 @@
 /**
- * 퀘스트 카운트다운 타이머 — 일일/주간 퀘스트 리셋 시간 표시
+ * Quest 카운트다운 타이머 — 일일/주간 Quest 리셋 시간 표시
  */
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';

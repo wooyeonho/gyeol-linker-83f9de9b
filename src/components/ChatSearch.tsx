@@ -1,5 +1,5 @@
 /**
- * 대화 검색 컴포넌트 (개선판) — 날짜 그룹핑 + 하이라이트
+ * 대화 Search 컴포넌트 (개선판) — 날짜 그룹핑 + 하이라이트
  */
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -86,7 +86,7 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
       exit={{ opacity: 0, y: -20 }}
       className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col"
       role="dialog"
-      aria-label="대화 검색"
+      aria-label="대화 Search"
     >
       {/* Search header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
@@ -99,8 +99,8 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="대화 검색..."
-            aria-label="검색어 입력"
+            placeholder="대화 Search..."
+            aria-label="Search어 입력"
             className="w-full bg-muted/20 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
           />
           {searching && (
@@ -177,14 +177,14 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
         {results.length === 0 && query.trim() && !searching && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <span aria-hidden="true" className="material-icons-round text-muted-foreground/20 text-4xl">search_off</span>
-            <p className="text-muted-foreground text-sm">검색 결과 없음</p>
+            <p className="text-muted-foreground text-sm">Search 결과 None</p>
           </div>
         )}
 
         {!query.trim() && !searching && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <span aria-hidden="true" className="material-icons-round text-muted-foreground/20 text-4xl">search</span>
-            <p className="text-muted-foreground/50 text-xs">검색어를 입력하세요</p>
+            <p className="text-muted-foreground/50 text-xs">Search어를 입력하세요</p>
           </div>
         )}
 

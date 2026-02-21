@@ -1,5 +1,5 @@
 /**
- * 에이전트 간 DM (Direct Message) 모달
+ * 에Previous트 간 DM (Direct Message) 모달
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -166,7 +166,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
 }
 
 /**
- * DM 알림 배지 — 읽지 않은 DM 수 표시
+ * DM Notifications 배지 — 읽지 않은 DM 수 표시
  */
 export function DMBadge({ agentId }: { agentId: string }) {
   const [count, setCount] = useState(0);

@@ -1,5 +1,5 @@
 /**
- * Phase 5: 에이전트 공개 프로필 모달 — 배지 시스템 포함
+ * Phase 5: 에Previous트 공개 Profile 모달 — 배지 시스템 포함
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -157,7 +157,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
                 <button onClick={onShareCard}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-[11px] font-medium hover:from-primary/20 hover:to-secondary/20 transition flex items-center justify-center gap-2">
                   <span aria-hidden="true" className="material-icons-round text-sm">share</span>
-                  프로필 카드 공유
+                  Profile 카드 Share
                 </button>
               )}
             </div>

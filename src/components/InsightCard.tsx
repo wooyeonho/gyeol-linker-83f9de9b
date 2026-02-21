@@ -18,11 +18,11 @@ interface InsightCardProps {
 }
 
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함',
-  logic: '논리',
-  creativity: '창의성',
-  energy: '에너지',
-  humor: '유머',
+  warmth: 'Warmth',
+  logic: 'Logic',
+  creativity: 'Creativity',
+  energy: 'Energy',
+  humor: 'Humor',
 };
 
 const EMOTION_EMOJI: Record<string, string> = {
@@ -96,7 +96,7 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
           {insight.personalityChanged && Object.keys(insight.changes).length > 0 && (
             <div className="pt-2 border-t border-border/10">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[9px] text-muted-foreground/50">📊 성격 변화</p>
+                <p className="text-[9px] text-muted-foreground/50">📊 Personality 변화</p>
                 <p className="text-[8px] text-primary/50 font-bold">총 {totalChanges}p</p>
               </div>
               <div className="space-y-1.5">

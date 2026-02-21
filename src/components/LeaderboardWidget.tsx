@@ -1,5 +1,5 @@
 /**
- * 홈 화면용 미니 리더보드 위젯 — 실시간 업데이트 지원
+ * 홈 화면용 미니 Leaderboard 위젯 — 실시간 업데이트 지원
  */
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';

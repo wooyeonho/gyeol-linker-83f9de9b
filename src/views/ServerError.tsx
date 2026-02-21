@@ -42,7 +42,7 @@ export default function ServerError() {
       >
         <h1 className="text-xl font-bold text-foreground">서버에 문제가 생겼어요</h1>
         <p className="text-sm text-muted-foreground max-w-[280px]">
-          잠시 후 다시 시도해주세요. 문제가 계속되면 앱을 새로고침 해보세요.
+          잠시 후 Please try again. 문제가 계속되면 앱을 새로고침 해보세요.
         </p>
       </motion.div>
 

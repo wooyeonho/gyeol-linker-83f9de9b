@@ -22,7 +22,7 @@ export function handleApiError(error: any, context?: string) {
   const status = error?.status ?? error?.statusCode;
   if (status === 429) {
     const reset = error?.resetSeconds ?? 60;
-    showErrorToast(`너무 빠르게 보내고 있어요. ${reset}초 후 다시 시도해주세요`, 'warning');
+    showErrorToast(`너무 빠르게 보내고 있어요. ${reset}초 후 Please try again`, 'warning');
   } else if (status === 401) {
     supabase.auth.refreshSession().then(({ error: refreshErr }) => {
       if (refreshErr) {
@@ -33,9 +33,9 @@ export function handleApiError(error: any, context?: string) {
   } else if (status === 500 || status === 502 || status === 503) {
     showErrorToast('서버가 잠시 바쁩니다. 곧 돌아올게요!', 'error');
   } else if (!navigator.onLine) {
-    showErrorToast('인터넷 연결을 확인해주세요', 'warning');
+    showErrorToast('인터넷 연결을 Confirm해주세요', 'warning');
   } else {
-    showErrorToast(context ?? '오류가 발생했습니다. 다시 시도해주세요', 'error');
+    showErrorToast(context ?? '오류가 발생했습니다. Please try again', 'error');
   }
 }
 
@@ -98,7 +98,7 @@ export function OfflineIndicator() {
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-[9998] bg-yellow-500/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
       <span aria-hidden="true" className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
-      오프라인 상태입니다 — 이전 대화 읽기만 가능합니다
+      Offline 상태입니다 — Previous 대화 읽기만 가능합니다
     </motion.div>
   );
 }

@@ -60,7 +60,7 @@ export function ActivityExport({ isOpen, onClose, logs }: ActivityExportProps) {
                 <p className="text-[9px] text-muted-foreground">스프레드시트 호환</p>
               </div>
             </button>
-            <button onClick={onClose} className="w-full py-2 text-[11px] text-muted-foreground hover:text-foreground transition">취소</button>
+            <button onClick={onClose} className="w-full py-2 text-[11px] text-muted-foreground hover:text-foreground transition">Cancel</button>
           </motion.div>
         </motion.div>
       )}

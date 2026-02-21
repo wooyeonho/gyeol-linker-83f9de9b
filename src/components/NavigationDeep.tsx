@@ -205,7 +205,7 @@ export function ActivityBadges({ badges }: { badges: { name: string; icon: strin
 }
 
 const translations: Record<string, Record<string, string>> = {
-  ko: { chat: '채팅', settings: '설정', social: '소셜', market: '마켓', activity: '활동', evolution: '진화', gamification: '게임화', onboarding: '온보딩' },
+  ko: { chat: '채팅', settings: 'Settings', social: '소셜', market: '마켓', activity: '활동', evolution: 'Evolution', gamification: '게임화', onboarding: '온보딩' },
   en: { chat: 'Chat', settings: 'Settings', social: 'Social', market: 'Market', activity: 'Activity', evolution: 'Evolution', gamification: 'Gamification', onboarding: 'Onboarding' },
   ja: { chat: 'チャット', settings: '設定', social: 'ソーシャル', market: 'マーケット', activity: 'アクティビティ', evolution: '進化', gamification: 'ゲーミフィケーション', onboarding: 'オンボーディング' },
 };

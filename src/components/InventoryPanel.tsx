@@ -183,7 +183,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                   <p className="text-[11px] text-muted-foreground/50 mt-2">
                     {inventory.length === 0 ? '아이템이 없어요' : '해당 카테고리에 아이템이 없어요'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/30 mt-1">상점에서 아이템을 구매해보세요</p>
+                  <p className="text-[10px] text-muted-foreground/30 mt-1">Shop에서 아이템을 구매해보세요</p>
                 </div>
               ) : (
                 sortedInventory.map(inv => {

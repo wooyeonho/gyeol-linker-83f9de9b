@@ -24,7 +24,7 @@ const EMOTION_EMOJI: Record<string, string> = {
 };
 
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의성', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: 'Creativity', energy: 'Energy', humor: 'Humor',
 };
 
 interface Props {
@@ -196,7 +196,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
 
                               {ins.next_hint && (
                                 <div>
-                                  <p className="text-[8px] text-muted-foreground/50 mb-1">💡 다음 힌트</p>
+                                  <p className="text-[8px] text-muted-foreground/50 mb-1">💡 Next 힌트</p>
                                   <p className="text-[10px] text-primary/80">{ins.next_hint}</p>
                                 </div>
                               )}
@@ -204,7 +204,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                               {/* Personality delta */}
                               {Object.keys(ins.personality_delta ?? {}).length > 0 && (
                                 <div>
-                                  <p className="text-[8px] text-muted-foreground/50 mb-1.5">📊 성격 변화</p>
+                                  <p className="text-[8px] text-muted-foreground/50 mb-1.5">📊 Personality 변화</p>
                                   <div className="flex gap-2">
                                     {Object.entries(ins.personality_delta).map(([k, v]) => (
                                       <span key={k} className={`text-[9px] px-1.5 py-0.5 rounded-full ${

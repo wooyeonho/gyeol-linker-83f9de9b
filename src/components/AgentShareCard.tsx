@@ -1,5 +1,5 @@
 /**
- * 에이전트 공유 카드 — 스탯 이미지 생성 + 클립보드 복사
+ * 에Previous트 Share 카드 — 스탯 이미지 생성 + 클립보드 복사
  */
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -52,7 +52,7 @@ Stats: ❤️${warmth} 🧠${logic} 🎨${creativity} ⚡${energy} 😂${humor}
       ref={cardRef}
       id="agent-share-card"
       role="article"
-      aria-label={`${name}의 프로필 카드`}
+      aria-label={`${name}의 Profile 카드`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/5 pointer-events-none" />
 
@@ -99,7 +99,7 @@ Stats: ❤️${warmth} 🧠${logic} 🎨${creativity} ⚡${energy} 😂${humor}
         <div className="flex gap-2">
           <button onClick={copyAsText}
             className="flex-1 py-2 rounded-xl bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20 transition flex items-center justify-center gap-1.5"
-            aria-label="프로필 텍스트 복사">
+            aria-label="Profile 텍스트 복사">
             <span aria-hidden="true" className="material-icons-round text-sm">{copied ? 'check' : 'content_copy'}</span>
             {copied ? '복사됨!' : '텍스트 복사'}
           </button>

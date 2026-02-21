@@ -1,5 +1,5 @@
 /**
- * 매칭 필터 — 관심사/성격 기반 매칭 필터링
+ * Matching 필터 — 관심사/Personality 기반 Matching 필터링
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -72,7 +72,7 @@ export function MatchingFilter({ isOpen, onClose, onApply }: Props) {
             <div className="px-5 pt-4 pb-3 border-b border-border/20">
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-foreground">매칭 필터</h2>
+                <h2 className="text-sm font-bold text-foreground">Matching 필터</h2>
                 <button onClick={handleReset} className="text-[10px] text-primary font-medium">초기화</button>
               </div>
             </div>
@@ -93,7 +93,7 @@ export function MatchingFilter({ isOpen, onClose, onApply }: Props) {
 
               {/* Personality filter */}
               <div>
-                <p className="text-[11px] font-bold text-foreground/80 mb-2">성격 유형</p>
+                <p className="text-[11px] font-bold text-foreground/80 mb-2">Personality 유형</p>
                 <div className="flex flex-wrap gap-2">
                   {PERSONALITY_FILTERS.map(p => (
                     <button
@@ -135,7 +135,7 @@ export function MatchingFilter({ isOpen, onClose, onApply }: Props) {
             <div className="px-5 py-4 border-t border-border/20 flex gap-2">
               <button onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl glass-card text-muted-foreground text-sm font-medium">
-                취소
+                Cancel
               </button>
               <button onClick={handleApply}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold">

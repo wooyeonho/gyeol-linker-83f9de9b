@@ -1,5 +1,5 @@
 /**
- * 대화 공유 링크 생성 컴포넌트
+ * 대화 Share 링크 생성 컴포넌트
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,7 +58,7 @@ export function ConversationShare({ isOpen, onClose, messages, agentName }: Conv
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <span aria-hidden="true" className="material-icons-round text-primary text-base">share</span>
-              대화 공유
+              대화 Share
             </h3>
             <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
               <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
@@ -95,7 +95,7 @@ export function ConversationShare({ isOpen, onClose, messages, agentName }: Conv
               <button onClick={handleWebShare}
                 className="flex-1 py-2.5 rounded-xl text-xs font-medium bg-secondary/10 text-secondary-foreground border border-secondary/20 hover:bg-secondary/15 transition flex items-center justify-center gap-1">
                 <span aria-hidden="true" className="material-icons-round text-sm">ios_share</span>
-                공유
+                Share
               </button>
             )}
           </div>

@@ -1,5 +1,5 @@
 /**
- * Phase 3: 성격 레이더 차트 — SVG 기반
+ * Phase 3: Personality 레이더 차트 — SVG 기반
  */
 import { motion } from 'framer-motion';
 

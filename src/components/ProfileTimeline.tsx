@@ -49,7 +49,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
       (achievementsRes.data as any[] ?? []).forEach((a: any) => {
         timeline.push({
           id: a.id, type: 'achievement',
-          title: `업적 달성: ${a.gyeol_achievements?.name ?? '???'}`,
+          title: `Achievement 달성: ${a.gyeol_achievements?.name ?? '???'}`,
           created_at: a.unlocked_at, icon: a.gyeol_achievements?.icon ?? 'emoji_events',
         });
       });
@@ -57,7 +57,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
       (postsRes.data as any[] ?? []).forEach((p: any) => {
         timeline.push({
           id: p.id, type: 'social',
-          title: p.post_type === 'visit_log' ? 'Moltbook 방문 일지' : '커뮤니티 포스트',
+          title: p.post_type === 'visit_log' ? 'Moltbook Visit Log' : '커뮤니티 포스트',
           description: p.content?.slice(0, 80), created_at: p.created_at, icon: 'forum',
         });
       });

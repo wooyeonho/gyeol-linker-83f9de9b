@@ -90,11 +90,11 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
                 disabled={claiming}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold text-sm btn-glow disabled:opacity-30"
               >
-                {claiming ? '받는 중...' : `보상 받기 (+${DAILY_REWARDS[currentDay - 1]?.coins ?? 5}🪙)`}
+                {claiming ? '받는 중...' : `Claim Reward (+${DAILY_REWARDS[currentDay - 1]?.coins ?? 5}🪙)`}
               </button>
             ) : (
               <div className="text-center py-3 text-[11px] text-muted-foreground">
-                ✅ 오늘의 보상을 이미 받았습니다
+                ✅ Daily Reward을 이미 받았습니다
               </div>
             )}
 

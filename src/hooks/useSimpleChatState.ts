@@ -178,7 +178,7 @@ export function useSimpleChatState() {
 
   const handleSendImage = async () => {
     if (!imagePreview || !agent?.id) return;
-    const imgMsg = `[이미지 전송] 📷`;
+    const imgMsg = `[이미지 Send] 📷`;
     setImagePreview(null);
     await sendMessage(imgMsg);
   };

@@ -1,6 +1,6 @@
 /**
  * GYEOL 게이미피케이션 메인 페이지
- * 탭: 퀘스트 | 업적 | 리더보드 | 상점
+ * 탭: Quest | Achievement | Leaderboard | Shop
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,10 +20,10 @@ import { EvolutionCountdown } from '@/src/components/EvolutionEngine';
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 
 const TABS: { key: Tab; icon: string; label: string }[] = [
-  { key: 'quests', icon: 'assignment', label: '퀘스트' },
-  { key: 'achievements', icon: 'emoji_events', label: '업적' },
+  { key: 'quests', icon: 'assignment', label: 'Quest' },
+  { key: 'achievements', icon: 'emoji_events', label: 'Achievement' },
   { key: 'leaderboard', icon: 'leaderboard', label: '랭킹' },
-  { key: 'shop', icon: 'storefront', label: '상점' },
+  { key: 'shop', icon: 'storefront', label: 'Shop' },
   { key: 'season', icon: 'stars', label: '시즌' },
 ];
 
@@ -169,7 +169,7 @@ export default function GamificationPage() {
   );
 }
 
-// ========== 퀘스트 탭 ==========
+// ========== Quest 탭 ==========
 function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
   const { quests, claimQuestReward } = gam;
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -208,7 +208,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground text-sm">
-          진행 가능한 퀘스트가 없습니다
+          진행 가능한 Quest가 없습니다
         </div>
       ) : (
         filtered.map((quest) => {
@@ -235,14 +235,14 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-foreground">{quest.title}</span>
                     {claimed ? (
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">완료</span>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Done</span>
                     ) : completed ? (
                       <button
                         onClick={() => p && handleClaim(p.id, quest.id)}
                         disabled={claiming === quest.id}
                         className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold animate-pulse"
                       >
-                        {claiming === quest.id ? '...' : '보상 받기'}
+                        {claiming === quest.id ? '...' : 'Claim Reward'}
                       </button>
                     ) : null}
                   </div>
@@ -291,7 +291,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
   );
 }
 
-// ========== 업적 탭 ==========
+// ========== Achievement 탭 ==========
 function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
   const { achievements } = gam;
   const [filter, setFilter] = useState<string>('all');
@@ -309,7 +309,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           {unlockedCount}
         </span>
         <span className="text-lg text-muted-foreground"> / {achievements.length}</span>
-        <p className="text-[10px] text-muted-foreground mt-1">업적 달성</p>
+        <p className="text-[10px] text-muted-foreground mt-1">Achievement 달성</p>
       </div>
 
       {/* Achievement recommendations */}
@@ -325,7 +325,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               filter === cat ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
             }`}
           >
-            {cat === 'all' ? '전체' : cat === 'general' ? '일반' : cat === 'chat' ? '대화' : cat === 'evolution' ? '진화' : cat === 'social' ? '소셜' : '마켓'}
+            {cat === 'all' ? '전체' : cat === 'general' ? '일반' : cat === 'chat' ? '대화' : cat === 'evolution' ? 'Evolution' : cat === 'social' ? '소셜' : '마켓'}
           </button>
         ))}
       </div>
@@ -395,7 +395,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 }
 
 function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void }) {
-  const shareText = `🏆 GYEOL 업적 달성!\n${ach.name}\n${ach.description ?? ''}\n\n#GYEOL #AI동반자`;
+  const shareText = `🏆 GYEOL Achievement 달성!\n${ach.name}\n${ach.description ?? ''}\n\n#GYEOL #AI동반자`;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={onClose}>
@@ -413,14 +413,14 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
           <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">닫기</button>
           <button onClick={async () => {
             if (navigator.share) {
-              await navigator.share({ title: `GYEOL 업적: ${ach.name}`, text: shareText });
+              await navigator.share({ title: `GYEOL Achievement: ${ach.name}`, text: shareText });
             } else {
               await navigator.clipboard.writeText(shareText);
             }
             onClose();
           }}
             className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
-            <span aria-hidden="true" className="material-icons-round text-sm">share</span> 공유
+            <span aria-hidden="true" className="material-icons-round text-sm">share</span> Share
           </button>
         </div>
       </motion.div>
@@ -428,7 +428,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
   );
 }
 
-// ========== 리더보드 탭 ==========
+// ========== Leaderboard 탭 ==========
 function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamification>; agentId?: string }) {
   const { leaderboard, profile } = gam;
   const [period, setPeriod] = useState<string>('alltime');
@@ -523,7 +523,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
         <div className="text-center py-12">
           <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
           <p className="text-sm text-muted-foreground">아직 랭킹 데이터가 없습니다</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 퀘스트를 완료하면 랭킹에 등록됩니다</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 Quest를 Done하면 랭킹에 등록됩니다</p>
         </div>
       ) : (
         filteredBoard.map((entry, i) => {
@@ -570,7 +570,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
   );
 }
 
-// ========== 상점 탭 ==========
+// ========== Shop 탭 ==========
 function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
   const { shopItems, inventory, profile, purchaseItem } = gam;
   const [buying, setBuying] = useState<string | null>(null);
@@ -582,7 +582,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
     if (!result.success) {
       setMessage(result.error ?? '구매 실패');
     } else {
-      setMessage('구매 완료! 🎉');
+      setMessage('구매 Done! 🎉');
     }
     setBuying(null);
     setTimeout(() => setMessage(null), 3000);
@@ -593,7 +593,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       {/* Coins display */}
       <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">보유 코인</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">보유 Coins</p>
           <p className="text-2xl font-bold text-[hsl(var(--warning))] flex items-center gap-1">
             <span aria-hidden="true" className="material-icons-round text-lg">monetization_on</span>
             {profile?.coins ?? 0}

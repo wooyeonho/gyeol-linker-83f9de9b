@@ -1,5 +1,5 @@
 /**
- * 업적 공유 카드
+ * Achievement Share 카드
  */
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,11 +13,11 @@ interface AchievementShareProps {
 }
 
 export function AchievementShare({ show, name, description, icon, rarity, onClose }: AchievementShareProps) {
-  const shareText = `🏆 GYEOL 업적 달성!\n${name}\n${description}\n\n#GYEOL #AI동반자`;
+  const shareText = `🏆 GYEOL Achievement 달성!\n${name}\n${description}\n\n#GYEOL #AI동반자`;
 
   const handleShare = async () => {
     if (navigator.share) {
-      await navigator.share({ title: `GYEOL 업적: ${name}`, text: shareText });
+      await navigator.share({ title: `GYEOL Achievement: ${name}`, text: shareText });
     } else {
       await navigator.clipboard.writeText(shareText);
     }
@@ -43,7 +43,7 @@ export function AchievementShare({ show, name, description, icon, rarity, onClos
               <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">닫기</button>
               <button onClick={handleShare}
                 className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
-                <span aria-hidden="true" className="material-icons-round text-sm">share</span> 공유
+                <span aria-hidden="true" className="material-icons-round text-sm">share</span> Share
               </button>
             </div>
           </motion.div>

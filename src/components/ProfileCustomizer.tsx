@@ -1,5 +1,5 @@
 /**
- * 프로필 커스터마이징 컴포넌트
+ * Profile 커스터마이징 컴포넌트
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

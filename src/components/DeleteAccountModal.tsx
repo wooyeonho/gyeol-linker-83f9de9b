@@ -1,5 +1,5 @@
 /**
- * 계정 삭제 확인 모달 — 3단계 확인 프로세스
+ * Delete Account Confirm 모달 — 3단계 Confirm 프로세스
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,9 +13,9 @@ interface Props {
 
 const WARNINGS = [
   { icon: 'chat_bubble', text: '모든 대화 기록이 영구 삭제됩니다' },
-  { icon: 'psychology', text: 'AI 성격과 기억이 모두 사라집니다' },
-  { icon: 'emoji_events', text: '업적, 레벨, 코인이 초기화됩니다' },
-  { icon: 'group', text: '소셜 활동과 팔로우가 삭제됩니다' },
+  { icon: 'psychology', text: 'AI Personality과 기억이 모두 사라집니다' },
+  { icon: 'emoji_events', text: 'Achievement, Level, Coins이 초기화됩니다' },
+  { icon: 'group', text: '소셜 활동과 Follow가 삭제됩니다' },
 ];
 
 export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
@@ -73,7 +73,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-[80] flex items-center justify-center p-4"
-            role="alertdialog" aria-label="계정 삭제 확인" aria-modal="true"
+            role="alertdialog" aria-label="Delete Account Confirm" aria-modal="true"
           >
             <div className="glass-card rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
               {/* Step indicator */}
@@ -103,7 +103,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     <div className="flex gap-2">
                       <button onClick={reset}
                         className="flex-1 py-3 rounded-xl bg-muted/10 text-foreground/70 text-sm font-medium transition hover:bg-muted/20">
-                        취소
+                        Cancel
                       </button>
                       <button onClick={() => setStep(1)}
                         className="flex-1 py-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium transition hover:bg-destructive/20">
@@ -117,16 +117,16 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                     className="space-y-4">
                     <div className="text-center">
-                      <h2 className="text-base font-bold text-foreground">확인 입력</h2>
+                      <h2 className="text-base font-bold text-foreground">Confirm 입력</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        확인하려면 <strong className="text-destructive">"삭제합니다"</strong>를 입력하세요
+                        Confirm하려면 <strong className="text-destructive">"삭제합니다"</strong>를 입력하세요
                       </p>
                     </div>
                     <input
                       type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)}
                       placeholder="삭제합니다"
                       className="w-full rounded-xl bg-secondary/50 border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-destructive/40 transition"
-                      aria-label="삭제 확인 텍스트 입력"
+                      aria-label="삭제 Confirm 텍스트 입력"
                       autoComplete="off"
                     />
                     <div className="flex gap-2">
@@ -136,7 +136,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                       </button>
                       <button onClick={() => canDelete && setStep(2)} disabled={!canDelete}
                         className="flex-1 py-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium transition hover:bg-destructive/20 disabled:opacity-30">
-                        다음
+                        Next
                       </button>
                     </div>
                   </motion.div>
@@ -147,7 +147,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     className="space-y-4">
                     <div className="text-center">
                       <span className="text-4xl">🔥</span>
-                      <h2 className="text-base font-bold text-destructive mt-2">최종 확인</h2>
+                      <h2 className="text-base font-bold text-destructive mt-2">최종 Confirm</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
                         이 버튼을 누르면 모든 데이터가<br />영구적으로 삭제됩니다
                       </p>

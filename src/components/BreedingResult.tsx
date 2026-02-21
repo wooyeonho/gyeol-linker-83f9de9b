@@ -33,12 +33,12 @@ const MOCK_CHILD: ChildInfo = {
     { category: '🎯', value: '관심사: 주식 투자' },
     { category: '📚', value: '학습 주제: AI 기술 트렌드' },
   ],
-  mutation: '창의성 +15 폭발!',
+  mutation: 'Creativity +15 폭발!',
 };
 
 const STATS = ['warmth', 'logic', 'creativity', 'energy', 'humor'] as const;
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의성', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: 'Creativity', energy: 'Energy', humor: 'Humor',
 };
 
 function StatBar({ label, value, parentA, parentB, color }: { label: string; value: number; parentA: number; parentB: number; color: string }) {
@@ -124,7 +124,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
 
             {/* Personality comparison */}
             <div className="px-5 py-3 space-y-2">
-              <p className="text-[10px] font-semibold text-foreground/60 mb-2">물려받은 성격</p>
+              <p className="text-[10px] font-semibold text-foreground/60 mb-2">물려받은 Personality</p>
               {STATS.map((stat) => (
                 <StatBar
                   key={stat}
@@ -181,7 +181,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                 onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl bg-surface border border-border/30 text-foreground/60 text-[12px] hover:bg-surface/80 transition"
               >
-                커뮤니티 공유
+                커뮤니티 Share
               </button>
             </div>
           </motion.div>

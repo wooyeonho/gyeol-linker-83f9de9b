@@ -1,5 +1,5 @@
 /**
- * 코인 히스토리 패널 — 코인 획득/사용 내역 표시
+ * Coins 히스토리 패널 — Coins 획득/사용 내역 표시
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,7 +63,7 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-base">monetization_on</span>
-                  코인 히스토리
+                  Coins 히스토리
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
                   <span aria-hidden="true" className="material-icons-round text-lg">close</span>
@@ -75,7 +75,7 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="void-dot" />
-                  <span className="ml-3 text-[11px] text-muted-foreground/50">로딩 중...</span>
+                  <span className="ml-3 text-[11px] text-muted-foreground/50">Loading...</span>
                 </div>
               ) : logs.length === 0 ? (
                 <div className="text-center py-12">

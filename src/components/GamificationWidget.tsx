@@ -49,7 +49,7 @@ function GamificationWidgetInternal() {
         {/* Daily quests summary */}
         {activeQuests.length > 0 && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] text-muted-foreground">오늘의 퀘스트</span>
+            <span className="text-[9px] text-muted-foreground">오늘의 Quest</span>
             <span className="text-[9px] font-bold text-primary">{completedCount}/{activeQuests.length}</span>
             {completedCount > 0 && completedCount < activeQuests.length && (
               <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary animate-pulse">보상 대기중</span>

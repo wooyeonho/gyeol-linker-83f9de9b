@@ -72,7 +72,7 @@ export function ReportDialog({ open, onClose, targetType, targetId }: ReportDial
                 placeholder="상세 내용 (선택사항)"
                 className="w-full bg-muted/20 border border-border/30 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground resize-none h-16 mb-4" />
               <div className="flex gap-2">
-                <button onClick={onClose} className="flex-1 py-2 text-xs text-muted-foreground hover:text-foreground transition rounded-lg">취소</button>
+                <button onClick={onClose} className="flex-1 py-2 text-xs text-muted-foreground hover:text-foreground transition rounded-lg">Cancel</button>
                 <button onClick={handleSubmit} disabled={!reason || submitting}
                   className="flex-1 py-2 text-xs bg-destructive/80 text-foreground rounded-lg hover:bg-destructive transition disabled:opacity-40">
                   {submitting ? '처리 중...' : '신고하기'}

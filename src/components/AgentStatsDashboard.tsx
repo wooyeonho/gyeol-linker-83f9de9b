@@ -1,5 +1,5 @@
 /**
- * 에이전트 통계 대시보드 - 종합 활동 요약
+ * 에Previous트 통계 대시보드 - 종합 활동 요약
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -105,7 +105,7 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
                   { icon: 'chat', label: '총 메시지', value: stats.totalMessages.toLocaleString() },
                   { icon: 'calendar_today', label: '활동 일수', value: `${stats.totalDays}일` },
                   { icon: 'psychology', label: '학습 주제', value: stats.topicsLearned.toString() },
-                  { icon: 'memory', label: '기억 저장', value: stats.memoriesStored.toString() },
+                  { icon: 'memory', label: '기억 Save', value: stats.memoriesStored.toString() },
                   { icon: 'speed', label: '평균 응답', value: stats.avgResponseTime > 0 ? `${(stats.avgResponseTime / 1000).toFixed(1)}s` : '—' },
                   { icon: 'auto_stories', label: 'Moltbook', value: stats.moltbookPosts.toString() },
                 ].map(s => (

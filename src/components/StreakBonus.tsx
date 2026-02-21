@@ -44,7 +44,7 @@ export function StreakBonus({ streakDays, className }: Props) {
             <div className="mt-1">
               <div className="flex items-center justify-between mb-0.5">
                 <p className="text-[9px] text-muted-foreground">
-                  다음 보너스: {nextMilestone.label} ({nextMilestone.bonus})
+                  Next 보너스: {nextMilestone.label} ({nextMilestone.bonus})
                 </p>
                 <p className="text-[9px] text-primary font-bold">
                   {nextMilestone.days - streakDays}일 남음

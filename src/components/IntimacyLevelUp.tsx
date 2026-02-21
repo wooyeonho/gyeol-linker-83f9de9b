@@ -1,5 +1,5 @@
 /**
- * 친밀도 레벨업 연출 — 친밀도가 특정 단계에 도달했을 때 팝업
+ * Intimacy Level업 연출 — Intimacy가 특정 단계에 도달했을 때 팝업
  */
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,7 +35,7 @@ export function IntimacyLevelUp({ show, intimacy, onClose }: IntimacyLevelUpProp
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
           onClick={onClose}
           role="dialog"
-          aria-label="친밀도 레벨업"
+          aria-label="Intimacy Level업"
         >
           <motion.div
             initial={{ scale: 0.3, opacity: 0, y: 40 }}
@@ -77,7 +77,7 @@ export function IntimacyLevelUp({ show, intimacy, onClose }: IntimacyLevelUpProp
               transition={{ delay: 0.3 }}
               className="text-lg font-black text-foreground mb-1"
             >
-              친밀도 UP!
+              Intimacy UP!
             </motion.h2>
             <motion.p
               initial={{ y: 20, opacity: 0 }}
@@ -93,7 +93,7 @@ export function IntimacyLevelUp({ show, intimacy, onClose }: IntimacyLevelUpProp
               transition={{ delay: 0.6 }}
               className="text-xs text-muted-foreground mb-6"
             >
-              친밀도 {intimacy}에 도달했어요
+              Intimacy {intimacy}에 도달했어요
             </motion.p>
 
             <motion.button
@@ -103,7 +103,7 @@ export function IntimacyLevelUp({ show, intimacy, onClose }: IntimacyLevelUpProp
               onClick={onClose}
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/30"
             >
-              확인
+              Confirm
             </motion.button>
           </motion.div>
         </motion.div>
