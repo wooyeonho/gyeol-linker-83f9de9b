@@ -12,6 +12,7 @@ import { InsightDashboard } from '@/src/components/InsightDashboard';
 import { LevelUpCeremony } from '@/src/components/LevelUpCeremony';
 import { CoinHistory } from '@/src/components/CoinHistory';
 import { QuestTimer } from '@/src/components/QuestTimer';
+import { AchievementRecommend } from '@/src/components/AchievementRecommend';
 import { useGyeolStore } from '@/store/gyeol-store';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
@@ -294,6 +295,9 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
         <p className="text-[10px] text-muted-foreground mt-1">업적 달성</p>
       </div>
 
+      {/* Achievement recommendations */}
+      <AchievementRecommend achievements={achievements} onSelect={(ach) => setShareAch(ach)} />
+
       {/* Category filter */}
       <div className="flex gap-1.5 overflow-x-auto gyeol-scrollbar-hide pb-1">
         {categories.map((cat) => (
@@ -437,6 +441,27 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+      {/* Leaderboard rewards info */}
+      <div className="glass-card rounded-2xl p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="material-icons-round text-amber-400 text-sm">card_giftcard</span>
+          <span className="text-[11px] font-bold text-foreground">순위 보상</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          {[
+            { rank: '🥇 1위', coins: 500, exp: 200 },
+            { rank: '🥈 2위', coins: 300, exp: 120 },
+            { rank: '🥉 3위', coins: 150, exp: 80 },
+          ].map(r => (
+            <div key={r.rank} className="text-[9px] text-muted-foreground">
+              <p className="font-bold text-foreground">{r.rank}</p>
+              <p className="text-amber-400">💰{r.coins}</p>
+              <p className="text-secondary">⚡{r.exp} EXP</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Period filter */}
       <div className="flex gap-2">
         {[

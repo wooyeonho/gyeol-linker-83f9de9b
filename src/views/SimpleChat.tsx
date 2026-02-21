@@ -58,6 +58,18 @@ export default function SimpleChat() {
   const [translating, setTranslating] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('gyeol_bookmarks') ?? '[]')); } catch { return new Set(); }
+  });
+
+  const toggleBookmark = (msgId: string) => {
+    setBookmarks(prev => {
+      const next = new Set(prev);
+      if (next.has(msgId)) next.delete(msgId); else next.add(msgId);
+      localStorage.setItem('gyeol_bookmarks', JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   const handleTranslate = async (msgId: string, text: string, lang: string) => {
     setTranslatePickerFor(null);
@@ -280,6 +292,11 @@ export default function SimpleChat() {
                           className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
                           <span className="material-icons-round text-[12px]" aria-hidden="true">refresh</span>
                         </button>
+                        <button onClick={() => toggleBookmark(msg.id)}
+                          aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
+                          className={`text-[9px] px-1.5 py-0.5 rounded transition focus-visible:outline-2 focus-visible:outline-primary ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
+                        </button>
                       </div>
                       {/* Reaction picker */}
                       <AnimatePresence>
@@ -343,6 +360,11 @@ export default function SimpleChat() {
                           aria-label="Translate"
                           className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
                           <span className="material-icons-round text-[12px]" aria-hidden="true">translate</span>
+                        </button>
+                        <button onClick={() => toggleBookmark(msg.id)}
+                          aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
+                          className={`text-[9px] px-1.5 py-0.5 rounded transition focus-visible:outline-2 focus-visible:outline-primary ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
                         </button>
                       </div>
                       {/* Translation result */}
