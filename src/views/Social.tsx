@@ -189,7 +189,7 @@ export default function SocialPage() {
 
   // Load feed data for For You tab
   useEffect(() => {
-    if (tab !== 'foryou') return;
+    if (tab !== 'feed') return;
     (async () => {
       const [moltRes, commRes] = await Promise.all([
         supabase.from('gyeol_moltbook_posts' as any)
