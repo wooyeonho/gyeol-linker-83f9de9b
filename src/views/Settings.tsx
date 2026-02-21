@@ -191,10 +191,10 @@ export default function SettingsPage() {
       aria-expanded={activeSection === id} aria-controls={`section-${id}`}
       className="w-full flex items-center justify-between py-2 group focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg">
       <div className="flex items-center gap-2">
-        <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm" aria-hidden="true">{icon}</span>
+        <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">{icon}</span>
         <p className="text-[11px] text-foreground/40 uppercase tracking-widest font-medium">{title}</p>
       </div>
-      <span aria-hidden="true" className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30" aria-hidden="true"
+      <span aria-hidden="true" className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30"
         style={{ transform: activeSection === id ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
     </button>
   );
@@ -533,7 +533,7 @@ export default function SettingsPage() {
           <section className="px-4 mt-6 space-y-3">
             <button type="button" onClick={() => setFeedbackOpen(true)}
               className="w-full py-2.5 rounded-xl text-xs font-medium border border-primary/20 bg-primary/5 text-primary/70 hover:bg-primary/10 transition flex items-center justify-center gap-2">
-              <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">feedback</span> Send Feedback
+              <span aria-hidden="true" className="material-icons-round text-sm">feedback</span> Send Feedback
             </button>
             <div className="p-3 rounded-xl border border-border/10 bg-card/30 space-y-2">
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Invite Friends</p>
@@ -559,7 +559,7 @@ export default function SettingsPage() {
             </div>
             <button type="button" onClick={exportData} disabled={exporting}
               className="w-full py-2.5 rounded-xl text-xs font-medium border border-border/20 bg-card/30 text-foreground/70 hover:bg-card/50 transition flex items-center justify-center gap-2">
-              <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">download</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">download</span>
               {exporting ? 'Preparing...' : 'Export My Data (JSON)'}
             </button>
           </section>

@@ -30,12 +30,12 @@ export function TopNav() {
           aria-label="Toggle dark mode"
           className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
-          <span aria-hidden="true" className="material-icons-round text-xl dark:hidden" aria-hidden="true">dark_mode</span>
-          <span aria-hidden="true" className="material-icons-round text-xl hidden dark:block" aria-hidden="true">light_mode</span>
+          <span aria-hidden="true" className="material-icons-round text-xl dark:hidden">dark_mode</span>
+          <span aria-hidden="true" className="material-icons-round text-xl hidden dark:block">light_mode</span>
         </button>
         <div className="relative" aria-label="User avatar">
           <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-card shadow-sm bg-[hsl(30,80%,75%)] flex items-center justify-center">
-            <span aria-hidden="true" className="material-icons-round text-foreground text-xl" aria-hidden="true">person</span>
+            <span aria-hidden="true" className="material-icons-round text-foreground text-xl">person</span>
           </div>
           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[hsl(142,71%,45%)] border-2 border-card rounded-full" aria-label="Online status" />
         </div>
