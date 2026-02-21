@@ -6,6 +6,7 @@ import { BottomNav } from '../components/BottomNav';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { ActivityFilter } from '@/src/components/ActivityFilter';
 import { ActivityExport } from '@/src/components/ActivityExport';
+import { NavigationDeep } from '@/src/components/NavigationDeep';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ActivityLog {
@@ -57,6 +58,7 @@ export default function ActivityPage() {
   const [activitySearch, setActivitySearch] = useState('');
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [navDeepOpen, setNavDeepOpen] = useState(false);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -368,6 +370,12 @@ export default function ActivityPage() {
         )}
       </PullToRefresh>
       <ActivityExport isOpen={exportOpen} onClose={() => setExportOpen(false)} logs={logs} />
+
+      {/* B24+B25+B29: Navigation Deep */}
+      {agent?.id && (
+        <NavigationDeep isOpen={navDeepOpen} onClose={() => setNavDeepOpen(false)} agentId={agent.id} />
+      )}
+
       <BottomNav />
     </main>
   );

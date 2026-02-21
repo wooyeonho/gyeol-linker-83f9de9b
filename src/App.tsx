@@ -20,6 +20,7 @@ import ServerError from './views/ServerError';
 import Terms from './views/Terms';
 import Privacy from './views/Privacy';
 import ResetPasswordPage from './views/ResetPassword';
+import { PWADeep } from './components/PWADeep';
 
 const pageTransition = {
   initial: { opacity: 0, y: 10 },
@@ -86,6 +87,7 @@ function App() {
       <NetworkStatus />
       <ToastContainer />
       <AchievementPopup />
+      <PWADeep />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/auth" element={user ? <Navigate to="/" replace /> : <PageWrap><AuthPage /></PageWrap>} />

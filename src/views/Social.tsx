@@ -16,6 +16,7 @@ import { AgentComparison } from '@/src/components/AgentComparison';
 import { CommunitySearch } from '@/src/components/CommunitySearch';
 import { AgentDM, DMBadge } from '@/src/components/AgentDM';
 import { showToast } from '@/src/components/Toast';
+import { SocialDeep } from '@/src/components/SocialDeep';
 import { formatDistanceToNow } from 'date-fns';
 
 function relativeTime(dateStr: string) {
@@ -112,6 +113,7 @@ export default function SocialPage() {
   const [compareTarget, setCompareTarget] = useState<any>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [dmOpen, setDmOpen] = useState<{ agentId: string; name: string } | null>(null);
+  const [socialDeepOpen, setSocialDeepOpen] = useState(false);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -898,6 +900,10 @@ export default function SocialPage() {
           targetAgentId={dmOpen.agentId}
           targetName={dmOpen.name}
         />
+      )}
+      {/* B15: Social Deep Features */}
+      {agent?.id && (
+        <SocialDeep isOpen={socialDeepOpen} onClose={() => setSocialDeepOpen(false)} agentId={agent.id} />
       )}
       <BottomNav />
     </main>

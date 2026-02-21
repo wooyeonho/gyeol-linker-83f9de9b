@@ -23,6 +23,11 @@ import { ReplyPreview, ReplyBubble } from '@/src/components/MessageReply';
 import { ImageMessage } from '@/src/components/ImageMessage';
 import { VoiceRecorder, AudioMessage } from '@/src/components/VoiceRecorder';
 import { TypingIndicator } from '@/src/components/TypingIndicator';
+import { FileDropZone } from '@/src/components/FileDropZone';
+import { LinkPreview } from '@/src/components/LinkPreview';
+import { ReadReceipt } from '@/src/components/ReadReceipt';
+import { TokenUsageDisplay } from '@/src/components/TokenUsageDisplay';
+import { ModelSelector } from '@/src/components/ModelSelector';
 import type { Message as Msg } from '@/lib/gyeol/types';
 
 // Emoji reactions for messages
@@ -89,6 +94,9 @@ export default function SimpleChat() {
   const [exportOpen, setExportOpen] = useState(false);
   const [voiceMessages, setVoiceMessages] = useState<Record<string, { url: string; duration: number }>>({});
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [selectedModel, setSelectedModel] = useState('default');
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showTokenUsage, setShowTokenUsage] = useState(false);
   const [replyMap, setReplyMap] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('gyeol_replies') ?? '{}'); } catch { return {}; }
   });
@@ -740,6 +748,26 @@ export default function SimpleChat() {
 
       {/* Conversation Export */}
       <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
+
+      {/* Model Selector Modal */}
+      {showModelSelector && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModelSelector(false)} />
+          <div className="relative z-10 w-full max-w-md p-4">
+            <ModelSelector selected={selectedModel} onSelect={(m) => { setSelectedModel(m); setShowModelSelector(false); }} />
+          </div>
+        </div>
+      )}
+
+      {/* Token Usage */}
+      {showTokenUsage && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowTokenUsage(false)} />
+          <div className="relative z-10 w-full max-w-sm p-4">
+            <TokenUsageDisplay used={messages.length * 150} limit={100000} model={selectedModel} />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

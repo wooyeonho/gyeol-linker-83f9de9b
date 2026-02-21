@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
+import { OnboardingDeep } from '@/src/components/OnboardingDeep';
 
 const PRESETS = [
   { label: '🌊 Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },

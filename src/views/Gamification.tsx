@@ -14,6 +14,8 @@ import { CoinHistory } from '@/src/components/CoinHistory';
 import { QuestTimer } from '@/src/components/QuestTimer';
 import { AchievementRecommend } from '@/src/components/AchievementRecommend';
 import { useGyeolStore } from '@/store/gyeol-store';
+import { GamificationDeep } from '@/src/components/GamificationDeep';
+import { EvolutionEngine } from '@/src/components/EvolutionEngine';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 
@@ -35,6 +37,8 @@ export default function GamificationPage() {
   const [insightOpen, setInsightOpen] = useState(false);
   const [levelUpShow, setLevelUpShow] = useState(false);
   const [levelUpLevel, setLevelUpLevel] = useState(1);
+  const [gamDeepOpen, setGamDeepOpen] = useState(false);
+  const [evolutionOpen, setEvolutionOpen] = useState(false);
 
   if (loading) {
     return (
@@ -147,6 +151,17 @@ export default function GamificationPage() {
       <CoinHistory isOpen={coinHistoryOpen} onClose={() => setCoinHistoryOpen(false)} agentId={agent?.id} />
       <InsightDashboard isOpen={insightOpen} onClose={() => setInsightOpen(false)} />
       <LevelUpCeremony show={levelUpShow} newLevel={levelUpLevel} onClose={() => setLevelUpShow(false)} />
+
+      {/* B14: Gamification Deep */}
+      {agent?.id && (
+        <GamificationDeep isOpen={gamDeepOpen} onClose={() => setGamDeepOpen(false)} agentId={agent.id} />
+      )}
+
+      {/* B13: Evolution Engine */}
+      {agent?.id && (
+        <EvolutionEngine isOpen={evolutionOpen} onClose={() => setEvolutionOpen(false)} agentId={agent.id} gen={agent.gen} />
+      )}
+
       <BottomNav />
     </main>
   );
