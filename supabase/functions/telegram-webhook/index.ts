@@ -9,11 +9,15 @@ const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY')
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
 const AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions'
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 async function sendTelegram(chatId: string | number, text: string) {
   await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify({ chat_id: chatId, text: escapeHtml(text) }),
   })
 }
 
@@ -137,6 +141,7 @@ async function searchPerplexity(query: string): Promise<string> {
           { role: 'user', content: query },
         ], max_tokens: 512, search_recency_filter: 'day',
       }),
+      signal: AbortSignal.timeout(8000),
     })
     if (!res.ok) { await res.text(); return '' }
     const data = await res.json()
@@ -150,7 +155,7 @@ async function searchPerplexity(query: string): Promise<string> {
 
 async function searchDDG(query: string): Promise<string> {
   try {
-    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`)
+    const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`, { signal: AbortSignal.timeout(5000) })
     if (!res.ok) return ''
     const data = await res.json()
     const results: string[] = []
@@ -164,6 +169,7 @@ async function searchDDGHtml(query: string): Promise<string> {
   try {
     const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GYEOL/1.0)' },
+      signal: AbortSignal.timeout(5000),
     })
     if (!res.ok) return ''
     const html = await res.text()
@@ -233,10 +239,11 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     if (url.searchParams.get('setup') === '1') {
       const webhookUrl = `${SUPABASE_URL}/functions/v1/telegram-webhook`
+      const telegramWebhookSecret = Deno.env.get('TELEGRAM_WEBHOOK_SECRET')
       const res = await fetch(`${TELEGRAM_API}/setWebhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message'] }),
+        body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message'], ...(telegramWebhookSecret ? { secret_token: telegramWebhookSecret } : {}) }),
       })
       const data = await res.json()
       return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })
@@ -246,6 +253,11 @@ Deno.serve(async (req) => {
 
   if (req.method !== 'POST') return new Response('OK', { status: 200 })
 
+  const telegramSecret = Deno.env.get('TELEGRAM_WEBHOOK_SECRET')
+  if (telegramSecret && req.headers.get('x-telegram-bot-api-secret-token') !== telegramSecret) {
+    return new Response('Forbidden', { status: 403 })
+  }
+
   try {
     const update = await req.json()
     const msg = update.message
@@ -254,7 +266,7 @@ Deno.serve(async (req) => {
     }
 
     const chatId = msg.chat.id
-    const userText: string = msg.text
+    const userText: string = (msg.text as string).slice(0, 2000)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
     // /start command
