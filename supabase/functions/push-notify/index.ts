@@ -1,29 +1,92 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isValidUUID } from "../_shared/validate-uuid.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function corsHeaders(req: Request) {
+  const o = req.headers.get("origin") ?? "";
+  if (
+    _origins.includes(o) ||
+    o.endsWith(".lovable.app") ||
+    o.endsWith(".lovableproject.com")
+  ) {
+    return {
+      "Access-Control-Allow-Origin": o,
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    };
+  }
+  return {
+    "Access-Control-Allow-Origin": _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(req) });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const ch = corsHeaders(req);
 
   try {
-    const { agentId, title, message, type } = await req.json();
+    const authHeader = req.headers.get("Authorization");
+    const isServiceCall = req.headers.get("x-internal-secret") === Deno.env.get("INTERNAL_FUNCTION_SECRET");
+
+    let agentId: string;
+    let title: string | undefined;
+    let message: string;
+    let type: string | undefined;
+
+    if (isServiceCall) {
+      const body = await req.json();
+      agentId = body.agentId;
+      title = body.title;
+      message = body.message;
+      type = body.type;
+    } else {
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+      let userId: string;
+      try {
+        const payload = JSON.parse(atob(authHeader.replace("Bearer ", "").split(".")[1]));
+        userId = payload.sub;
+        if (!userId) throw new Error("No sub");
+      } catch {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+
+      const body = await req.json();
+      agentId = body.agentId;
+      title = body.title;
+      message = body.message;
+      type = body.type;
+
+      if (!agentId || !isValidUUID(agentId)) {
+        return new Response(JSON.stringify({ error: "Valid agentId required" }), {
+          status: 400, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: check } = await supabase.from("gyeol_agents").select("user_id").eq("id", agentId).single();
+      if (!check || check.user_id !== userId) {
+        return new Response(JSON.stringify({ error: "Access denied" }), {
+          status: 403, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (!agentId || !message) {
       return new Response(JSON.stringify({ error: "agentId and message required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Get push subscriptions for agent
     const { data: subs } = await supabase
       .from("gyeol_push_subscriptions")
       .select("endpoint, subscription")
@@ -31,7 +94,7 @@ Deno.serve(async (req) => {
 
     if (!subs || subs.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No subscriptions" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
@@ -60,7 +123,6 @@ Deno.serve(async (req) => {
           sent++;
         } else {
           failed++;
-          // Clean up expired subscriptions
           if (res.status === 410) {
             await supabase.from("gyeol_push_subscriptions").delete().eq("endpoint", sub.endpoint);
           }
@@ -70,7 +132,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also store as proactive message for in-app notification
     await supabase.from("gyeol_proactive_messages").insert({
       agent_id: agentId,
       content: message,
@@ -79,12 +140,12 @@ Deno.serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ sent, failed, total: subs.length }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.error("push-notify error:", e);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500, headers: { ...ch, "Content-Type": "application/json" },
     });
   }
 });

@@ -1,15 +1,28 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { isValidUUID } from "../_shared/validate-uuid.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
+function corsHeaders(req: Request) {
+  const o = req.headers.get("origin") ?? "";
+  if (
+    _origins.includes(o) ||
+    o.endsWith(".lovable.app") ||
+    o.endsWith(".lovableproject.com")
+  ) {
+    return {
+      "Access-Control-Allow-Origin": o,
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    };
+  }
+  return {
+    "Access-Control-Allow-Origin": _origins[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Weighted matching algorithm
 function calculateCompatibility(
   a1: Record<string, number>,
   a2: Record<string, number>,
@@ -18,13 +31,11 @@ function calculateCompatibility(
 ): number {
   const traits = ["warmth", "logic", "creativity", "energy", "humor"];
 
-  // 1. Personality similarity (50%)
   const diffs = traits.map((t) => Math.abs((a1[t] ?? 50) - (a2[t] ?? 50)));
   const avgDiff = diffs.reduce((s, d) => s + d, 0) / diffs.length;
   const personalitySim = Math.max(0, 100 - avgDiff * 1.5);
 
-  // 2. Taste similarity (40%)
-  let tasteSim = 50; // default if no taste data
+  let tasteSim = 50;
   if (taste1 && taste2) {
     const t1Topics = Object.keys(taste1.topics ?? {});
     const t2Topics = Object.keys(taste2.topics ?? {});
@@ -37,7 +48,6 @@ function calculateCompatibility(
     tasteSim = ((topicOverlap / maxTopics) * 60 + (interestOverlap / maxInterests) * 40);
   }
 
-  // 3. Complementarity bonus (10%)
   const complementary = traits.filter(
     (t) => ((a1[t] ?? 50) >= 70 && (a2[t] ?? 50) <= 40) || ((a2[t] ?? 50) >= 70 && (a1[t] ?? 50) <= 40)
   ).length;
@@ -47,19 +57,44 @@ function calculateCompatibility(
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders(req) });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
+    const ch = corsHeaders(req);
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+    let userId: string;
+    try {
+      const payload = JSON.parse(atob(authHeader.replace("Bearer ", "").split(".")[1]));
+      userId = payload.sub;
+      if (!userId) throw new Error("No sub");
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+
     const url = new URL(req.url);
 
     if (req.method === "GET") {
-      // Get matches for an agent
       const agentId = url.searchParams.get("agentId");
-      if (!agentId) {
-        return new Response(JSON.stringify({ error: "agentId required" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!agentId || !isValidUUID(agentId)) {
+        return new Response(JSON.stringify({ error: "Valid agentId required" }), {
+          status: 400, headers: { ...ch, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: ownerCheck } = await supabase.from("gyeol_agents").select("user_id").eq("id", agentId).single();
+      if (!ownerCheck || ownerCheck.user_id !== userId) {
+        return new Response(JSON.stringify({ error: "Access denied" }), {
+          status: 403, headers: { ...ch, "Content-Type": "application/json" },
         });
       }
 
@@ -70,19 +105,17 @@ Deno.serve(async (req) => {
         .limit(20);
 
       return new Response(JSON.stringify({ matches: matches ?? [] }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // POST — run matching algorithm for an agent
     const { agentId } = await req.json();
-    if (!agentId) {
-      return new Response(JSON.stringify({ error: "agentId required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!agentId || !isValidUUID(agentId)) {
+      return new Response(JSON.stringify({ error: "Valid agentId required" }), {
+        status: 400, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Get requesting agent
     const { data: agent } = await supabase.from("gyeol_agents")
       .select("id, user_id, warmth, logic, creativity, energy, humor, gen")
       .eq("id", agentId)
@@ -90,11 +123,16 @@ Deno.serve(async (req) => {
 
     if (!agent) {
       return new Response(JSON.stringify({ error: "Agent not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404, headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Get all other agents (exclude same user)
+    if (agent.user_id !== userId) {
+      return new Response(JSON.stringify({ error: "Access denied" }), {
+        status: 403, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: candidates } = await supabase.from("gyeol_agents")
       .select("id, user_id, warmth, logic, creativity, energy, humor, gen, name")
       .neq("user_id", agent.user_id)
@@ -102,11 +140,10 @@ Deno.serve(async (req) => {
 
     if (!candidates || candidates.length === 0) {
       return new Response(JSON.stringify({ matches: [], message: "No candidates found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...ch, "Content-Type": "application/json" },
       });
     }
 
-    // Get taste vectors
     const allIds = [agentId, ...candidates.map((c: any) => c.id)];
     const { data: tastes } = await supabase.from("gyeol_taste_vectors")
       .select("agent_id, topics, interests, communication_style")
@@ -114,7 +151,6 @@ Deno.serve(async (req) => {
 
     const tasteMap = new Map((tastes ?? []).map((t: any) => [t.agent_id, t]));
 
-    // Calculate compatibility
     const scored = candidates.map((c: any) => ({
       candidateId: c.id,
       name: c.name,
@@ -125,7 +161,6 @@ Deno.serve(async (req) => {
     scored.sort((a, b) => b.score - a.score);
     const topMatches = scored.slice(0, 10);
 
-    // Upsert matches
     const upserts = topMatches.map((m) => ({
       agent_1_id: agentId,
       agent_2_id: m.candidateId,
@@ -134,7 +169,6 @@ Deno.serve(async (req) => {
     }));
 
     for (const u of upserts) {
-      // Check if match already exists
       const { data: existing } = await supabase.from("gyeol_matches")
         .select("id")
         .or(`and(agent_1_id.eq.${u.agent_1_id},agent_2_id.eq.${u.agent_2_id}),and(agent_1_id.eq.${u.agent_2_id},agent_2_id.eq.${u.agent_1_id})`)
@@ -156,11 +190,12 @@ Deno.serve(async (req) => {
       matches: topMatches,
       message: `${topMatches.length}개 매칭 완료`,
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...ch, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    console.error("matching error:", e);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

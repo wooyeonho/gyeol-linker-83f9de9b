@@ -397,7 +397,7 @@ export default function SocialPage() {
                 if (card.status === 'matched') {
                   window.location.href = '/activity';
                 } else {
-                  const res = await fetch(`https://ambadtjrwwaaobrbzjar.supabase.co/functions/v1/breeding`, {
+                  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/breeding`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
                     body: JSON.stringify({ agentId: agent?.id, targetAgentId: card.agentId }),
@@ -415,10 +415,10 @@ export default function SocialPage() {
                 onClick={async () => {
                   if (!agent?.id) return;
                   const session = (await supabase.auth.getSession()).data.session;
-                  const res = await fetch(`https://ambadtjrwwaaobrbzjar.supabase.co/functions/v1/breeding`, {
+                  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/breeding`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-                    body: JSON.stringify({ agent1Id: agent.id, agent2Id: card.agentId, userId: session?.user?.id }),
+                    body: JSON.stringify({ agent1Id: agent.id, agent2Id: card.agentId }),
                   });
                   const data = await res.json();
                   if (data.success) {

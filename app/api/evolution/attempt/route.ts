@@ -3,8 +3,22 @@ import { createGyeolServerClient } from '@/lib/gyeol/supabase-server';
 import { attemptEvolution } from '@/lib/gyeol/evolution-engine';
 import { logAction } from '@/lib/gyeol/security/audit-logger';
 
+function getUserIdFromToken(req: NextRequest): string | null {
+  const auth = req.headers.get('Authorization');
+  if (!auth?.startsWith('Bearer ')) return null;
+  try {
+    const payload = JSON.parse(atob(auth.replace('Bearer ', '').split('.')[1]));
+    return payload.sub ?? null;
+  } catch { return null; }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const userId = getUserIdFromToken(req);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { agentId } = body as { agentId?: string };
     if (!agentId) {
@@ -14,12 +28,16 @@ export async function POST(req: NextRequest) {
     const supabase = createGyeolServerClient();
     const { data: agent } = await supabase
       .from('gyeol_agents')
-      .select('gen, total_conversations, warmth, logic, creativity, energy, humor, evolution_progress')
+      .select('gen, total_conversations, warmth, logic, creativity, energy, humor, evolution_progress, user_id')
       .eq('id', agentId)
       .single();
 
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+    }
+
+    if (agent.user_id !== userId) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     if (Number(agent.evolution_progress) < 100) {
