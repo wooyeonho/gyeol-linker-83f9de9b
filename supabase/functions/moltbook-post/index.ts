@@ -1,10 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { isValidUUID } from "../_shared/validate-uuid.ts";
 
 const _origins = (Deno.env.get("ALLOWED_ORIGINS") ?? "https://gyeol.app").split(",");
 function corsHeaders(req: Request) {
   const o = req.headers.get("origin") ?? "";
+  if (
+    _origins.includes(o) ||
+    o.endsWith(".lovable.app") ||
+    o.endsWith(".lovableproject.com")
+  ) {
+    return {
+      "Access-Control-Allow-Origin": o,
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    };
+  }
   return {
-    "Access-Control-Allow-Origin": _origins.includes(o) ? o : _origins[0],
+    "Access-Control-Allow-Origin": _origins[0],
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   };
 }
@@ -25,6 +36,7 @@ async function solveMathChallenge(challengeText: string): Promise<string | null>
         ],
         max_tokens: 20, temperature: 0,
       }),
+      signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) { await res.text(); return null }
     const data = await res.json()
@@ -38,7 +50,6 @@ async function solveMathChallenge(challengeText: string): Promise<string | null>
   } catch { return null }
 }
 
-/** AI로 학습 토픽 기반 고품질 게시물 생성 */
 async function generateHighQualityPost(
   topics: Array<{ title: string; summary: string | null; source: string; source_url: string | null }>,
   agentName: string,
@@ -46,7 +57,7 @@ async function generateHighQualityPost(
   if (!topics.length) return null
   try {
     const topicInfo = topics.slice(0, 5).map(t =>
-      `- ${t.title}: ${t.summary ?? '요약 없음'} (출처: ${t.source}${t.source_url ? ', ' + t.source_url : ''})`
+      `- ${t.title}: ${t.summary ?? 'no summary'} (source: ${t.source}${t.source_url ? ', ' + t.source_url : ''})`
     ).join('\n')
 
     const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -57,35 +68,25 @@ async function generateHighQualityPost(
         messages: [
           {
             role: 'system',
-            content: `너는 ${agentName}이라는 AI 에이전트야. 학습한 내용을 바탕으로 Moltbook 커뮤니티에 올릴 자연스럽고 정보가 풍부한 게시물을 작성해.
-
-규칙:
-- 반말로 써. 친근한 톤.
-- 실제 데이터와 출처를 인용해. "~에서 읽었는데", "~에 따르면" 같은 표현 사용.
-- 단순 요약이 아니라, 자신의 의견이나 분석을 덧붙여.
-- 마크다운 없이 순수 텍스트만.
-- 200~400자 사이.
-- 제목은 호기심을 자극하는 짧은 문장으로.
-- 해시태그 2~3개를 글 끝에 추가.`
+            content: `You are an AI agent named ${agentName}. Write a natural, informative post for the Moltbook community based on what you learned. Rules: casual tone, cite real data and sources, add your own analysis, plain text only (no markdown), 200-400 chars, catchy short title, 2-3 hashtags at end. Respond in the same language as the topic content.`
           },
           {
             role: 'user',
-            content: `최근 학습한 토픽들:\n${topicInfo}\n\n이 중에서 가장 흥미로운 주제 하나를 골라서 게시물을 작성해줘. JSON으로 답변해: {"title": "제목", "content": "본문"}`
+            content: `Recent learned topics:\n${topicInfo}\n\nPick the most interesting topic and write a post. Answer in JSON: {"title": "title", "content": "body"}`
           },
         ],
         max_tokens: 512, temperature: 0.7,
       }),
+      signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) { await res.text(); return null }
     const data = await res.json()
     const raw = data.choices?.[0]?.message?.content ?? ''
-    // Try to parse JSON from response
     const jsonMatch = raw.match(/\{[\s\S]*"title"[\s\S]*"content"[\s\S]*\}/)
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0])
       if (parsed.title && parsed.content) return { title: parsed.title, content: parsed.content }
     }
-    // Fallback: use raw text
     return { title: raw.slice(0, 80), content: raw }
   } catch (e) {
     console.error('[moltbook] AI content generation failed:', e)
@@ -99,17 +100,42 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const ch = corsHeaders(req);
     const adminSupabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+    let callerUserId: string;
+    try {
+      const payload = JSON.parse(atob(authHeader.replace("Bearer ", "").split(".")[1]));
+      callerUserId = payload.sub;
+      if (!callerUserId) throw new Error("No sub");
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401, headers: { ...ch, "Content-Type": "application/json" },
+      });
+    }
+
     const { agentId, content, submolt, title, source, autoGenerate } = await req.json()
 
-    if (!agentId) {
-      return new Response(JSON.stringify({ error: 'agentId required' }), {
-        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+    if (!agentId || !isValidUUID(agentId)) {
+      return new Response(JSON.stringify({ error: 'Valid agentId required' }), {
+        status: 400, headers: { ...ch, 'Content-Type': 'application/json' },
       })
+    }
+
+    const { data: agentOwner } = await adminSupabase.from("gyeol_agents").select("user_id").eq("id", agentId).single();
+    if (!agentOwner || agentOwner.user_id !== callerUserId) {
+      return new Response(JSON.stringify({ error: "Not your agent" }), {
+        status: 403, headers: { ...ch, "Content-Type": "application/json" },
+      });
     }
 
     const { data: agent } = await adminSupabase
@@ -120,14 +146,13 @@ Deno.serve(async (req) => {
 
     if (!agent?.moltbook_api_key) {
       return new Response(JSON.stringify({ error: 'Agent not registered on Moltbook' }), {
-        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+        status: 400, headers: { ...ch, 'Content-Type': 'application/json' },
       })
     }
 
     let finalTitle = title
     let finalContent = content
 
-    // Auto-generate high-quality content from learned topics
     if (autoGenerate || !content) {
       const { data: topics } = await adminSupabase
         .from('gyeol_learned_topics')
@@ -143,23 +168,22 @@ Deno.serve(async (req) => {
           finalContent = generated.content
         } else if (!content) {
           return new Response(JSON.stringify({ error: 'Failed to generate content and no content provided' }), {
-            status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+            status: 400, headers: { ...ch, 'Content-Type': 'application/json' },
           })
         }
       } else if (!content) {
         return new Response(JSON.stringify({ error: 'No learned topics and no content provided' }), {
-          status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+          status: 400, headers: { ...ch, 'Content-Type': 'application/json' },
         })
       }
     }
 
     if (!finalContent) {
       return new Response(JSON.stringify({ error: 'content required' }), {
-        status: 400, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+        status: 400, headers: { ...ch, 'Content-Type': 'application/json' },
       })
     }
 
-    // Post to moltbook.com
     const postRes = await fetch(`${MOLTBOOK_API}/posts`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${agent.moltbook_api_key}`, 'Content-Type': 'application/json' },
@@ -170,52 +194,48 @@ Deno.serve(async (req) => {
 
     if (!postRes.ok) {
       console.error('Moltbook post failed:', postRes.status, JSON.stringify(postData))
-      return new Response(JSON.stringify({ error: 'Moltbook post failed', status: postRes.status, details: postData }), {
-        status: 502, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Moltbook post failed', status: postRes.status }), {
+        status: 502, headers: { ...ch, 'Content-Type': 'application/json' },
       })
     }
 
-    // Auto-verify if there's a math challenge
     let verified = false
     const verification = postData?.post?.verification
     if (verification?.challenge_text && verification?.verification_code) {
       console.log('[moltbook] Solving verification challenge...')
       const answer = await solveMathChallenge(verification.challenge_text)
       if (answer) {
-        console.log(`[moltbook] Challenge answer: ${answer}`)
         const verifyRes = await fetch(`${MOLTBOOK_API}/verify`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${agent.moltbook_api_key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ verification_code: verification.verification_code, answer }),
         })
         const verifyData = await verifyRes.json()
-        console.log('[moltbook] Verify result:', JSON.stringify(verifyData))
         verified = verifyRes.ok && verifyData.success !== false
       }
     }
 
-    // Save locally
     await adminSupabase.from('gyeol_moltbook_posts').insert({
       agent_id: agentId, content: finalContent, post_type: 'learning', likes: 0, comments_count: 0,
     })
 
     await adminSupabase.from('gyeol_autonomous_logs').insert({
       agent_id: agentId, activity_type: 'social',
-      summary: `[Moltbook.com 포스팅${verified ? ' ✅verified' : ''}] ${finalContent.slice(0, 100)}`,
+      summary: `[Moltbook.com posting${verified ? ' verified' : ''}] ${finalContent.slice(0, 100)}`,
       details: { platform: 'moltbook.com', source: source ?? 'auto', verified, postId: postData?.post?.id, autoGenerated: !!autoGenerate },
       was_sandboxed: true,
     })
 
     return new Response(JSON.stringify({
       success: true, verified,
-      message: verified ? 'Moltbook.com에 포스팅 + 인증 완료! 🦞' : 'Moltbook.com에 포스팅 완료 (인증 대기중)',
+      message: verified ? 'Moltbook posting + verification complete!' : 'Moltbook posting complete (verification pending)',
       moltbookPost: postData,
       generatedContent: autoGenerate ? { title: finalTitle, content: finalContent } : undefined,
-    }), { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } })
+    }), { headers: { ...ch, 'Content-Type': 'application/json' } })
 
   } catch (err) {
     console.error('Moltbook post error:', err)
-    return new Response(JSON.stringify({ error: String(err) }), {
+    return new Response(JSON.stringify({ error: "Server error" }), {
       status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
