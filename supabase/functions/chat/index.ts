@@ -464,17 +464,12 @@ serve(async (req) => {
     const locale = (typeof rawLocale === "string" && rawLocale.length >= 2) ? rawLocale : "ko";
     const useStream = wantStream === true;
 
-    // ── Kill Switch check ──
-    const { data: systemState } = await db.from("gyeol_system_state").select("kill_switch, reason").eq("id", "global").maybeSingle();
-    if (systemState?.kill_switch === true) {
-      return new Response(JSON.stringify({ error: "System temporarily disabled", reason: systemState.reason ?? "maintenance" }), {
-        status: 503, headers: { ...ch, "Content-Type": "application/json" },
-      });
-    }
-
     // ── 2. Ownership: verify agent belongs to user ──
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ── Kill Switch check ──
+    const { data: systemState } = await db.from("gyeol_system_state").select("kill_switch, reason").eq("id", "global").maybeSingle();
     const { data: agent } = await db.from("gyeol_agents").select("*").eq("id", agentId).single();
     if (!agent || agent.user_id !== user.id) {
       return new Response(JSON.stringify({ error: "Agent not found or access denied" }), {
@@ -492,7 +487,7 @@ serve(async (req) => {
         summary: "Content filter blocked input",
         details: { flags: inputFilter.flags },
         was_sandboxed: true, security_flags: inputFilter.flags,
-      }).catch(() => {});
+      });
 
       if (inputFilter.flags.includes("danger")) {
         return new Response(JSON.stringify({ error: "해당 내용은 답변할 수 없어요.", filtered: true }), {
