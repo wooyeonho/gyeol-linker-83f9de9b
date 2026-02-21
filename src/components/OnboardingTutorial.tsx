@@ -14,7 +14,7 @@ const STEPS = [
   },
   {
     icon: '🧬',
-    title: 'Evolution 시스템',
+    title: 'Evolution System',
     desc: 'The more you chat, the more your AI grows. Start from Gen 1 and evolve up to Gen 5.',
     tip: 'New personality traits unlock with each evolution.',
   },

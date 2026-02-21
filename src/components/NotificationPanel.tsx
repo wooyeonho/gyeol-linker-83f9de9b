@@ -129,7 +129,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   // Group by date
   const grouped: Record<string, Notification[]> = {};
   for (const n of filtered) {
-    const day = new Date(n.created_at).toLocaleDateString('ko-KR');
+    const day = new Date(n.created_at).toLocaleDateString('en-US');
     (grouped[day] ??= []).push(n);
   }
 

@@ -85,7 +85,7 @@ export function useSettingsState() {
     (async () => {
       const [feedsRes, keywordsRes, telegramRes] = await Promise.all([
         supabase.from('gyeol_user_feeds').select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
-        supabase.from('gyeol_user_keywords' as any).select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
+        supabase.from('gyeol_user_keywords').select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
         supabase.from('gyeol_telegram_links').select('id').eq('agent_id', agent.id).limit(1),
       ]);
       if (feedsRes.data) setFeeds(feedsRes.data as any[]);
@@ -132,10 +132,10 @@ export function useSettingsState() {
   const removeFeed = async (id: string) => { await supabase.from('gyeol_user_feeds').delete().eq('id', id); setFeeds(prev => prev.filter(f => f.id !== id)); };
   const addKeyword = async () => {
     if (!agent || !newKeyword.trim()) return;
-    const { data, error } = await supabase.from('gyeol_user_keywords' as any).insert({ agent_id: agent.id, keyword: newKeyword.trim() }).select().single();
+    const { data, error } = await supabase.from('gyeol_user_keywords').insert({ agent_id: agent.id, keyword: newKeyword.trim() }).select().single();
     if (data && !error) { setKeywords(prev => [data as any, ...prev]); setNewKeyword(''); }
   };
-  const removeKeyword = async (id: string) => { await supabase.from('gyeol_user_keywords' as any).delete().eq('id', id); setKeywords(prev => prev.filter(k => k.id !== id)); };
+  const removeKeyword = async (id: string) => { await supabase.from('gyeol_user_keywords').delete().eq('id', id); setKeywords(prev => prev.filter(k => k.id !== id)); };
   const toggleKillSwitch = async () => {
     const newVal = !killSwitchActive;
     await supabase.from('gyeol_system_state').update({ kill_switch: newVal, reason: newVal ? 'User activated' : 'User deactivated' }).eq('id', 'global');

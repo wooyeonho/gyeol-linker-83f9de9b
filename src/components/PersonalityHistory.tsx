@@ -73,7 +73,7 @@ export function PersonalityHistory({ agentId }: Props) {
           <span aria-hidden="true" className="material-icons-round text-primary text-sm">timeline</span>
           Personality Change History
         </h3>
-        <span className="text-[9px] text-muted-foreground">{entries.length}건</span>
+        <span className="text-[9px] text-muted-foreground">{entries.length} entries</span>
       </div>
 
       {/* Stat change summary */}
@@ -107,7 +107,7 @@ export function PersonalityHistory({ agentId }: Props) {
               className="flex items-center gap-2 text-[9px]"
             >
               <span className="text-muted-foreground/50 w-14 shrink-0">
-                {new Date(e.created_at).toLocaleDateString('ko', { month: 'short', day: 'numeric' })}
+                {new Date(e.created_at).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
               </span>
               <div className="flex gap-1 flex-wrap">
                 {changes.map(([stat, val]) => (

@@ -140,7 +140,7 @@ function MessageBubbleInternal({ msg, state }: MessageBubbleProps) {
         )}
       </AnimatePresence>
       {!isUser && translating === msg.id && (
-        <div className="text-[10px] text-muted-foreground mt-1 animate-pulse">번역 중...</div>
+        <div className="text-[10px] text-muted-foreground mt-1 animate-pulse">Translating...</div>
       )}
       {!isUser && translations[msg.id] && (
         <div className="mt-1 p-2 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-foreground/80">
@@ -173,7 +173,7 @@ function MessageBubbleInternal({ msg, state }: MessageBubbleProps) {
             )}
             <span className="text-[10px] text-muted-foreground font-medium mr-1 mb-1 block text-right">
               You · {format(new Date(msg.created_at), 'HH:mm')}
-              {editedMessages.has(msg.id) && <span className="ml-1 text-muted-foreground/40">(수정됨)</span>}
+              {editedMessages.has(msg.id) && <span className="ml-1 text-muted-foreground/40">(edited)</span>}
             </span>
             <div className={`user-bubble p-4 rounded-2xl rounded-br-sm ${pinnedMessages.has(msg.id) ? 'ring-1 ring-amber-400/30' : ''}`}
               style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>

@@ -114,7 +114,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
 
       onReload();
     } catch {
-      setMessage('Use 실패');
+      setMessage('Failed to use item');
     }
     setUsing(null);
     setTimeout(() => setMessage(null), 2000);
@@ -215,7 +215,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                             : 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
                         }`}
                       >
-                        {using === inv.id ? '...' : inv.is_equipped ? '해제' : item?.category === 'boost' ? 'Use' : 'Equip'}
+                        {using === inv.id ? '...' : inv.is_equipped ? 'Unequip' : item?.category === 'boost' ? 'Use' : 'Equip'}
                       </button>
                     </motion.div>
                   );

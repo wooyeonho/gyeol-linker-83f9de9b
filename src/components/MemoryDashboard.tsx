@@ -51,7 +51,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
 
       // 1. Load real AI-extracted memories from gyeol_user_memories
       const { data: userMems } = await supabase
-        .from('gyeol_user_memories' as any)
+        .from('gyeol_user_memories')
         .select('id, category, key, value, confidence, updated_at')
         .eq('agent_id', agentId)
         .order('confidence', { ascending: false })
@@ -103,14 +103,14 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
 
   const handleDelete = async (id: string) => {
     // Delete from DB
-    await supabase.from('gyeol_user_memories' as any).delete().eq('id', id);
+    await supabase.from('gyeol_user_memories').delete().eq('id', id);
     setMemories((prev) => prev.filter((m) => m.id !== id));
     setDeleteTarget(null);
   };
 
   const handleEdit = async (id: string) => {
     if (!editValue.trim()) return;
-    await supabase.from('gyeol_user_memories' as any).update({ value: editValue.trim() }).eq('id', id);
+    await supabase.from('gyeol_user_memories').update({ value: editValue.trim() }).eq('id', id);
     setMemories((prev) => prev.map((m) => m.id === id ? { ...m, value: editValue.trim() } : m));
     setEditTarget(null);
     setEditValue('');

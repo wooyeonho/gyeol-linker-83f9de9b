@@ -110,7 +110,7 @@ export function SeasonPass() {
           <div className="text-right">
             <p className="text-2xl font-bold text-foreground">{currentExp}</p>
             <p className="text-[9px] text-muted-foreground">Season EXP</p>
-            <p className="text-[9px] mt-1" style={{ color: season.theme_color }}>{daysLeft}days left</p>
+            <p className="text-[9px] mt-1" style={{ color: season.theme_color }}>{daysLeft} days left</p>
           </div>
         </div>
       </div>
