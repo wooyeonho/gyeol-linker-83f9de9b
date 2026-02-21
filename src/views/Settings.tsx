@@ -24,6 +24,7 @@ import { AppearanceSection } from '@/src/components/settings/AppearanceSection';
 import { PreferencesSection } from '@/src/components/settings/PreferencesSection';
 import { InfoSection } from '@/src/components/settings/InfoSection';
 import { parseSettings } from '@/src/utils/agent-settings';
+import { ChevronDown, Settings, Palette, Share2, BarChart3, LogOut } from 'lucide-react';
 
 export default function SettingsPage() {
   const state = useSettingsState();
@@ -55,86 +56,81 @@ export default function SettingsPage() {
   const SectionHeader = ({ id, icon, title }: { id: string; icon: string; title: string }) => (
     <button type="button" onClick={() => toggleSection(id)}
       aria-expanded={activeSection === id} aria-controls={`section-${id}`}
-      className="w-full flex items-center justify-between py-2 group focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg">
-      <div className="flex items-center gap-2">
-        <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">{icon}</span>
-        <p className="text-[11px] text-foreground/40 uppercase tracking-widest font-medium">{title}</p>
-      </div>
-      <span aria-hidden="true" className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30"
-        style={{ transform: activeSection === id ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
+      className="w-full flex items-center justify-between py-2.5 group rounded-lg">
+      <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{title}</p>
+      <ChevronDown size={14} className={`text-muted-foreground transition-transform ${activeSection === id ? 'rotate-180' : ''}`} />
     </button>
   );
 
   return (
-    <main className="min-h-screen bg-background font-display pb-16 relative" role="main" aria-label="Settings">
-      <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10">
+    <main className="min-h-screen bg-background pb-20 relative" role="main" aria-label="Settings">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-4 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
-          <h1 className="text-base font-semibold text-foreground/80">Settings</h1>
-          <button type="button" onClick={signOut} className="text-[10px] text-muted-foreground hover:text-foreground transition">Sign out</button>
+          <h1 className="text-lg font-bold text-foreground">Settings</h1>
+          <button type="button" onClick={signOut}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition">
+            <LogOut size={14} /> Sign out
+          </button>
         </header>
 
         {/* Profile Card */}
-        <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="h-16 bg-gradient-to-r from-primary/30 to-secondary/20" />
-          <div className="px-5 pb-5 -mt-8 flex items-end gap-3">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center"><div className="void-dot" /></div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[hsl(var(--success,142_71%_45%))] border-2 border-card shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-lg font-bold text-primary">{(agent?.name ?? 'G')[0]}</span>
             </div>
-            <div className="pb-1 flex-1">
-              <p className="text-sm font-bold text-foreground">{agent?.name ?? 'GYEOL'}</p>
-              <p className="text-[10px] text-primary/60">Generation {agent?.gen ?? 1}</p>
-              <p className="text-[9px] text-muted-foreground/50">Status: Evolving & Learning</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">{agent?.name ?? 'GYEOL'}</p>
+              <p className="text-[11px] text-muted-foreground">Gen {agent?.gen ?? 1} · {user?.email}</p>
             </div>
-            <button onClick={() => setDashboardOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Dashboard">
-              <span aria-hidden="true" className="material-icons-round text-sm">dashboard</span>
-            </button>
-            <button onClick={() => setProfileCustomOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Customize">
-              <span aria-hidden="true" className="material-icons-round text-sm">palette</span>
-            </button>
-            <button onClick={() => setShareCardOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Share">
-              <span aria-hidden="true" className="material-icons-round text-sm">share</span>
-            </button>
+            <div className="flex gap-1">
+              <button onClick={() => setDashboardOpen(true)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" aria-label="Dashboard">
+                <BarChart3 size={16} />
+              </button>
+              <button onClick={() => setProfileCustomOpen(true)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" aria-label="Customize">
+                <Palette size={16} />
+              </button>
+              <button onClick={() => setShareCardOpen(true)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" aria-label="Share">
+                <Share2 size={16} />
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* General */}
-        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">settings</span><h2 className="text-sm font-semibold text-foreground">General</h2></div>
-          <section className="space-y-1">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Account</p>
-            <p className="text-sm text-foreground/60">{user?.email}</p>
-          </section>
           {agent && agent?.consecutive_days > 0 && (
-            <StreakCalendar streakDays={agent?.consecutive_days} longestStreak={agent?.consecutive_days} />
+            <div className="mt-3 pt-3 border-t border-border">
+              <StreakCalendar streakDays={agent?.consecutive_days} longestStreak={agent?.consecutive_days} />
+            </div>
           )}
         </div>
 
-        <div className="h-px bg-foreground/[0.04]" />
+        {/* General */}
+        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-foreground">General</h2>
+          <p className="text-xs text-muted-foreground">{user?.email}</p>
+        </div>
 
         {/* AI Section */}
-        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">smart_toy</span><h2 className="text-sm font-semibold text-foreground">AI</h2></div>
+        <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-foreground mb-2">AI</h2>
           <ModeCharacterSection agent={agent} activeSection={activeSection} SectionHeader={SectionHeader}
             currentMode={currentMode} setModeSwitchTarget={setModeSwitchTarget} setModeSwitchOpen={setModeSwitchOpen}
             charPreset={charPreset} setCharPreset={setCharPreset} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <AppearanceSection agent={agent} setAgent={setAgent} activeSection={activeSection} SectionHeader={SectionHeader} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <section>
             <SectionHeader id="systemprompt" icon="terminal" title="System Prompt" />
             <AnimatePresence>
               {activeSection === 'systemprompt' && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                  exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2">
                   <SystemPromptEditor agent={agent} onUpdate={(ns) => { if (agent) setAgent({ ...agent, settings: ns } as never); }} />
                 </motion.div>
               )}
             </AnimatePresence>
           </section>
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <SafetySection agent={agent} activeSection={activeSection} SectionHeader={SectionHeader} kidsSafe={kidsSafe} setKidsSafe={setKidsSafe} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <PersonalitySection agent={agent} activeSection={activeSection} toggleSection={toggleSection} SectionHeader={SectionHeader}
             warmth={warmth} setWarmth={setWarmth} logic={logic} setLogic={setLogic}
             creativity={creativity} setCreativity={setCreativity} energy={energy} setEnergy={setEnergy}
@@ -144,7 +140,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Mood & Intimacy */}
-        <section>
+        <div className="bg-card border border-border rounded-xl p-4">
           <SectionHeader id="mood" icon="mood" title="Mood & Intimacy" />
           <AnimatePresence>
             {activeSection === 'mood' && (
@@ -153,19 +149,19 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <IntimacyEmoji intimacy={agent?.intimacy ?? 0} />
                   <div>
-                    <p className="text-[11px] text-foreground/80">Intimacy Level</p>
-                    <p className="text-[9px] text-foreground/25">{agent?.intimacy ?? 0}% \u2014 {(agent?.intimacy ?? 0) < 20 ? 'Stranger' : (agent?.intimacy ?? 0) < 50 ? 'Friend' : (agent?.intimacy ?? 0) < 80 ? 'Close Friend' : 'Soulmate'}</p>
+                    <p className="text-xs text-foreground">Intimacy Level</p>
+                    <p className="text-[10px] text-muted-foreground">{agent?.intimacy ?? 0}% — {(agent?.intimacy ?? 0) < 20 ? 'Stranger' : (agent?.intimacy ?? 0) < 50 ? 'Friend' : (agent?.intimacy ?? 0) < 80 ? 'Close Friend' : 'Soulmate'}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] text-foreground/30 mb-2">Current Mood</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">Current Mood</p>
                   <MoodSelector currentMood={(agent?.mood as any) ?? 'neutral'} onChange={async (mood) => {
                     await supabase.from('gyeol_agents').update({ mood }).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, mood } as never);
                   }} />
                 </div>
                 <div>
-                  <p className="text-[10px] text-foreground/30 mb-2">Persona</p>
+                  <p className="text-[10px] text-muted-foreground mb-2">Persona</p>
                   <PersonaSelector current={parseSettings(agent?.settings)?.persona ?? 'friend'} onSelect={async (id) => {
                     const s = { ...parseSettings(agent?.settings), persona: id };
                     await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
@@ -175,21 +171,21 @@ export default function SettingsPage() {
               </motion.div>
             )}
           </AnimatePresence>
-        </section>
+        </div>
 
         {/* Integrations */}
-        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">extension</span><h2 className="text-sm font-semibold text-foreground">Integrations</h2></div>
+        <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-foreground mb-2">Integrations</h2>
           <FeedKeywordSection activeSection={activeSection} SectionHeader={SectionHeader}
             feeds={feeds} keywords={keywords}
             newFeedUrl={newFeedUrl} setNewFeedUrl={setNewFeedUrl}
             newFeedName={newFeedName} setNewFeedName={setNewFeedName}
             newKeyword={newKeyword} setNewKeyword={setNewKeyword}
             addFeed={addFeed} removeFeed={removeFeed} addKeyword={addKeyword} removeKeyword={removeKeyword} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <AnalysisDomainSection agent={agent} activeSection={activeSection} SectionHeader={SectionHeader}
             analysisDomains={analysisDomains} setAnalysisDomains={setAnalysisDomains} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <PreferencesSection agent={agent} setAgent={setAgent} activeSection={activeSection} SectionHeader={SectionHeader}
             autonomyLevel={autonomyLevel} setAutonomyLevel={setAutonomyLevel}
             contentFilterOn={contentFilterOn} setContentFilterOn={setContentFilterOn}
@@ -197,9 +193,9 @@ export default function SettingsPage() {
             autoTTS={autoTTS} setAutoTTS={setAutoTTS} ttsSpeed={ttsSpeed} setTtsSpeed={setTtsSpeed}
             proactiveInterval={proactiveInterval} setProactiveInterval={setProactiveInterval}
             pushEnabled={pushEnabled} setPushEnabled={setPushEnabled} PROACTIVE_OPTIONS={PROACTIVE_OPTIONS} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <TelegramSection activeSection={activeSection} SectionHeader={SectionHeader} telegramLinked={telegramLinked} telegramCode={telegramCode} />
-          <div className="h-px bg-foreground/[0.04]" />
+          <div className="h-px bg-border" />
           <BYOKSection agent={agent} user={user} activeSection={activeSection} SectionHeader={SectionHeader}
             byokList={byokList} setByokList={setByokList} byokOpen={byokOpen} setByokOpen={setByokOpen}
             byokKey={byokKey} setByokKey={setByokKey} byokSaving={byokSaving} setByokSaving={setByokSaving}
@@ -224,7 +220,7 @@ export default function SettingsPage() {
       <AnimatePresence>
         {shareCardOpen && agent && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={() => setShareCardOpen(false)}>
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-background/60 backdrop-blur-sm p-6" onClick={() => setShareCardOpen(false)}>
             <div onClick={e => e.stopPropagation()}>
               <AgentShareCard name={agent.name} gen={agent.gen} warmth={agent.warmth} logic={agent.logic} creativity={agent.creativity}
                 energy={agent.energy} humor={agent.humor} intimacy={agent.intimacy} totalConversations={agent.total_conversations}

@@ -19,7 +19,6 @@ function BottomNavInternal() {
 
   useEffect(() => {
     if (!agent?.id) return;
-
     const fetchBadges = async () => {
       const [achievRes, questRes] = await Promise.all([
         supabase.from('gyeol_achievement_unlocks')
@@ -39,10 +38,10 @@ function BottomNavInternal() {
   }, [agent?.id]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[70] glass-panel border-t border-border/10"
+    <nav className="fixed bottom-0 left-0 right-0 z-[70] bg-card border-t border-border"
       role="navigation" aria-label="Main navigation"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-      <div className="max-w-md mx-auto grid grid-cols-5 place-items-center h-14" role="list">
+      <div className="max-w-lg mx-auto grid grid-cols-5 h-14" role="list">
         {NAV_ITEMS.map((item) => {
           const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
           const badge = badges[item.to] ?? 0;
@@ -54,26 +53,23 @@ function BottomNavInternal() {
               role="listitem"
               aria-label={`${item.label}${badge > 0 ? ` (${badge} new)` : ''}`}
               aria-current={active ? 'page' : undefined}
-              className="flex flex-col items-center justify-center gap-0.5 h-14 relative focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg"
+              className="flex flex-col items-center justify-center gap-0.5 relative transition-colors"
             >
               <span className="relative">
                 <Icon
                   size={20}
-                  className={`transition-colors duration-200 ${active ? 'text-primary' : 'text-muted-foreground'}`}
-                  aria-hidden="true"
+                  strokeWidth={active ? 2.5 : 1.5}
+                  className={active ? 'text-primary' : 'text-muted-foreground'}
                 />
                 {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] rounded-full bg-destructive text-foreground text-[8px] font-bold flex items-center justify-center px-0.5 shadow-lg shadow-destructive/40 animate-pulse">
+                  <span className="absolute -top-1 -right-2 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
                     {badge > 99 ? '99+' : badge}
                   </span>
                 )}
               </span>
-              <span className={`text-[10px] font-medium transition-colors duration-200 ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={`text-[10px] ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
-              {active && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]" aria-hidden="true" />
-              )}
             </Link>
           );
         })}

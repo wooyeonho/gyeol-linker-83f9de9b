@@ -13,7 +13,7 @@ import { ReadReceipt } from '@/src/components/ReadReceipt';
 import { ModelSelector } from '@/src/components/ModelSelector';
 import { ContinuousVoiceInput } from '@/src/components/ContinuousVoiceInput';
 import { VoiceInput } from '@/components/VoiceInput';
-import { Paperclip, ArrowUp, Copy, Volume2, Reply, Pin, X, Bot, User } from 'lucide-react';
+import { Paperclip, ArrowUp, Copy, Volume2, Reply, Pin, X } from 'lucide-react';
 
 interface ChatCoreProps {
   messages: Message[];
@@ -33,20 +33,9 @@ interface ChatCoreProps {
 }
 
 export function ChatCore({
-  messages,
-  isLoading,
-  agentName,
-  agentId,
-  onSendMessage,
-  onVoiceResult,
-  error,
-  onClearError,
-  inputPlaceholder = 'Send a message...',
-  showModelSelector: showModelSelectorProp = true,
-  showFileAttach = true,
-  showContinuousVoice = false,
-  readSpeed = 0.95,
-  children,
+  messages, isLoading, agentName, agentId, onSendMessage, onVoiceResult,
+  error, onClearError, inputPlaceholder = 'Send a message...', showModelSelector: showModelSelectorProp = true,
+  showFileAttach = true, showContinuousVoice = false, readSpeed = 0.95, children,
 }: ChatCoreProps) {
   const [input, setInput] = useState('');
   const [reactions, setReactions] = useState<Record<string, string>>({});
@@ -91,14 +80,12 @@ export function ChatCore({
     const text = input.trim();
     if (!text || isLoading || !agentId) return;
     setInput('');
-
     if (attachedFile) {
       const fileInfo = `[\u{1F4CE} ${attachedFile.name} (${(attachedFile.size / 1024).toFixed(1)}KB)]`;
       setAttachedFile(null);
       await onSendMessage(fileInfo + '\n' + text);
       return;
     }
-
     const prefix = replyTo ? `[\u21a9 ${replyTo.role === 'user' ? 'You' : agentName}: "${replyTo.content.slice(0, 40)}..."]\n` : '';
     if (replyTo) {
       const localId = `pending-reply-${Date.now()}`;
@@ -122,44 +109,28 @@ export function ChatCore({
   const renderUrlPreviews = useCallback((content: string) => {
     const urls = extractUrls(content);
     if (urls.length === 0) return null;
-    return (
-      <div className="mt-1 space-y-1">
-        {urls.slice(0, 2).map(url => <LinkPreview key={url} url={url} />)}
-      </div>
-    );
+    return <div className="mt-1 space-y-1">{urls.slice(0, 2).map(url => <LinkPreview key={url} url={url} />)}</div>;
   }, []);
 
   const renderMessageActions = useCallback((msg: Message, isUser: boolean) => (
-    <div className={`flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'justify-end' : ''}`}>
+    <div className={`flex gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'justify-end' : ''}`}>
       <MessageReactions messageId={msg.id} onReact={handleReaction} currentReaction={reactions[msg.id]} />
-      <button onClick={() => navigator.clipboard.writeText(msg.content)}
-        aria-label="Copy message"
-        className="text-muted-foreground/40 hover:text-primary p-1 rounded hover:bg-primary/10 transition">
-        <Copy size={12} />
-      </button>
+      <button onClick={() => navigator.clipboard.writeText(msg.content)} aria-label="Copy"
+        className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition text-xs"><Copy size={12} /></button>
       {!isUser && (
-        <button onClick={() => speakText(msg.content, readSpeed)}
-          aria-label="Read aloud"
-          className="text-muted-foreground/40 hover:text-primary p-1 rounded hover:bg-primary/10 transition">
-          <Volume2 size={12} />
-        </button>
+        <button onClick={() => speakText(msg.content, readSpeed)} aria-label="Read aloud"
+          className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition text-xs"><Volume2 size={12} /></button>
       )}
-      <button onClick={() => setReplyTo(msg)}
-        aria-label="Reply"
-        className="text-muted-foreground/40 hover:text-primary p-1 rounded hover:bg-primary/10 transition">
-        <Reply size={12} />
-      </button>
-      <button onClick={() => togglePin(msg.id)}
-        aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
-        className={`p-1 rounded transition ${pinnedMessages.has(msg.id) ? 'text-warning' : 'text-muted-foreground/40 hover:text-warning hover:bg-warning/10'}`}>
+      <button onClick={() => setReplyTo(msg)} aria-label="Reply"
+        className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted transition text-xs"><Reply size={12} /></button>
+      <button onClick={() => togglePin(msg.id)} aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
+        className={`p-1 rounded-md transition text-xs ${pinnedMessages.has(msg.id) ? 'text-warning' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
         <Pin size={12} />
       </button>
     </div>
   ), [handleReaction, reactions, readSpeed, togglePin, pinnedMessages]);
 
-  const pinnedList = useMemo(() =>
-    messages.filter(m => pinnedMessages.has(m.id)),
-  [messages, pinnedMessages]);
+  const pinnedList = useMemo(() => messages.filter(m => pinnedMessages.has(m.id)), [messages, pinnedMessages]);
 
   return (
     <FileDropZone onFileDrop={handleFileDrop} accept="image/*,.pdf,.doc,.docx,.txt" disabled={isLoading}>
@@ -167,57 +138,41 @@ export function ChatCore({
         {children}
 
         {pinnedList.length > 0 && (
-          <div className="mx-3 mb-2 p-2 rounded-xl glass-card border border-warning/20 sticky top-0 z-20 backdrop-blur-md">
-            <div className="flex items-center gap-1 mb-1">
+          <div className="mx-3 mb-2 p-2.5 rounded-lg bg-warning/5 border border-warning/20 sticky top-0 z-20">
+            <div className="flex items-center gap-1.5 mb-1">
               <Pin size={12} className="text-warning" />
               <span className="text-[10px] text-warning font-medium">Pinned ({pinnedList.length})</span>
             </div>
             <div className="space-y-1 max-h-20 overflow-y-auto">
               {pinnedList.map(m => (
-                <div key={`pin-${m.id}`} className="text-[10px] text-foreground/60 truncate flex items-center gap-1">
-                  <span className={m.role === 'user' ? 'text-primary/50' : 'text-secondary/50'}>{m.role === 'user' ? 'You' : agentName}:</span>
+                <div key={`pin-${m.id}`} className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
+                  <span className="font-medium">{m.role === 'user' ? 'You' : agentName}:</span>
                   <span className="truncate">{m.content.slice(0, 60)}</span>
-                  <button onClick={() => togglePin(m.id)} className="ml-auto text-warning/50 hover:text-warning shrink-0">
-                    <X size={10} />
-                  </button>
+                  <button onClick={() => togglePin(m.id)} className="ml-auto text-muted-foreground hover:text-warning shrink-0"><X size={10} /></button>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-44 pt-2" role="log" aria-label="Messages">
+        <div className="flex-1 overflow-y-auto px-4 space-y-1 gyeol-scrollbar-hide pb-44 pt-2" role="log" aria-label="Messages">
           {messages.map((msg) => {
             const isUser = msg.role === 'user';
             const time = new Date(msg.created_at ?? Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} w-full group`}
-              >
-                {!isUser && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/10 mt-6">
-                    <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-                      <Bot size={14} className="text-primary" />
-                    </div>
-                  </div>
-                )}
+              <motion.div key={msg.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full group py-1`}>
 
                 {isUser ? (
-                  <div className="max-w-[75%]">
-                    {replyMap[msg.id] && (
-                      <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />
-                    )}
-                    <div className="flex items-center justify-end gap-2 mb-1">
-                      <span className="text-[10px] text-muted-foreground/60">{time}</span>
-                      <span className="text-[10px] text-muted-foreground font-medium">You</span>
+                  <div className="max-w-[80%]">
+                    {replyMap[msg.id] && <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />}
+                    <div className="flex items-center justify-end gap-2 mb-0.5">
+                      <span className="text-[10px] text-muted-foreground">{time}</span>
                     </div>
-                    <div className={`user-bubble p-4 rounded-2xl rounded-br-sm ${pinnedMessages.has(msg.id) ? 'ring-1 ring-warning/30' : ''}`}>
-                      <div className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
+                    <div className={`bg-primary text-primary-foreground px-4 py-2.5 rounded-2xl rounded-br-md ${pinnedMessages.has(msg.id) ? 'ring-1 ring-warning/40' : ''}`}>
+                      <div className="text-[13px] leading-relaxed whitespace-pre-wrap break-words">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                       </div>
                     </div>
@@ -229,29 +184,18 @@ export function ChatCore({
                   </div>
                 ) : (
                   <div className="max-w-[85%]">
-                    {replyMap[msg.id] && (
-                      <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />
-                    )}
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] text-foreground font-bold">{agentName}</span>
-                      <span className="text-[10px] text-muted-foreground/60">{time}</span>
+                    {replyMap[msg.id] && <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />}
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs font-semibold text-foreground">{agentName}</span>
+                      <span className="text-[10px] text-muted-foreground">{time}</span>
                     </div>
-                    <div className="flex gap-0">
-                      <div className="w-[3px] rounded-full bg-gradient-to-b from-primary to-primary/30 mr-3 flex-shrink-0" />
-                      <div className={`glass-bubble p-4 rounded-2xl rounded-tl-sm flex-1 ${pinnedMessages.has(msg.id) ? 'ring-1 ring-warning/30' : ''}`}>
-                        <div className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                        </div>
+                    <div className={`bg-muted px-4 py-2.5 rounded-2xl rounded-tl-md ${pinnedMessages.has(msg.id) ? 'ring-1 ring-warning/40' : ''}`}>
+                      <div className="text-[13px] leading-relaxed text-foreground whitespace-pre-wrap break-words prose prose-sm max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                       </div>
                     </div>
                     {renderUrlPreviews(msg.content)}
                     {renderMessageActions(msg, false)}
-                  </div>
-                )}
-
-                {isUser && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-border/20 flex items-center justify-center mt-6">
-                    <User size={14} className="text-muted-foreground" />
                   </div>
                 )}
               </motion.div>
@@ -261,84 +205,68 @@ export function ChatCore({
           {error && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center py-2">
               <button type="button" onClick={onClearError}
-                className="text-[11px] text-destructive/70 hover:text-destructive transition">
+                className="text-xs text-destructive bg-destructive/10 px-3 py-1.5 rounded-lg hover:bg-destructive/20 transition">
                 {error.message}
               </button>
             </motion.div>
           )}
 
           {isLoading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2 py-4">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
-                  <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: '0.4s' }} />
-                </div>
-                <span className="text-[10px] text-primary/60 font-medium tracking-[0.2em] uppercase">Processing</span>
+            <div className="flex items-center gap-2 py-3 px-1">
+              <div className="flex gap-1">
+                <div className="typing-dot" />
+                <div className="typing-dot" />
+                <div className="typing-dot" />
               </div>
-            </motion.div>
+              <span className="text-[11px] text-muted-foreground">{agentName} is typing...</span>
+            </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-[75] px-4 pt-2 pb-[calc(60px+env(safe-area-inset-bottom,8px))] bg-gradient-to-t from-background via-background/95 to-transparent">
+        {/* Input bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-[75] px-3 pt-2 pb-[calc(60px+env(safe-area-inset-bottom,8px))] bg-gradient-to-t from-background via-background to-transparent">
           <AnimatePresence>
             {replyTo && <ReplyPreview replyTo={replyTo} onClear={() => setReplyTo(null)} />}
           </AnimatePresence>
           <AnimatePresence>
             {attachedFile && (
-              <div className="mb-2">
-                <FileAttachmentPreview file={attachedFile} onRemove={() => setAttachedFile(null)} />
-              </div>
+              <div className="mb-2"><FileAttachmentPreview file={attachedFile} onRemove={() => setAttachedFile(null)} /></div>
             )}
           </AnimatePresence>
           {showModelSelectorProp && (
             <div className="flex items-center gap-2 mb-1.5">
               <ModelSelector currentModel={selectedModel} onSelect={setSelectedModel} />
-              <span className="text-[9px] text-muted-foreground/40">
-                {messages.length * 150 > 0 ? `${(messages.length * 150).toLocaleString()} tokens` : ''}
-              </span>
             </div>
           )}
-          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
+          <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-2 py-1.5 input-glow">
             {showFileAttach && (
               <>
                 <input type="file" ref={fileInputRef} accept="image/*,.pdf,.doc,.docx,.txt" className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) setAttachedFile(f); }} />
                 <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition flex-shrink-0"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition flex-shrink-0"
                   aria-label="Attach file">
                   <Paperclip size={18} />
                 </button>
               </>
             )}
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+            <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder={inputPlaceholder}
-              aria-label="Message input"
-              className="flex-1 bg-transparent text-foreground/90 placeholder:text-muted-foreground text-sm py-2 outline-none min-w-0 focus-visible:outline-none"
-            />
+              placeholder={inputPlaceholder} aria-label="Message input"
+              className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 outline-none min-w-0" />
             {continuousVoice ? (
               <ContinuousVoiceInput onResult={t => setInput(prev => prev + t)} disabled={isLoading} />
             ) : (
               <VoiceInput onResult={handleVoiceResult} disabled={!agentId} />
             )}
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              aria-label="Send message"
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-primary-foreground flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
-            >
+            <button type="button" onClick={handleSend} disabled={!input.trim() || isLoading} aria-label="Send message"
+              className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-30 transition-all active:scale-95 flex-shrink-0">
               <ArrowUp size={16} />
             </button>
           </div>
-          <p className="text-center text-[11px] text-muted-foreground mt-1.5">
+          <p className="text-center text-[10px] text-muted-foreground/60 mt-1">
             GYEOL can make mistakes. Verify important information.
           </p>
         </div>
