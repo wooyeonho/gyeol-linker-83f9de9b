@@ -127,7 +127,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
                   <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 ${
                       isMine
-                        ? 'bg-gradient-to-br from-primary to-indigo-600 text-foreground rounded-br-sm'
+                        ? 'bg-gradient-to-br from-primary to-indigo-600 text-primary-foreground rounded-br-sm'
                         : 'glass-bubble rounded-bl-sm'
                     }`}>
                       <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{m.content}</p>
@@ -154,7 +154,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
               {input.trim() && (
                 <button onClick={handleSend} disabled={sending}
                   className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="material-icons-round text-foreground text-base">arrow_upward</span>
+                  <span className="material-icons-round text-primary-foreground text-base">arrow_upward</span>
                 </button>
               )}
             </div>

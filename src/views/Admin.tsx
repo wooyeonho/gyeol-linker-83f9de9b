@@ -185,7 +185,7 @@ export default function AdminPage() {
                   <p className="text-[10px] text-muted-foreground">Emergency: disable all AI responses</p>
                 </div>
                 <button onClick={toggleKillSwitch}
-                  className={"px-4 py-2 rounded-lg text-xs font-medium transition " + (killSwitch ? 'bg-destructive text-foreground' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50')}>
+                  className={"px-4 py-2 rounded-lg text-xs font-medium transition " + (killSwitch ? 'bg-destructive text-destructive-foreground' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50')}>
                   {killSwitch ? 'ACTIVE - Turn OFF' : 'OFF - Turn ON'}
                 </button>
               </div>
