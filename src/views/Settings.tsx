@@ -294,7 +294,6 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-background font-display pb-16 relative" role="main" aria-label="Settings">
-      <div className="aurora-bg" />
       <div className="max-w-md mx-auto px-5 pt-6 pb-4 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
           <h1 className="text-base font-semibold text-foreground/80">Settings</h1>
@@ -335,7 +334,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Account */}
+        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">settings</span><h2 className="text-sm font-semibold text-foreground">General</h2></div>
+          {/* Account */}
         <section className="space-y-1">
           <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Account</p>
           <p className="text-sm text-foreground/60">{user?.email}</p>
@@ -349,9 +350,13 @@ export default function SettingsPage() {
           />
         )}
 
+        </div>
+
         <div className="h-px bg-white/[0.04]" />
 
-        {/* ====== MODE ====== */}
+        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
+          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">smart_toy</span><h2 className="text-sm font-semibold text-foreground">AI</h2></div>
+          {/* ====== MODE ====== */}
         <section>
           <SectionHeader id="mode" icon="toggle_on" title="Mode" />
           <AnimatePresence>
@@ -384,7 +389,8 @@ export default function SettingsPage() {
 
         <div className="h-px bg-white/[0.04]" />
         {/* ====== THEME ====== */}
-        <section className="px-1">
+        <section className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">palette</span><h2 className="text-sm font-semibold text-foreground">Appearance</h2></div>
           <ThemeToggle />
           {/* Custom Theme Color */}
           <div className="flex items-center justify-between mt-3">
@@ -774,7 +780,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        </div>
 
         {/* ====== MOOD & INTIMACY (B12) ====== */}
         <section>
@@ -816,7 +822,8 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
+          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">extension</span><h2 className="text-sm font-semibold text-foreground">Integrations</h2></div>
 
         {/* ====== INTERESTS & KEYWORDS ====== */}
         <section>
@@ -1223,6 +1230,10 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
+        </div>
+
+        <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
+          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">info</span><h2 className="text-sm font-semibold text-foreground">Info</h2></div>
         {/* Launch Readiness: Feedback, Referral, Export */}
         <section className="px-4 mt-6 space-y-3">
           <button type="button" onClick={() => setFeedbackOpen(true)}
@@ -1266,6 +1277,7 @@ export default function SettingsPage() {
           <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground underline decoration-border underline-offset-2 transition">Terms</Link>
           <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground underline decoration-border underline-offset-2 transition">Privacy</Link>
           <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground underline decoration-border underline-offset-2 transition">Admin</Link>
+        </div>
         </div>
       </div>
 
