@@ -27,6 +27,7 @@ import { ConversationStats } from '@/src/components/ConversationStats';
 import { SummaryHistory } from '@/src/components/SummaryHistory';
 import { ConversationFilter } from '@/src/components/ConversationFilter';
 import { parseSettings } from '@/src/utils/agent-settings';
+import { Bot, Menu, Search, History, BarChart3, BookOpen, Bell, Brain, Download, TrendingUp, UserCircle, Gift, X } from 'lucide-react';
 
 export default function GyeolPage() {
   const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight, lastReaction } = useGyeolStore();
@@ -142,13 +143,13 @@ export default function GyeolPage() {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/20">
             <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-              <span aria-hidden="true" className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-sm">smart_toy</span>
+              <Bot size={16} className="text-primary" aria-hidden="true" />
             </div>
           </div>
           <div>
             <span className="text-sm font-bold text-foreground tracking-tight">{agentName}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success,142_71%_45%))] shadow-[0_0_6px_hsl(var(--success,142_71%_45%)/0.6)]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_hsl(var(--success)/0.6)]" />
               <span className="text-[10px] text-muted-foreground">Online</span>
               <span className="text-[10px] text-muted-foreground/50 ml-1">Gen {agent?.gen ?? 1}</span>
             </div>
@@ -157,7 +158,7 @@ export default function GyeolPage() {
         <button type="button" onClick={() => setMenuOpen(!menuOpen)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
           aria-label="Menu">
-          <span aria-hidden="true" className="material-icons-round text-[20px]">menu</span>
+          <Menu size={20} aria-hidden="true" />
         </button>
       </div>
 
@@ -167,44 +168,44 @@ export default function GyeolPage() {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="absolute right-4 top-16 z-50 glass-card rounded-2xl p-2 min-w-[180px] shadow-xl border border-border/30">
             <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">search</span> Search
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <Search size={16} className="text-muted-foreground" /> Search
             </button>
             <button onClick={() => { setConvListOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">history</span> Conversations
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <History size={16} className="text-muted-foreground" /> Conversations
             </button>
             <button onClick={() => { setStatsOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">bar_chart</span> Stats
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <BarChart3 size={16} className="text-muted-foreground" /> Stats
             </button>
             <button onClick={() => { setSummaryHistoryOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">history_edu</span> Summaries
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <BookOpen size={16} className="text-muted-foreground" /> Summaries
             </button>
             <button onClick={() => { setNotifOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">notifications</span> Notifications
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <Bell size={16} className="text-muted-foreground" /> Notifications
             </button>
             <button onClick={() => { setMemoryOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">psychology</span> Memory
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <Brain size={16} className="text-muted-foreground" /> Memory
             </button>
             <button onClick={() => { setExportOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">download</span> Export
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <Download size={16} className="text-muted-foreground" /> Export
             </button>
             <button onClick={() => { setEvoOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">trending_up</span> Evolution
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <TrendingUp size={16} className="text-muted-foreground" /> Evolution
             </button>
             <button onClick={() => { setProfileOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">person</span> Profile
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <UserCircle size={16} className="text-muted-foreground" /> Profile
             </button>
             <button onClick={() => { setDailyRewardOpen(true); setMenuOpen(false); }}
-              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">redeem</span> Daily Reward
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-primary/10 rounded-xl flex items-center gap-3">
+              <Gift size={16} className="text-muted-foreground" /> Daily Reward
             </button>
           </motion.div>
         )}
@@ -216,14 +217,14 @@ export default function GyeolPage() {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="relative z-20 px-5 overflow-hidden">
             <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2">
-              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">search</span>
+              <Search size={14} className="text-muted-foreground" />
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..." autoFocus
                 aria-label="Search conversations"
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
               <ConversationFilter onFilter={() => {}} availableTags={[]} />
               <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
-                <span aria-hidden="true" className="material-icons-round text-sm">close</span>
+                <X size={14} />
               </button>
             </div>
           </motion.div>
@@ -250,7 +251,7 @@ export default function GyeolPage() {
             <div className="flex flex-col items-center justify-center gap-4 py-20 px-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary p-[1px]">
                 <div className="w-full h-full rounded-[15px] bg-background flex items-center justify-center">
-                  <span aria-hidden="true" className="material-icons-round text-primary text-2xl">smart_toy</span>
+                  <Bot size={24} className="text-primary" aria-hidden="true" />
                 </div>
               </div>
               <p className="text-sm text-muted-foreground text-center">{getGreeting(agent)}</p>
