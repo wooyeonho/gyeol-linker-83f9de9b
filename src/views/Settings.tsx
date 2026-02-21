@@ -14,6 +14,8 @@ import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { StreakCalendar } from '@/src/components/StreakCalendar';
 import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
 import { getLocale, setLocale, getAvailableLocales, type Locale } from '@/src/lib/i18n';
+import { NotificationSettings } from '@/src/components/NotificationSettings';
+import { ProfileCustomizer } from '@/src/components/ProfileCustomizer';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -127,6 +129,7 @@ export default function SettingsPage() {
   const [modeSwitchTarget, setModeSwitchTarget] = useState<'simple' | 'advanced'>('simple');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
+  const [profileCustomOpen, setProfileCustomOpen] = useState(false);
 
   useEffect(() => {
     if (!agent) return;
@@ -285,6 +288,11 @@ export default function SettingsPage() {
               <p className="text-[10px] text-primary/60">Generation {agent?.gen ?? 1}</p>
               <p className="text-[9px] text-muted-foreground/50">Status: Evolving & Learning</p>
             </div>
+            <button onClick={() => setProfileCustomOpen(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition"
+              aria-label="프로필 커스터마이즈">
+              <span className="material-icons-round text-sm">palette</span>
+            </button>
             <button onClick={() => setShareCardOpen(true)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition"
               aria-label="프로필 공유">
@@ -954,9 +962,26 @@ export default function SettingsPage() {
 
         <div className="h-px bg-white/[0.04]" />
 
+        {/* ====== NOTIFICATION SETTINGS ====== */}
+        <section>
+          <SectionHeader id="notifications" icon="notifications" title="Notification Settings" />
+          <AnimatePresence>
+            {activeSection === 'notifications' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                <NotificationSettings agent={agent} onUpdate={(ns) => {
+                  if (agent) setAgent({ ...agent, settings: ns } as any);
+                }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
         {/* ====== PUSH NOTIFICATIONS ====== */}
         <section>
-          <SectionHeader id="push" icon="notifications" title="Push Notifications" />
+          <SectionHeader id="push" icon="notifications_active" title="Push Notifications" />
           <AnimatePresence>
             {activeSection === 'push' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
@@ -1128,6 +1153,16 @@ export default function SettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Profile Customizer */}
+      {agent && (
+        <ProfileCustomizer
+          isOpen={profileCustomOpen}
+          onClose={() => setProfileCustomOpen(false)}
+          agent={agent}
+          onUpdate={(updated) => setAgent(updated)}
+        />
+      )}
 
       <BottomNav />
     </main>
