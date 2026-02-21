@@ -15,6 +15,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ConversationList } from '@/src/components/ConversationList';
 import { StreakBonus } from '@/src/components/StreakBonus';
+import { SummaryHistory, saveSummaryToHistory } from '@/src/components/SummaryHistory';
 
 // Emoji reactions for messages
 const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
@@ -74,6 +75,7 @@ export default function SimpleChat() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryText, setSummaryText] = useState('');
   const [summarizing, setSummarizing] = useState(false);
+  const [summaryHistoryOpen, setSummaryHistoryOpen] = useState(false);
 
   const toggleBookmark = (msgId: string) => {
     setBookmarks(prev => {
@@ -164,8 +166,10 @@ export default function SimpleChat() {
         body: { agentId: agent.id, limit: 50 },
         headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
-      if (data?.summary) setSummaryText(data.summary);
-      else setSummaryText('Could not generate summary.');
+      if (data?.summary) {
+        setSummaryText(data.summary);
+        saveSummaryToHistory(agent.id, data.summary, messages.length);
+      } else setSummaryText('Could not generate summary.');
     } catch (e) {
       setSummaryText('Error generating summary.');
     }
@@ -273,6 +277,11 @@ export default function SimpleChat() {
             <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
           </button>
           <div className="absolute top-4 right-4 flex gap-2">
+            <button onClick={() => setSummaryHistoryOpen(true)}
+              aria-label="Summary history"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history_edu</span>
+            </button>
             <button onClick={handleSummarize}
               aria-label="Summarize conversation"
               className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
@@ -649,6 +658,9 @@ export default function SimpleChat() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Summary History */}
+      <SummaryHistory isOpen={summaryHistoryOpen} onClose={() => setSummaryHistoryOpen(false)} agentId={agent?.id} />
 
       {/* Conversation history drawer */}
       {agent?.id && (
