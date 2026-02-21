@@ -21,7 +21,7 @@ export async function decryptKey(encrypted: string): Promise<string> {
   const iv = hexToBytes(ivHex);
   const ct = hexToBytes(ctHex);
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv.buffer.slice(iv.byteOffset, iv.byteOffset + iv.byteLength) as ArrayBuffer }, key, ct
+    { name: "AES-GCM", iv: new Uint8Array(iv) }, key, new Uint8Array(ct)
   );
   return new TextDecoder().decode(decrypted);
 }
