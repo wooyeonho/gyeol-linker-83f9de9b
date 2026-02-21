@@ -112,6 +112,18 @@ export const useGyeolStore = create<GyeolState>((set) => ({
         body: JSON.stringify({ agentId: agent.id, message: text, locale: typeof navigator !== 'undefined' ? navigator.language : 'ko', stream: true }),
       });
 
+      // Handle error responses before checking content type
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        if (res.status === 402) {
+          throw new Error('AI credits exhausted. Please add funds in Settings → Workspace → Usage.');
+        }
+        if (res.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
+        throw new Error(errData.error || `Server error (${res.status})`);
+      }
+
       const contentType = res.headers.get('content-type') ?? '';
 
       if (contentType.includes('text/event-stream') && res.body) {
