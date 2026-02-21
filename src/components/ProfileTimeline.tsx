@@ -49,7 +49,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
       (achievementsRes.data as any[] ?? []).forEach((a: any) => {
         timeline.push({
           id: a.id, type: 'achievement',
-          title: `업적 달성: ${a.gyeol_achievements?.name ?? '???'}`,
+          title: `Achievement 달성: ${a.gyeol_achievements?.name ?? '???'}`,
           created_at: a.unlocked_at, icon: a.gyeol_achievements?.icon ?? 'emoji_events',
         });
       });
@@ -57,7 +57,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
       (postsRes.data as any[] ?? []).forEach((p: any) => {
         timeline.push({
           id: p.id, type: 'social',
-          title: p.post_type === 'visit_log' ? 'Moltbook 방문 일지' : '커뮤니티 포스트',
+          title: p.post_type === 'visit_log' ? 'Moltbook Visit Log' : '커뮤니티 포스트',
           description: p.content?.slice(0, 80), created_at: p.created_at, icon: 'forum',
         });
       });
@@ -69,8 +69,8 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
   }, [agentId]);
 
   const typeColors: Record<string, string> = {
-    evolution: 'text-amber-400', conversation: 'text-primary',
-    achievement: 'text-[hsl(var(--success,142_71%_45%))]', social: 'text-secondary', learning: 'text-cyan-400',
+    evolution: 'text-[hsl(var(--warning))]', conversation: 'text-primary',
+    achievement: 'text-[hsl(var(--success,142_71%_45%))]', social: 'text-secondary', learning: 'text-secondary',
   };
 
   if (loading) return (
@@ -94,7 +94,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
           className="flex gap-3 py-2 relative">
           {/* Dot */}
           <div className={`w-[30px] h-[30px] rounded-full glass-card flex items-center justify-center shrink-0 z-10 ${typeColors[event.type] ?? 'text-muted-foreground'}`}>
-            <span className="material-icons-round text-[14px]">{event.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-[14px]">{event.icon}</span>
           </div>
           {/* Content */}
           <div className="flex-1 min-w-0 pt-1">

@@ -1,5 +1,5 @@
 /**
- * Phase 5: 에이전트 공개 프로필 모달 — 배지 시스템 포함
+ * Phase 5: 에Previous트 공개 Profile 모달 — 배지 시스템 포함
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -80,7 +80,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
             {/* Header */}
             <div className="relative h-28 bg-gradient-to-br from-primary/30 to-secondary/20 rounded-t-3xl">
               <button onClick={onClose} className="absolute top-4 right-4 text-foreground/40 hover:text-foreground">
-                <span className="material-icons-round">close</span>
+                <span aria-hidden="true" className="material-icons-round">close</span>
               </button>
               <div className="absolute -bottom-8 left-6">
                 <div className="w-16 h-16 rounded-2xl glass-panel flex items-center justify-center shadow-xl">
@@ -124,7 +124,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
                     {badges.map((b, i) => {
                       const rarityColor: Record<string, string> = {
                         common: 'text-muted-foreground', uncommon: 'text-[hsl(var(--success,142_71%_45%))]',
-                        rare: 'text-blue-400', epic: 'text-purple-400', legendary: 'text-amber-400',
+                        rare: 'text-[hsl(var(--info))]', epic: 'text-primary', legendary: 'text-[hsl(var(--warning))]',
                       };
                       return (
                         <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full glass-card text-[9px]">
@@ -156,8 +156,8 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
               {onShareCard && (
                 <button onClick={onShareCard}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-[11px] font-medium hover:from-primary/20 hover:to-secondary/20 transition flex items-center justify-center gap-2">
-                  <span className="material-icons-round text-sm">share</span>
-                  프로필 카드 공유
+                  <span aria-hidden="true" className="material-icons-round text-sm">share</span>
+                  Profile 카드 Share
                 </button>
               )}
             </div>

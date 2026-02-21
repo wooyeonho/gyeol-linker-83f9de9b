@@ -20,8 +20,8 @@ const MODE_INFO = {
   advanced: {
     icon: '🧬',
     title: 'Advanced Mode',
-    features: ['전체 대시보드', '소셜 & 매칭', '스킨/스킬 마켓', '업적 & 퀘스트', '리더보드'],
-    missing: ['캐릭터 표시 (설정에서 가능)', '자동 TTS (설정에서 가능)'],
+    features: ['전체 대시보드', '소셜 & Matching', '스킨/스킬 마켓', 'Achievement & Quest', 'Leaderboard'],
+    missing: ['캐릭터 표시 (Settings에서 가능)', '자동 TTS (Settings에서 가능)'],
   },
 };
 
@@ -78,7 +78,7 @@ export function ModeSwitchGuide({ isOpen, onClose, targetMode, onConfirm }: Prop
             <div className="flex gap-2">
               <button onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground glass-card transition">
-                취소
+                Cancel
               </button>
               <button onClick={onConfirm}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-primary to-secondary text-primary-foreground btn-glow transition">
@@ -87,7 +87,7 @@ export function ModeSwitchGuide({ isOpen, onClose, targetMode, onConfirm }: Prop
             </div>
 
             <button onClick={onClose} className="absolute top-3 right-3 text-muted-foreground/40 hover:text-foreground">
-              <span className="material-icons-round text-lg">close</span>
+              <span aria-hidden="true" className="material-icons-round text-lg">close</span>
             </button>
           </motion.div>
         </motion.div>

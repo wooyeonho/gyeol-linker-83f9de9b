@@ -1,13 +1,13 @@
 /**
- * 프로필 커스터마이징 컴포넌트
+ * Profile 커스터마이징 컴포넌트
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/integrations/supabase/client';
 
 const BANNER_GRADIENTS = [
-  { label: 'Indigo', value: 'from-indigo-500/30 to-purple-500/20' },
-  { label: 'Emerald', value: 'from-emerald-500/30 to-teal-500/20' },
+  { label: 'Indigo', value: 'from-indigo-500/30 to-primary/20' },
+  { label: 'Emerald', value: 'from-[hsl(var(--success))]/30 to-teal-500/20' },
   { label: 'Rose', value: 'from-rose-500/30 to-pink-500/20' },
   { label: 'Amber', value: 'from-amber-500/30 to-orange-500/20' },
   { label: 'Cyan', value: 'from-cyan-500/30 to-blue-500/20' },
@@ -65,11 +65,11 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
             className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[80vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span className="material-icons-round text-primary text-base">palette</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-base">palette</span>
                 Profile Customization
               </h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
 

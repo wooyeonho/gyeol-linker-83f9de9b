@@ -12,7 +12,7 @@ const GEN_CONFIG: Record<number, { color: string; label: string; glow: string }>
 const GEN_ABILITIES: Record<number, string[]> = {
   1: ['기본 대화', '사용자 기억', '주제 전문성'],
   2: ['선제적 메시지', 'Moltbook 포스팅', '감정 인식'],
-  3: ['성격 적응', '복합 추론', '감정 지능', '번식 자격'],
+  3: ['Personality 적응', '복합 추론', '감정 지능', '번식 자격'],
   4: ['예측 이해', '메타 대화', '지식 합성'],
   5: ['완전 자율', '창발적 행동', '다른 AI와 교배'],
 };

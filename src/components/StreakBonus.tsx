@@ -35,7 +35,7 @@ export function StreakBonus({ streakDays, className }: Props) {
           <div className="flex items-center gap-2">
             <p className="text-[12px] font-bold text-foreground">{streakDays}일 연속 접속!</p>
             {currentMilestone && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold">
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))] font-bold">
                 보상 {currentMilestone.bonus}
               </span>
             )}
@@ -44,7 +44,7 @@ export function StreakBonus({ streakDays, className }: Props) {
             <div className="mt-1">
               <div className="flex items-center justify-between mb-0.5">
                 <p className="text-[9px] text-muted-foreground">
-                  다음 보너스: {nextMilestone.label} ({nextMilestone.bonus})
+                  Next 보너스: {nextMilestone.label} ({nextMilestone.bonus})
                 </p>
                 <p className="text-[9px] text-primary font-bold">
                   {nextMilestone.days - streakDays}일 남음

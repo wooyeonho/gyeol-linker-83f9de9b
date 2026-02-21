@@ -54,11 +54,11 @@ export function SummaryHistory({ isOpen, onClose, agentId }: Props) {
             className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[70vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span className="material-icons-round text-primary text-base">history</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-base">history</span>
                 Summary History
               </h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
 
@@ -66,7 +66,7 @@ export function SummaryHistory({ isOpen, onClose, agentId }: Props) {
               <div className="text-center py-8 text-muted-foreground text-sm animate-pulse">Loading...</div>
             ) : summaries.length === 0 ? (
               <div className="text-center py-8">
-                <span className="material-icons-round text-3xl text-muted-foreground/20 mb-2 block">summarize</span>
+                <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20 mb-2 block">summarize</span>
                 <p className="text-sm text-muted-foreground">No summaries yet</p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">Use the summarize button in chat to create summaries</p>
               </div>
@@ -82,7 +82,7 @@ export function SummaryHistory({ isOpen, onClose, agentId }: Props) {
                         <span className="text-[9px] text-primary/50">{s.message_count} messages</span>
                         <button onClick={() => deleteSummary(s.id)}
                           className="w-5 h-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive transition">
-                          <span className="material-icons-round text-[12px]">delete</span>
+                          <span aria-hidden="true" className="material-icons-round text-[12px]">delete</span>
                         </button>
                       </div>
                     </div>

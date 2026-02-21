@@ -146,7 +146,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{inventory.length}개</span>
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -183,7 +183,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                   <p className="text-[11px] text-muted-foreground/50 mt-2">
                     {inventory.length === 0 ? '아이템이 없어요' : '해당 카테고리에 아이템이 없어요'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/30 mt-1">상점에서 아이템을 구매해보세요</p>
+                  <p className="text-[10px] text-muted-foreground/30 mt-1">Shop에서 아이템을 구매해보세요</p>
                 </div>
               ) : (
                 sortedInventory.map(inv => {
@@ -194,7 +194,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         inv.is_equipped ? 'bg-gradient-to-br from-primary/20 to-secondary/20' : 'bg-primary/10'
                       }`}>
-                        <span className="material-icons-round text-lg text-primary">{item?.icon ?? 'inventory_2'}</span>
+                        <span aria-hidden="true" className="material-icons-round text-lg text-primary">{item?.icon ?? 'inventory_2'}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">

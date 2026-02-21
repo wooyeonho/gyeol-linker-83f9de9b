@@ -141,7 +141,7 @@ export default function GyeolPage() {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/20">
             <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-              <span className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-sm">smart_toy</span>
+              <span aria-hidden="true" className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-sm">smart_toy</span>
             </div>
           </div>
           <div>
@@ -156,7 +156,7 @@ export default function GyeolPage() {
         <button type="button" onClick={() => setMenuOpen(!menuOpen)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
           aria-label="Menu">
-          <span className="material-icons-round text-[20px]">menu</span>
+          <span aria-hidden="true" className="material-icons-round text-[20px]">menu</span>
         </button>
       </div>
 
@@ -167,43 +167,43 @@ export default function GyeolPage() {
             className="absolute right-4 top-16 z-50 glass-card rounded-2xl p-2 min-w-[180px] shadow-xl border border-border/30">
             <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">search</span> Search
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">search</span> Search
             </button>
             <button onClick={() => { setConvListOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">history</span> Conversations
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">history</span> Conversations
             </button>
             <button onClick={() => { setStatsOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">bar_chart</span> Stats
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">bar_chart</span> Stats
             </button>
             <button onClick={() => { setSummaryHistoryOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">history_edu</span> Summaries
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">history_edu</span> Summaries
             </button>
             <button onClick={() => { setNotifOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">notifications</span> Notifications
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">notifications</span> Notifications
             </button>
             <button onClick={() => { setMemoryOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">psychology</span> Memory
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">psychology</span> Memory
             </button>
             <button onClick={() => { setExportOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">download</span> Export
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">download</span> Export
             </button>
             <button onClick={() => { setEvoOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">trending_up</span> Evolution
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">trending_up</span> Evolution
             </button>
             <button onClick={() => { setProfileOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">person</span> Profile
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">person</span> Profile
             </button>
             <button onClick={() => { setDailyRewardOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
-              <span className="material-icons-round text-muted-foreground text-[18px]">redeem</span> Daily Reward
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[18px]">redeem</span> Daily Reward
             </button>
           </motion.div>
         )}
@@ -215,14 +215,14 @@ export default function GyeolPage() {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="relative z-20 px-5 overflow-hidden">
             <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2">
-              <span className="material-icons-round text-muted-foreground text-sm">search</span>
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">search</span>
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..." autoFocus
                 aria-label="Search conversations"
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
               <ConversationFilter onFilter={() => {}} availableTags={[]} />
               <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
-                <span className="material-icons-round text-sm" aria-hidden="true">close</span>
+                <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">close</span>
               </button>
             </div>
           </motion.div>
@@ -249,7 +249,7 @@ export default function GyeolPage() {
             <div className="flex flex-col items-center justify-center gap-4 py-20 px-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary p-[1px]">
                 <div className="w-full h-full rounded-[15px] bg-background flex items-center justify-center">
-                  <span className="material-icons-round text-primary text-2xl">smart_toy</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-2xl">smart_toy</span>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground text-center">{getGreeting(agent)}</p>

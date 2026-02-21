@@ -1,5 +1,5 @@
 /**
- * 데이터 시각화 차트 컴포넌트 — 대화 통계, 성격 변화 추이
+ * 데이터 시각화 차트 컴포넌트 — 대화 통계, Personality 변화 추이
  */
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
@@ -61,7 +61,7 @@ export function DataVisualization({ agentId }: Props) {
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-primary text-sm">insights</span>
+          <span aria-hidden="true" className="material-icons-round text-primary text-sm">insights</span>
           대화 인사이트
         </h3>
         <div className="flex gap-1">
@@ -70,7 +70,7 @@ export function DataVisualization({ agentId }: Props) {
               className={`px-2 py-0.5 rounded-md text-[8px] font-medium transition ${
                 view === v ? 'bg-primary/20 text-primary' : 'text-muted-foreground'
               }`}>
-              {v === 'conversations' ? '대화량' : '성격 변화'}
+              {v === 'conversations' ? '대화량' : 'Personality 변화'}
             </button>
           ))}
         </div>
@@ -86,7 +86,7 @@ export function DataVisualization({ agentId }: Props) {
               { label: '최다', value: `${maxDay?.date ?? '-'}`, icon: 'star' },
             ].map(s => (
               <div key={s.label} className="text-center p-2 rounded-lg bg-muted/10">
-                <span className="material-icons-round text-primary/60 text-xs">{s.icon}</span>
+                <span aria-hidden="true" className="material-icons-round text-primary/60 text-xs">{s.icon}</span>
                 <p className="text-sm font-bold text-foreground mt-0.5">{s.value}</p>
                 <p className="text-[7px] text-muted-foreground">{s.label}</p>
               </div>
@@ -113,8 +113,8 @@ export function DataVisualization({ agentId }: Props) {
 
       {view === 'personality' && (
         <div className="text-center py-4">
-          <span className="material-icons-round text-2xl text-muted-foreground/20">psychology</span>
-          <p className="text-[10px] text-muted-foreground mt-2">대화가 쌓이면 성격 변화 추이가 표시됩니다</p>
+          <span aria-hidden="true" className="material-icons-round text-2xl text-muted-foreground/20">psychology</span>
+          <p className="text-[10px] text-muted-foreground mt-2">대화가 쌓이면 Personality 변화 추이가 표시됩니다</p>
         </div>
       )}
     </div>

@@ -157,7 +157,7 @@ export function EvolutionCeremony() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                새로운 형태로 진화했어요 ✨
+                새로운 형태로 Evolution했어요 ✨
               </motion.p>
               <motion.div
                 className="mt-5 h-0.5 w-24 mx-auto rounded-full"

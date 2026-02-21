@@ -1,7 +1,7 @@
 /**
- * 퀘스트 카운트다운 타이머 — 일일/주간 퀘스트 리셋 시간 표시
+ * Quest 카운트다운 타이머 — 일일/주간 Quest 리셋 시간 표시
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 
 function getNextReset(type: 'daily' | 'weekly'): Date {
@@ -34,7 +34,7 @@ interface Props {
   compact?: boolean;
 }
 
-export function QuestTimer({ type, compact = false }: Props) {
+function QuestTimerInternal({ type, compact = false }: Props) {
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function QuestTimer({ type, compact = false }: Props) {
   if (compact) {
     return (
       <span className="text-[9px] text-muted-foreground flex items-center gap-1">
-        <span className="material-icons-round text-[10px]">schedule</span>
+        <span aria-hidden="true" className="material-icons-round text-[10px]">schedule</span>
         {formatTimeLeft(timeLeft)}
       </span>
     );
@@ -63,7 +63,7 @@ export function QuestTimer({ type, compact = false }: Props) {
       className="glass-card rounded-xl px-3 py-2 flex items-center justify-between"
     >
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-primary text-sm">timer</span>
+        <span aria-hidden="true" className="material-icons-round text-primary text-sm">timer</span>
         <span className="text-[10px] text-foreground font-medium">
           {type === 'daily' ? '일일 리셋' : '주간 리셋'}
         </span>
@@ -74,3 +74,5 @@ export function QuestTimer({ type, compact = false }: Props) {
     </motion.div>
   );
 }
+
+export const QuestTimer = memo(QuestTimerInternal);

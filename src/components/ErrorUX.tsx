@@ -22,7 +22,7 @@ export function handleApiError(error: any, context?: string) {
   const status = error?.status ?? error?.statusCode;
   if (status === 429) {
     const reset = error?.resetSeconds ?? 60;
-    showErrorToast(`너무 빠르게 보내고 있어요. ${reset}초 후 다시 시도해주세요`, 'warning');
+    showErrorToast(`너무 빠르게 보내고 있어요. ${reset}초 후 Please try again`, 'warning');
   } else if (status === 401) {
     supabase.auth.refreshSession().then(({ error: refreshErr }) => {
       if (refreshErr) {
@@ -33,9 +33,9 @@ export function handleApiError(error: any, context?: string) {
   } else if (status === 500 || status === 502 || status === 503) {
     showErrorToast('서버가 잠시 바쁩니다. 곧 돌아올게요!', 'error');
   } else if (!navigator.onLine) {
-    showErrorToast('인터넷 연결을 확인해주세요', 'warning');
+    showErrorToast('인터넷 연결을 Confirm해주세요', 'warning');
   } else {
-    showErrorToast(context ?? '오류가 발생했습니다. 다시 시도해주세요', 'error');
+    showErrorToast(context ?? '오류가 발생했습니다. Please try again', 'error');
   }
 }
 
@@ -61,11 +61,11 @@ export function ErrorToastContainer() {
             exit={{ opacity: 0, x: 50, scale: 0.95 }}
             className={`pointer-events-auto rounded-xl px-4 py-3 backdrop-blur-md border shadow-lg flex items-center gap-2 text-xs ${
               t.type === 'error' ? 'bg-destructive/20 border-destructive/30 text-destructive' :
-              t.type === 'warning' ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400' :
+              t.type === 'warning' ? 'bg-[hsl(var(--warning)/0.2)] border-yellow-500/30 text-[hsl(var(--warning))]' :
               t.type === 'success' ? 'bg-green-500/20 border-green-500/30 text-green-400' :
               'bg-primary/20 border-primary/30 text-primary'
             }`}>
-            <span className="material-icons-round text-sm">
+            <span aria-hidden="true" className="material-icons-round text-sm">
               {t.type === 'error' ? 'error' : t.type === 'warning' ? 'warning' : t.type === 'success' ? 'check_circle' : 'info'}
             </span>
             <span className="flex-1">{t.message}</span>
@@ -97,8 +97,8 @@ export function OfflineIndicator() {
   return (
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-[9998] bg-yellow-500/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
-      <span className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
-      오프라인 상태입니다 — 이전 대화 읽기만 가능합니다
+      <span aria-hidden="true" className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
+      Offline 상태입니다 — Previous 대화 읽기만 가능합니다
     </motion.div>
   );
 }
@@ -112,7 +112,7 @@ export function MessageRetryButton({ onRetry, label = '다시 보내기' }: Retr
   return (
     <button onClick={onRetry}
       className="inline-flex items-center gap-1 text-[10px] text-destructive hover:text-destructive/80 transition mt-1">
-      <span className="material-icons-round text-xs">refresh</span>
+      <span aria-hidden="true" className="material-icons-round text-xs">refresh</span>
       {label}
     </button>
   );

@@ -128,7 +128,7 @@ export default function MarketSkinsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20 relative">
+    <main role="main" className="min-h-screen bg-background font-display pb-20 relative">
       <div className="aurora-bg" />
       <div className="max-w-md mx-auto p-5 pt-6 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
@@ -140,14 +140,14 @@ export default function MarketSkinsPage() {
             {/* Coin balance */}
             {profile && (
               <div className="flex items-center gap-1 px-3 py-1.5 rounded-full glass-card text-xs">
-                <span className="material-icons-round text-amber-400 text-sm">monetization_on</span>
+                <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">monetization_on</span>
                 <span className="font-medium text-foreground">{profile.coins.toLocaleString()}</span>
               </div>
             )}
             {user && (
               <button type="button" onClick={() => setShowUpload(!showUpload)}
                 className="flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition">
-                <span className="material-icons-round text-sm">add</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">add</span>
                 Submit
               </button>
             )}
@@ -230,7 +230,7 @@ export default function MarketSkinsPage() {
         ) : filteredSkins.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <span className="material-icons-round text-primary/40 text-2xl">palette</span>
+              <span aria-hidden="true" className="material-icons-round text-primary/40 text-2xl">palette</span>
             </div>
             <p className="text-sm text-foreground/60 font-medium">No skins found</p>
           </div>
@@ -260,7 +260,7 @@ export default function MarketSkinsPage() {
                       <span className="text-primary text-[10px] font-medium">
                         {s.price === 0 ? 'Free' : (
                           <span className="flex items-center gap-0.5">
-                            <span className="material-icons-round text-amber-400 text-[10px]">monetization_on</span>
+                            <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[10px]">monetization_on</span>
                             {s.price}
                           </span>
                         )}

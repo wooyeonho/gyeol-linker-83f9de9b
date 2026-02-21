@@ -1,5 +1,5 @@
 /**
- * 업적 추천 컴포넌트 — 달성에 가까운 업적을 추천
+ * Achievement 추천 컴포넌트 — 달성에 가까운 Achievement을 추천
  */
 import { motion } from 'framer-motion';
 
@@ -38,8 +38,8 @@ export function AchievementRecommend({ achievements, onSelect }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-amber-400 text-sm">recommend</span>
-        <h4 className="text-[11px] font-bold text-foreground">추천 업적</h4>
+        <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">recommend</span>
+        <h4 className="text-[11px] font-bold text-foreground">추천 Achievement</h4>
       </div>
       {recommendations.map((ach, i) => (
         <motion.button
@@ -51,7 +51,7 @@ export function AchievementRecommend({ achievements, onSelect }: Props) {
           className="w-full glass-card rounded-xl p-3 flex items-center gap-3 hover:bg-primary/5 transition text-left"
         >
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <span className="material-icons-round text-primary text-sm">{ach.icon ?? 'emoji_events'}</span>
+            <span aria-hidden="true" className="material-icons-round text-primary text-sm">{ach.icon ?? 'emoji_events'}</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-bold text-foreground truncate">{ach.name}</p>

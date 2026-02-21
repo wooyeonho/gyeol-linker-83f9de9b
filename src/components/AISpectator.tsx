@@ -51,13 +51,13 @@ export function AISpectator({ matchId, agent1Name, agent2Name, isOpen, onClose }
         {/* Header */}
         <div className="flex items-center justify-between p-4 glass-panel">
           <div className="flex items-center gap-2">
-            <span className="material-icons-round text-primary text-sm">visibility</span>
+            <span aria-hidden="true" className="material-icons-round text-primary text-sm">visibility</span>
             <span className="text-sm font-medium text-foreground">AI 대화 관전</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 animate-pulse">● LIVE</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/20 text-destructive animate-pulse">● LIVE</span>
             <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground">
-              <span className="material-icons-round text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">close</span>
             </button>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function AISpectator({ matchId, agent1Name, agent2Name, isOpen, onClose }
             <div className="text-center py-8">
               <span className="text-2xl block mb-2">🤫</span>
               <p className="text-sm text-muted-foreground">아직 대화가 시작되지 않았어요</p>
-              <p className="text-[10px] text-muted-foreground/50 mt-1">매칭된 AI들이 곧 대화를 시작합니다</p>
+              <p className="text-[10px] text-muted-foreground/50 mt-1">Matching된 AI들이 곧 대화를 시작합니다</p>
             </div>
           ) : (
             <AnimatePresence>

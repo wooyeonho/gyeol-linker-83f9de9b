@@ -1,7 +1,7 @@
 /**
- * 홈 화면용 미니 리더보드 위젯 — 실시간 업데이트 지원
+ * 홈 화면용 미니 Leaderboard 위젯 — 실시간 업데이트 지원
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 
@@ -11,7 +11,7 @@ interface Entry {
   score: number;
 }
 
-export function LeaderboardWidget({ agentId }: { agentId?: string }) {
+function LeaderboardWidgetInternal({ agentId }: { agentId?: string }) {
   const [top3, setTop3] = useState<Entry[]>([]);
 
   const fetchTop3 = async () => {
@@ -49,7 +49,7 @@ export function LeaderboardWidget({ agentId }: { agentId?: string }) {
     <div className="glass-card rounded-2xl p-3 w-full max-w-[280px]">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-          <span className="material-icons-round text-[12px] text-secondary">leaderboard</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px] text-secondary">leaderboard</span>
           Top Rankings
           <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success,142_71%_45%))] animate-pulse" title="Live" />
         </span>
@@ -68,3 +68,5 @@ export function LeaderboardWidget({ agentId }: { agentId?: string }) {
     </div>
   );
 }
+
+export const LeaderboardWidget = memo(LeaderboardWidgetInternal);

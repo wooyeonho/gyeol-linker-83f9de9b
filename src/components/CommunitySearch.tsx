@@ -46,13 +46,13 @@ export function CommunitySearch({ isOpen, onClose }: Props) {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
             className="fixed inset-x-4 top-16 z-[70] glass-card rounded-2xl p-4 max-w-md mx-auto max-h-[70vh] flex flex-col">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-icons-round text-primary text-base">search</span>
+              <span aria-hidden="true" className="material-icons-round text-primary text-base">search</span>
               <input type="text" value={query} onChange={e => setQuery(e.target.value)}
                 placeholder="Search posts and activities..."
                 className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
                 autoFocus />
               <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2">

@@ -53,7 +53,7 @@ export function InstallPrompt() {
         className="fixed bottom-20 left-4 right-4 z-50 glass-card rounded-2xl p-4 flex items-center gap-3 shadow-xl"
       >
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
-          <span className="material-icons-round text-foreground text-lg">install_mobile</span>
+          <span aria-hidden="true" className="material-icons-round text-foreground text-lg">install_mobile</span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[12px] font-bold text-foreground">GYEOL 앱 설치</p>

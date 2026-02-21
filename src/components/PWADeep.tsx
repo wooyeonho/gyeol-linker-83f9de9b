@@ -6,7 +6,7 @@ export function OfflineBanner({ isOnline }: { isOnline: boolean }) {
   if (isOnline) return null;
   return (
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }} exit={{ y: -40 }}
-      className="fixed top-0 left-0 right-0 z-[90] bg-amber-500/90 backdrop-blur-sm px-4 py-2 text-center">
+      className="fixed top-0 left-0 right-0 z-[90] bg-[hsl(var(--warning))]/90 backdrop-blur-sm px-4 py-2 text-center">
       <div className="flex items-center justify-center gap-1.5">
         <WifiOff className="w-3.5 h-3.5 text-background" />
         <span className="text-[10px] font-medium text-background">Offline Mode — Messages will sync when reconnected</span>
@@ -58,8 +58,8 @@ export function OfflineChatQueue({ queue }: { queue: { content: string; timestam
   return (
     <div className="px-4 py-2">
       <div className="flex items-center gap-1.5 mb-1">
-        <WifiOff className="w-3 h-3 text-amber-400" />
-        <span className="text-[9px] text-amber-400 font-medium">{queue.length} message(s) queued</span>
+        <WifiOff className="w-3 h-3 text-[hsl(var(--warning))]" />
+        <span className="text-[9px] text-[hsl(var(--warning))] font-medium">{queue.length} message(s) queued</span>
       </div>
       <div className="space-y-1">
         {queue.map((msg, i) => (

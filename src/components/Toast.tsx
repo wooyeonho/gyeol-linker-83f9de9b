@@ -32,7 +32,7 @@ export function ToastContainer() {
   }, []);
 
   return (
-    <div className="fixed top-[max(env(safe-area-inset-top),12px)] left-0 right-0 z-[200] flex flex-col items-center gap-2 px-4 pointer-events-none">
+    <div aria-live="polite" className="fixed top-[max(env(safe-area-inset-top),12px)] left-0 right-0 z-[200] flex flex-col items-center gap-2 px-4 pointer-events-none">
       <AnimatePresence>
         {toasts.map(t => (
           <motion.div
@@ -43,23 +43,23 @@ export function ToastContainer() {
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className={`pointer-events-auto w-full max-w-sm rounded-2xl p-3 px-4 flex items-center gap-3 shadow-2xl backdrop-blur-xl border ${
               t.type === 'achievement'
-                ? 'bg-amber-500/20 border-amber-400/30 shadow-amber-500/20'
+                ? 'bg-[hsl(var(--warning)/0.2)] border-[hsl(var(--warning))]/30 shadow-amber-500/20'
                 : t.type === 'success'
                 ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)] border-[hsl(var(--success,142_71%_45%)/0.3)] shadow-[hsl(var(--success,142_71%_45%)/0.2)]'
                 : t.type === 'warning'
-                ? 'bg-red-500/20 border-red-400/30 shadow-red-500/20'
+                ? 'bg-destructive/20 border-destructive/30 shadow-red-500/20'
                 : 'bg-primary/20 border-primary/30 shadow-primary/20'
             }`}
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
               t.type === 'achievement'
-                ? 'bg-amber-500/30'
+                ? 'bg-[hsl(var(--warning))]/30'
                 : t.type === 'success'
                 ? 'bg-[hsl(var(--success,142_71%_45%))]/30'
                 : 'bg-primary/30'
             }`}>
               <span className={`material-icons-round text-lg ${
-                t.type === 'achievement' ? 'text-amber-400' : t.type === 'success' ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-primary'
+                t.type === 'achievement' ? 'text-[hsl(var(--warning))]' : t.type === 'success' ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-primary'
               }`}>
                 {t.icon ?? (t.type === 'achievement' ? 'emoji_events' : t.type === 'success' ? 'check_circle' : 'info')}
               </span>

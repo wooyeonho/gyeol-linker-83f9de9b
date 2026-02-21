@@ -1,5 +1,5 @@
 /**
- * 성격 변화 알림 — 대화 후 성격 변화 감지 시 표시
+ * Personality 변화 Notifications — 대화 후 Personality 변화 감지 시 표시
  */
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,7 +10,7 @@ interface PersonalityChangeNotifProps {
 }
 
 const TRAIT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의력', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: '창의력', energy: 'Energy', humor: 'Humor',
 };
 const TRAIT_EMOJI: Record<string, string> = {
   warmth: '💗', logic: '🧠', creativity: '🎨', energy: '⚡', humor: '😄',
@@ -30,10 +30,10 @@ export function PersonalityChangeNotif({ show, changes, onClose }: PersonalityCh
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] glass-card rounded-2xl p-4 w-[280px] shadow-xl border border-primary/20"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="material-icons-round text-primary text-sm">auto_awesome</span>
-            <span className="text-[11px] font-bold text-foreground">성격이 변했어요!</span>
+            <span aria-hidden="true" className="material-icons-round text-primary text-sm">auto_awesome</span>
+            <span className="text-[11px] font-bold text-foreground">Personality이 변했어요!</span>
             <button onClick={onClose} className="ml-auto text-muted-foreground hover:text-foreground">
-              <span className="material-icons-round text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">close</span>
             </button>
           </div>
           <div className="space-y-1">

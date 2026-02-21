@@ -1,3 +1,4 @@
+import { memo } from 'react';
 /**
  * 홈 화면 게이미피케이션 미니 위젯
  */
@@ -5,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useGamification, expToNextLevel } from '@/src/hooks/useGamification';
 
-export function GamificationWidget() {
+function GamificationWidgetInternal() {
   const { profile, quests, loading } = useGamification();
 
   if (loading || !profile) return null;
@@ -29,12 +30,12 @@ export function GamificationWidget() {
             <div>
               <span className="text-[10px] font-bold text-foreground">{profile.title ?? '초보 동반자'}</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] text-amber-400">🪙 {profile.coins}</span>
+                <span className="text-[8px] text-[hsl(var(--warning))]">🪙 {profile.coins}</span>
                 <span className="text-[8px] text-muted-foreground">🔥 {profile.streak_days}d</span>
               </div>
             </div>
           </div>
-          <span className="material-icons-round text-muted-foreground/30 text-sm">chevron_right</span>
+          <span aria-hidden="true" className="material-icons-round text-muted-foreground/30 text-sm">chevron_right</span>
         </div>
 
         {/* EXP bar */}
@@ -48,7 +49,7 @@ export function GamificationWidget() {
         {/* Daily quests summary */}
         {activeQuests.length > 0 && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] text-muted-foreground">오늘의 퀘스트</span>
+            <span className="text-[9px] text-muted-foreground">오늘의 Quest</span>
             <span className="text-[9px] font-bold text-primary">{completedCount}/{activeQuests.length}</span>
             {completedCount > 0 && completedCount < activeQuests.length && (
               <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary animate-pulse">보상 대기중</span>
@@ -59,3 +60,5 @@ export function GamificationWidget() {
     </Link>
   );
 }
+
+export const GamificationWidget = memo(GamificationWidgetInternal);

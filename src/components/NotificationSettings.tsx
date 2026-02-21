@@ -1,5 +1,5 @@
 /**
- * 알림 설정 세분화 컴포넌트
+ * Notifications Settings 세분화 컴포넌트
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,13 +14,13 @@ interface NotifCategory {
 
 const NOTIF_CATEGORIES: NotifCategory[] = [
   { key: 'proactive', icon: 'chat_bubble', label: 'Proactive Messages', description: 'AI가 먼저 보내는 메시지' },
-  { key: 'evolution', icon: 'auto_awesome', label: 'Evolution Events', description: '진화/돌연변이 알림' },
-  { key: 'quest', icon: 'assignment_turned_in', label: 'Quest Updates', description: '퀘스트 완료/갱신 알림' },
-  { key: 'achievement', icon: 'emoji_events', label: 'Achievements', description: '업적 달성 알림' },
-  { key: 'social', icon: 'people', label: 'Social Activity', description: '팔로우/댓글/좋아요 알림' },
-  { key: 'daily', icon: 'today', label: 'Daily Rewards', description: '일일 보상 알림' },
-  { key: 'leaderboard', icon: 'leaderboard', label: 'Leaderboard', description: '순위 변동 알림' },
-  { key: 'season', icon: 'stars', label: 'Season Events', description: '시즌 시작/종료/보상 알림' },
+  { key: 'evolution', icon: 'auto_awesome', label: 'Evolution Events', description: 'Evolution/돌연변이 Notifications' },
+  { key: 'quest', icon: 'assignment_turned_in', label: 'Quest Updates', description: 'Quest Done/갱신 Notifications' },
+  { key: 'achievement', icon: 'emoji_events', label: 'Achievements', description: 'Achievement 달성 Notifications' },
+  { key: 'social', icon: 'people', label: 'Social Activity', description: 'Follow/Comment/Like Notifications' },
+  { key: 'daily', icon: 'today', label: 'Daily Rewards', description: '일일 보상 Notifications' },
+  { key: 'leaderboard', icon: 'leaderboard', label: 'Leaderboard', description: '순위 변동 Notifications' },
+  { key: 'season', icon: 'stars', label: 'Season Events', description: '시즌 시작/종료/보상 Notifications' },
 ];
 
 interface Props {
@@ -76,7 +76,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
       <div className="flex items-center justify-between py-1">
         <div>
           <p className="text-[11px] text-foreground/80 font-medium">All Notifications</p>
-          <p className="text-[9px] text-muted-foreground">모든 알림 한번에 켜기/끄기</p>
+          <p className="text-[9px] text-muted-foreground">모든 Notifications 한번에 켜기/끄기</p>
         </div>
         <button type="button" onClick={() => {
           const newVal = !allOn;
@@ -99,7 +99,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
       {NOTIF_CATEGORIES.map(cat => (
         <div key={cat.key} className="flex items-center justify-between py-0.5">
           <div className="flex items-center gap-2">
-            <span className="material-icons-round text-primary/40 text-sm">{cat.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-primary/40 text-sm">{cat.icon}</span>
             <div>
               <p className="text-[11px] text-foreground/80">{cat.label}</p>
               <p className="text-[9px] text-muted-foreground">{cat.description}</p>
@@ -132,7 +132,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
             ))}
           </select>
         </div>
-        <p className="text-[9px] text-muted-foreground/60">이 시간대에는 푸시 알림이 발송되지 않아요</p>
+        <p className="text-[9px] text-muted-foreground/60">이 시간대에는 푸시 Notifications이 발송되지 않아요</p>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ export function MatchingRecommendations({ matches }: { matches: { name: string; 
   return (
     <div className="space-y-2">
       <h4 className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-        <Heart className="w-3.5 h-3.5 text-pink-400" /> Recommended Matches
+        <Heart className="w-3.5 h-3.5 text-primary" /> Recommended Matches
       </h4>
       {matches.map((m, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
@@ -19,7 +19,7 @@ export function MatchingRecommendations({ matches }: { matches: { name: string; 
               <p className="text-[10px] font-medium text-foreground truncate">{m.name}</p>
               <p className="text-[8px] text-muted-foreground">Gen {m.gen}</p>
             </div>
-            <button className="px-2 py-1 rounded-full bg-pink-400/10 text-pink-400 text-[9px] font-medium hover:bg-pink-400/20 transition">
+            <button className="px-2 py-1 rounded-full bg-primary/10 text-primary text-[9px] font-medium hover:bg-primary/20 transition">
               <UserPlus className="w-3 h-3" />
             </button>
           </div>
@@ -137,7 +137,7 @@ export function MoltbookPost({ post, onLike, onComment, onShare }: {
         </div>
       )}
       <div className="flex items-center gap-4 pt-1 border-t border-border/10">
-        <button onClick={onLike} className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-pink-400 transition">
+        <button onClick={onLike} className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-primary transition">
           <Heart className="w-3 h-3" /> {post.likes}
         </button>
         <button onClick={onComment} className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-primary transition">

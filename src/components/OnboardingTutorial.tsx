@@ -14,15 +14,15 @@ const STEPS = [
   },
   {
     icon: '🧬',
-    title: '진화 시스템',
-    desc: '대화를 나눌수록 AI가 성장합니다. Gen 1부터 시작해 최대 Gen 5까지 진화할 수 있어요.',
-    tip: '진화할 때마다 새로운 성격 특성이 해금됩니다.',
+    title: 'Evolution 시스템',
+    desc: '대화를 나눌수록 AI가 성장합니다. Gen 1부터 시작해 최대 Gen 5까지 Evolution할 수 있어요.',
+    tip: 'Evolution할 때마다 새로운 Personality 특성이 해금됩니다.',
   },
   {
     icon: '💜',
-    title: '친밀도',
-    desc: '꾸준히 대화하면 친밀도가 올라갑니다. 높을수록 AI가 더 깊은 대화를 나눠요.',
-    tip: '20/40/60/80 레벨 달성 시 특별 이벤트!',
+    title: 'Intimacy',
+    desc: '꾸준히 대화하면 Intimacy가 올라갑니다. 높을수록 AI가 더 깊은 대화를 나눠요.',
+    tip: '20/40/60/80 Level 달성 시 특별 이벤트!',
   },
   {
     icon: '🔥',
@@ -32,14 +32,14 @@ const STEPS = [
   },
   {
     icon: '🏆',
-    title: '퀘스트 & 업적',
-    desc: '하단 내비게이션의 퀘스트 탭에서 일일/주간 미션을 확인하고 보상을 받으세요.',
-    tip: '완료된 퀘스트는 "보상 받기" 버튼을 눌러 수령하세요.',
+    title: 'Quest & Achievement',
+    desc: '하단 내비게이션의 Quest 탭에서 일일/주간 미션을 Confirm하고 보상을 받으세요.',
+    tip: 'Done된 Quest는 "Claim Reward" 버튼을 눌러 수령하세요.',
   },
   {
     icon: '⚙️',
-    title: '설정',
-    desc: 'Simple/Advanced 모드 전환, 캐릭터 변경, 성격 조절 등을 설정에서 할 수 있어요.',
+    title: 'Settings',
+    desc: 'Simple/Advanced 모드 전환, 캐릭터 변경, Personality 조절 등을 Settings에서 할 수 있어요.',
     tip: 'BYOK로 자신의 API 키를 등록할 수도 있어요.',
   },
 ];
@@ -111,7 +111,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
           {current.tip && (
             <div className="px-3 py-2 rounded-xl bg-primary/5 border border-primary/10 mb-5">
               <p className="text-[10px] text-primary/80 flex items-center gap-1 justify-center">
-                <span className="material-icons-round text-[12px]">lightbulb</span>
+                <span aria-hidden="true" className="material-icons-round text-[12px]">lightbulb</span>
                 {current.tip}
               </p>
             </div>
@@ -123,7 +123,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
                 onClick={() => setStep(s => s - 1)}
                 className="flex-1 py-2.5 rounded-xl bg-muted/10 text-muted-foreground text-sm font-medium hover:bg-muted/20 transition"
               >
-                이전
+                Previous
               </button>
             )}
             <button
@@ -133,7 +133,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
               }}
               className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20"
             >
-              {isLast ? '시작하기 🚀' : '다음'}
+              {isLast ? '시작하기 🚀' : 'Next'}
             </button>
           </div>
 

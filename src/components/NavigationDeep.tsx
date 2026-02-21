@@ -176,7 +176,7 @@ export function ActivityStreakDisplay({ streak, bestStreak }: { streak: number; 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl glass-card">
       <div className="text-center">
-        <Flame className="w-5 h-5 text-amber-400 mx-auto" />
+        <Flame className="w-5 h-5 text-[hsl(var(--warning))] mx-auto" />
         <p className="text-lg font-bold text-foreground mt-0.5">{streak}</p>
         <p className="text-[8px] text-muted-foreground">Current</p>
       </div>
@@ -205,7 +205,7 @@ export function ActivityBadges({ badges }: { badges: { name: string; icon: strin
 }
 
 const translations: Record<string, Record<string, string>> = {
-  ko: { chat: '채팅', settings: '설정', social: '소셜', market: '마켓', activity: '활동', evolution: '진화', gamification: '게임화', onboarding: '온보딩' },
+  ko: { chat: '채팅', settings: 'Settings', social: '소셜', market: '마켓', activity: '활동', evolution: 'Evolution', gamification: '게임화', onboarding: '온보딩' },
   en: { chat: 'Chat', settings: 'Settings', social: 'Social', market: 'Market', activity: 'Activity', evolution: 'Evolution', gamification: 'Gamification', onboarding: 'Onboarding' },
   ja: { chat: 'チャット', settings: '設定', social: 'ソーシャル', market: 'マーケット', activity: 'アクティビティ', evolution: '進化', gamification: 'ゲーミフィケーション', onboarding: 'オンボーディング' },
 };

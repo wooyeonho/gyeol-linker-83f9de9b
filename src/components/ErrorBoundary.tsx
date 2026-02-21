@@ -18,7 +18,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
+        <main role="main" className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-6">
           <div className="aurora-bg" />
           <div className="relative z-10 flex flex-col items-center gap-5 max-w-sm text-center">
             {/* Animated error icon */}
@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               className="w-20 h-20 rounded-2xl bg-destructive/10 flex items-center justify-center"
             >
-              <span className="material-icons-round text-4xl text-destructive/60">warning_amber</span>
+              <span aria-hidden="true" className="material-icons-round text-4xl text-destructive/60">warning_amber</span>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="flex-1 py-3 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition flex items-center justify-center gap-2"
                 aria-label="홈으로 돌아가기"
               >
-                <span className="material-icons-round text-sm">home</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">home</span>
                 홈으로
               </button>
               <button
@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 className="flex-1 py-3 rounded-xl bg-muted/10 text-foreground/70 text-sm font-medium hover:bg-muted/20 transition flex items-center justify-center gap-2"
                 aria-label="페이지 새로고침"
               >
-                <span className="material-icons-round text-sm">refresh</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">refresh</span>
                 새로고침
               </button>
             </div>

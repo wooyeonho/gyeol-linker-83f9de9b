@@ -1,5 +1,5 @@
 /**
- * 진화 조건 안내 카드 — 현재 진화 조건과 확률을 표시
+ * Evolution 조건 안내 카드 — 현재 Evolution 조건과 확률을 표시
  */
 import { motion } from 'framer-motion';
 
@@ -11,9 +11,9 @@ interface Props {
 }
 
 const GEN_REQUIREMENTS = [
-  { gen: 1, baseRate: 60, minConv: 10, desc: 'Gen 2로 진화' },
-  { gen: 2, baseRate: 40, minConv: 50, desc: 'Gen 3로 진화' },
-  { gen: 3, baseRate: 20, minConv: 150, desc: 'Gen 4로 진화' },
+  { gen: 1, baseRate: 60, minConv: 10, desc: 'Gen 2로 Evolution' },
+  { gen: 2, baseRate: 40, minConv: 50, desc: 'Gen 3로 Evolution' },
+  { gen: 3, baseRate: 20, minConv: 150, desc: 'Gen 4로 Evolution' },
   { gen: 4, baseRate: 5, minConv: 500, desc: 'Gen 5 (최종)' },
 ];
 
@@ -24,7 +24,7 @@ export function EvolutionGuide({ gen, evolutionProgress, totalConversations, int
       <div className="glass-card rounded-2xl p-4 text-center">
         <span className="text-2xl">👑</span>
         <p className="text-[11px] text-foreground font-bold mt-2">최고 단계에 도달했습니다!</p>
-        <p className="text-[9px] text-muted-foreground mt-1">Gen 5 — 최종 진화 완료</p>
+        <p className="text-[9px] text-muted-foreground mt-1">Gen 5 — 최종 Evolution Done</p>
       </div>
     );
   }
@@ -35,22 +35,22 @@ export function EvolutionGuide({ gen, evolutionProgress, totalConversations, int
   const ready = evolutionProgress >= 100;
 
   const conditions = [
-    { label: '진화 진행도', value: `${Math.round(evolutionProgress)}%`, met: evolutionProgress >= 100, icon: 'trending_up' },
+    { label: 'Evolution 진행도', value: `${Math.round(evolutionProgress)}%`, met: evolutionProgress >= 100, icon: 'trending_up' },
     { label: '총 대화 수', value: `${totalConversations}회`, met: totalConversations >= current.minConv, icon: 'chat' },
-    { label: '친밀도', value: `${intimacy}%`, met: intimacy >= 20, icon: 'favorite' },
+    { label: 'Intimacy', value: `${intimacy}%`, met: intimacy >= 20, icon: 'favorite' },
   ];
 
   return (
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-secondary text-sm">info</span>
+          <span aria-hidden="true" className="material-icons-round text-secondary text-sm">info</span>
           {current.desc}
         </h3>
         <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
           ready ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-muted/20 text-muted-foreground'
         }`}>
-          {ready ? '준비 완료!' : '진행 중'}
+          {ready ? '준비 Done!' : '진행 중'}
         </span>
       </div>
 

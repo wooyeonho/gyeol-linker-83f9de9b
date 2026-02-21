@@ -1,5 +1,5 @@
 /**
- * 돌연변이 UI 연출 — 진화 과정에서 돌연변이 발생 시 글리치 효과
+ * 돌연변이 UI 연출 — Evolution 과정에서 돌연변이 발생 시 글리치 효과
  */
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,7 @@ interface MutationEffectProps {
 
 const TYPE_CONFIG = {
   boost: { icon: '⚡', label: '능력치 돌연변이', accent: 'from-amber-500 to-yellow-400', glow: 'shadow-amber-500/40' },
-  shift: { icon: '🔀', label: '성격 시프트', accent: 'from-indigo-500 to-violet-400', glow: 'shadow-indigo-500/40' },
+  shift: { icon: '🔀', label: 'Personality 시프트', accent: 'from-indigo-500 to-violet-400', glow: 'shadow-indigo-500/40' },
   rare: { icon: '💎', label: '희귀 돌연변이', accent: 'from-rose-500 to-pink-400', glow: 'shadow-rose-500/40' },
 };
 

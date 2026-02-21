@@ -1,5 +1,5 @@
 /**
- * 삭제 확인 모달
+ * 삭제 Confirm 모달
  */
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,7 +12,7 @@ interface Props {
   loading?: boolean;
 }
 
-export function DeleteConfirmModal({ isOpen, title = '삭제 확인', message = '정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.', onConfirm, onCancel, loading }: Props) {
+export function DeleteConfirmModal({ isOpen, title = '삭제 Confirm', message = '정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.', onConfirm, onCancel, loading }: Props) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -32,7 +32,7 @@ export function DeleteConfirmModal({ isOpen, title = '삭제 확인', message = 
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                <span className="material-icons-round text-destructive">warning</span>
+                <span aria-hidden="true" className="material-icons-round text-destructive">warning</span>
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">{title}</h3>
@@ -44,7 +44,7 @@ export function DeleteConfirmModal({ isOpen, title = '삭제 확인', message = 
                 onClick={onCancel}
                 className="flex-1 py-2 rounded-xl glass-card text-xs font-medium text-muted-foreground hover:text-foreground transition"
               >
-                취소
+                Cancel
               </button>
               <button
                 onClick={onConfirm}

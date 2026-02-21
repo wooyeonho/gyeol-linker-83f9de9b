@@ -42,7 +42,7 @@ export default function ServerError() {
       >
         <h1 className="text-xl font-bold text-foreground">서버에 문제가 생겼어요</h1>
         <p className="text-sm text-muted-foreground max-w-[280px]">
-          잠시 후 다시 시도해주세요. 문제가 계속되면 앱을 새로고침 해보세요.
+          잠시 후 Please try again. 문제가 계속되면 앱을 새로고침 해보세요.
         </p>
       </motion.div>
 
@@ -56,14 +56,14 @@ export default function ServerError() {
           onClick={() => window.location.reload()}
           className="px-5 py-3 rounded-xl bg-muted/10 text-foreground/70 text-sm font-bold flex items-center gap-2 hover:bg-muted/20 transition"
         >
-          <span className="material-icons-round text-lg">refresh</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">refresh</span>
           새로고침
         </button>
         <Link
           to="/"
           className="px-5 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold flex items-center gap-2"
         >
-          <span className="material-icons-round text-lg">home</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">home</span>
           홈으로
         </Link>
       </motion.div>

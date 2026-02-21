@@ -53,7 +53,7 @@ export function CustomBlocklist({ words, onAdd, onRemove }: { words: string[]; o
   return (
     <div className="space-y-2">
       <h4 className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Custom Blocklist
+        <AlertTriangle className="w-3.5 h-3.5 text-[hsl(var(--warning))]" /> Custom Blocklist
       </h4>
       <div className="flex gap-1">
         <input type="text" value={input} onChange={e => setInput(e.target.value)}
@@ -84,14 +84,14 @@ export function ParentalMode({ enabled, onToggle, pin, onSetPin }: {
     <div className="space-y-2">
       <div className="flex items-center justify-between p-3 rounded-xl glass-card">
         <div className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-amber-400" />
+          <Lock className="w-4 h-4 text-[hsl(var(--warning))]" />
           <div>
             <p className="text-[10px] font-medium text-foreground">Parental Mode</p>
             <p className="text-[8px] text-muted-foreground">Restrict mature content and features</p>
           </div>
         </div>
         <button onClick={onToggle}
-          className={`w-10 h-5 rounded-full transition ${enabled ? 'bg-amber-400' : 'bg-muted/30'}`}>
+          className={`w-10 h-5 rounded-full transition ${enabled ? 'bg-[hsl(var(--warning))]' : 'bg-muted/30'}`}>
           <div className={`w-4 h-4 rounded-full bg-background shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
         </button>
       </div>
@@ -104,7 +104,7 @@ export function ParentalMode({ enabled, onToggle, pin, onSetPin }: {
             {showPin ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
           </button>
           <button onClick={() => { if (newPin.length === 4) { onSetPin(newPin); setNewPin(''); } }}
-            className="px-3 py-1 rounded-lg bg-amber-400/10 text-amber-400 text-[10px]">Set</button>
+            className="px-3 py-1 rounded-lg bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] text-[10px]">Set</button>
         </div>
       )}
     </div>
@@ -120,7 +120,7 @@ export function SafetyLogs({ logs }: { logs: { date: string; action: string; sev
       {logs.map((l, i) => (
         <div key={i} className="flex items-center gap-2 p-2 rounded-lg glass-card text-[9px]">
           <span className={`w-1.5 h-1.5 rounded-full ${
-            l.severity === 'high' ? 'bg-destructive' : l.severity === 'medium' ? 'bg-amber-400' : 'bg-primary'
+            l.severity === 'high' ? 'bg-destructive' : l.severity === 'medium' ? 'bg-[hsl(var(--warning))]' : 'bg-primary'
           }`} />
           <span className="text-foreground/70 flex-1 truncate">{l.action}</span>
           <span className="text-muted-foreground/40 flex-shrink-0">{l.date}</span>
@@ -235,14 +235,14 @@ export function DNDToggle({ enabled, onToggle }: { enabled: boolean; onToggle: (
   return (
     <div className="flex items-center justify-between p-3 rounded-xl glass-card">
       <div className="flex items-center gap-2">
-        {enabled ? <BellOff className="w-4 h-4 text-amber-400" /> : <Bell className="w-4 h-4 text-muted-foreground" />}
+        {enabled ? <BellOff className="w-4 h-4 text-[hsl(var(--warning))]" /> : <Bell className="w-4 h-4 text-muted-foreground" />}
         <div>
           <p className="text-[10px] font-medium text-foreground">Do Not Disturb</p>
           <p className="text-[8px] text-muted-foreground">Silence all notifications</p>
         </div>
       </div>
       <button onClick={onToggle}
-        className={`w-10 h-5 rounded-full transition ${enabled ? 'bg-amber-400' : 'bg-muted/30'}`}>
+        className={`w-10 h-5 rounded-full transition ${enabled ? 'bg-[hsl(var(--warning))]' : 'bg-muted/30'}`}>
         <div className={`w-4 h-4 rounded-full bg-background shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
       </button>
     </div>

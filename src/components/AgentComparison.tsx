@@ -77,7 +77,7 @@ export function AgentComparison({ open, onClose, agent1, agent2 }: Props) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-foreground">Agent Comparison</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
 

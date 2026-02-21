@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
@@ -6,7 +7,7 @@ interface EmptyStateProps {
   description: string;
 }
 
-export function SocialEmptyState({ icon, title, description }: EmptyStateProps) {
+function SocialEmptyStateInternal({ icon, title, description }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -16,7 +17,7 @@ export function SocialEmptyState({ icon, title, description }: EmptyStateProps) 
       {/* Animated glow orb */}
       <div className="relative w-20 h-20 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-primary/5 blur-xl animate-pulse" />
-        <span className="material-icons-round text-[36px] text-primary/30">{icon}</span>
+        <span aria-hidden="true" className="material-icons-round text-[36px] text-primary/30">{icon}</span>
       </div>
 
       <div className="text-center space-y-1.5">
@@ -28,3 +29,5 @@ export function SocialEmptyState({ icon, title, description }: EmptyStateProps) 
     </motion.div>
   );
 }
+
+export const SocialEmptyState = memo(SocialEmptyStateInternal);

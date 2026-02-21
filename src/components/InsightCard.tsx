@@ -18,11 +18,11 @@ interface InsightCardProps {
 }
 
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함',
-  logic: '논리',
-  creativity: '창의성',
-  energy: '에너지',
-  humor: '유머',
+  warmth: 'Warmth',
+  logic: 'Logic',
+  creativity: 'Creativity',
+  energy: 'Energy',
+  humor: 'Humor',
 };
 
 const EMOTION_EMOJI: Record<string, string> = {
@@ -59,7 +59,7 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
               <span className="text-sm">{emotionEmoji}</span>
             </div>
             <button onClick={onDismiss} className="text-muted-foreground/40 hover:text-foreground transition" aria-label="닫기">
-              <span className="material-icons-round text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">close</span>
             </button>
           </div>
 
@@ -86,8 +86,8 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
               <p className="text-[8px] text-[hsl(var(--success,142_71%_45%)/0.7)] font-bold mb-1 uppercase tracking-wider">✦ 효과적</p>
               <p className="text-[10px] text-foreground/70 leading-relaxed">{insight.whatWorked}</p>
             </div>
-            <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-2.5">
-              <p className="text-[8px] text-amber-400/70 font-bold mb-1 uppercase tracking-wider">↗ 개선점</p>
+            <div className="rounded-xl bg-[hsl(var(--warning))]/5 border border-[hsl(var(--warning))]/10 p-2.5">
+              <p className="text-[8px] text-[hsl(var(--warning))]/70 font-bold mb-1 uppercase tracking-wider">↗ 개선점</p>
               <p className="text-[10px] text-foreground/70 leading-relaxed">{insight.whatToImprove}</p>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
           {insight.personalityChanged && Object.keys(insight.changes).length > 0 && (
             <div className="pt-2 border-t border-border/10">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[9px] text-muted-foreground/50">📊 성격 변화</p>
+                <p className="text-[9px] text-muted-foreground/50">📊 Personality 변화</p>
                 <p className="text-[8px] text-primary/50 font-bold">총 {totalChanges}p</p>
               </div>
               <div className="space-y-1.5">

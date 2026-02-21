@@ -1,5 +1,5 @@
 /**
- * 알림 패널 — 업적, 퀘스트 완료, 시스템 알림 등을 표시
+ * Notifications 패널 — Achievement, Quest Done, 시스템 Notifications 등을 표시
  */
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,10 +22,10 @@ interface NotificationPanelProps {
 }
 
 const TYPE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  achievement: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: '업적' },
-  quest: { bg: 'bg-[hsl(var(--success,142_71%_45%)/0.1)]', text: 'text-[hsl(var(--success,142_71%_45%))]', label: '퀘스트' },
-  evolution: { bg: 'bg-primary/10', text: 'text-primary', label: '진화' },
-  social: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', label: '소셜' },
+  achievement: { bg: 'bg-[hsl(var(--warning)/0.1)]', text: 'text-[hsl(var(--warning))]', label: 'Achievement' },
+  quest: { bg: 'bg-[hsl(var(--success,142_71%_45%)/0.1)]', text: 'text-[hsl(var(--success,142_71%_45%))]', label: 'Quest' },
+  evolution: { bg: 'bg-primary/10', text: 'text-primary', label: 'Evolution' },
+  social: { bg: 'bg-secondary/10', text: 'text-secondary', label: '소셜' },
   system: { bg: 'bg-primary/10', text: 'text-primary', label: '시스템' },
 };
 
@@ -65,7 +65,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       notifs.push({
         id: `ach-${a.id}`, type: 'achievement',
         title: `🏆 ${a.gyeol_achievements?.name ?? 'Achievement'}`,
-        message: '업적을 달성했어요!',
+        message: 'Achievement을 달성했어요!',
         icon: a.gyeol_achievements?.icon ?? 'emoji_events',
         read: !a.is_new, created_at: a.unlocked_at,
       });
@@ -74,7 +74,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       notifs.push({
         id: `quest-${q.id}`, type: 'quest',
         title: `✅ ${q.gyeol_quests?.title ?? 'Quest'}`,
-        message: '퀘스트를 완료했어요!',
+        message: 'Quest를 Done했어요!',
         icon: q.gyeol_quests?.icon ?? 'assignment_turned_in',
         read: true, created_at: q.completed_at ?? new Date().toISOString(),
       });
@@ -135,8 +135,8 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
   const FILTERS = [
     { key: null, label: '전체' },
-    { key: 'achievement', label: '업적' },
-    { key: 'quest', label: '퀘스트' },
+    { key: 'achievement', label: 'Achievement' },
+    { key: 'quest', label: 'Quest' },
     { key: 'system', label: '시스템' },
   ];
 
@@ -151,15 +151,15 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 250 }}
             className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[360px] bg-background z-[81] flex flex-col shadow-2xl"
-            role="dialog" aria-label="알림 패널" aria-modal="true"
+            role="dialog" aria-label="Notifications 패널" aria-modal="true"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/20">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-foreground">알림</h2>
+                <h2 className="text-sm font-bold text-foreground">Notifications</h2>
                 {unreadCount > 0 && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold"
-                    aria-label={`읽지 않은 알림 ${unreadCount}개`}>{unreadCount}</span>
+                    aria-label={`읽지 않은 Notifications ${unreadCount}개`}>{unreadCount}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -168,8 +168,8 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 )}
                 <button onClick={onClose}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
-                  aria-label="알림 패널 닫기">
-                  <span className="material-icons-round text-lg">close</span>
+                  aria-label="Notifications 패널 닫기">
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -190,14 +190,14 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto" role="list" aria-label="알림 목록">
+            <div className="flex-1 overflow-y-auto" role="list" aria-label="Notifications 목록">
               {loading ? (
                 <div className="flex items-center justify-center py-20"><div className="void-dot" /></div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <span className="material-icons-round text-4xl text-muted-foreground/20">notifications_none</span>
+                  <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20">notifications_none</span>
                   <p className="text-sm text-muted-foreground">
-                    {filter ? '해당 종류의 알림이 없어요' : '아직 알림이 없어요'}
+                    {filter ? '해당 종류의 Notifications이 없어요' : '아직 Notifications이 없어요'}
                   </p>
                 </div>
               ) : (

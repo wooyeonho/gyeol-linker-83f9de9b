@@ -1,5 +1,5 @@
 /**
- * 에이전트 통계 대시보드 - 종합 활동 요약
+ * 에Previous트 통계 대시보드 - 종합 활동 요약
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,17 +85,17 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
           className="glass-card rounded-2xl p-5 w-full max-w-[360px] max-h-[80vh] overflow-y-auto space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <span className="material-icons-round text-primary text-base">dashboard</span>
+              <span aria-hidden="true" className="material-icons-round text-primary text-base">dashboard</span>
               Agent Dashboard
             </h3>
             <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-              <span className="material-icons-round text-muted-foreground text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
             </button>
           </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <span className="material-icons-round text-primary animate-spin">hourglass_top</span>
+              <span aria-hidden="true" className="material-icons-round text-primary animate-spin">hourglass_top</span>
             </div>
           ) : stats && (
             <>
@@ -105,12 +105,12 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
                   { icon: 'chat', label: '총 메시지', value: stats.totalMessages.toLocaleString() },
                   { icon: 'calendar_today', label: '활동 일수', value: `${stats.totalDays}일` },
                   { icon: 'psychology', label: '학습 주제', value: stats.topicsLearned.toString() },
-                  { icon: 'memory', label: '기억 저장', value: stats.memoriesStored.toString() },
+                  { icon: 'memory', label: '기억 Save', value: stats.memoriesStored.toString() },
                   { icon: 'speed', label: '평균 응답', value: stats.avgResponseTime > 0 ? `${(stats.avgResponseTime / 1000).toFixed(1)}s` : '—' },
                   { icon: 'auto_stories', label: 'Moltbook', value: stats.moltbookPosts.toString() },
                 ].map(s => (
                   <div key={s.label} className="glass-card rounded-xl p-2.5 text-center">
-                    <span className="material-icons-round text-primary/50 text-xs">{s.icon}</span>
+                    <span aria-hidden="true" className="material-icons-round text-primary/50 text-xs">{s.icon}</span>
                     <p className="text-sm font-bold text-foreground mt-0.5">{s.value}</p>
                     <p className="text-[7px] text-muted-foreground">{s.label}</p>
                   </div>
@@ -126,15 +126,15 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
                   <p className="text-[11px] text-foreground/80 font-medium">Level {stats.level}</p>
                   <div className="flex gap-3 mt-1">
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                      <span className="material-icons-round text-amber-400 text-[10px]">monetization_on</span>
+                      <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[10px]">monetization_on</span>
                       {stats.coins}
                     </span>
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                      <span className="material-icons-round text-orange-400 text-[10px]">local_fire_department</span>
+                      <span aria-hidden="true" className="material-icons-round text-orange-400 text-[10px]">local_fire_department</span>
                       {stats.streak}일
                     </span>
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                      <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-[10px]">emoji_events</span>
+                      <span aria-hidden="true" className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-[10px]">emoji_events</span>
                       {stats.achievements}
                     </span>
                   </div>

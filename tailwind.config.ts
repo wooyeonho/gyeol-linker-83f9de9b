@@ -39,6 +39,9 @@ const config: Config = {
           foreground: 'hsl(var(--destructive-foreground))',
         },
         surface: 'hsl(var(--surface))',
+        success: 'hsl(var(--success))',
+        warning: 'hsl(var(--warning))',
+        info: 'hsl(var(--info))',
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'sans-serif'],

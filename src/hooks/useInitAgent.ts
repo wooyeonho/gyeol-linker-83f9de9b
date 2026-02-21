@@ -1,5 +1,5 @@
 /**
- * 인증된 사용자의 에이전트를 초기화하는 공유 훅
+ * 인증된 사용자의 에Previous트를 초기화하는 Share 훅
  */
 import { useEffect, useState } from 'react';
 import { useGyeolStore } from '@/store/gyeol-store';

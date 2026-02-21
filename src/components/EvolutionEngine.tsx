@@ -33,7 +33,7 @@ export function EvolutionProtection({ hasItem, onUse }: { hasItem: boolean; onUs
   return (
     <button onClick={onUse} disabled={!hasItem}
       className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-medium transition ${
-        hasItem ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-muted/10 text-muted-foreground/40'
+        hasItem ? 'bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.2)]' : 'bg-muted/10 text-muted-foreground/40'
       }`}>
       <Shield className="w-3.5 h-3.5" />
       {hasItem ? 'Protection Item Ready' : 'No Protection Item'}
@@ -234,10 +234,10 @@ export function DailyEventCountdown({ nextEvent }: { nextEvent: { title: string;
   if (!nextEvent) return null;
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-xl glass-card">
-      <Clock className="w-3.5 h-3.5 text-amber-400" />
+      <Clock className="w-3.5 h-3.5 text-[hsl(var(--warning))]" />
       <div className="flex-1">
         <p className="text-[9px] text-muted-foreground">Next: {nextEvent.title}</p>
-        <p className="text-[11px] font-bold text-amber-400 font-mono">{timeLeft}</p>
+        <p className="text-[11px] font-bold text-[hsl(var(--warning))] font-mono">{timeLeft}</p>
       </div>
     </div>
   );

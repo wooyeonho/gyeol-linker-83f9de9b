@@ -92,9 +92,9 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center p-4 font-display">
+      <main role="main" className="min-h-screen bg-background flex items-center justify-center p-4 font-display">
         <div className="glass-panel rounded-2xl p-8 w-full max-w-sm text-center">
-          <span className="material-icons-round text-3xl text-primary mb-3">admin_panel_settings</span>
+          <span aria-hidden="true" className="material-icons-round text-3xl text-primary mb-3">admin_panel_settings</span>
           <h1 className="text-lg font-bold text-foreground mb-4">Admin Access</h1>
           <input type="password" value={token} onChange={e => setToken(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && authenticate()}
@@ -126,7 +126,7 @@ export default function AdminPage() {
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={"flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition " + (tab === t.id ? 'bg-primary/20 text-primary' : 'bg-muted/20 text-muted-foreground hover:bg-muted/40')}>
-              <span className="material-icons-round text-sm">{t.icon}</span> {t.label}
+              <span aria-hidden="true" className="material-icons-round text-sm">{t.icon}</span> {t.label}
             </button>
           ))}
         </div>
@@ -143,7 +143,7 @@ export default function AdminPage() {
               <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 className="glass-panel rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="material-icons-round text-sm text-primary/50">{s.icon}</span>
+                  <span aria-hidden="true" className="material-icons-round text-sm text-primary/50">{s.icon}</span>
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{s.label}</span>
                 </div>
                 <p className={"text-2xl font-bold " + (s.color || 'text-foreground')}>{s.value.toLocaleString()}</p>

@@ -94,7 +94,7 @@ export function PersonalityLock({ locked, onToggle }: { locked: boolean; onToggl
   return (
     <button onClick={onToggle}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium transition ${
-        locked ? 'bg-amber-500/10 text-amber-400' : 'glass-card text-muted-foreground hover:text-foreground'
+        locked ? 'bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]' : 'glass-card text-muted-foreground hover:text-foreground'
       }`}>
       {locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
       {locked ? 'Personality Locked' : 'Lock Personality'}
@@ -115,7 +115,7 @@ export function PersonalityBalanceScore({ params }: { params: PersonalityParams 
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          className={`h-full rounded-full ${score > 70 ? 'bg-primary' : score > 40 ? 'bg-amber-400' : 'bg-destructive'}`}
+          className={`h-full rounded-full ${score > 70 ? 'bg-primary' : score > 40 ? 'bg-[hsl(var(--warning))]' : 'bg-destructive'}`}
         />
       </div>
       <span className="text-[10px] font-medium text-foreground/70">Balance: {score}</span>
@@ -136,7 +136,7 @@ export function PersonalityAdvice({ params }: { params: PersonalityParams }) {
 
   return (
     <div className="flex gap-2 p-3 rounded-xl glass-card">
-      <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+      <Lightbulb className="w-4 h-4 text-[hsl(var(--warning))] flex-shrink-0 mt-0.5" />
       <p className="text-[10px] text-foreground/70 leading-relaxed">{getAdvice()}</p>
     </div>
   );

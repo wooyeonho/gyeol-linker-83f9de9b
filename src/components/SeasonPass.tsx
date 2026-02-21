@@ -10,7 +10,7 @@ interface Season { id: string; name: string; description: string | null; theme_c
 interface SeasonProgress { season_id: string; season_exp: number; tier: number; rewards_claimed: any; agent_id?: string; id?: string; }
 
 const TIER_REWARDS = [
-  { tier: 1, exp: 100, reward: '🎁 10 코인', icon: 'monetization_on' },
+  { tier: 1, exp: 100, reward: '🎁 10 Coins', icon: 'monetization_on' },
   { tier: 2, exp: 300, reward: '✨ 50 EXP 부스터', icon: 'bolt' },
   { tier: 3, exp: 600, reward: '🎨 시즌 스킨', icon: 'palette' },
   { tier: 4, exp: 1000, reward: '🏷️ 시즌 칭호', icon: 'badge' },
@@ -75,7 +75,7 @@ export function SeasonPass() {
       .eq('agent_id', agent.id)
       .eq('season_id', season.id);
     setProgress({ ...progress, rewards_claimed: claimed, tier: Math.max(progress.tier, tier) });
-    setClaimMsg(`Tier ${tier} 보상 수령 완료! 🎉`);
+    setClaimMsg(`Tier ${tier} 보상 수령 Done! 🎉`);
     setClaimingTier(null);
     setTimeout(() => setClaimMsg(null), 3000);
   };
@@ -84,9 +84,9 @@ export function SeasonPass() {
   if (!season) {
     return (
       <div className="glass-card rounded-2xl p-5 text-center">
-        <span className="material-icons-round text-3xl text-muted-foreground/20 mb-2">event_busy</span>
+        <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20 mb-2">event_busy</span>
         <p className="text-sm text-muted-foreground">현재 활성 시즌이 없습니다</p>
-        <p className="text-[10px] text-muted-foreground/60 mt-1">다음 시즌을 기대해주세요!</p>
+        <p className="text-[10px] text-muted-foreground/60 mt-1">Next 시즌을 기대해주세요!</p>
       </div>
     );
   }

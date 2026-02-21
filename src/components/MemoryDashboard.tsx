@@ -23,10 +23,10 @@ const CATEGORY_CONFIG: Record<string, { icon: string; label: string }> = {
 };
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
-  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">확인됨</span>;
-  if (confidence >= 70) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400">신뢰도 {confidence}%</span>;
-  if (confidence >= 50) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">추정 {confidence}%</span>;
-  return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400">확인 필요</span>;
+  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">Confirm됨</span>;
+  if (confidence >= 70) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]">신뢰도 {confidence}%</span>;
+  if (confidence >= 50) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]">추정 {confidence}%</span>;
+  return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive">Confirm 필요</span>;
 }
 
 interface MemoryDashboardProps {
@@ -151,7 +151,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                   </span>
                 </div>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -196,8 +196,8 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                                     className="flex-1 bg-transparent border border-primary/30 rounded-lg px-2 py-1 text-[12px] text-foreground outline-none focus:border-primary"
                                     autoFocus
                                   />
-                                  <button onClick={() => handleEdit(mem.id)} className="text-primary text-[11px] font-medium">저장</button>
-                                  <button onClick={() => setEditTarget(null)} className="text-muted-foreground text-[11px]">취소</button>
+                                  <button onClick={() => handleEdit(mem.id)} className="text-primary text-[11px] font-medium">Save</button>
+                                  <button onClick={() => setEditTarget(null)} className="text-muted-foreground text-[11px]">Cancel</button>
                                 </div>
                               ) : (
                                 <>
@@ -215,14 +215,14 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                                   onClick={() => startEdit(mem)}
                                   className="text-muted-foreground/30 hover:text-primary transition p-1"
                                 >
-                                  <span className="material-icons-round text-sm">edit</span>
+                                  <span aria-hidden="true" className="material-icons-round text-sm">edit</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setDeleteTarget(mem.id)}
                                   className="text-muted-foreground/30 hover:text-destructive transition p-1"
                                 >
-                                  <span className="material-icons-round text-sm">close</span>
+                                  <span aria-hidden="true" className="material-icons-round text-sm">close</span>
                                 </button>
                               </div>
                             )}
@@ -266,7 +266,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                       onClick={() => setDeleteTarget(null)}
                       className="flex-1 py-2 rounded-xl bg-surface border border-border/30 text-foreground/60 text-[12px] hover:bg-surface/80 transition"
                     >
-                      취소
+                      Cancel
                     </button>
                   </div>
                 </motion.div>

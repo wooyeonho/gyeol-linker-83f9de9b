@@ -53,7 +53,7 @@ export function ReportDialog({ open, onClose, targetType, targetId }: ReportDial
           className="glass-panel rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
           {submitted ? (
             <div className="text-center py-8">
-              <span className="material-icons-round text-3xl text-primary mb-2">check_circle</span>
+              <span aria-hidden="true" className="material-icons-round text-3xl text-primary mb-2">check_circle</span>
               <p className="text-sm text-foreground/70">신고가 접수되었습니다</p>
             </div>
           ) : (
@@ -63,7 +63,7 @@ export function ReportDialog({ open, onClose, targetType, targetId }: ReportDial
                 {REPORT_REASONS.map(r => (
                   <button key={r.value} onClick={() => setReason(r.value)}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition ${reason === r.value ? 'bg-primary/20 text-primary' : 'bg-muted/30 text-foreground/60 hover:bg-muted/50'}`}>
-                    <span className="material-icons-round text-sm">{r.icon}</span>
+                    <span aria-hidden="true" className="material-icons-round text-sm">{r.icon}</span>
                     {r.label}
                   </button>
                 ))}
@@ -72,7 +72,7 @@ export function ReportDialog({ open, onClose, targetType, targetId }: ReportDial
                 placeholder="상세 내용 (선택사항)"
                 className="w-full bg-muted/20 border border-border/30 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground resize-none h-16 mb-4" />
               <div className="flex gap-2">
-                <button onClick={onClose} className="flex-1 py-2 text-xs text-muted-foreground hover:text-foreground transition rounded-lg">취소</button>
+                <button onClick={onClose} className="flex-1 py-2 text-xs text-muted-foreground hover:text-foreground transition rounded-lg">Cancel</button>
                 <button onClick={handleSubmit} disabled={!reason || submitting}
                   className="flex-1 py-2 text-xs bg-destructive/80 text-foreground rounded-lg hover:bg-destructive transition disabled:opacity-40">
                   {submitting ? '처리 중...' : '신고하기'}

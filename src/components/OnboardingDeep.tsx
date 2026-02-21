@@ -192,7 +192,7 @@ export function AIPersonalityRecommendation({ description, onApply }: { descript
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           className="p-3 rounded-xl glass-card space-y-2">
           <div className="flex items-center gap-1.5">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+            <Lightbulb className="w-3.5 h-3.5 text-[hsl(var(--warning))]" />
             <span className="text-[10px] font-medium text-foreground">AI Recommendation</span>
           </div>
           <div className="grid grid-cols-5 gap-1 text-center">

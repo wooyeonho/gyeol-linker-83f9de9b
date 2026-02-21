@@ -1,5 +1,5 @@
 /**
- * 코인 히스토리 패널 — 코인 획득/사용 내역 표시
+ * Coins 히스토리 패널 — Coins 획득/사용 내역 표시
  */
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -62,11 +62,11 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="material-icons-round text-amber-400 text-base">monetization_on</span>
-                  코인 히스토리
+                  <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-base">monetization_on</span>
+                  Coins 히스토리
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -75,7 +75,7 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="void-dot" />
-                  <span className="ml-3 text-[11px] text-muted-foreground/50">로딩 중...</span>
+                  <span className="ml-3 text-[11px] text-muted-foreground/50">Loading...</span>
                 </div>
               ) : logs.length === 0 ? (
                 <div className="text-center py-12">
@@ -86,10 +86,10 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
                 logs.map(log => (
                   <div key={log.id} className="glass-card rounded-xl px-3 py-2.5 flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      log.amount > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-red-500/10'
+                      log.amount > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-destructive/10'
                     }`}>
                       <span className={`material-icons-round text-sm ${
-                        log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-red-400'
+                        log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'
                       }`}>{log.amount > 0 ? 'add_circle' : 'remove_circle'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
                         {log.currency_type === 'exp' && ' • EXP'}
                       </p>
                     </div>
-                    <span className={`text-sm font-bold ${log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-red-400'}`}>
+                    <span className={`text-sm font-bold ${log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'}`}>
                       {log.amount > 0 ? '+' : ''}{log.amount}
                     </span>
                   </div>

@@ -36,7 +36,7 @@ export function ThemeToggle() {
       className="flex items-center justify-between w-full py-2"
     >
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-sm text-primary/50">
+        <span aria-hidden="true" className="material-icons-round text-sm text-primary/50">
           {theme === 'dark' ? 'dark_mode' : 'light_mode'}
         </span>
         <div>
@@ -45,10 +45,10 @@ export function ThemeToggle() {
         </div>
       </div>
       <motion.div
-        className={`w-10 h-6 rounded-full transition flex items-center px-1 ${theme === 'dark' ? 'bg-primary/30' : 'bg-amber-400/30'}`}
+        className={`w-10 h-6 rounded-full transition flex items-center px-1 ${theme === 'dark' ? 'bg-primary/30' : 'bg-[hsl(var(--warning))]/30'}`}
       >
         <motion.div
-          className={`w-4 h-4 rounded-full shadow-sm ${theme === 'dark' ? 'bg-primary' : 'bg-amber-400'}`}
+          className={`w-4 h-4 rounded-full shadow-sm ${theme === 'dark' ? 'bg-primary' : 'bg-[hsl(var(--warning))]'}`}
           animate={{ x: theme === 'dark' ? 0 : 16 }}
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         />

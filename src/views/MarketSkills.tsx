@@ -109,7 +109,7 @@ export default function MarketSkillsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background font-display pb-20 relative">
+    <main role="main" className="min-h-screen bg-background font-display pb-20 relative">
       <div className="aurora-bg" />
       <div className="max-w-md mx-auto p-5 pt-6 space-y-4 relative z-10">
         <header className="flex items-center justify-between">
@@ -120,7 +120,7 @@ export default function MarketSkillsPage() {
           {user && (
             <button type="button" onClick={() => setShowUpload(!showUpload)}
               className="flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition">
-              <span className="material-icons-round text-sm">add</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">add</span>
               Submit
             </button>
           )}
@@ -173,7 +173,7 @@ export default function MarketSkillsPage() {
 
         {/* Search */}
         <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2.5">
-          <span className="material-icons-round text-muted-foreground text-lg">search</span>
+          <span aria-hidden="true" className="material-icons-round text-muted-foreground text-lg">search</span>
           <input type="text" placeholder="Search skills..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
         </div>
@@ -197,7 +197,7 @@ export default function MarketSkillsPage() {
         ) : filteredSkills.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <span className="material-icons-round text-primary/40 text-2xl">extension</span>
+              <span aria-hidden="true" className="material-icons-round text-primary/40 text-2xl">extension</span>
             </div>
             <p className="text-sm text-foreground/60 font-medium">No skills found</p>
           </div>
@@ -210,7 +210,7 @@ export default function MarketSkillsPage() {
                 <motion.div key={s.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                   className="glass-card rounded-2xl p-3 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="material-icons-round text-primary text-lg">extension</span>
+                    <span aria-hidden="true" className="material-icons-round text-primary text-lg">extension</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">

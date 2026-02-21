@@ -1,5 +1,5 @@
 /**
- * 성격 변화 히스토리 — 시간별 성격 변화 추이 차트
+ * Personality 변화 히스토리 — 시간별 Personality 변화 추이 차트
  */
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -21,7 +21,7 @@ const STAT_COLORS: Record<string, string> = {
 };
 
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의성', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: 'Creativity', energy: 'Energy', humor: 'Humor',
 };
 
 interface Props {
@@ -50,7 +50,7 @@ export function PersonalityHistory({ agentId }: Props) {
     return (
       <div className="glass-card rounded-2xl p-4 text-center">
         <span className="text-2xl">📊</span>
-        <p className="text-[11px] text-muted-foreground mt-2">아직 성격 변화 데이터가 없어요</p>
+        <p className="text-[11px] text-muted-foreground mt-2">아직 Personality 변화 데이터가 없어요</p>
       </div>
     );
   }
@@ -70,8 +70,8 @@ export function PersonalityHistory({ agentId }: Props) {
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-primary text-sm">timeline</span>
-          성격 변화 히스토리
+          <span aria-hidden="true" className="material-icons-round text-primary text-sm">timeline</span>
+          Personality 변화 히스토리
         </h3>
         <span className="text-[9px] text-muted-foreground">{entries.length}건</span>
       </div>
@@ -83,7 +83,7 @@ export function PersonalityHistory({ agentId }: Props) {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className={`text-sm font-bold ${total > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : total < 0 ? 'text-red-400' : 'text-muted-foreground'}`}
+              className={`text-sm font-bold ${total > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : total < 0 ? 'text-destructive' : 'text-muted-foreground'}`}
             >
               {total > 0 ? '+' : ''}{total}
             </motion.div>
@@ -113,7 +113,7 @@ export function PersonalityHistory({ agentId }: Props) {
                 {changes.map(([stat, val]) => (
                   <span
                     key={stat}
-                    className={`px-1.5 py-0.5 rounded-full ${(val as number) > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-red-500/10 text-red-400'}`}
+                    className={`px-1.5 py-0.5 rounded-full ${(val as number) > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-destructive/10 text-destructive'}`}
                   >
                     {STAT_LABELS[stat]} {(val as number) > 0 ? '+' : ''}{val as number}
                   </span>

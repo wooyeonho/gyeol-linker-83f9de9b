@@ -61,7 +61,7 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
             animate={refreshing ? { rotate: 360 } : { rotate: pullDistance * 3 }}
             transition={refreshing ? { repeat: Infinity, duration: 0.8, ease: 'linear' } : { duration: 0 }}
           >
-            <span className="material-icons-round text-primary text-lg">refresh</span>
+            <span aria-hidden="true" className="material-icons-round text-primary text-lg">refresh</span>
           </motion.div>
           <span className="text-[10px] text-muted-foreground ml-2">
             {refreshing ? '새로고침 중...' : pullDistance > 60 ? '놓으면 새로고침' : '아래로 당겨 새로고침'}

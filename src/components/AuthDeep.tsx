@@ -5,9 +5,9 @@ import { supabase } from '@/src/lib/supabase';
 
 export function SocialLoginButtons({ onLogin }: { onLogin: (provider: string) => void }) {
   const providers = [
-    { id: 'google', label: 'Google', icon: '🔵', color: 'hover:bg-blue-500/10' },
+    { id: 'google', label: 'Google', icon: '🔵', color: 'hover:bg-[hsl(var(--info)/0.1)]' },
     { id: 'github', label: 'GitHub', icon: '⚫', color: 'hover:bg-slate-500/10' },
-    { id: 'kakao', label: 'Kakao', icon: '💛', color: 'hover:bg-amber-500/10' },
+    { id: 'kakao', label: 'Kakao', icon: '💛', color: 'hover:bg-[hsl(var(--warning)/0.1)]' },
   ];
 
   return (
@@ -75,7 +75,7 @@ export function ProfilePictureUpload({ currentUrl, onUpload }: { currentUrl?: st
       <div className="relative">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center overflow-hidden">
           {currentUrl ? (
-            <img src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
+            <img loading="lazy" src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <User className="w-6 h-6 text-primary/50" />
           )}

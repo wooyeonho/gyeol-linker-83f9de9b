@@ -1,5 +1,5 @@
 /**
- * 대화 공유 링크 생성 컴포넌트
+ * 대화 Share 링크 생성 컴포넌트
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -57,11 +57,11 @@ export function ConversationShare({ isOpen, onClose, messages, agentName }: Conv
           className="glass-card rounded-2xl p-5 w-full max-w-[340px] space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <span className="material-icons-round text-primary text-base">share</span>
-              대화 공유
+              <span aria-hidden="true" className="material-icons-round text-primary text-base">share</span>
+              대화 Share
             </h3>
             <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-              <span className="material-icons-round text-muted-foreground text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
             </button>
           </div>
 
@@ -88,14 +88,14 @@ export function ConversationShare({ isOpen, onClose, messages, agentName }: Conv
           <div className="flex gap-2">
             <button onClick={handleCopy}
               className="flex-1 py-2.5 rounded-xl text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 transition flex items-center justify-center gap-1">
-              <span className="material-icons-round text-sm">{copied ? 'check' : 'content_copy'}</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">{copied ? 'check' : 'content_copy'}</span>
               {copied ? '복사됨!' : '복사'}
             </button>
             {typeof navigator.share === 'function' && (
               <button onClick={handleWebShare}
                 className="flex-1 py-2.5 rounded-xl text-xs font-medium bg-secondary/10 text-secondary-foreground border border-secondary/20 hover:bg-secondary/15 transition flex items-center justify-center gap-1">
-                <span className="material-icons-round text-sm">ios_share</span>
-                공유
+                <span aria-hidden="true" className="material-icons-round text-sm">ios_share</span>
+                Share
               </button>
             )}
           </div>

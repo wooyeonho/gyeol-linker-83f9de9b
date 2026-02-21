@@ -34,7 +34,7 @@ export function PurchaseConfirmModal({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-foreground">Confirm Purchase</h2>
                 <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-foreground/5">
-                  <span className="material-icons-round text-muted-foreground">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-muted-foreground">close</span>
                 </button>
               </div>
               <p className="text-sm text-muted-foreground mb-5">{itemDescription || 'Please review the details.'}</p>
@@ -43,7 +43,7 @@ export function PurchaseConfirmModal({
                 <div className="relative">
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
                   <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/10 border border-foreground/10 flex items-center justify-center">
-                    <span className="material-icons-round text-primary text-3xl">auto_awesome</span>
+                    <span aria-hidden="true" className="material-icons-round text-primary text-3xl">auto_awesome</span>
                   </div>
                 </div>
                 <p className="font-bold text-foreground text-lg">{itemName}</p>
@@ -68,7 +68,7 @@ export function PurchaseConfirmModal({
               
               <button onClick={onConfirm} disabled={loading || remaining < 0}
                 className="w-full py-4 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 mb-3">
-                <span className="material-icons-round text-lg">fingerprint</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">fingerprint</span>
                 {loading ? 'Processing...' : 'Confirm Purchase'}
               </button>
               <button onClick={onClose}
@@ -76,7 +76,7 @@ export function PurchaseConfirmModal({
                 Keep Looking →
               </button>
               <p className="text-center text-[10px] text-muted-foreground mt-3 flex items-center justify-center gap-1">
-                <span className="material-icons-round text-[12px]">lock</span>
+                <span aria-hidden="true" className="material-icons-round text-[12px]">lock</span>
                 Secure Transaction via GYEOL Chain
               </p>
             </div>

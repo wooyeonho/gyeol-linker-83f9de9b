@@ -1,5 +1,5 @@
 /**
- * 활동 피드 필터 & 검색 — 카테고리별 필터와 텍스트 검색
+ * 활동 Feed 필터 & Search — 카테고리별 필터와 텍스트 Search
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,9 +31,9 @@ export function ActivityFilter({ onFilterChange, onSearchChange, activeFilter, s
         <button
           onClick={() => setSearchOpen(!searchOpen)}
           className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
-          aria-label="활동 검색"
+          aria-label="활동 Search"
         >
-          <span className="material-icons-round text-sm">search</span>
+          <span aria-hidden="true" className="material-icons-round text-sm">search</span>
         </button>
         <AnimatePresence>
           {searchOpen && (
@@ -47,7 +47,7 @@ export function ActivityFilter({ onFilterChange, onSearchChange, activeFilter, s
                 type="text"
                 value={searchQuery}
                 onChange={e => onSearchChange(e.target.value)}
-                placeholder="활동 검색..."
+                placeholder="활동 Search..."
                 autoFocus
                 className="w-full px-3 py-1.5 rounded-lg glass-card text-sm text-foreground placeholder:text-muted-foreground outline-none"
               />
@@ -68,7 +68,7 @@ export function ActivityFilter({ onFilterChange, onSearchChange, activeFilter, s
                 : 'glass-card text-muted-foreground hover:text-foreground'
             }`}
           >
-            <span className="material-icons-round text-[12px]">{cat.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-[12px]">{cat.icon}</span>
             {cat.label}
           </button>
         ))}

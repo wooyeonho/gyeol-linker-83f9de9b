@@ -156,7 +156,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
               <button onClick={handleNext}
                 className="w-full py-4 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold flex items-center justify-center gap-2 text-sm">
                 Continue
-                <span className="material-icons-round text-lg">arrow_forward</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">arrow_forward</span>
               </button>
           </div>
         )}
@@ -188,7 +188,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
                 className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
-                <span className="material-icons-round text-sm">arrow_back</span> Back
+                <span aria-hidden="true" className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleNext}
                 className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm">
@@ -240,7 +240,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
                 className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
-                <span className="material-icons-round text-sm">arrow_back</span> Back
+                <span aria-hidden="true" className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleFinish} disabled={saving}
                 className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
@@ -283,7 +283,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
                 className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
-                <span className="material-icons-round text-sm">arrow_back</span> Back
+                <span aria-hidden="true" className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleFinish} disabled={saving}
                 className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">

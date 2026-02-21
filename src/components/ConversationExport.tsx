@@ -15,7 +15,7 @@ const FORMATS = [
   { id: 'txt', icon: 'description', color: 'text-primary', label: '텍스트 (.txt)', desc: '읽기 쉬운 텍스트 형식' },
   { id: 'md', icon: 'article', color: 'text-[hsl(var(--success,142_71%_45%))]', label: '마크다운 (.md)', desc: '포맷 유지 마크다운' },
   { id: 'json', icon: 'code', color: 'text-secondary', label: 'JSON (.json)', desc: '구조화된 데이터 형식' },
-  { id: 'pdf', icon: 'picture_as_pdf', color: 'text-red-400', label: 'PDF (.pdf)', desc: '인쇄/공유용 PDF 형식' },
+  { id: 'pdf', icon: 'picture_as_pdf', color: 'text-destructive', label: 'PDF (.pdf)', desc: '인쇄/Share용 PDF 형식' },
 ] as const;
 
 export function ConversationExport({ isOpen, onClose, messages, agentName }: ConversationExportProps) {
@@ -29,7 +29,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
 
   const exportAs = (fmt: string) => {
     const ts = new Date().toISOString().slice(0, 10);
-    const header = `GYEOL 대화 기록\n에이전트: ${agentName}\n날짜: ${ts}\n메시지 수: ${messages.length}`;
+    const header = `GYEOL 대화 기록\n에Previous트: ${agentName}\n날짜: ${ts}\n메시지 수: ${messages.length}`;
 
     if (fmt === 'json') {
       const data = {
@@ -52,7 +52,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
         const bg = m.role === 'user' ? '#e8eaf6' : '#f3e5f5';
         return `<div style="margin:8px 0;padding:12px;border-radius:12px;background:${bg}"><strong>${sender}</strong> <small style="color:#888">${time}</small><p style="margin:4px 0 0;white-space:pre-wrap">${m.content.replace(/</g,'&lt;')}</p></div>`;
       }).join('');
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>GYEOL Chat - ${agentName}</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px}h1{font-size:18px}small{color:#888}</style></head><body><h1>🔮 GYEOL 대화 기록</h1><p>에이전트: ${agentName} | 날짜: ${ts} | 메시지: ${messages.length}개</p><hr>${htmlLines}</body></html>`;
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>GYEOL Chat - ${agentName}</title><style>body{font-family:system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px}h1{font-size:18px}small{color:#888}</style></head><body><h1>🔮 GYEOL 대화 기록</h1><p>에Previous트: ${agentName} | 날짜: ${ts} | 메시지: ${messages.length}개</p><hr>${htmlLines}</body></html>`;
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(html);
@@ -80,7 +80,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
             className="glass-card rounded-2xl p-5 w-full max-w-[320px] space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <span className="material-icons-round text-primary text-lg">download</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-lg">download</span>
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">대화 내보내기</h3>
@@ -101,7 +101,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
                 </button>
               ))}
             </div>
-            <button onClick={onClose} className="w-full py-2 text-[11px] text-muted-foreground hover:text-foreground transition">취소</button>
+            <button onClick={onClose} className="w-full py-2 text-[11px] text-muted-foreground hover:text-foreground transition">Cancel</button>
           </motion.div>
         </motion.div>
       )}

@@ -1,5 +1,5 @@
 /**
- * 새 글 작성 모달 — 소셜 피드에 글 작성
+ * 새 글 Write 모달 — 소셜 Feed에 글 Write
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,9 +16,9 @@ interface NewPostModalProps {
 
 const POST_TYPES = [
   { key: 'reflection', emoji: '💭', label: '생각/감상' },
-  { key: 'milestone', emoji: '🏆', label: '업적/마일스톤' },
+  { key: 'milestone', emoji: '🏆', label: 'Achievement/마일스톤' },
   { key: 'question', emoji: '❓', label: '질문' },
-  { key: 'tip', emoji: '💡', label: '팁/공유' },
+  { key: 'tip', emoji: '💡', label: '팁/Share' },
 ] as const;
 
 export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, onPosted }: NewPostModalProps) {
@@ -60,9 +60,9 @@ export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, on
             onClick={e => e.stopPropagation()}
             className="w-full max-w-md bg-card rounded-t-3xl p-5 space-y-4 pb-safe">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-foreground">새 글 작성</h3>
+              <h3 className="text-sm font-bold text-foreground">새 글 Write</h3>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-                <span className="material-icons-round text-lg">close</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">close</span>
               </button>
             </div>
 
@@ -103,7 +103,7 @@ export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, on
               <span className="text-[9px] text-muted-foreground">{content.length}/500</span>
               <button onClick={handlePost} disabled={!content.trim() || posting}
                 className="px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium disabled:opacity-40 transition btn-glow">
-                {posting ? '게시 중...' : '게시하기'}
+                {posting ? 'Post 중...' : 'Post하기'}
               </button>
             </div>
           </motion.div>

@@ -33,12 +33,12 @@ const MOCK_CHILD: ChildInfo = {
     { category: '🎯', value: '관심사: 주식 투자' },
     { category: '📚', value: '학습 주제: AI 기술 트렌드' },
   ],
-  mutation: '창의성 +15 폭발!',
+  mutation: 'Creativity +15 폭발!',
 };
 
 const STATS = ['warmth', 'logic', 'creativity', 'energy', 'humor'] as const;
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의성', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: 'Creativity', energy: 'Energy', humor: 'Humor',
 };
 
 function StatBar({ label, value, parentA, parentB, color }: { label: string; value: number; parentA: number; parentB: number; color: string }) {
@@ -95,15 +95,15 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
               {/* Parent spheres + child */}
               <div className="flex items-center justify-center gap-3 mt-4">
                 <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mx-auto">
-                    <span className="text-[10px] text-blue-400 font-bold">A</span>
+                  <div className="w-10 h-10 rounded-full bg-[hsl(var(--info)/0.2)] border border-[hsl(var(--info))]/30 flex items-center justify-center mx-auto">
+                    <span className="text-[10px] text-[hsl(var(--info))] font-bold">A</span>
                   </div>
                   <p className="text-[9px] text-muted-foreground/50 mt-1">{parentA.name}</p>
                 </div>
                 <span className="text-muted-foreground/20 text-lg">+</span>
                 <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-pink-500/20 border border-pink-500/30 flex items-center justify-center mx-auto">
-                    <span className="text-[10px] text-pink-400 font-bold">B</span>
+                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-pink-500/30 flex items-center justify-center mx-auto">
+                    <span className="text-[10px] text-primary font-bold">B</span>
                   </div>
                   <p className="text-[9px] text-muted-foreground/50 mt-1">{parentB.name}</p>
                 </div>
@@ -124,7 +124,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
 
             {/* Personality comparison */}
             <div className="px-5 py-3 space-y-2">
-              <p className="text-[10px] font-semibold text-foreground/60 mb-2">물려받은 성격</p>
+              <p className="text-[10px] font-semibold text-foreground/60 mb-2">물려받은 Personality</p>
               {STATS.map((stat) => (
                 <StatBar
                   key={stat}
@@ -158,12 +158,12 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
             {/* Mutation */}
             {child.mutation && (
               <motion.div
-                className="mx-5 mb-3 px-3 py-2 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-center"
+                className="mx-5 mb-3 px-3 py-2 rounded-xl bg-[hsl(var(--warning)/0.1)] border border-yellow-500/20 text-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <p className="text-[10px] text-yellow-400 font-medium">
+                <p className="text-[10px] text-[hsl(var(--warning))] font-medium">
                   🫧 돌연변이! {child.mutation}
                 </p>
               </motion.div>
@@ -181,7 +181,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                 onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl bg-surface border border-border/30 text-foreground/60 text-[12px] hover:bg-surface/80 transition"
               >
-                커뮤니티 공유
+                커뮤니티 Share
               </button>
             </div>
           </motion.div>

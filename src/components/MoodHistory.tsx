@@ -52,7 +52,7 @@ export function MoodHistory({ agentId }: { agentId?: string }) {
     return (
       <div className="glass-card rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <span className="material-icons-round text-primary/50 text-sm">timeline</span>
+          <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">timeline</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Emotion Timeline</span>
         </div>
         <p className="text-center py-3 text-muted-foreground text-[11px]">
@@ -69,7 +69,7 @@ export function MoodHistory({ agentId }: { agentId?: string }) {
     <div className="glass-card rounded-2xl p-4" role="region" aria-label="감정 히스토리">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="material-icons-round text-primary/50 text-sm">timeline</span>
+          <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">timeline</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Emotion Timeline</span>
         </div>
         <span className="text-[9px] text-muted-foreground/50">{entries.length}일</span>

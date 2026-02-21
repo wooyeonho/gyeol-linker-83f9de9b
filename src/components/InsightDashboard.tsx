@@ -24,7 +24,7 @@ const EMOTION_EMOJI: Record<string, string> = {
 };
 
 const STAT_LABELS: Record<string, string> = {
-  warmth: '따뜻함', logic: '논리', creativity: '창의성', energy: '에너지', humor: '유머',
+  warmth: 'Warmth', logic: 'Logic', creativity: 'Creativity', energy: 'Energy', humor: 'Humor',
 };
 
 interface Props {
@@ -85,11 +85,11 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="material-icons-round text-primary text-base">insights</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-base">insights</span>
                   대화 인사이트
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -101,7 +101,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                 </div>
               ) : insights.length === 0 ? (
                 <div className="text-center py-12">
-                  <span className="material-icons-round text-3xl text-muted-foreground/20">psychology</span>
+                  <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20">psychology</span>
                   <p className="text-[11px] text-muted-foreground/50 mt-2">아직 대화 인사이트가 없어요</p>
                   <p className="text-[10px] text-muted-foreground/30 mt-1">AI와 대화를 나눠보세요!</p>
                 </div>
@@ -180,8 +180,8 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                                   </div>
                                 )}
                                 {ins.what_to_improve && (
-                                  <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-2">
-                                    <p className="text-[8px] text-amber-400/70 font-bold mb-1">↗ 개선점</p>
+                                  <div className="rounded-lg bg-[hsl(var(--warning))]/5 border border-[hsl(var(--warning))]/10 p-2">
+                                    <p className="text-[8px] text-[hsl(var(--warning))]/70 font-bold mb-1">↗ 개선점</p>
                                     <p className="text-[10px] text-foreground/70">{ins.what_to_improve}</p>
                                   </div>
                                 )}
@@ -196,7 +196,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
 
                               {ins.next_hint && (
                                 <div>
-                                  <p className="text-[8px] text-muted-foreground/50 mb-1">💡 다음 힌트</p>
+                                  <p className="text-[8px] text-muted-foreground/50 mb-1">💡 Next 힌트</p>
                                   <p className="text-[10px] text-primary/80">{ins.next_hint}</p>
                                 </div>
                               )}
@@ -204,7 +204,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                               {/* Personality delta */}
                               {Object.keys(ins.personality_delta ?? {}).length > 0 && (
                                 <div>
-                                  <p className="text-[8px] text-muted-foreground/50 mb-1.5">📊 성격 변화</p>
+                                  <p className="text-[8px] text-muted-foreground/50 mb-1.5">📊 Personality 변화</p>
                                   <div className="flex gap-2">
                                     {Object.entries(ins.personality_delta).map(([k, v]) => (
                                       <span key={k} className={`text-[9px] px-1.5 py-0.5 rounded-full ${

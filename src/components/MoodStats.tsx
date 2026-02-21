@@ -45,7 +45,7 @@ export function MoodStats({ agentId }: { agentId?: string }) {
   return (
     <div className="glass-card rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="material-icons-round text-primary/50 text-sm">mood</span>
+        <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">mood</span>
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Mood Overview</span>
       </div>
       <div className="flex items-center gap-3 mb-3">
