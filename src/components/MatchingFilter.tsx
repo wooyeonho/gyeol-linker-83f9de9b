@@ -138,7 +138,7 @@ export function MatchingFilter({ isOpen, onClose, onApply }: Props) {
                 취소
               </button>
               <button onClick={handleApply}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold">
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold">
                 적용 ({selectedInterests.length + selectedPersonalities.length}개)
               </button>
             </div>

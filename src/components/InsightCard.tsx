@@ -82,8 +82,8 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
 
           {/* What worked / to improve */}
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/10 p-2.5">
-              <p className="text-[8px] text-emerald-400/70 font-bold mb-1 uppercase tracking-wider">✦ 효과적</p>
+            <div className="rounded-xl bg-[hsl(var(--success,142_71%_45%)/0.05)] border border-[hsl(var(--success,142_71%_45%)/0.1)] p-2.5">
+              <p className="text-[8px] text-[hsl(var(--success,142_71%_45%)/0.7)] font-bold mb-1 uppercase tracking-wider">✦ 효과적</p>
               <p className="text-[10px] text-foreground/70 leading-relaxed">{insight.whatWorked}</p>
             </div>
             <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-2.5">
@@ -108,10 +108,10 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min(100, Math.abs(val) * 15)}%` }}
                         transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 * i }}
-                        className={`h-full rounded-full ${val > 0 ? 'bg-emerald-400/60' : 'bg-rose-400/60'}`}
+                        className={`h-full rounded-full ${val > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.6)]' : 'bg-destructive/60'}`}
                       />
                     </div>
-                    <span className={`text-[10px] font-bold w-6 shrink-0 ${val > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`text-[10px] font-bold w-6 shrink-0 ${val > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'}`}>
                       {val > 0 ? `+${val}` : val}
                     </span>
                   </div>

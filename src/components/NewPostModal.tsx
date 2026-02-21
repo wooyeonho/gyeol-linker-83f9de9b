@@ -102,7 +102,7 @@ export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, on
             <div className="flex items-center justify-between">
               <span className="text-[9px] text-muted-foreground">{content.length}/500</span>
               <button onClick={handlePost} disabled={!content.trim() || posting}
-                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium disabled:opacity-40 transition btn-glow">
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium disabled:opacity-40 transition btn-glow">
                 {posting ? '게시 중...' : '게시하기'}
               </button>
             </div>

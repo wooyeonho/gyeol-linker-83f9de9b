@@ -134,7 +134,7 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
                       {stats.streak}일
                     </span>
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                      <span className="material-icons-round text-emerald-400 text-[10px]">emoji_events</span>
+                      <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-[10px]">emoji_events</span>
                       {stats.achievements}
                     </span>
                   </div>

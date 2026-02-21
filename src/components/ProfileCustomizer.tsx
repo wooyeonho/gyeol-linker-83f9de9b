@@ -79,7 +79,7 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
               <div className="px-4 pb-3 -mt-6 flex items-end gap-3">
                 <div className="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-lg relative">
                   {badge}
-                  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-card" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[hsl(var(--success,142_71%_45%))] border-2 border-card" />
                 </div>
                 <div className="pb-1">
                   <p className="text-[11px] font-bold text-foreground">{agent?.name ?? 'GYEOL'}</p>
@@ -127,7 +127,7 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
               <input type="text" value={customStatus} onChange={e => setCustomStatus(e.target.value)}
                 placeholder="Or type your own status..."
                 maxLength={50}
-                className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-[11px] text-foreground placeholder:text-white/20 outline-none" />
+                className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-[11px] text-foreground placeholder:text-foreground/20 outline-none" />
             </div>
 
             {/* Bio */}
@@ -136,11 +136,11 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
               <textarea value={bio} onChange={e => setBio(e.target.value)}
                 placeholder="Tell the world about your AI companion..."
                 maxLength={150} rows={2}
-                className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-[11px] text-foreground placeholder:text-white/20 outline-none resize-none" />
+                className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-[11px] text-foreground placeholder:text-foreground/20 outline-none resize-none" />
             </div>
 
             <button onClick={save}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold">
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold">
               Save Profile
             </button>
           </motion.div>

@@ -21,6 +21,7 @@
   --destructive-foreground: 0 0% 100%;
   --radius: 1rem;
   --surface: 240 10% 96%;
+  --success: 142 71% 45%;
   --card-bg: 0 0% 100% / 0.6;
   --card-border: 240 10% 90% / 0.5;
   --card-radius: 1rem;
@@ -46,6 +47,7 @@
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
   --surface: 260 25% 6%;
+  --success: 142 71% 45%;
   --card-bg: 260 25% 8% / 0.6;
   --card-border: 260 15% 15% / 0.5;
   --card-radius: 1rem;

@@ -41,7 +41,7 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-white/25 leading-relaxed">
+      <p className="text-[10px] text-foreground/25 leading-relaxed">
         AI의 기본 성격과 행동 방식을 커스터마이즈하세요. 대화 시작 시 시스템 프롬프트로 사용됩니다.
       </p>
 
@@ -54,7 +54,7 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
               prompt === t.prompt ? 'glass-card-selected' : 'glass-card'
             }`}>
             <span className="text-sm block">{t.icon}</span>
-            <span className="text-[9px] text-white/40 mt-0.5 block whitespace-nowrap">{t.label}</span>
+            <span className="text-[9px] text-foreground/40 mt-0.5 block whitespace-nowrap">{t.label}</span>
           </button>
         ))}
       </div>
@@ -66,15 +66,15 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
         placeholder="예: 너는 친절한 한국어 튜터야. 항상 예시를 들어 설명하고, 격려를 잊지 마..."
         maxLength={1000}
         rows={4}
-        className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-xs text-foreground placeholder:text-white/15 outline-none focus:border-primary/20 resize-none leading-relaxed"
+        className="w-full rounded-xl bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2.5 text-xs text-foreground placeholder:text-foreground/15 outline-none focus:border-primary/20 resize-none leading-relaxed"
       />
 
       <div className="flex items-center justify-between">
-        <span className="text-[9px] text-white/15">{prompt.length}/1000</span>
+        <span className="text-[9px] text-foreground/15">{prompt.length}/1000</span>
         <div className="flex items-center gap-2">
           {saved && (
             <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-[10px] text-emerald-400 flex items-center gap-1">
+              className="text-[10px] text-[hsl(var(--success,142_71%_45%))] flex items-center gap-1">
               <span className="material-icons-round text-[12px]">check</span> 저장됨
             </motion.span>
           )}

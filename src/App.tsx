@@ -44,7 +44,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/50 text-sm animate-pulse">Loading...</div>
+        <div className="text-foreground/50 text-sm animate-pulse">Loading...</div>
       </main>
     );
   }
@@ -57,7 +57,7 @@ function ModeRouter() {
   if (loading) {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/50 text-sm animate-pulse">Loading...</div>
+        <div className="text-foreground/50 text-sm animate-pulse">Loading...</div>
       </main>
     );
   }
@@ -81,7 +81,7 @@ function App() {
   if (loading) {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/50 text-sm animate-pulse">Loading GYEOL...</div>
+        <div className="text-foreground/50 text-sm animate-pulse">Loading GYEOL...</div>
       </main>
     );
   }

@@ -112,13 +112,13 @@ export default function Onboarding({ userId, onComplete }: Props) {
       >
         {/* Progress bar */}
         <div className="mb-8">
-          <p className="text-[10px] text-slate-400 mb-2 text-center">Step {currentStepNum} of {TOTAL_STEPS}</p>
+          <p className="text-[10px] text-muted-foreground mb-2 text-center">Step {currentStepNum} of {TOTAL_STEPS}</p>
           <div className="flex gap-1.5">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div key={i} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${
                 i < currentStepNum
                   ? 'bg-gradient-to-r from-primary to-secondary shadow-[0_0_8px_rgba(120,78,218,0.5)]'
-                  : 'bg-white/[0.06]'
+                  : 'bg-foreground/[0.06]'
               }`} />
             ))}
           </div>
@@ -130,7 +130,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="void-dot mb-2" />
             <div className="text-center space-y-2">
               <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">GYEOL</h1>
-              <p className="text-sm text-slate-400">Choose your experience</p>
+              <p className="text-sm text-muted-foreground">Choose your experience</p>
             </div>
 
             <div className="w-full grid grid-cols-2 gap-3">
@@ -139,22 +139,22 @@ export default function Onboarding({ userId, onComplete }: Props) {
                 { key: 'advanced' as const, icon: '🧬', label: 'Advanced', desc: 'Full Experience' },
               ].map(m => (
                 <button key={m.key} onClick={() => setSelectedMode(m.key)}
-                  className={`p-5 rounded-2xl text-center transition-all hover:border-white/15 hover:-translate-y-1 ${
+                  className={`p-5 rounded-2xl text-center transition-all hover:border-foreground/15 hover:-translate-y-1 ${
                     selectedMode === m.key
                       ? 'glass-card-selected'
                       : 'glass-card'
                   }`}>
                   <span className="text-2xl block mb-2">{m.icon}</span>
                   <p className="text-sm font-medium text-foreground/80">{m.label}</p>
-                  <p className="text-[10px] text-slate-500 mt-1">{m.desc}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{m.desc}</p>
                 </button>
               ))}
             </div>
 
-            <p className="text-[10px] text-slate-500">You can switch anytime in Settings</p>
+            <p className="text-[10px] text-muted-foreground">You can switch anytime in Settings</p>
 
               <button onClick={handleNext}
-                className="w-full py-4 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold flex items-center justify-center gap-2 text-sm">
+                className="w-full py-4 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold flex items-center justify-center gap-2 text-sm">
                 Continue
                 <span className="material-icons-round text-lg">arrow_forward</span>
               </button>
@@ -167,12 +167,12 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="void-dot mb-2" />
             <div className="text-center space-y-2">
               <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">Welcome to GYEOL</h1>
-              <p className="text-sm text-slate-400">Your AI companion that evolves with you</p>
+              <p className="text-sm text-muted-foreground">Your AI companion that evolves with you</p>
             </div>
 
             <div className="w-full space-y-3">
-              <label className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Name your companion</label>
-              <div className="input-glow rounded-full border border-white/[0.06] bg-[#1f1d25] transition-all">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">Name your companion</label>
+              <div className="input-glow rounded-full border border-foreground/[0.06] bg-[#1f1d25] transition-all">
                 <input
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
                   placeholder="GYEOL" maxLength={20}
@@ -187,11 +187,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
                 <span className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleNext}
-                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm">
                 Next
               </button>
             </div>
@@ -205,7 +205,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
               <h2 className="text-2xl font-bold text-foreground text-center">
                 Who resonates with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">you</span>?
               </h2>
-              <p className="text-sm text-slate-400 text-center mt-2">Select the persona that best matches your energy and goals.</p>
+              <p className="text-sm text-muted-foreground text-center mt-2">Select the persona that best matches your energy and goals.</p>
             </div>
 
             {selectedChar && (
@@ -217,13 +217,13 @@ export default function Onboarding({ userId, onComplete }: Props) {
             <div className="w-full grid grid-cols-3 gap-2">
               {CHARACTERS.map(c => (
                 <button key={String(c.key)} onClick={() => setSelectedChar(c.key)}
-                  className={`flex flex-col items-center p-3 rounded-2xl transition-all hover:border-white/15 hover:-translate-y-1 ${
+                  className={`flex flex-col items-center p-3 rounded-2xl transition-all hover:border-foreground/15 hover:-translate-y-1 ${
                     selectedChar === c.key
                       ? 'glass-card-selected scale-105'
                       : 'glass-card'
                   }`}>
                   <span className="text-lg">{c.emoji}</span>
-                  <span className="text-[9px] text-slate-500 mt-1">{c.label}</span>
+                  <span className="text-[9px] text-muted-foreground mt-1">{c.label}</span>
                   {c.key && PERSONA_TRAITS[c.key] && (
                     <div className="flex flex-wrap gap-0.5 mt-1.5 justify-center">
                       {PERSONA_TRAITS[c.key].map(trait => (
@@ -239,11 +239,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
                 <span className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleFinish} disabled={saving}
-                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
                 {saving ? 'Creating...' : 'Start'}
               </button>
             </div>
@@ -257,19 +257,19 @@ export default function Onboarding({ userId, onComplete }: Props) {
               <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-400">
                 Choose {name.trim() || 'GYEOL'}'s Personality
               </h2>
-              <p className="text-xs text-slate-400">This can evolve over time through conversation</p>
+              <p className="text-xs text-muted-foreground">This can evolve over time through conversation</p>
             </div>
 
             <div className="w-full grid grid-cols-2 gap-3">
               {PRESETS.map((p, i) => (
                 <button key={p.label} onClick={() => setPreset(i)}
-                  className={`p-4 rounded-2xl text-left transition-all hover:border-white/15 hover:-translate-y-1 ${
+                  className={`p-4 rounded-2xl text-left transition-all hover:border-foreground/15 hover:-translate-y-1 ${
                     preset === i
                       ? 'glass-card-selected'
                       : 'glass-card'
                   }`}>
                   <p className="text-sm font-medium text-foreground/80">{p.label}</p>
-                  <p className="text-[10px] text-slate-500 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     {Object.entries(p).filter(([k]) => k !== 'label')
                       .sort(([, a], [, b]) => (b as number) - (a as number))
                       .slice(0, 2)
@@ -282,11 +282,11 @@ export default function Onboarding({ userId, onComplete }: Props) {
 
             <div className="flex gap-3 w-full">
               <button onClick={handleBack}
-                className="flex-1 py-3 text-slate-400 hover:text-white flex items-center justify-center gap-2 text-sm transition">
+                className="flex-1 py-3 text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm transition">
                 <span className="material-icons-round text-sm">arrow_back</span> Back
               </button>
               <button onClick={handleFinish} disabled={saving}
-                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
+                className="flex-1 py-3.5 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-full transition-all active:scale-[0.98] text-sm disabled:opacity-30">
                 {saving ? 'Creating...' : 'Start Journey'}
               </button>
             </div>

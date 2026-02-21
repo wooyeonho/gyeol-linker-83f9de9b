@@ -154,7 +154,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
             <div className="overflow-y-auto max-h-[65vh] px-4 py-3 space-y-2 gyeol-scrollbar-hide">
               {message && (
                 <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-2 text-sm font-medium text-emerald-400">{message}</motion.div>
+                  className="text-center py-2 text-sm font-medium text-[hsl(var(--success,142_71%_45%))]">{message}</motion.div>
               )}
 
               {/* Sort & filter controls */}
@@ -212,7 +212,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                         className={`text-[9px] px-3 py-1.5 rounded-full font-medium transition ${
                           inv.is_equipped
                             ? 'bg-muted/20 text-muted-foreground'
-                            : 'bg-gradient-to-r from-primary to-secondary text-white'
+                            : 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
                         }`}
                       >
                         {using === inv.id ? '...' : inv.is_equipped ? '해제' : item?.category === 'boost' ? '사용' : '장착'}

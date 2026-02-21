@@ -26,7 +26,7 @@ const RARITY_GRADIENT: Record<string, string> = {
 
 const RARITY_BORDER: Record<string, string> = {
   common: 'border-slate-400/30',
-  uncommon: 'border-emerald-400/30',
+  uncommon: 'border-[hsl(var(--success,142_71%_45%)/0.3)]',
   rare: 'border-blue-400/30',
   epic: 'border-purple-400/30',
   legendary: 'border-amber-400/30',

@@ -83,7 +83,7 @@ export function PersonalityHistory({ agentId }: Props) {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className={`text-sm font-bold ${total > 0 ? 'text-emerald-400' : total < 0 ? 'text-red-400' : 'text-muted-foreground'}`}
+              className={`text-sm font-bold ${total > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : total < 0 ? 'text-red-400' : 'text-muted-foreground'}`}
             >
               {total > 0 ? '+' : ''}{total}
             </motion.div>
@@ -113,7 +113,7 @@ export function PersonalityHistory({ agentId }: Props) {
                 {changes.map(([stat, val]) => (
                   <span
                     key={stat}
-                    className={`px-1.5 py-0.5 rounded-full ${(val as number) > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}
+                    className={`px-1.5 py-0.5 rounded-full ${(val as number) > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-red-500/10 text-red-400'}`}
                   >
                     {STAT_LABELS[stat]} {(val as number) > 0 ? '+' : ''}{val as number}
                   </span>

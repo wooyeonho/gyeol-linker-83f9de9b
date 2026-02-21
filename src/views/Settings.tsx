@@ -279,9 +279,9 @@ export default function SettingsPage() {
       className="w-full flex items-center justify-between py-2 group focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg">
       <div className="flex items-center gap-2">
         <span className="material-icons-round text-primary/50 text-sm" aria-hidden="true">{icon}</span>
-        <p className="text-[11px] text-white/40 uppercase tracking-widest font-medium">{title}</p>
+        <p className="text-[11px] text-foreground/40 uppercase tracking-widest font-medium">{title}</p>
       </div>
-      <span className="material-icons-round text-white/15 text-sm transition-transform group-hover:text-white/30" aria-hidden="true"
+      <span className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30" aria-hidden="true"
         style={{ transform: activeSection === id ? 'rotate(180deg)' : 'rotate(0deg)' }}>
         expand_more
       </span>
@@ -309,7 +309,7 @@ export default function SettingsPage() {
               <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center">
                 <div className="void-dot" />
               </div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-card shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[hsl(var(--success,142_71%_45%))] border-2 border-card shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
             </div>
             <div className="pb-1 flex-1">
               <p className="text-sm font-bold text-foreground">{agent?.name ?? 'GYEOL'}</p>
@@ -352,7 +352,7 @@ export default function SettingsPage() {
 
         </div>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
           <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">smart_toy</span><h2 className="text-sm font-semibold text-foreground">AI</h2></div>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
         {/* ====== THEME ====== */}
         <section className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
           <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">palette</span><h2 className="text-sm font-semibold text-foreground">Appearance</h2></div>
@@ -396,7 +396,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between mt-3">
             <div>
               <p className="text-[11px] text-foreground/80">Custom Primary Color</p>
-              <p className="text-[9px] text-white/25">테마 색상 커스터마이즈</p>
+              <p className="text-[9px] text-foreground/25">테마 색상 커스터마이즈</p>
             </div>
             <input type="color"
               defaultValue={(() => {
@@ -410,11 +410,11 @@ export default function SettingsPage() {
                 await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
                 if (agent) setAgent({ ...agent, settings: s } as any);
               }}
-              className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+              className="w-8 h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
           </div>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== LANGUAGE ====== */}
         <section>
@@ -441,7 +441,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== SYSTEM PROMPT ====== */}
         <section>
@@ -458,7 +458,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== SAFETY ====== */}
         <section>
@@ -470,7 +470,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-[11px] text-foreground/80">Kids Safe Mode</p>
-                    <p className="text-[9px] text-white/25">Age-appropriate content filter</p>
+                    <p className="text-[9px] text-foreground/25">Age-appropriate content filter</p>
                   </div>
                   <button type="button" onClick={async () => {
                     const v = !kidsSafe; setKidsSafe(v);
@@ -478,7 +478,7 @@ export default function SettingsPage() {
                     await supabase.from('gyeol_agents' as any)
                       .update({ settings: { ...s, kidsSafe: v } } as any).eq('id', agent?.id);
                   }}
-                    className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${kidsSafe ? 'translate-x-4' : ''}`} />
                   </button>
                 </div>
@@ -487,7 +487,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== CHARACTER ====== */}
         <section>
@@ -517,18 +517,18 @@ export default function SettingsPage() {
                         charPreset === c.key ? 'glass-card-selected' : 'glass-card'
                       }`}>
                       <span className="text-lg">{c.emoji}</span>
-                      <span className="text-[9px] text-white/30 mt-1">{c.label}</span>
+                      <span className="text-[9px] text-foreground/30 mt-1">{c.label}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Custom Character Creator */}
                 <div className="space-y-2">
-                  <p className="text-[10px] text-white/30">Custom Character</p>
+                  <p className="text-[10px] text-foreground/30">Custom Character</p>
                   <div className="glass-card rounded-xl p-3 space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[9px] text-white/20 block mb-1">Primary Color</label>
+                        <label className="text-[9px] text-foreground/20 block mb-1">Primary Color</label>
                         <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}
                           onChange={async (e) => {
                             const s = (agent?.settings as any) ?? {};
@@ -537,10 +537,10 @@ export default function SettingsPage() {
                             await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
                             if (agent) setAgent({ ...agent, settings: ns } as any);
                           }}
-                          className="w-full h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+                          className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
                       </div>
                       <div>
-                        <label className="text-[9px] text-white/20 block mb-1">Secondary Color</label>
+                        <label className="text-[9px] text-foreground/20 block mb-1">Secondary Color</label>
                         <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color2 ?? '#A78BFA'}
                           onChange={async (e) => {
                             const s = (agent?.settings as any) ?? {};
@@ -549,11 +549,11 @@ export default function SettingsPage() {
                             await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
                             if (agent) setAgent({ ...agent, settings: ns } as any);
                           }}
-                          className="w-full h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+                          className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
                       </div>
                     </div>
                     <div>
-                      <label className="text-[9px] text-white/20 block mb-1">Glow Intensity</label>
+                      <label className="text-[9px] text-foreground/20 block mb-1">Glow Intensity</label>
                       <input type="range" min={0} max={100} defaultValue={((agent?.settings as any)?.customChar?.glow ?? 50)}
                         onChange={async (e) => {
                           const s = (agent?.settings as any) ?? {};
@@ -565,7 +565,7 @@ export default function SettingsPage() {
                         className="w-full" />
                     </div>
                     <div>
-                      <label className="text-[9px] text-white/20 block mb-1">Emoji Icon</label>
+                      <label className="text-[9px] text-foreground/20 block mb-1">Emoji Icon</label>
                       <div className="flex gap-1 flex-wrap">
                         {['🌟', '🔮', '💎', '🌙', '⭐', '🦋', '🐉', '🌸', '🍀', '❄️', '🌈', '🎭'].map(emoji => (
                           <button key={emoji} type="button" onClick={async () => {
@@ -600,7 +600,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== PERSONALITY ====== */}
         <section>
@@ -625,23 +625,23 @@ export default function SettingsPage() {
                           }
                           setNameEditing(false);
                         }} autoFocus maxLength={20}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary/30" />
+                        className="w-full bg-foreground/[0.03] border border-foreground/[0.08] rounded-lg px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary/30" />
                     </div>
                   ) : (
                     <button type="button" onClick={() => setNameEditing(true)}
                       className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary/80 transition">
                       <span>{agentName}</span>
-                      <span className="material-icons-round text-white/20 text-xs">edit</span>
+                      <span className="material-icons-round text-foreground/20 text-xs">edit</span>
                     </button>
                   )}
-                  <span className="text-[10px] text-white/20 bg-white/[0.03] px-2 py-0.5 rounded">Gen {agent?.gen ?? 1}</span>
+                  <span className="text-[10px] text-foreground/20 bg-foreground/[0.03] px-2 py-0.5 rounded">Gen {agent?.gen ?? 1}</span>
                 </div>
 
                 {/* Personality Lock Toggle */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[11px] text-foreground/80">Personality Lock 🔒</p>
-                    <p className="text-[9px] text-white/25">잠그면 대화로 성격이 변하지 않아요</p>
+                    <p className="text-[9px] text-foreground/25">잠그면 대화로 성격이 변하지 않아요</p>
                   </div>
                   <button type="button" onClick={async () => {
                     const locked = !((agent?.settings as any)?.personalityLocked);
@@ -649,20 +649,20 @@ export default function SettingsPage() {
                     await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, settings: s } as any);
                   }}
-                    className={`w-10 h-6 rounded-full transition ${(agent?.settings as any)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    className={`w-10 h-6 rounded-full transition ${(agent?.settings as any)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${(agent?.settings as any)?.personalityLocked ? 'translate-x-4' : ''}`} />
                   </button>
                 </div>
 
                 {/* Custom Persona Text */}
                 <div className="space-y-1">
-                  <p className="text-[10px] text-white/30">Custom Persona</p>
+                  <p className="text-[10px] text-foreground/30">Custom Persona</p>
                   <select value={(agent?.settings as any)?.persona ?? 'friend'} onChange={async (e) => {
                     const s = { ...(agent?.settings as any), persona: e.target.value };
                     await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, settings: s } as any);
                   }}
-                    className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground outline-none">
+                    className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground outline-none">
                     <option value="friend">친구</option>
                     <option value="mentor">멘토</option>
                     <option value="assistant">비서</option>
@@ -678,13 +678,13 @@ export default function SettingsPage() {
                       await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
                       if (agent) setAgent({ ...agent, settings: s } as any);
                     }}
-                    className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-white/20 outline-none" />
+                    className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none" />
                 </div>
 
                 {/* Personality Balance Score */}
                 <div className="glass-card rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[10px] text-white/30">Balance Score</p>
+                    <p className="text-[10px] text-foreground/30">Balance Score</p>
                     <span className="text-sm font-bold text-primary">
                       {(() => {
                         const vals = [warmth, logic, creativity, energy, humor];
@@ -694,13 +694,13 @@ export default function SettingsPage() {
                       })()}
                     </span>
                   </div>
-                  <p className="text-[9px] text-white/20">수치가 높을수록 균형 잡힌 성격</p>
+                  <p className="text-[9px] text-foreground/20">수치가 높을수록 균형 잡힌 성격</p>
                 </div>
 
                 {/* Personality Presets */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] text-white/30">Quick Presets</p>
+                    <p className="text-[10px] text-foreground/30">Quick Presets</p>
                     <button type="button" onClick={async () => {
                       const preset = { label: `Custom ${new Date().toLocaleTimeString('ko', { hour: '2-digit', minute: '2-digit' })}`, warmth, logic, creativity, energy, humor };
                       const s = (agent?.settings as any) ?? {};
@@ -729,7 +729,7 @@ export default function SettingsPage() {
                   {/* Saved custom presets */}
                   {((agent?.settings as any)?.savedPresets ?? []).length > 0 && (
                     <div className="mt-2">
-                      <p className="text-[9px] text-white/20 mb-1">Saved Presets</p>
+                      <p className="text-[9px] text-foreground/20 mb-1">Saved Presets</p>
                       <div className="grid grid-cols-3 gap-1.5">
                         {((agent?.settings as any)?.savedPresets ?? []).map((p: any, i: number) => (
                           <button key={i} type="button" onClick={() => {
@@ -746,7 +746,7 @@ export default function SettingsPage() {
                               await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
                               if (agent) setAgent({ ...agent, settings: ns } as any);
                             }}
-                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive/80 text-white text-[8px] flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition">×</button>
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive/80 text-foreground text-[8px] flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition">×</button>
                           </button>
                         ))}
                       </div>
@@ -759,7 +759,7 @@ export default function SettingsPage() {
                   {labels.map((label, i) => (
                     <div key={label} className="space-y-1">
                       <div className="flex justify-between">
-                        <span className="text-[10px] text-white/40">{label}</span>
+                        <span className="text-[10px] text-foreground/40">{label}</span>
                         <span className="text-[10px] text-primary/60 font-mono">{personality[i]}</span>
                       </div>
                       <input type="range" min={0} max={100} value={personality[i]}
@@ -793,11 +793,11 @@ export default function SettingsPage() {
                   <IntimacyEmoji intimacy={agent?.intimacy ?? 0} />
                   <div>
                     <p className="text-[11px] text-foreground/80">Intimacy Level</p>
-                    <p className="text-[9px] text-white/25">{agent?.intimacy ?? 0}% — {(agent?.intimacy ?? 0) < 20 ? 'Stranger' : (agent?.intimacy ?? 0) < 50 ? 'Friend' : (agent?.intimacy ?? 0) < 80 ? 'Close Friend' : 'Soulmate'}</p>
+                    <p className="text-[9px] text-foreground/25">{agent?.intimacy ?? 0}% — {(agent?.intimacy ?? 0) < 20 ? 'Stranger' : (agent?.intimacy ?? 0) < 50 ? 'Friend' : (agent?.intimacy ?? 0) < 80 ? 'Close Friend' : 'Soulmate'}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/30 mb-2">Current Mood</p>
+                  <p className="text-[10px] text-foreground/30 mb-2">Current Mood</p>
                   <MoodSelector
                     currentMood={(agent?.mood as any) ?? 'neutral'}
                     onChange={async (mood) => {
@@ -807,7 +807,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/30 mb-2">Persona</p>
+                  <p className="text-[10px] text-foreground/30 mb-2">Persona</p>
                   <PersonaSelector
                     current={(agent?.settings as any)?.persona ?? 'friend'}
                     onSelect={async (id) => {
@@ -832,14 +832,14 @@ export default function SettingsPage() {
             {activeSection === 'interests' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
+                <p className="text-[10px] text-foreground/25 leading-relaxed">
                   Add keywords your AI will actively learn about and discuss.
                 </p>
                 <div className="flex gap-1.5">
                   <input type="text" value={newKeyword} onChange={e => setNewKeyword(e.target.value)}
                     placeholder="e.g. AI, music, cooking..." maxLength={50}
                     onKeyDown={e => e.key === 'Enter' && addKeyword()}
-                    className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-white/20 outline-none focus:border-primary/20" />
+                    className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none focus:border-primary/20" />
                   <button type="button" onClick={addKeyword} disabled={!newKeyword.trim()}
                     className="rounded-lg bg-primary/10 text-primary/80 px-3 py-2 text-xs disabled:opacity-30">
                     Add
@@ -851,19 +851,19 @@ export default function SettingsPage() {
                       className="inline-flex items-center gap-1 rounded-full bg-primary/8 border border-primary/10 px-2.5 py-1 text-[10px] text-primary/70">
                       {k.keyword}
                       <button type="button" onClick={() => removeKeyword(k.id)}
-                        className="text-white/20 hover:text-destructive/60 transition">
+                        className="text-foreground/20 hover:text-destructive/60 transition">
                         <span className="material-icons-round text-[10px]">close</span>
                       </button>
                     </span>
                   ))}
-                  {keywords.length === 0 && <p className="text-[10px] text-white/15">No keywords yet</p>}
+                  {keywords.length === 0 && <p className="text-[10px] text-foreground/15">No keywords yet</p>}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== RSS FEEDS ====== */}
         <section>
@@ -872,17 +872,17 @@ export default function SettingsPage() {
             {activeSection === 'feeds' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
+                <p className="text-[10px] text-foreground/25 leading-relaxed">
                   Subscribe to RSS feeds for your AI to learn from automatically.
                 </p>
                 <div className="space-y-1.5">
                   <input type="url" value={newFeedUrl} onChange={e => setNewFeedUrl(e.target.value)}
                     placeholder="https://example.com/rss"
-                    className="w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-white/20 outline-none focus:border-primary/20" />
+                    className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none focus:border-primary/20" />
                   <div className="flex gap-1.5">
                     <input type="text" value={newFeedName} onChange={e => setNewFeedName(e.target.value)}
                       placeholder="Feed name (optional)" maxLength={50}
-                      className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-white/20 outline-none focus:border-primary/20" />
+                      className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none focus:border-primary/20" />
                     <button type="button" onClick={addFeed} disabled={!newFeedUrl.trim()}
                       className="rounded-lg bg-primary/10 text-primary/80 px-3 py-2 text-xs disabled:opacity-30">
                       Add
@@ -892,25 +892,25 @@ export default function SettingsPage() {
                 <div className="space-y-1.5">
                   {feeds.map(f => (
                     <div key={f.id}
-                      className="flex items-center justify-between rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2">
+                      className="flex items-center justify-between rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] px-3 py-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] text-foreground/70 truncate">{f.feed_name || f.feed_url}</p>
-                        {f.feed_name && <p className="text-[9px] text-white/20 truncate">{f.feed_url}</p>}
+                        {f.feed_name && <p className="text-[9px] text-foreground/20 truncate">{f.feed_url}</p>}
                       </div>
                       <button type="button" onClick={() => removeFeed(f.id)}
-                        className="text-white/15 hover:text-destructive/60 transition ml-2">
+                        className="text-foreground/15 hover:text-destructive/60 transition ml-2">
                         <span className="material-icons-round text-sm">delete_outline</span>
                       </button>
                     </div>
                   ))}
-                  {feeds.length === 0 && <p className="text-[10px] text-white/15">No feeds yet</p>}
+                  {feeds.length === 0 && <p className="text-[10px] text-foreground/15">No feeds yet</p>}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== ANALYSIS DOMAINS ====== */}
         <section>
@@ -919,19 +919,19 @@ export default function SettingsPage() {
             {activeSection === 'analysis' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
+                <p className="text-[10px] text-foreground/25 leading-relaxed">
                   관심 있는 분석 분야를 켜면 대화에서 해당 전문 분석을 제공해요.
                 </p>
                 <div className="space-y-2">
                   {ANALYSIS_DOMAINS.map(d => {
                     const enabled = analysisDomains[d.key] ?? false;
                     return (
-                      <div key={d.key} className="flex items-center justify-between rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5">
+                      <div key={d.key} className="flex items-center justify-between rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] px-3 py-2.5">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <span className="material-icons-round text-primary/40 text-sm">{d.icon}</span>
                           <div className="min-w-0">
                             <p className="text-[11px] text-foreground/70">{d.label}</p>
-                            <p className="text-[9px] text-white/20 truncate">{d.desc}</p>
+                            <p className="text-[9px] text-foreground/20 truncate">{d.desc}</p>
                           </div>
                         </div>
                         <button type="button" onClick={() => {
@@ -941,7 +941,7 @@ export default function SettingsPage() {
                             .update({ settings: { ...(agent as any).settings, analysisDomains: next } } as any)
                             .eq('id', agent.id);
                         }}
-                          className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
+                          className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>
                           <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${enabled ? 'ml-[18px]' : 'ml-1'}`} />
                         </button>
                       </div>
@@ -953,7 +953,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== PROACTIVE MESSAGE ====== */}
         <section>
@@ -962,7 +962,7 @@ export default function SettingsPage() {
             {activeSection === 'proactive' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
+                <p className="text-[10px] text-foreground/25 leading-relaxed">
                   AI가 먼저 연락하는 미접속 시간을 설정해요. 설정한 시간 동안 대화가 없으면 텔레그램으로 먼저 메시지를 보내요.
                 </p>
                 <div className="flex gap-2">
@@ -981,7 +981,7 @@ export default function SettingsPage() {
                       className={`flex-1 py-2 rounded-lg text-[11px] font-medium transition border ${
                         proactiveInterval === opt.value
                           ? 'bg-primary/15 text-primary/90 border-primary/30'
-                          : 'bg-white/[0.02] text-white/30 border-white/[0.06] hover:border-white/10'
+                          : 'bg-foreground/[0.02] text-foreground/30 border-foreground/[0.06] hover:border-foreground/10'
                       }`}>
                       {opt.label}
                     </button>
@@ -992,7 +992,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== PREFERENCES ====== */}
         <section>
@@ -1007,17 +1007,17 @@ export default function SettingsPage() {
                   { label: 'Notifications', type: 'toggle' as const, value: notificationsOn, onChange: () => setNotificationsOn(!notificationsOn) },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between items-center">
-                    <span className="text-xs text-white/40">{item.label}</span>
+                    <span className="text-xs text-foreground/40">{item.label}</span>
                     {item.type === 'range' ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-white/20 w-5 text-right">{item.value as number}</span>
+                        <span className="text-[10px] text-foreground/20 w-5 text-right">{item.value as number}</span>
                         <input type="range" min={0} max={100} value={item.value as number}
                           onChange={(e) => (item.onChange as (v: number) => void)(Number(e.target.value))}
                           className="w-20 accent-primary" />
                       </div>
                     ) : (
                       <button type="button" onClick={item.onChange as () => void}
-                        className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
+                        className={`w-9 h-5 rounded-full transition-colors ${item.value ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>
                         <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${item.value ? 'ml-[18px]' : 'ml-1'}`} />
                       </button>
                     )}
@@ -1025,8 +1025,8 @@ export default function SettingsPage() {
                 ))}
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-xs text-white/40">Auto Read Aloud</span>
-                    <p className="text-[9px] text-white/20">Automatically read AI responses</p>
+                    <span className="text-xs text-foreground/40">Auto Read Aloud</span>
+                    <p className="text-[9px] text-foreground/20">Automatically read AI responses</p>
                   </div>
                   <button type="button" onClick={() => {
                     const next = !autoTTS;
@@ -1035,14 +1035,14 @@ export default function SettingsPage() {
                       .update({ settings: { ...(agent as any).settings, autoTTS: next } } as any)
                       .eq('id', agent.id);
                   }}
-                    className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
+                    className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>
                     <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${autoTTS ? 'ml-[18px]' : 'ml-1'}`} />
                   </button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-white/40">Read Speed</span>
+                  <span className="text-xs text-foreground/40">Read Speed</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/20">{ttsSpeed.toFixed(1)}x</span>
+                    <span className="text-[10px] text-foreground/20">{ttsSpeed.toFixed(1)}x</span>
                     <input type="range" min={0.5} max={1.5} step={0.1} value={ttsSpeed}
                       onChange={e => {
                         const v = Number(e.target.value);
@@ -1059,7 +1059,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== NOTIFICATION SETTINGS ====== */}
         <section>
@@ -1076,7 +1076,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== PUSH NOTIFICATIONS ====== */}
         <section>
@@ -1085,7 +1085,7 @@ export default function SettingsPage() {
             {activeSection === 'push' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
-                <p className="text-[10px] text-white/25 leading-relaxed">
+                <p className="text-[10px] text-foreground/25 leading-relaxed">
                   브라우저 푸시 알림을 활성화하면 AI가 먼저 말을 걸 때 알림을 받아요.
                 </p>
                 <div className="flex items-center justify-between">
@@ -1100,7 +1100,7 @@ export default function SettingsPage() {
                       setPushEnabled(ok);
                     }
                   }}
-                    className={`w-10 h-6 rounded-full transition ${pushEnabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+                    className={`w-10 h-6 rounded-full transition ${pushEnabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
                     <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${pushEnabled ? 'translate-x-4' : ''}`} />
                   </button>
                 </div>
@@ -1109,7 +1109,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== TELEGRAM ====== */}
         <section>
@@ -1119,15 +1119,15 @@ export default function SettingsPage() {
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
                 {telegramLinked ? (
-                  <div className="flex items-center gap-2 text-emerald-400/70">
+                  <div className="flex items-center gap-2 text-[hsl(var(--success,142_71%_45%)/0.7)]">
                     <span className="material-icons-round text-sm">check_circle</span>
                     <span className="text-xs">Telegram Connected</span>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-[11px] text-white/40 leading-relaxed">Send this code to the GYEOL bot on Telegram:</p>
+                    <p className="text-[11px] text-foreground/40 leading-relaxed">Send this code to the GYEOL bot on Telegram:</p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
+                      <code className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-primary/80 font-mono select-all overflow-hidden">
                         /start {telegramCode}
                       </code>
                       <button type="button" onClick={() => navigator.clipboard.writeText(`/start ${telegramCode}`)}
@@ -1140,7 +1140,7 @@ export default function SettingsPage() {
           </AnimatePresence>
         </section>
 
-        <div className="h-px bg-white/[0.04]" />
+        <div className="h-px bg-foreground/[0.04]" />
 
         {/* ====== ADVANCED ====== */}
         <section>
@@ -1150,24 +1150,24 @@ export default function SettingsPage() {
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 space-y-4">
                 <div className="space-y-2">
-                  <p className="text-[10px] text-white/30">Premium AI Models (BYOK)</p>
+                  <p className="text-[10px] text-foreground/30">Premium AI Models (BYOK)</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {BYOK_PROVIDERS.map((provider) => {
                       const registered = byokList.find(x => x.provider === provider);
                       return (
                         <div key={provider} className="flex flex-col gap-1">
                           <button type="button" onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
-                            className={`rounded-lg border py-1.5 text-xs capitalize transition ${registered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-white/[0.06] text-white/30 hover:bg-white/[0.03]'}`}>
+                            className={`rounded-lg border py-1.5 text-xs capitalize transition ${registered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-foreground/[0.06] text-foreground/30 hover:bg-foreground/[0.03]'}`}>
                             <span className="flex items-center justify-center gap-1">
-                              {registered && <span className="material-icons-round text-[10px] text-emerald-400">check_circle</span>}
+                              {registered && <span className="material-icons-round text-[10px] text-[hsl(var(--success,142_71%_45%))]">check_circle</span>}
                               {provider}
                             </span>
                           </button>
                           {byokOpen === provider && (
                             <div className="space-y-1">
                               {registered && (
-                                <div className="flex items-center justify-between rounded-lg bg-white/[0.02] border border-white/[0.04] px-2 py-1">
-                                  <span className="text-[10px] text-white/40 font-mono">{registered.masked}</span>
+                                <div className="flex items-center justify-between rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] px-2 py-1">
+                                  <span className="text-[10px] text-foreground/40 font-mono">{registered.masked}</span>
                                   <button type="button" onClick={async () => {
                                     if (!user) return;
                                     await supabase.from('gyeol_byok_keys' as any).delete().eq('user_id', user.id).eq('provider', provider);
@@ -1181,7 +1181,7 @@ export default function SettingsPage() {
                               )}
                               <div className="flex gap-1">
                                 <input type="password" placeholder={registered ? "New API Key" : "API Key"} value={byokKey} onChange={e => setByokKey(e.target.value)}
-                                  className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1 text-xs text-foreground placeholder:text-white/20 outline-none" />
+                                  className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-2 py-1 text-xs text-foreground placeholder:text-foreground/20 outline-none" />
                                 <button type="button" disabled={byokSaving || !byokKey.trim()} onClick={() => saveByok(provider)}
                                   className="rounded-lg bg-primary/10 text-primary/80 px-2 py-1 text-xs disabled:opacity-40">{registered ? 'Update' : 'Save'}</button>
                               </div>
@@ -1194,14 +1194,14 @@ export default function SettingsPage() {
                 </div>
                 {/* B17: Safety Content Filter */}
                 <div className="space-y-3">
-                  <p className="text-[10px] text-white/30">Safety Content Filter</p>
+                  <p className="text-[10px] text-foreground/30">Safety Content Filter</p>
                   <SafetyContentFilter level={safetyLevel} onChange={(l) => setSafetyLevel(l)} />
                   <PIIFilter enabled={piiFilterOn} onToggle={() => setPiiFilterOn(!piiFilterOn)} />
                 </div>
 
                 {/* B20: Account */}
                 <div className="space-y-3">
-                  <p className="text-[10px] text-white/30">Account</p>
+                  <p className="text-[10px] text-foreground/30">Account</p>
                   <ProfilePictureUpload
                     currentUrl={(agent?.settings as any)?.profilePicture}
                     onUpload={async (url) => {
@@ -1214,7 +1214,7 @@ export default function SettingsPage() {
                 </div>
 
                 <button type="button" onClick={toggleKillSwitch}
-                  className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/5 text-emerald-500/70 border-emerald-500/10' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
+                  className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-[hsl(var(--success,142_71%_45%)/0.05)] text-[hsl(var(--success,142_71%_45%)/0.7)] border-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
                   {killSwitchActive ? 'Resume System' : 'Emergency Stop (Kill Switch)'}
                 </button>
 

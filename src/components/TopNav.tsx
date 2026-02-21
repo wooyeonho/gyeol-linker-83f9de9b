@@ -35,7 +35,7 @@ export function TopNav() {
         </button>
         <div className="relative" aria-label="User avatar">
           <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-card shadow-sm bg-[hsl(30,80%,75%)] flex items-center justify-center">
-            <span className="material-icons-round text-white text-xl" aria-hidden="true">person</span>
+            <span className="material-icons-round text-foreground text-xl" aria-hidden="true">person</span>
           </div>
           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[hsl(142,71%,45%)] border-2 border-card rounded-full" aria-label="Online status" />
         </div>

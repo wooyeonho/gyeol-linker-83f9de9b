@@ -174,8 +174,8 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                               {/* What worked / improve */}
                               <div className="grid grid-cols-2 gap-2">
                                 {ins.what_worked && (
-                                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/10 p-2">
-                                    <p className="text-[8px] text-emerald-400/70 font-bold mb-1">✦ 효과적</p>
+                                  <div className="rounded-lg bg-[hsl(var(--success,142_71%_45%)/0.05)] border border-[hsl(var(--success,142_71%_45%)/0.1)] p-2">
+                                    <p className="text-[8px] text-[hsl(var(--success,142_71%_45%)/0.7)] font-bold mb-1">✦ 효과적</p>
                                     <p className="text-[10px] text-foreground/70">{ins.what_worked}</p>
                                   </div>
                                 )}
@@ -208,7 +208,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                                   <div className="flex gap-2">
                                     {Object.entries(ins.personality_delta).map(([k, v]) => (
                                       <span key={k} className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                                        (v as number) > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                                        (v as number) > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-destructive/10 text-destructive'
                                       }`}>
                                         {STAT_LABELS[k] ?? k} {(v as number) > 0 ? '+' : ''}{v as number}
                                       </span>

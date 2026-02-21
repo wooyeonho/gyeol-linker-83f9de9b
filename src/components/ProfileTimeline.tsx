@@ -70,7 +70,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
 
   const typeColors: Record<string, string> = {
     evolution: 'text-amber-400', conversation: 'text-primary',
-    achievement: 'text-emerald-400', social: 'text-secondary', learning: 'text-cyan-400',
+    achievement: 'text-[hsl(var(--success,142_71%_45%))]', social: 'text-secondary', learning: 'text-cyan-400',
   };
 
   if (loading) return (

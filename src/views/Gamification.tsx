@@ -225,10 +225,10 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
             >
               <div className="flex items-start gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  completed ? 'bg-emerald-500/20' : 'bg-primary/10'
+                  completed ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)]' : 'bg-primary/10'
                 }`}>
                   <span className={`material-icons-round text-lg ${
-                    completed ? 'text-emerald-400' : 'text-primary'
+                    completed ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-primary'
                   }`}>{quest.icon}</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -240,7 +240,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                       <button
                         onClick={() => p && handleClaim(p.id, quest.id)}
                         disabled={claiming === quest.id}
-                        className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold animate-pulse"
+                        className="text-[10px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold animate-pulse"
                       >
                         {claiming === quest.id ? '...' : '보상 받기'}
                       </button>
@@ -259,7 +259,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                     <div className="w-full h-1.5 rounded-full bg-muted/30">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          completed ? 'bg-emerald-400' : 'bg-gradient-to-r from-primary to-secondary'
+                          completed ? 'bg-[hsl(var(--success,142_71%_45%))]' : 'bg-gradient-to-r from-primary to-secondary'
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -419,7 +419,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
             }
             onClose();
           }}
-            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold flex items-center justify-center gap-1">
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
             <span className="material-icons-round text-sm">share</span> 공유
           </button>
         </div>
@@ -553,7 +553,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
               {/* Rank change indicator */}
               {rankChange && (
                 <span className={`text-[9px] font-bold flex items-center gap-0.5 ${
-                  rankChange.dir === 'up' ? 'text-emerald-400' : 'text-destructive'
+                  rankChange.dir === 'up' ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'
                 }`}>
                   <span className="material-icons-round text-[10px]">
                     {rankChange.dir === 'up' ? 'arrow_upward' : 'arrow_downward'}
@@ -610,7 +610,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className={`text-center py-2 text-sm font-medium ${
-            message.includes('실패') || message.includes('부족') ? 'text-destructive' : 'text-emerald-400'
+            message.includes('실패') || message.includes('부족') ? 'text-destructive' : 'text-[hsl(var(--success,142_71%_45%))]'
           }`}
         >
           {message}
@@ -638,7 +638,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                   {item.price_coins}
                 </span>
                 {owned ? (
-                  <span className="text-[9px] text-emerald-400 font-medium">
+                  <span className="text-[9px] text-[hsl(var(--success,142_71%_45%))] font-medium">
                     보유 x{owned.quantity}
                   </span>
                 ) : (
@@ -647,7 +647,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                     disabled={buying === item.id || !canAfford || !meetsLevel}
                     className={`text-[9px] px-2.5 py-1 rounded-full font-bold transition-all ${
                       canAfford && meetsLevel
-                        ? 'bg-gradient-to-r from-primary to-secondary text-white'
+                        ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
                         : 'bg-muted/20 text-muted-foreground cursor-not-allowed'
                     }`}
                   >

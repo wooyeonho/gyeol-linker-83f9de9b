@@ -40,7 +40,7 @@ export function PersonalityChangeNotif({ show, changes, onClose }: PersonalityCh
             {entries.map(([key, val]) => (
               <div key={key} className="flex items-center justify-between text-[10px]">
                 <span className="text-foreground/70">{TRAIT_EMOJI[key]} {TRAIT_LABELS[key] ?? key}</span>
-                <span className={val > 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                <span className={val > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'}>
                   {val > 0 ? '+' : ''}{val}
                 </span>
               </div>

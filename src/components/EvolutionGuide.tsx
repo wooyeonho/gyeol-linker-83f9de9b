@@ -48,7 +48,7 @@ export function EvolutionGuide({ gen, evolutionProgress, totalConversations, int
           {current.desc}
         </h3>
         <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${
-          ready ? 'bg-emerald-500/20 text-emerald-400' : 'bg-muted/20 text-muted-foreground'
+          ready ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-muted/20 text-muted-foreground'
         }`}>
           {ready ? '준비 완료!' : '진행 중'}
         </span>
@@ -58,7 +58,7 @@ export function EvolutionGuide({ gen, evolutionProgress, totalConversations, int
       <div className="space-y-2">
         {conditions.map(c => (
           <div key={c.label} className="flex items-center gap-2">
-            <span className={`material-icons-round text-xs ${c.met ? 'text-emerald-400' : 'text-muted-foreground/30'}`}>
+            <span className={`material-icons-round text-xs ${c.met ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-muted-foreground/30'}`}>
               {c.met ? 'check_circle' : 'radio_button_unchecked'}
             </span>
             <span className="text-[10px] text-foreground/70 flex-1">{c.label}</span>

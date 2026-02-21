@@ -88,7 +88,7 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
               <button
                 onClick={handleClaim}
                 disabled={claiming}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm btn-glow disabled:opacity-30"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold text-sm btn-glow disabled:opacity-30"
               >
                 {claiming ? '받는 중...' : `보상 받기 (+${DAILY_REWARDS[currentDay - 1]?.coins ?? 5}🪙)`}
               </button>

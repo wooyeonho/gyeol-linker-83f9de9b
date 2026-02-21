@@ -88,7 +88,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
                 )}
                 {effects.evolution_boost && (
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="material-icons-round text-emerald-400 text-xs">trending_up</span>
+                    <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-xs">trending_up</span>
                     <span className="text-foreground">진화 진행도 +{effects.evolution_boost}%</span>
                   </div>
                 )}

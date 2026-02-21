@@ -42,7 +42,7 @@ export function AchievementShare({ show, name, description, icon, rarity, onClos
             <div className="flex gap-2">
               <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">닫기</button>
               <button onClick={handleShare}
-                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold flex items-center justify-center gap-1">
+                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
                 <span className="material-icons-round text-sm">share</span> 공유
               </button>
             </div>

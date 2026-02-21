@@ -79,7 +79,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
           >
             {/* Header */}
             <div className="relative h-28 bg-gradient-to-br from-primary/30 to-secondary/20 rounded-t-3xl">
-              <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white">
+              <button onClick={onClose} className="absolute top-4 right-4 text-foreground/40 hover:text-foreground">
                 <span className="material-icons-round">close</span>
               </button>
               <div className="absolute -bottom-8 left-6">
@@ -123,7 +123,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
                   <div className="flex flex-wrap gap-2">
                     {badges.map((b, i) => {
                       const rarityColor: Record<string, string> = {
-                        common: 'text-muted-foreground', uncommon: 'text-emerald-400',
+                        common: 'text-muted-foreground', uncommon: 'text-[hsl(var(--success,142_71%_45%))]',
                         rare: 'text-blue-400', epic: 'text-purple-400', legendary: 'text-amber-400',
                       };
                       return (
