@@ -24,6 +24,12 @@ verify_jwt = false
 [functions.push-notify]
 verify_jwt = false
 
+[functions.summarize]
+verify_jwt = false
+
+[functions.season-end]
+verify_jwt = false
+
 # [functions.telegram-webhook]
 # verify_jwt = false
 # DISABLED: Telegram webhook migrated to OpenClaw on Koyeb (Option A+ strategy)

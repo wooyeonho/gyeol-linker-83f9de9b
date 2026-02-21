@@ -71,6 +71,9 @@ export default function SimpleChat() {
   const [tagText, setTagText] = useState('');
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryText, setSummaryText] = useState('');
+  const [summarizing, setSummarizing] = useState(false);
 
   const toggleBookmark = (msgId: string) => {
     setBookmarks(prev => {
@@ -145,10 +148,28 @@ export default function SimpleChat() {
 
   const handleSendImage = async () => {
     if (!imagePreview || !agent?.id) return;
-    // Send as text message with image indicator
     const imgMsg = `[이미지 전송] 📷`;
     setImagePreview(null);
     await sendMessage(imgMsg);
+  };
+
+  const handleSummarize = async () => {
+    if (!agent?.id || summarizing) return;
+    setSummarizing(true);
+    setSummaryOpen(true);
+    setSummaryText('');
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const { data, error } = await supabase.functions.invoke('summarize', {
+        body: { agentId: agent.id, limit: 50 },
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      });
+      if (data?.summary) setSummaryText(data.summary);
+      else setSummaryText('Could not generate summary.');
+    } catch (e) {
+      setSummaryText('Error generating summary.');
+    }
+    setSummarizing(false);
   };
 
   const [isDark, setIsDark] = useState(
@@ -251,11 +272,18 @@ export default function SimpleChat() {
             className="absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
             <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
           </button>
-          <button onClick={() => navigate('/settings')}
-            aria-label="Settings"
-            className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">settings</span>
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button onClick={handleSummarize}
+              aria-label="Summarize conversation"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">summarize</span>
+            </button>
+            <button onClick={() => navigate('/settings')}
+              aria-label="Settings"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">settings</span>
+            </button>
+          </div>
           <AnimatedCharacter
             mood={(agent as any)?.mood ?? 'neutral'}
             isThinking={isLoading}
@@ -589,6 +617,38 @@ export default function SimpleChat() {
       </div>
 
       <EvolutionCeremony />
+
+      {/* Conversation Summary Modal */}
+      <AnimatePresence>
+        {summaryOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]" onClick={() => setSummaryOpen(false)} />
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+              className="fixed inset-x-4 bottom-20 top-auto z-[70] max-h-[60vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <span className="material-icons-round text-primary text-base">summarize</span>
+                  Conversation Summary
+                </h3>
+                <button onClick={() => setSummaryOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
+                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                </button>
+              </div>
+              {summarizing ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
+                  <span className="material-icons-round text-primary animate-spin text-base">hourglass_top</span>
+                  Analyzing conversation...
+                </div>
+              ) : (
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{summaryText}</ReactMarkdown>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Conversation history drawer */}
       {agent?.id && (
