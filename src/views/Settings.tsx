@@ -402,7 +402,7 @@ export default function SettingsPage() {
           <AnimatePresence>
             {activeSection === 'character' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1 space-y-4">
                 {charPreset && charPreset !== 'void' && (
                   <div className="flex justify-center mb-3">
                     <div className="w-16 h-16">
@@ -427,6 +427,80 @@ export default function SettingsPage() {
                       <span className="text-[9px] text-white/30 mt-1">{c.label}</span>
                     </button>
                   ))}
+                </div>
+
+                {/* Custom Character Creator */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-white/30">Custom Character</p>
+                  <div className="glass-card rounded-xl p-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[9px] text-white/20 block mb-1">Primary Color</label>
+                        <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}
+                          onChange={async (e) => {
+                            const s = (agent?.settings as any) ?? {};
+                            const cc = { ...(s.customChar ?? {}), color1: e.target.value };
+                            const ns = { ...s, customChar: cc };
+                            await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                            if (agent) setAgent({ ...agent, settings: ns } as any);
+                          }}
+                          className="w-full h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+                      </div>
+                      <div>
+                        <label className="text-[9px] text-white/20 block mb-1">Secondary Color</label>
+                        <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color2 ?? '#A78BFA'}
+                          onChange={async (e) => {
+                            const s = (agent?.settings as any) ?? {};
+                            const cc = { ...(s.customChar ?? {}), color2: e.target.value };
+                            const ns = { ...s, customChar: cc };
+                            await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                            if (agent) setAgent({ ...agent, settings: ns } as any);
+                          }}
+                          className="w-full h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[9px] text-white/20 block mb-1">Glow Intensity</label>
+                      <input type="range" min={0} max={100} defaultValue={((agent?.settings as any)?.customChar?.glow ?? 50)}
+                        onChange={async (e) => {
+                          const s = (agent?.settings as any) ?? {};
+                          const cc = { ...(s.customChar ?? {}), glow: Number(e.target.value) };
+                          const ns = { ...s, customChar: cc };
+                          await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                          if (agent) setAgent({ ...agent, settings: ns } as any);
+                        }}
+                        className="w-full" />
+                    </div>
+                    <div>
+                      <label className="text-[9px] text-white/20 block mb-1">Emoji Icon</label>
+                      <div className="flex gap-1 flex-wrap">
+                        {['🌟', '🔮', '💎', '🌙', '⭐', '🦋', '🐉', '🌸', '🍀', '❄️', '🌈', '🎭'].map(emoji => (
+                          <button key={emoji} type="button" onClick={async () => {
+                            const s = (agent?.settings as any) ?? {};
+                            const cc = { ...(s.customChar ?? {}), emoji };
+                            const ns = { ...s, customChar: cc };
+                            await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                            if (agent) setAgent({ ...agent, settings: ns } as any);
+                          }}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
+                              (agent?.settings as any)?.customChar?.emoji === emoji ? 'glass-card-selected' : 'glass-card'
+                            }`}>
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Preview */}
+                    <div className="flex justify-center py-2">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+                        style={{
+                          background: `radial-gradient(circle, ${(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}, ${(agent?.settings as any)?.customChar?.color2 ?? '#A78BFA'})`,
+                          boxShadow: `0 0 ${((agent?.settings as any)?.customChar?.glow ?? 50) / 3}px ${(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}`,
+                        }}>
+                        {(agent?.settings as any)?.customChar?.emoji ?? '🌟'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -532,7 +606,21 @@ export default function SettingsPage() {
 
                 {/* Personality Presets */}
                 <div>
-                  <p className="text-[10px] text-white/30 mb-2">Quick Presets</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] text-white/30">Quick Presets</p>
+                    <button type="button" onClick={async () => {
+                      const preset = { label: `Custom ${new Date().toLocaleTimeString('ko', { hour: '2-digit', minute: '2-digit' })}`, warmth, logic, creativity, energy, humor };
+                      const s = (agent?.settings as any) ?? {};
+                      const saved = s.savedPresets ?? [];
+                      const updated = [...saved, preset].slice(-6);
+                      const ns = { ...s, savedPresets: updated };
+                      await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, settings: ns } as any);
+                    }}
+                      className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary/70 hover:bg-primary/20 transition flex items-center gap-1">
+                      <span className="material-icons-round text-[10px]">save</span> Save Current
+                    </button>
+                  </div>
                   <div className="grid grid-cols-3 gap-1.5">
                     {PERSONALITY_PRESETS.map(p => (
                       <button key={p.label} type="button" onClick={() => {
@@ -545,6 +633,32 @@ export default function SettingsPage() {
                       </button>
                     ))}
                   </div>
+                  {/* Saved custom presets */}
+                  {((agent?.settings as any)?.savedPresets ?? []).length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-[9px] text-white/20 mb-1">Saved Presets</p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {((agent?.settings as any)?.savedPresets ?? []).map((p: any, i: number) => (
+                          <button key={i} type="button" onClick={() => {
+                            setWarmth(p.warmth); setLogic(p.logic); setCreativity(p.creativity);
+                            setEnergy(p.energy); setHumor(p.humor);
+                          }}
+                            className="p-2 rounded-lg glass-card text-center hover:border-primary/20 transition relative group/preset">
+                            <span className="text-[8px] text-primary/60 block truncate">{p.label}</span>
+                            <button onClick={async (e) => {
+                              e.stopPropagation();
+                              const s = (agent?.settings as any) ?? {};
+                              const saved = (s.savedPresets ?? []).filter((_: any, j: number) => j !== i);
+                              const ns = { ...s, savedPresets: saved };
+                              await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                              if (agent) setAgent({ ...agent, settings: ns } as any);
+                            }}
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive/80 text-white text-[8px] flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition">×</button>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Personality sliders */}

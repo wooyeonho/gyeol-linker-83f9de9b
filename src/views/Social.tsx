@@ -10,6 +10,8 @@ import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { MatchingFilter } from '@/src/components/MatchingFilter';
 import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { DeleteConfirmModal } from '@/src/components/DeleteConfirmModal';
+import { AISpectator } from '@/src/components/AISpectator';
+import { ProfileTimeline } from '@/src/components/ProfileTimeline';
 import { showToast } from '@/src/components/Toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -85,7 +87,7 @@ export default function SocialPage() {
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
-  const [tab, setTab] = useState<'foryou' | 'following' | 'moltbook'>('foryou');
+  const [tab, setTab] = useState<'foryou' | 'following' | 'moltbook' | 'timeline'>('foryou');
   const [posts, setPosts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(false);
@@ -102,6 +104,7 @@ export default function SocialPage() {
   const [newPostOpen, setNewPostOpen] = useState(false);
   const [matchFilterOpen, setMatchFilterOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
+  const [spectatorOpen, setSpectatorOpen] = useState<{ matchId: string; name1: string; name2: string } | null>(null);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -395,7 +398,7 @@ export default function SocialPage() {
             <button type="button"
               onClick={async () => {
                 if (card.status === 'matched') {
-                  window.location.href = '/activity';
+                  setSpectatorOpen({ matchId: card.id, name1: agent?.name ?? 'My AI', name2: card.name });
                 } else {
                   const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/breeding`, {
                     method: 'POST',
@@ -646,14 +649,14 @@ export default function SocialPage() {
 
         {/* For You / Moltbook / Following tabs */}
         <div className="flex gap-1 glass-card rounded-xl p-1">
-          {(['foryou', 'moltbook', 'following'] as const).map(t => (
+          {(['foryou', 'moltbook', 'following', 'timeline'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition ${
                 tab === t
                   ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
                   : 'text-muted-foreground'
               }`}>
-              {t === 'foryou' ? 'AI 커뮤니티' : t === 'moltbook' ? 'Moltbook' : `Following (${followedAgents.size})`}
+              {t === 'foryou' ? '커뮤니티' : t === 'moltbook' ? 'Molt' : t === 'timeline' ? 'Timeline' : `Follow(${followedAgents.size})`}
             </button>
           ))}
         </div>
@@ -737,7 +740,30 @@ export default function SocialPage() {
             </div>
           )
         )}
+
+        {tab === 'timeline' && agent?.id && (
+          <div className="space-y-3">
+            <div className="glass-card rounded-2xl p-3 text-center">
+              <span className="material-icons-round text-primary text-lg">timeline</span>
+              <p className="text-[11px] text-muted-foreground mt-1">내 AI의 성장 타임라인</p>
+            </div>
+            <ProfileTimeline agentId={agent.id} />
+          </div>
+        )}
+
+        {tab === 'timeline' && !agent?.id && (
+          <SocialEmptyState icon="timeline" title="로그인이 필요해요" description="타임라인을 보려면 먼저 로그인하세요" />
+        )}
       </PullToRefresh>
+
+      {/* AI Spectator Modal */}
+      <AISpectator
+        matchId={spectatorOpen?.matchId ?? ''}
+        agent1Name={spectatorOpen?.name1 ?? ''}
+        agent2Name={spectatorOpen?.name2 ?? ''}
+        isOpen={!!spectatorOpen}
+        onClose={() => setSpectatorOpen(null)}
+      />
 
       {breedResult && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}

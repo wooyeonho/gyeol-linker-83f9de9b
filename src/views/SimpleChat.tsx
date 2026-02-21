@@ -61,6 +61,16 @@ export default function SimpleChat() {
   const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('gyeol_bookmarks') ?? '[]')); } catch { return new Set(); }
   });
+  const [pinnedMessages, setPinnedMessages] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('gyeol_pinned') ?? '[]')); } catch { return new Set(); }
+  });
+  const [tags, setTags] = useState<Record<string, string[]>>(() => {
+    try { return JSON.parse(localStorage.getItem('gyeol_tags') ?? '{}'); } catch { return {}; }
+  });
+  const [tagInput, setTagInput] = useState<string | null>(null);
+  const [tagText, setTagText] = useState('');
+  const [editingMsg, setEditingMsg] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   const toggleBookmark = (msgId: string) => {
     setBookmarks(prev => {
@@ -69,6 +79,46 @@ export default function SimpleChat() {
       localStorage.setItem('gyeol_bookmarks', JSON.stringify([...next]));
       return next;
     });
+  };
+
+  const togglePin = (msgId: string) => {
+    setPinnedMessages(prev => {
+      const next = new Set(prev);
+      if (next.has(msgId)) next.delete(msgId); else next.add(msgId);
+      localStorage.setItem('gyeol_pinned', JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  const addTag = (msgId: string, tag: string) => {
+    if (!tag.trim()) return;
+    setTags(prev => {
+      const existing = prev[msgId] ?? [];
+      if (existing.includes(tag.trim())) return prev;
+      const next = { ...prev, [msgId]: [...existing, tag.trim()] };
+      localStorage.setItem('gyeol_tags', JSON.stringify(next));
+      return next;
+    });
+    setTagInput(null); setTagText('');
+  };
+
+  const removeTag = (msgId: string, tag: string) => {
+    setTags(prev => {
+      const next = { ...prev, [msgId]: (prev[msgId] ?? []).filter(t => t !== tag) };
+      localStorage.setItem('gyeol_tags', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleEditMessage = async (msgId: string) => {
+    if (!editText.trim()) return;
+    // Update locally
+    setMessages((prev: Message[]) => prev.map(m => m.id === msgId ? { ...m, content: editText.trim() } : m));
+    // Also update in DB if not local
+    if (!msgId.startsWith('local-')) {
+      await supabase.from('gyeol_conversations' as any).update({ content: editText.trim() } as any).eq('id', msgId);
+    }
+    setEditingMsg(null); setEditText('');
   };
 
   const handleTranslate = async (msgId: string, text: string, lang: string) => {
@@ -250,6 +300,26 @@ export default function SimpleChat() {
 
       {/* === Messages === */}
       <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10" role="log" aria-label="Messages" aria-live="polite">
+        {/* Pinned messages bar */}
+        {pinnedMessages.size > 0 && (
+          <div className="mb-2 p-2 rounded-xl glass-card border border-amber-500/20">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="material-icons-round text-amber-400 text-[12px]">push_pin</span>
+              <span className="text-[10px] text-amber-400 font-medium">Pinned ({pinnedMessages.size})</span>
+            </div>
+            <div className="space-y-1 max-h-20 overflow-y-auto">
+              {messages.filter(m => pinnedMessages.has(m.id)).map(m => (
+                <div key={`pin-${m.id}`} className="text-[10px] text-foreground/60 truncate flex items-center gap-1">
+                  <span className={m.role === 'user' ? 'text-primary/50' : 'text-secondary/50'}>{m.role === 'user' ? 'You' : agentName}:</span>
+                  <span className="truncate">{m.content.slice(0, 60)}</span>
+                  <button onClick={() => togglePin(m.id)} className="ml-auto text-amber-400/50 hover:text-amber-400 shrink-0">
+                    <span className="material-icons-round text-[10px]">close</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {groupedMessages.map((group) => (
           <div key={group.date}>
             {/* Date separator */}
@@ -265,10 +335,32 @@ export default function SimpleChat() {
                   <div className="flex gap-2.5 justify-end">
                     <div className="max-w-[80%]">
                       <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You · {format(new Date(msg.created_at), 'HH:mm')}</span>
-                      <div className="user-bubble p-4 rounded-2xl rounded-br-sm"
+                      <div className={`user-bubble p-4 rounded-2xl rounded-br-sm ${pinnedMessages.has(msg.id) ? 'ring-1 ring-amber-400/30' : ''}`}
                         style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        {editingMsg === msg.id ? (
+                          <div className="space-y-2">
+                            <textarea value={editText} onChange={e => setEditText(e.target.value)} rows={2}
+                              className="w-full bg-background/50 rounded-lg px-2 py-1 text-sm outline-none border border-primary/20 resize-none" autoFocus />
+                            <div className="flex gap-1 justify-end">
+                              <button onClick={() => setEditingMsg(null)} className="text-[9px] px-2 py-1 rounded text-muted-foreground">Cancel</button>
+                              <button onClick={() => handleEditMessage(msg.id)} className="text-[9px] px-2 py-1 rounded bg-primary/20 text-primary">Save</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                        )}
                       </div>
+                      {/* Tags */}
+                      {(tags[msg.id] ?? []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                          {tags[msg.id].map(t => (
+                            <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 flex items-center gap-0.5">
+                              #{t}
+                              <button onClick={() => removeTag(msg.id, t)} className="text-primary/30 hover:text-primary">×</button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       {/* Reaction display */}
                       {reactions[msg.id] && (
                         <div className="flex justify-end mt-0.5">
@@ -279,25 +371,49 @@ export default function SimpleChat() {
                       <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
                           aria-label="Add reaction"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">add_reaction</span>
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">add_reaction</span>
+                        </button>
+                        <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content); }}
+                          aria-label="Edit message"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">edit</span>
                         </button>
                         <button onClick={() => handleDeleteMessage(msg.id)}
                           aria-label="Delete message"
-                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">delete</span>
+                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+                          <span className="material-icons-round text-[12px]">delete</span>
                         </button>
-                        <button onClick={() => handleResendMessage(msg.content)}
-                          aria-label="Resend message"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">refresh</span>
+                        <button onClick={() => togglePin(msg.id)}
+                          aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
+                          className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+                          <span className="material-icons-round text-[12px]">push_pin</span>
+                        </button>
+                        <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
+                          aria-label="Add tag"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+                          <span className="material-icons-round text-[12px]">label</span>
                         </button>
                         <button onClick={() => toggleBookmark(msg.id)}
                           aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
-                          className={`text-[9px] px-1.5 py-0.5 rounded transition focus-visible:outline-2 focus-visible:outline-primary ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
+                          className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+                          <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
                         </button>
                       </div>
+                      {/* Tag input */}
+                      <AnimatePresence>
+                        {tagInput === msg.id && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                            className="flex gap-1 mt-1 justify-end overflow-hidden">
+                            <input type="text" value={tagText} onChange={e => setTagText(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && addTag(msg.id, tagText)}
+                              placeholder="tag name" maxLength={20}
+                              className="w-24 rounded-full bg-secondary/50 border border-border/30 px-2 py-1 text-[9px] text-foreground outline-none" autoFocus />
+                            <button onClick={() => addTag(msg.id, tagText)}
+                              className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary">Add</button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       {/* Reaction picker */}
                       <AnimatePresence>
                         {reactionPickerFor === msg.id && (
