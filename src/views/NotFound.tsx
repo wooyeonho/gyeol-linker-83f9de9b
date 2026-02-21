@@ -57,7 +57,7 @@ export default function NotFound() {
       >
         <Link
           to="/"
-          className="px-6 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold flex items-center gap-2"
+          className="px-6 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold flex items-center gap-2"
         >
           <span className="material-icons-round text-lg">home</span>
           {isKo ? 'GYEOL로 돌아가기' : 'Back to GYEOL'}

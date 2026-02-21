@@ -88,7 +88,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
           supabase.from('gyeol_agents' as any).update({ settings: newSettings } as any).eq('id', agent?.id);
           onUpdate(newSettings);
         }}
-          className={`w-10 h-6 rounded-full transition ${allOn ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/10'}`}>
+          className={`w-10 h-6 rounded-full transition ${allOn ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
           <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${allOn ? 'translate-x-4' : ''}`} />
         </button>
       </div>
@@ -106,7 +106,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
             </div>
           </div>
           <button type="button" onClick={() => save(cat.key, !toggles[cat.key])}
-            className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${toggles[cat.key] ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`}>
+            className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${toggles[cat.key] ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>
             <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${toggles[cat.key] ? 'ml-[18px]' : 'ml-1'}`} />
           </button>
         </div>
@@ -119,14 +119,14 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
         <p className="text-[10px] text-muted-foreground">🌙 Quiet Hours (방해금지 시간)</p>
         <div className="flex items-center gap-2">
           <select value={quietStart} onChange={e => saveQuietHours(Number(e.target.value), quietEnd)}
-            className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1.5 text-[11px] text-foreground outline-none">
+            className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-2 py-1.5 text-[11px] text-foreground outline-none">
             {Array.from({ length: 24 }, (_, i) => (
               <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
             ))}
           </select>
           <span className="text-[10px] text-muted-foreground">~</span>
           <select value={quietEnd} onChange={e => saveQuietHours(quietStart, Number(e.target.value))}
-            className="flex-1 rounded-lg bg-white/[0.03] border border-white/[0.06] px-2 py-1.5 text-[11px] text-foreground outline-none">
+            className="flex-1 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-2 py-1.5 text-[11px] text-foreground outline-none">
             {Array.from({ length: 24 }, (_, i) => (
               <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
             ))}

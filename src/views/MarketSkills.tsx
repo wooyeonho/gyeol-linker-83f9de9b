@@ -154,7 +154,7 @@ export default function MarketSkillsPage() {
 
         {/* Skills/Skins tabs */}
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
-          <Link to="/market/skills" className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">Skills</Link>
+          <Link to="/market/skills" className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 transition">Skills</Link>
           <Link to="/market/skins" className="flex-1 py-2 rounded-lg text-center text-xs font-medium text-muted-foreground hover:text-foreground transition">Skins</Link>
         </div>
 
@@ -162,9 +162,9 @@ export default function MarketSkillsPage() {
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/10" />
           <div className="relative z-10">
-            <span className="text-[8px] px-2 py-0.5 rounded-full bg-primary text-white font-bold uppercase tracking-wider">FEATURED</span>
+            <span className="text-[8px] px-2 py-0.5 rounded-full bg-primary text-foreground font-bold uppercase tracking-wider">FEATURED</span>
             <h2 className="text-xl font-bold text-foreground mt-2">Featured Skill</h2>
-            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Expand your companion's abilities.</p>
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px]">Expand your companion's abilities.</p>
             <button className="mt-3 px-4 py-2 rounded-full glass-card text-[11px] text-primary font-medium border border-primary/30">
               Explore Skills
             </button>
@@ -173,9 +173,9 @@ export default function MarketSkillsPage() {
 
         {/* Search */}
         <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2.5">
-          <span className="material-icons-round text-slate-400 text-lg">search</span>
+          <span className="material-icons-round text-muted-foreground text-lg">search</span>
           <input type="text" placeholder="Search skills..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-500 outline-none" />
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
         </div>
 
         {/* Category tabs */}
@@ -184,8 +184,8 @@ export default function MarketSkillsPage() {
             <button key={c} onClick={() => setCategory(c.toLowerCase())}
               className={`px-4 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition ${
                 category === c.toLowerCase()
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white'
-                  : 'glass-card text-slate-400'
+                  ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
+                  : 'glass-card text-muted-foreground'
               }`}>{c}</button>
           ))}
         </div>
@@ -227,7 +227,7 @@ export default function MarketSkillsPage() {
                     <button type="button"
                       onClick={() => toggleSkillActive(s.id)}
                       className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0 ${
-                        activeSkills[s.id] !== false ? 'bg-emerald-500/20 text-emerald-400' : 'bg-secondary text-muted-foreground'
+                        activeSkills[s.id] !== false ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)] text-[hsl(var(--success,142_71%_45%))]' : 'bg-secondary text-muted-foreground'
                       }`}>
                       {activeSkills[s.id] !== false ? 'ON' : 'OFF'}
                     </button>

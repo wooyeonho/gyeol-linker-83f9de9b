@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Gift, Trophy } from 'lucide-react';
 
 const INTIMACY_LEVELS = [
-  { min: 0, emoji: '🌱', label: 'Seed', color: 'text-emerald-400' },
-  { min: 20, emoji: '🌿', label: 'Sprout', color: 'text-emerald-500' },
+  { min: 0, emoji: '🌱', label: 'Seed', color: 'text-[hsl(var(--success,142_71%_45%))]' },
+  { min: 20, emoji: '🌿', label: 'Sprout', color: 'text-[hsl(var(--success,142_71%_45%))]' },
   { min: 40, emoji: '🌸', label: 'Bloom', color: 'text-pink-400' },
   { min: 60, emoji: '🌺', label: 'Flower', color: 'text-pink-500' },
   { min: 80, emoji: '💎', label: 'Diamond', color: 'text-primary' },

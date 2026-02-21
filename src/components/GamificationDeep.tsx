@@ -200,7 +200,7 @@ export function BossQuest({ boss, onStart }: { boss: { name: string; hp: number;
 export function AchievementTier({ points, tier }: { points: number; tier: number }) {
   const tiers = [
     { name: 'Bronze', min: 0, color: 'text-amber-600', icon: '🥉' },
-    { name: 'Silver', min: 100, color: 'text-slate-400', icon: '🥈' },
+    { name: 'Silver', min: 100, color: 'text-muted-foreground', icon: '🥈' },
     { name: 'Gold', min: 500, color: 'text-amber-400', icon: '🥇' },
     { name: 'Platinum', min: 1000, color: 'text-primary', icon: '💎' },
     { name: 'Diamond', min: 5000, color: 'text-cyan-400', icon: '👑' },

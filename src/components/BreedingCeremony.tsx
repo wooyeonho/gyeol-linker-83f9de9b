@@ -125,7 +125,7 @@ export function BreedingCeremony({ show, parentAName, parentBName, childName, on
                 animate={{ opacity: 1 }}
                 transition={{ delay: 3.5 }}
                 onClick={onComplete}
-                className="mt-4 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold shadow-lg shadow-primary/30"
+                className="mt-4 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/30"
               >
                 만나기
               </motion.button>

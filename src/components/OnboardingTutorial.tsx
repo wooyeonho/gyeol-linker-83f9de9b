@@ -131,7 +131,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
                 if (isLast) { onClose(); setStep(0); }
                 else setStep(s => s + 1);
               }}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold shadow-lg shadow-primary/20"
+              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20"
             >
               {isLast ? '시작하기 🚀' : '다음'}
             </button>

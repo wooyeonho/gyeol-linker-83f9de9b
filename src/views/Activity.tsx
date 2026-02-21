@@ -139,7 +139,7 @@ export default function ActivityPage() {
         <div className="flex items-end justify-between mb-2">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Activity & Growth</h1>
-            <p className="text-sm text-slate-400 mt-1">Track your interaction depth and shared journey.</p>
+            <p className="text-sm text-muted-foreground mt-1">Track your interaction depth and shared journey.</p>
           </div>
           <div className="flex items-center gap-2">
             <ActivityExportButton onExport={(format) => { setExportOpen(true); }} />
@@ -166,24 +166,24 @@ export default function ActivityPage() {
               <span className="material-icons-round text-primary/50 text-lg">bolt</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">+{learningGrowth}%</span>
             </div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Interaction Score</p>
-            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">{interactionScore}<span className="text-[11px] font-normal text-slate-400 ml-1">pts</span></p>
-            <div className="w-full h-1 rounded-full bg-white/[0.06] mt-3">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Interaction Score</p>
+            <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">{interactionScore}<span className="text-[11px] font-normal text-muted-foreground ml-1">pts</span></p>
+            <div className="w-full h-1 rounded-full bg-foreground/[0.06] mt-3">
               <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary" style={{ width: '72%' }} />
             </div>
-            <p className="text-[9px] text-slate-500 mt-1 text-right">High Resonance</p>
+            <p className="text-[9px] text-muted-foreground mt-1 text-right">High Resonance</p>
           </div>
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="material-icons-round text-secondary/50 text-lg">trending_up</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Lv. {growthLevel}</span>
             </div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total Growth</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Growth</p>
             <p className="text-2xl font-bold text-foreground mt-1 whitespace-nowrap">Lv.{growthLevel}</p>
-            <p className="text-[9px] text-slate-400 mt-1 leading-tight"><strong className="text-foreground">Deep Empathy</strong> unlocked</p>
+            <p className="text-[9px] text-muted-foreground mt-1 leading-tight"><strong className="text-foreground">Deep Empathy</strong> unlocked</p>
             <div className="flex gap-1 mt-2">
               {[1,2,3,4,5].map(g => (
-                <div key={g} className={`flex-1 h-1 rounded-full ${g <= (agent?.gen ?? 1) ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-white/[0.06]'}`} />
+                <div key={g} className={`flex-1 h-1 rounded-full ${g <= (agent?.gen ?? 1) ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`} />
               ))}
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function ActivityPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-foreground truncate">{log.summary ?? 'Security event'}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[9px] text-slate-500">{format(new Date(log.created_at), 'HH:mm')}</span>
+                      <span className="text-[9px] text-muted-foreground">{format(new Date(log.created_at), 'HH:mm')}</span>
                       {log.security_flags?.map(flag => (
                         <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
                       ))}
@@ -232,13 +232,13 @@ export default function ActivityPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-foreground">Interaction Volume</h3>
-              <p className="text-[10px] text-slate-400">Daily conversation density</p>
+              <p className="text-[10px] text-muted-foreground">Daily conversation density</p>
             </div>
             <div className="flex gap-1 glass-card rounded-lg p-0.5">
               <button onClick={() => setChartMode('weekly')}
-                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'weekly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'}`}>Weekly</button>
+                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'weekly' ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground' : 'text-muted-foreground'}`}>Weekly</button>
               <button onClick={() => setChartMode('monthly')}
-                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'monthly' ? 'bg-gradient-to-r from-primary to-secondary text-white' : 'text-slate-400'}`}>Monthly</button>
+                className={`px-3 py-1 rounded-md text-[10px] font-medium transition ${chartMode === 'monthly' ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground' : 'text-muted-foreground'}`}>Monthly</button>
             </div>
           </div>
           <div className="flex items-end gap-2 h-32 mt-2">
@@ -247,7 +247,7 @@ export default function ActivityPage() {
               return (
                 <div key={day} className="flex-1 flex flex-col items-center gap-1">
                   <div className="w-full rounded-t-md bg-gradient-to-t from-primary/60 to-primary/20 transition-all" style={{ height: `${height}%` }} />
-                  <span className="text-[8px] text-slate-500">{day}</span>
+                  <span className="text-[8px] text-muted-foreground">{day}</span>
                 </div>
               );
             })}
@@ -259,7 +259,7 @@ export default function ActivityPage() {
           <div className="glass-card rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-bold text-foreground">Activity Levels</h3>
-              <div className="flex items-center gap-1 text-[8px] text-slate-500">
+              <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
                 <span>Less</span>
                 {[0.1, 0.25, 0.5, 0.75, 1].map((o, i) => (
                   <div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: `rgba(120,78,218,${o})` }} />
@@ -286,11 +286,11 @@ export default function ActivityPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-medium text-foreground truncate">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</p>
-                    <p className="text-[9px] text-slate-500">{formatDate(log.created_at)}</p>
+                    <p className="text-[9px] text-muted-foreground">{formatDate(log.created_at)}</p>
                   </div>
                 </div>
               ))}
-              {logs.length === 0 && <p className="text-[10px] text-slate-500 text-center py-2">No activity yet</p>}
+              {logs.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-2">No activity yet</p>}
             </div>
           </div>
         </div>
@@ -298,7 +298,7 @@ export default function ActivityPage() {
         {/* Activity Log with Filter */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-slate-400">
+            <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
               {showLogs ? 'Hide' : 'Show'} Activity Log
             </button>
@@ -320,32 +320,32 @@ export default function ActivityPage() {
             ) : filteredLogs.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-10">
                 <div className="void-dot" />
-                <p className="text-[11px] text-white/20 mt-4">No activity yet</p>
+                <p className="text-[11px] text-foreground/20 mt-4">No activity yet</p>
               </div>
             ) : (
               <AnimatePresence mode="popLayout">
                 {Object.entries(grouped).map(([date, items]) => (
                   <div key={date} className="space-y-2 mb-4">
-                    <p className="text-[10px] text-slate-500 font-medium tracking-wider px-1">{date}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium tracking-wider px-1">{date}</p>
                     <div className="glass-card rounded-2xl p-4">
                       {items.map((log, i) => (
                         <motion.div key={log.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                           onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
-                          className="flex flex-col py-3 border-b border-white/[0.04] last:border-0 cursor-pointer">
+                          className="flex flex-col py-3 border-b border-foreground/[0.04] last:border-0 cursor-pointer">
                           <div className="flex items-start gap-3">
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                              log.activity_type === 'heartbeat' ? 'bg-rose-500/[0.07]' :
+                              log.activity_type === 'heartbeat' ? 'bg-destructive/[0.07]' :
                               log.activity_type === 'error' ? 'bg-destructive/[0.07]' : 'bg-primary/[0.07]'
                             }`}>
                               <span className={`material-icons-round text-sm ${
-                                log.activity_type === 'heartbeat' ? 'text-rose-500/50' :
+                                log.activity_type === 'heartbeat' ? 'text-destructive/50' :
                                 log.activity_type === 'error' ? 'text-destructive/50' : 'text-primary/50'
                               }`}>{TYPE_ICON[log.activity_type] ?? 'info'}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] text-white/20">{format(new Date(log.created_at), 'HH:mm')}</span>
-                                <span className="text-[10px] text-white/30">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</span>
+                                <span className="text-[10px] text-foreground/20">{format(new Date(log.created_at), 'HH:mm')}</span>
+                                <span className="text-[10px] text-foreground/30">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</span>
                                 {log.source && log.source !== 'nextjs' && (
                                   <span className="text-[8px] px-1 py-0.5 rounded bg-primary/5 text-primary/50">{log.source}</span>
                                 )}
@@ -365,7 +365,7 @@ export default function ActivityPage() {
                               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden">
                                 <div className="mt-2 ml-11 p-3 rounded-lg bg-secondary/30 border border-border/20">
-                                  <p className="text-[9px] text-slate-400 uppercase tracking-wider mb-2">Details</p>
+                                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-2">Details</p>
                                   <pre className="text-[10px] text-foreground/60 whitespace-pre-wrap break-all font-mono leading-relaxed">
                                     {JSON.stringify(log.details, null, 2)}
                                   </pre>

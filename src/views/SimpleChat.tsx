@@ -373,52 +373,52 @@ export default function SimpleChat() {
       {isUser && (
         <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content); }}
           aria-label="Edit message"
-          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
           <span className="material-icons-round text-[12px]">edit</span>
         </button>
       )}
       <button onClick={() => handleDeleteMessage(msg.id)}
         aria-label="Delete message"
-        className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+        className="text-[9px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
         <span className="material-icons-round text-[12px]">delete</span>
       </button>
       <button onClick={() => navigator.clipboard.writeText(msg.content)}
         aria-label="Copy message"
-        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
         <span className="material-icons-round text-[12px]">content_copy</span>
       </button>
       {!isUser && (
         <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
           aria-label="Read aloud"
-          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
           <span className="material-icons-round text-[12px]">volume_up</span>
         </button>
       )}
       {!isUser && (
         <button onClick={() => setTranslatePickerFor(translatePickerFor === msg.id ? null : msg.id)}
           aria-label="Translate"
-          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
           <span className="material-icons-round text-[12px]">translate</span>
         </button>
       )}
       <button onClick={() => setReplyTo(msg)}
         aria-label="Reply"
-        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
         <span className="material-icons-round text-[12px]">reply</span>
       </button>
       <button onClick={() => togglePin(msg.id)}
         aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
-        className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10'}`}>
         <span className="material-icons-round text-[12px]">push_pin</span>
       </button>
       <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
         aria-label="Add tag"
-        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
         <span className="material-icons-round text-[12px]">label</span>
       </button>
       <button onClick={() => toggleBookmark(msg.id)}
         aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
-        className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10'}`}>
         <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
       </button>
     </div>
@@ -548,10 +548,10 @@ export default function SimpleChat() {
           />
           <div className="mt-2 flex items-center gap-2">
             <p className="text-base font-medium text-foreground">{agentName}</p>
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--success,142_71%_45%))] shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[10px] text-emerald-400/70">Online</p>
+            <p className="text-[10px] text-[hsl(var(--success,142_71%_45%)/0.7)]">Online</p>
             <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary/70">{intimacyEmoji} {intimacyLevel}</span>
           </div>
         </div>
@@ -567,7 +567,7 @@ export default function SimpleChat() {
               <span className="material-icons-round text-lg">search</span>
             </button>
             <p className="text-base font-medium text-foreground">{agentName}</p>
-            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--success,142_71%_45%))] shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
           <div className="flex items-center gap-1">
             <ConversationFilter onFilter={setActiveFilters} availableTags={allTags} />
@@ -616,7 +616,7 @@ export default function SimpleChat() {
         {groupedMessages.map((group) => (
           <div key={group.date}>
             <div className="flex justify-center py-3">
-              <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
+              <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-muted-foreground">
                 {group.label}
               </span>
             </div>
@@ -630,7 +630,7 @@ export default function SimpleChat() {
                       {replyMap[msg.id] && (
                         <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />
                       )}
-                      <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">
+                      <span className="text-[10px] text-muted-foreground font-medium mr-1 mb-1 block text-right">
                         You \u00b7 {format(new Date(msg.created_at), 'HH:mm')}
                         {editedMessages.has(msg.id) && <span className="ml-1 text-muted-foreground/40">(\uc218\uc815\ub428)</span>}
                       </span>
@@ -659,13 +659,13 @@ export default function SimpleChat() {
                       {renderTagsAndExtras(msg, true)}
                       {renderMessageActions(msg, true)}
                     </div>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
-                      <span className="material-icons-round text-slate-300 text-[14px]">person</span>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-foreground/10 flex items-center justify-center shadow-lg mt-5">
+                      <span className="material-icons-round text-muted-foreground text-[14px]">person</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex gap-2.5 justify-start">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-foreground/10 flex items-center justify-center shadow-lg mt-5">
                       <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
                     </div>
                     <div className="max-w-[80%]">
@@ -690,7 +690,7 @@ export default function SimpleChat() {
         {/* Typing indicator */}
         {isLoading && (
           <div className="flex gap-2.5 mb-3 justify-start">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-foreground/10 flex items-center justify-center">
               <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
             </div>
             <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
@@ -724,7 +724,7 @@ export default function SimpleChat() {
           {imagePreview && (
             <div className="mb-2 relative inline-block">
               <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border border-primary/20" />
-              <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-white text-[10px] flex items-center justify-center">\u2715</button>
+              <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-primary-foreground text-[10px] flex items-center justify-center">\u2715</button>
             </div>
           )}
           {/* File attachment preview */}
@@ -760,7 +760,7 @@ export default function SimpleChat() {
               placeholder="Message GYEOL..."
               aria-label="Message input"
               style={{ fontSize: '16px' }}
-              className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500 focus-visible:outline-none" />
+              className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-muted-foreground focus-visible:outline-none" />
             {continuousVoice ? (
               <ContinuousVoiceInput onResult={t => { setInput(prev => prev + t); }} disabled={isLoading} />
             ) : (
@@ -777,7 +777,7 @@ export default function SimpleChat() {
               <button onClick={handleSend} disabled={isLoading}
                 aria-label="Send message"
                 className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
-                <span className="material-icons-round text-white text-base" aria-hidden="true">arrow_upward</span>
+                <span className="material-icons-round text-foreground text-base" aria-hidden="true">arrow_upward</span>
               </button>
             )}
           </div>

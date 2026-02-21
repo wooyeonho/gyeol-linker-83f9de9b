@@ -72,10 +72,10 @@ function JellyCharacter({ mood, isThinking, reaction, gen }: { mood: string; isT
         {/* Eyes (gen >= 3) */}
         {gen >= 3 && (
           <div className="absolute top-[35%] left-1/2 -translate-x-1/2 flex gap-[20%]">
-            <motion.div className="w-[8%] h-[8%] rounded-full bg-white/80"
+            <motion.div className="w-[8%] h-[8%] rounded-full bg-foreground/80"
               animate={{ scaleY: [1, 0.1, 1] }}
               transition={{ duration: 0.2, repeat: Infinity, repeatDelay: 4 }} />
-            <motion.div className="w-[8%] h-[8%] rounded-full bg-white/80"
+            <motion.div className="w-[8%] h-[8%] rounded-full bg-foreground/80"
               animate={{ scaleY: [1, 0.1, 1] }}
               transition={{ duration: 0.2, repeat: Infinity, repeatDelay: 4 }} />
           </div>
@@ -276,7 +276,7 @@ function ThinkingDots() {
   return (
     <div className="absolute -bottom-4 flex gap-1">
       {[0, 1, 2].map(i => (
-        <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-white/40"
+        <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-foreground/40"
           animate={{ opacity: [0.2, 0.8, 0.2] }}
           transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
       ))}

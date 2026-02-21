@@ -155,7 +155,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                           )}
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-foreground/[0.06] overflow-hidden">
                         <motion.div
                           className="h-full rounded-full"
                           style={{ background: cond.met ? '#34D399' : color }}

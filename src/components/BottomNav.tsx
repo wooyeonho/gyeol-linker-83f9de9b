@@ -55,16 +55,16 @@ export function BottomNav() {
               className="flex flex-col items-center justify-center gap-0.5 h-14 relative focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg"
             >
               <span className="relative">
-                <span className={`material-icons-round text-[22px] transition-colors duration-200 ${active ? 'text-primary' : 'text-slate-500'}`} aria-hidden="true">
+                <span className={`material-icons-round text-[22px] transition-colors duration-200 ${active ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true">
                   {item.icon}
                 </span>
                 {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center px-0.5 shadow-lg shadow-red-500/40 animate-pulse">
+                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] rounded-full bg-red-500 text-foreground text-[8px] font-bold flex items-center justify-center px-0.5 shadow-lg shadow-red-500/40 animate-pulse">
                     {badge > 99 ? '99+' : badge}
                   </span>
                 )}
               </span>
-              <span className={`text-[10px] font-medium transition-colors duration-200 ${active ? 'text-primary' : 'text-slate-500'}`}>
+              <span className={`text-[10px] font-medium transition-colors duration-200 ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
               {active && (

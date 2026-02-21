@@ -58,7 +58,7 @@ export function ModeSwitchGuide({ isOpen, onClose, targetMode, onConfirm }: Prop
                 <div className="space-y-1">
                   {info.features.map(f => (
                     <div key={f} className="flex items-center gap-2 text-[11px] text-foreground/70">
-                      <span className="text-emerald-400 text-[10px]">●</span> {f}
+                      <span className="text-[hsl(var(--success,142_71%_45%))] text-[10px]">●</span> {f}
                     </div>
                   ))}
                 </div>
@@ -81,7 +81,7 @@ export function ModeSwitchGuide({ isOpen, onClose, targetMode, onConfirm }: Prop
                 취소
               </button>
               <button onClick={onConfirm}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-primary to-secondary text-white btn-glow transition">
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-primary to-secondary text-primary-foreground btn-glow transition">
                 전환하기
               </button>
             </div>

@@ -424,7 +424,7 @@ export default function SocialPage() {
                   }
                 }
               }}
-              className="w-full py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium hover:brightness-110 transition btn-glow">
+              className="w-full py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium hover:brightness-110 transition btn-glow">
               {card.status === 'matched' ? 'Observe Chat' : card.status === 'pending' ? 'Pending...' : 'Request Match'}
             </button>
             {card.status === 'matched' && (
@@ -513,7 +513,7 @@ export default function SocialPage() {
               </button>
             )}
           </div>
-          <span className="text-[10px] text-slate-500">{relativeTime(p.created_at)}</span>
+          <span className="text-[10px] text-muted-foreground">{relativeTime(p.created_at)}</span>
         </div>
         {renderPostActions(p, p.feedType)}
       </div>
@@ -588,7 +588,7 @@ export default function SocialPage() {
                       onKeyDown={e => e.key === 'Enter' && handleComment(p.id)}
                       className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
                     <button type="button" onClick={() => handleComment(p.id)} disabled={!commentText.trim() || submittingComment}
-                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
+                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
                       {submittingComment ? '...' : 'Send'}
                     </button>
                   </div>
@@ -628,7 +628,7 @@ export default function SocialPage() {
                       onKeyDown={e => e.key === 'Enter' && handleCommunityComment(p.id)}
                       className="flex-1 rounded-full bg-secondary/50 border border-border/30 px-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground outline-none focus:border-primary/40" />
                     <button type="button" onClick={() => handleCommunityComment(p.id)} disabled={!communityCommentText.trim() || submittingCommunityComment}
-                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-medium disabled:opacity-40 transition">
+                      className="px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-[10px] font-medium disabled:opacity-40 transition">
                       {submittingCommunityComment ? '...' : 'Send'}
                     </button>
                   </div>
@@ -706,7 +706,7 @@ export default function SocialPage() {
 
         {/* Trending Companions */}
         <div>
-          <h3 className="text-[10px] text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+          <h3 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
             <span className="material-icons-round text-secondary text-[14px]">trending_up</span>
             Trending Companions
           </h3>
@@ -718,7 +718,7 @@ export default function SocialPage() {
                 </div>
                 <div>
                   <p className="text-[11px] font-medium text-foreground">{c.name}</p>
-                  <p className="text-[9px] text-slate-400">{c.topic}</p>
+                  <p className="text-[9px] text-muted-foreground">{c.topic}</p>
                 </div>
               </div>
             ))}
@@ -797,7 +797,7 @@ export default function SocialPage() {
       {breedResult && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl glass-card shadow-xl max-w-xs text-center">
-          <p className={`text-sm font-medium ${breedResult.success ? 'text-emerald-400' : 'text-destructive/80'}`}>
+          <p className={`text-sm font-medium ${breedResult.success ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive/80'}`}>
             {breedResult.success ? `New AI born: ${breedResult.name}` : breedResult.name}
           </p>
           <button type="button" onClick={() => setBreedResult(null)}

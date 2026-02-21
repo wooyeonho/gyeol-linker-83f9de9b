@@ -133,8 +133,8 @@ export function expToNextLevel(currentExp: number, currentLevel: number): { need
 
 // ========== 등급 색상 ==========
 export const RARITY_COLORS: Record<string, string> = {
-  common: 'text-slate-400',
-  uncommon: 'text-emerald-400',
+  common: 'text-muted-foreground',
+  uncommon: 'text-[hsl(var(--success,142_71%_45%))]',
   rare: 'text-blue-400',
   epic: 'text-purple-400',
   legendary: 'text-amber-400',
@@ -142,7 +142,7 @@ export const RARITY_COLORS: Record<string, string> = {
 
 export const RARITY_BG: Record<string, string> = {
   common: 'bg-slate-400/10 border-slate-400/20',
-  uncommon: 'bg-emerald-400/10 border-emerald-400/20',
+  uncommon: 'bg-[hsl(var(--success,142_71%_45%)/0.1)] border-[hsl(var(--success,142_71%_45%)/0.2)]',
   rare: 'bg-blue-400/10 border-blue-400/20',
   epic: 'bg-purple-400/10 border-purple-400/20',
   legendary: 'bg-amber-400/10 border-amber-400/20',
@@ -150,7 +150,7 @@ export const RARITY_BG: Record<string, string> = {
 
 export const RARITY_GLOW: Record<string, string> = {
   common: '',
-  uncommon: 'shadow-emerald-500/20',
+  uncommon: 'shadow-[hsl(var(--success,142_71%_45%)/0.2)]',
   rare: 'shadow-blue-500/20',
   epic: 'shadow-purple-500/30',
   legendary: 'shadow-amber-500/40 shadow-lg',

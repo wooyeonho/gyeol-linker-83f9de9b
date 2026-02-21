@@ -77,7 +77,7 @@ export function LevelUpCeremony({ show, newLevel, onClose }: LevelUpCeremonyProp
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.9 }}
               onClick={onClose}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm shadow-lg shadow-primary/30"
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/30"
             >
               확인
             </motion.button>

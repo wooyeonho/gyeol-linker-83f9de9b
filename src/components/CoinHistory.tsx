@@ -86,10 +86,10 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
                 logs.map(log => (
                   <div key={log.id} className="glass-card rounded-xl px-3 py-2.5 flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      log.amount > 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                      log.amount > 0 ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-red-500/10'
                     }`}>
                       <span className={`material-icons-round text-sm ${
-                        log.amount > 0 ? 'text-emerald-400' : 'text-red-400'
+                        log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-red-400'
                       }`}>{log.amount > 0 ? 'add_circle' : 'remove_circle'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
                         {log.currency_type === 'exp' && ' • EXP'}
                       </p>
                     </div>
-                    <span className={`text-sm font-bold ${log.amount > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <span className={`text-sm font-bold ${log.amount > 0 ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-red-400'}`}>
                       {log.amount > 0 ? '+' : ''}{log.amount}
                     </span>
                   </div>

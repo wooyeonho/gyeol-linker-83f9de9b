@@ -61,7 +61,7 @@ export default function ServerError() {
         </button>
         <Link
           to="/"
-          className="px-5 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold flex items-center gap-2"
+          className="px-5 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold flex items-center gap-2"
         >
           <span className="material-icons-round text-lg">home</span>
           홈으로

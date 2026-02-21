@@ -76,7 +76,7 @@ export function CommunityVote({ postId, question, options, onVote, votedIndex, s
             disabled={!!hasVoted}
             className={`w-full text-left rounded-lg px-3 py-2 transition relative overflow-hidden ${
               hasVoted
-                ? isSelected ? 'border border-primary/30' : isWinner ? 'border border-emerald-400/30' : 'border border-border/10'
+                ? isSelected ? 'border border-primary/30' : isWinner ? 'border border-[hsl(var(--success,142_71%_45%)/0.3)]' : 'border border-border/10'
                 : 'glass-card hover:bg-primary/5 cursor-pointer'
             }`}
           >
@@ -85,15 +85,15 @@ export function CommunityVote({ postId, question, options, onVote, votedIndex, s
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.5 }}
-                className={`absolute inset-y-0 left-0 rounded-lg ${isWinner ? 'bg-emerald-400/15' : isSelected ? 'bg-primary/15' : 'bg-muted/10'}`}
+                className={`absolute inset-y-0 left-0 rounded-lg ${isWinner ? 'bg-[hsl(var(--success,142_71%_45%)/0.15)]' : isSelected ? 'bg-primary/15' : 'bg-muted/10'}`}
               />
             )}
             <div className="relative flex items-center justify-between">
-              <span className={`text-[11px] ${isSelected ? 'font-bold text-primary' : isWinner ? 'font-bold text-emerald-400' : 'text-foreground'}`}>
+              <span className={`text-[11px] ${isSelected ? 'font-bold text-primary' : isWinner ? 'font-bold text-[hsl(var(--success,142_71%_45%))]' : 'text-foreground'}`}>
                 {isWinner && '🏆 '}{opt.label}
               </span>
               {hasVoted && (
-                <span className={`text-[10px] font-bold ${isSelected ? 'text-primary' : isWinner ? 'text-emerald-400' : 'text-muted-foreground'}`}>
+                <span className={`text-[10px] font-bold ${isSelected ? 'text-primary' : isWinner ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-muted-foreground'}`}>
                   {pct}% ({opt.votes})
                 </span>
               )}
@@ -108,7 +108,7 @@ export function CommunityVote({ postId, question, options, onVote, votedIndex, s
           </p>
         )}
         {hasVoted && winnerIdx >= 0 && timeLeft === 'Ended' && (
-          <p className="text-[9px] text-emerald-400 font-medium">
+          <p className="text-[9px] text-[hsl(var(--success,142_71%_45%))] font-medium">
             ✅ Result: {adjustedOptions[winnerIdx].label}
           </p>
         )}

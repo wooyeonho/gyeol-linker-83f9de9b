@@ -71,17 +71,17 @@ export default function ResetPasswordPage() {
           {success ? (
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
-                <span className="material-icons-round text-emerald-400 text-2xl">check_circle</span>
+              <div className="w-12 h-12 rounded-full bg-[hsl(var(--success,142_71%_45%)/0.1)] flex items-center justify-center mx-auto">
+                <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-2xl">check_circle</span>
               </div>
-              <p className="text-sm text-emerald-400">Password reset successfully!</p>
+              <p className="text-sm text-[hsl(var(--success,142_71%_45%))]">Password reset successfully!</p>
               <p className="text-xs text-muted-foreground">Redirecting...</p>
             </motion.div>
           ) : (
             <form onSubmit={handleReset} className="space-y-4">
               <div>
                 <label className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">New Password</label>
-                <div className="relative input-glow rounded-xl border border-white/[0.06] bg-white/[0.03]">
+                <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03]">
                   <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
 
               <div>
                 <label className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Confirm Password</label>
-                <div className="relative input-glow rounded-xl border border-white/[0.06] bg-white/[0.03]">
+                <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03]">
                   <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
               )}
 
               <button type="submit" disabled={loading}
-                className="w-full py-4 mt-2 btn-glow bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 text-sm">
+                className="w-full py-4 mt-2 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 text-sm">
                 {loading ? 'Resetting...' : 'Reset Password'}
                 {!loading && <span className="material-icons-round text-base">check</span>}
               </button>

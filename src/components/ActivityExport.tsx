@@ -54,7 +54,7 @@ export function ActivityExport({ isOpen, onClose, logs }: ActivityExportProps) {
             </button>
             <button onClick={exportCSV}
               className="w-full py-3 rounded-xl glass-card flex items-center gap-3 px-4 hover:bg-primary/5 transition">
-              <span className="material-icons-round text-emerald-400 text-lg">table_chart</span>
+              <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-lg">table_chart</span>
               <div className="text-left">
                 <p className="text-[12px] font-medium text-foreground">CSV</p>
                 <p className="text-[9px] text-muted-foreground">스프레드시트 호환</p>

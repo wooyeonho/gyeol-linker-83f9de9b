@@ -189,16 +189,16 @@ export default function MarketSkinsPage() {
         {/* Skills/Skins tabs */}
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
           <Link to="/market/skills" className="flex-1 py-2 rounded-lg text-center text-xs font-medium text-muted-foreground hover:text-foreground transition">Skills</Link>
-          <Link to="/market/skins" className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25 transition">Skins</Link>
+          <Link to="/market/skins" className="flex-1 py-2 rounded-full text-center text-xs font-medium bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25 transition">Skins</Link>
         </div>
 
         {/* Hero Banner */}
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/10" />
           <div className="relative z-10">
-            <span className="text-[8px] px-2 py-0.5 rounded-full bg-secondary text-white font-bold uppercase tracking-wider">NEW ARRIVAL</span>
+            <span className="text-[8px] px-2 py-0.5 rounded-full bg-secondary text-foreground font-bold uppercase tracking-wider">NEW ARRIVAL</span>
             <h2 className="text-xl font-bold text-foreground mt-2">Featured Skin</h2>
-            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Transform your companion's visual identity.</p>
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px]">Transform your companion's visual identity.</p>
             <button className="mt-3 px-4 py-2 rounded-full glass-card text-[11px] text-secondary font-medium border border-secondary/30">
               Browse Collection
             </button>
@@ -217,8 +217,8 @@ export default function MarketSkinsPage() {
             <button key={c} onClick={() => setCategory(c.toLowerCase())}
               className={`px-4 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition ${
                 category === c.toLowerCase()
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white'
-                  : 'glass-card text-slate-400'
+                  ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
+                  : 'glass-card text-muted-foreground'
               }`}>{c}</button>
           ))}
         </div>

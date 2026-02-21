@@ -117,7 +117,7 @@ export function SeasonPass() {
 
       {claimMsg && (
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-          className="text-center py-2 text-sm font-medium text-emerald-400">{claimMsg}</motion.div>
+          className="text-center py-2 text-sm font-medium text-[hsl(var(--success,142_71%_45%))]">{claimMsg}</motion.div>
       )}
 
       {/* Tier track */}
@@ -137,7 +137,7 @@ export function SeasonPass() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                 unlocked ? 'bg-gradient-to-br from-primary/20 to-secondary/20' : 'bg-muted/20'
               }`}>
-                <span className={`material-icons-round text-lg ${claimed ? 'text-emerald-400' : unlocked ? 'text-primary' : 'text-muted-foreground/30'}`}>
+                <span className={`material-icons-round text-lg ${claimed ? 'text-[hsl(var(--success,142_71%_45%))]' : unlocked ? 'text-primary' : 'text-muted-foreground/30'}`}>
                   {claimed ? 'check_circle' : t.icon}
                 </span>
               </div>
@@ -150,7 +150,7 @@ export function SeasonPass() {
                     <button
                       onClick={() => handleClaimReward(t.tier)}
                       disabled={claimingTier === t.tier}
-                      className="text-[9px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold animate-pulse"
+                      className="text-[9px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold animate-pulse"
                     >
                       {claimingTier === t.tier ? '...' : '수령'}
                     </button>
@@ -161,7 +161,7 @@ export function SeasonPass() {
                 {(isNext || unlocked) && (
                   <div className="w-full h-1.5 rounded-full bg-muted/30 mt-1.5">
                     <motion.div
-                      className={`h-full rounded-full ${claimed ? 'bg-emerald-400' : unlocked ? 'bg-emerald-400' : 'bg-gradient-to-r from-primary to-secondary'}`}
+                      className={`h-full rounded-full ${claimed ? 'bg-[hsl(var(--success,142_71%_45%))]' : unlocked ? 'bg-[hsl(var(--success,142_71%_45%))]' : 'bg-gradient-to-r from-primary to-secondary'}`}
                       initial={{ width: 0 }} animate={{ width: `${pct}%` }}
                       transition={{ duration: 0.6, ease: 'easeOut' }}
                     />

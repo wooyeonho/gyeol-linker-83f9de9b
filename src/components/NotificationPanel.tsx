@@ -23,7 +23,7 @@ interface NotificationPanelProps {
 
 const TYPE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   achievement: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: '업적' },
-  quest: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: '퀘스트' },
+  quest: { bg: 'bg-[hsl(var(--success,142_71%_45%)/0.1)]', text: 'text-[hsl(var(--success,142_71%_45%))]', label: '퀘스트' },
   evolution: { bg: 'bg-primary/10', text: 'text-primary', label: '진화' },
   social: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', label: '소셜' },
   system: { bg: 'bg-primary/10', text: 'text-primary', label: '시스템' },

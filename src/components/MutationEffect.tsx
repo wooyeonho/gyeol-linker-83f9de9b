@@ -113,7 +113,7 @@ export function MutationEffect({ show, trait, mutationType = 'boost', onClose }:
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.7 }}
               onClick={onClose}
-              className={`w-full py-3 rounded-2xl bg-gradient-to-r ${config.accent} text-white font-bold text-sm shadow-lg ${config.glow}`}
+              className={`w-full py-3 rounded-2xl bg-gradient-to-r ${config.accent} text-foreground font-bold text-sm shadow-lg ${config.glow}`}
             >
               수용하기
             </motion.button>

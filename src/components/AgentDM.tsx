@@ -127,11 +127,11 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
                   <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 ${
                       isMine
-                        ? 'bg-gradient-to-br from-primary to-indigo-600 text-white rounded-br-sm'
+                        ? 'bg-gradient-to-br from-primary to-indigo-600 text-foreground rounded-br-sm'
                         : 'glass-bubble rounded-bl-sm'
                     }`}>
                       <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                      <p className={`text-[9px] mt-1 ${isMine ? 'text-white/50' : 'text-muted-foreground'}`}>
+                      <p className={`text-[9px] mt-1 ${isMine ? 'text-foreground/50' : 'text-muted-foreground'}`}>
                         {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
                       </p>
                     </div>
@@ -154,7 +154,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
               {input.trim() && (
                 <button onClick={handleSend} disabled={sending}
                   className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="material-icons-round text-white text-base">arrow_upward</span>
+                  <span className="material-icons-round text-foreground text-base">arrow_upward</span>
                 </button>
               )}
             </div>
@@ -185,7 +185,7 @@ export function DMBadge({ agentId }: { agentId: string }) {
 
   if (count === 0) return null;
   return (
-    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-destructive text-white text-[9px] font-bold flex items-center justify-center px-1">
+    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-destructive text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1">
       {count > 9 ? '9+' : count}
     </span>
   );
