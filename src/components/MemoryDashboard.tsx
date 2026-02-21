@@ -16,17 +16,17 @@ const CATEGORY_CONFIG: Record<string, { icon: string; label: string }> = {
   preference: { icon: '❤️', label: '좋아하는 것' },
   interest: { icon: '🎯', label: '관심사' },
   goal: { icon: '🎯', label: '목표' },
-  relationship: { icon: '👥', label: '관계' },
-  emotion: { icon: '😊', label: '최근 감정' },
+  relationship: { icon: '👥', label: 'Relationships' },
+  emotion: { icon: '😊', label: '최근 Emotions' },
   style: { icon: '🗣️', label: '대화 스타일' },
-  learning: { icon: '📚', label: '학습한 주제' },
+  learning: { icon: '📚', label: 'Learned topics' },
 };
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
-  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/20 text-success">Confirm됨</span>;
-  if (confidence >= 70) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]">신뢰도 {confidence}%</span>;
-  if (confidence >= 50) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]">추정 {confidence}%</span>;
-  return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive">Confirm 필요</span>;
+  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/20 text-success">Confirmed</span>;
+  if (confidence >= 70) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]">Confidence {confidence}%</span>;
+  if (confidence >= 50) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]">Estimated {confidence}%</span>;
+  return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive">Needs confirmation</span>;
 }
 
 interface MemoryDashboardProps {
@@ -254,13 +254,13 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                   exit={{ opacity: 0, y: 20 }}
                   className="absolute bottom-0 left-0 right-0 glass-panel border-t border-foreground/[0.06] px-5 py-4"
                 >
-                  <p className="text-[12px] text-foreground/80 mb-3">이 기억을 삭제할까요?</p>
+                  <p className="text-[12px] text-foreground/80 mb-3">이 기억을 Delete할까요?</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleDelete(deleteTarget)}
                       className="flex-1 py-2 rounded-xl bg-destructive/20 text-destructive text-[12px] font-medium hover:bg-destructive/30 transition"
                     >
-                      삭제
+                      Delete
                     </button>
                     <button
                       onClick={() => setDeleteTarget(null)}

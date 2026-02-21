@@ -1,5 +1,5 @@
 /**
- * 대화 내보내기 모달 — 텍스트/JSON/Markdown 형식으로 대화 기록 다운로드
+ * Export Conversation 모달 — 텍스트/JSON/Markdown 형식으로 대화 기록 다운로드
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Message } from '@/lib/gyeol/types';
@@ -74,7 +74,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
       {isOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={onClose}
-          role="dialog" aria-label="대화 내보내기" aria-modal="true">
+          role="dialog" aria-label="Export Conversation" aria-modal="true">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
             onClick={e => e.stopPropagation()}
             className="glass-card rounded-2xl p-5 w-full max-w-[320px] space-y-4">
@@ -83,7 +83,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
                 <span aria-hidden="true" className="material-icons-round text-primary text-lg">download</span>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">대화 내보내기</h3>
+                <h3 className="text-sm font-bold text-foreground">Export Conversation</h3>
                 <p className="text-[10px] text-muted-foreground">{messages.length}개 메시지</p>
               </div>
             </div>
@@ -92,7 +92,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
               {FORMATS.map(f => (
                 <button key={f.id} onClick={() => exportAs(f.id)}
                   className="w-full py-3 rounded-xl glass-card flex items-center gap-3 px-4 hover:bg-primary/5 transition"
-                  aria-label={`${f.label} 형식으로 내보내기`}>
+                  aria-label={`${f.label} 형식으로 Export`}>
                   <span className={`material-icons-round ${f.color} text-lg`}>{f.icon}</span>
                   <div className="text-left">
                     <p className="text-[12px] font-medium text-foreground">{f.label}</p>

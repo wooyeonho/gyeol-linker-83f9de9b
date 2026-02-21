@@ -1,5 +1,5 @@
 /**
- * 시즌 패스 UI — 티어별 보상 트랙 표시 + 보상 수령
+ * Season Pass UI — 티어별 보상 트랙 표시 + 보상 Claim
  */
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -58,7 +58,7 @@ export function SeasonPass() {
             .update({ rewards_claimed: newClaimed, tier: maxTier })
             .eq('agent_id', agent.id).eq('season_id', (s as any).id);
           setProgress({ ...progressData, rewards_claimed: newClaimed, tier: maxTier });
-          setClaimMsg(`🎉 Tier ${autoClaimed.join(', ')} 보상 자동 지급!`);
+          setClaimMsg(`🎉 Tier ${autoClaimed.join(', ')} Auto-claimed!`);
           setTimeout(() => setClaimMsg(null), 4000);
         }
       }
@@ -75,7 +75,7 @@ export function SeasonPass() {
       .eq('agent_id', agent.id)
       .eq('season_id', season.id);
     setProgress({ ...progress, rewards_claimed: claimed, tier: Math.max(progress.tier, tier) });
-    setClaimMsg(`Tier ${tier} 보상 수령 Done! 🎉`);
+    setClaimMsg(`Tier ${tier} Reward claimed! 🎉`);
     setClaimingTier(null);
     setTimeout(() => setClaimMsg(null), 3000);
   };
@@ -85,8 +85,8 @@ export function SeasonPass() {
     return (
       <div className="glass-card rounded-2xl p-5 text-center">
         <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20 mb-2">event_busy</span>
-        <p className="text-sm text-muted-foreground">현재 활성 시즌이 없습니다</p>
-        <p className="text-[10px] text-muted-foreground/60 mt-1">Next 시즌을 기대해주세요!</p>
+        <p className="text-sm text-muted-foreground">No active season</p>
+        <p className="text-[10px] text-muted-foreground/60 mt-1">Stay tuned for the next season!</p>
       </div>
     );
   }
@@ -103,14 +103,14 @@ export function SeasonPass() {
         <div className="absolute inset-0 bg-gradient-to-br opacity-20" style={{ background: `linear-gradient(135deg, ${season.theme_color}40, transparent)` }} />
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <span className="text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ backgroundColor: `${season.theme_color}20`, color: season.theme_color }}>시즌 패스</span>
+            <span className="text-[8px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ backgroundColor: `${season.theme_color}20`, color: season.theme_color }}>Season Pass</span>
             <h3 className="text-sm font-bold text-foreground mt-1">{season.name}</h3>
             <p className="text-[10px] text-muted-foreground mt-0.5">{season.description}</p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-foreground">{currentExp}</p>
-            <p className="text-[9px] text-muted-foreground">시즌 EXP</p>
-            <p className="text-[9px] mt-1" style={{ color: season.theme_color }}>{daysLeft}일 남음</p>
+            <p className="text-[9px] text-muted-foreground">Season EXP</p>
+            <p className="text-[9px] mt-1" style={{ color: season.theme_color }}>{daysLeft}days left</p>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function SeasonPass() {
                       disabled={claimingTier === t.tier}
                       className="text-[9px] px-3 py-1 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold animate-pulse"
                     >
-                      {claimingTier === t.tier ? '...' : '수령'}
+                      {claimingTier === t.tier ? '...' : 'Claim'}
                     </button>
                   ) : (
                     <span className="text-[9px] text-muted-foreground">{t.exp} EXP</span>

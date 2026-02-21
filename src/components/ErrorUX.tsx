@@ -98,7 +98,7 @@ export function OfflineIndicator() {
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-[9998] bg-warning/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
       <span aria-hidden="true" className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
-      Offline 상태입니다 — Previous 대화 읽기만 가능합니다
+      You are offline — Only cached conversations available
     </motion.div>
   );
 }

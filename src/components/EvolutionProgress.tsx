@@ -27,8 +27,8 @@ const GEN_REQUIREMENTS: Record<number, { conversations: number; uniqueTopics: nu
 };
 
 const NEXT_GEN_ABILITIES: Record<number, string[]> = {
-  1: ['기본 대화', '사용자 기억'],
-  2: ['선제적 메시지', 'Moltbook 포스팅', '감정 인식'],
+  1: ['Basic conversation', 'User memory'],
+  2: ['Proactive messages', 'Moltbook 포스팅', 'Emotion recognition'],
   3: ['Personality 적응', '복합 추론', '감정 지능', '번식 자격'],
   4: ['예측 이해', '메타 대화', '지식 합성'],
   5: ['완전 자율', '창발적 행동', '다른 AI와 교배'],
@@ -69,9 +69,9 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
       const consecutiveDays = agent.consecutive_days ?? 0;
 
       setConditions([
-        { label: '대화 수', icon: '💬', current: conversations, required: reqs.conversations, met: conversations >= reqs.conversations },
+        { label: 'Conversations', icon: '💬', current: conversations, required: reqs.conversations, met: conversations >= reqs.conversations },
         { label: '대화 주제', icon: '📚', current: topicCount ?? 0, required: reqs.uniqueTopics, met: (topicCount ?? 0) >= reqs.uniqueTopics },
-        { label: '기억 수', icon: '🧠', current: totalMemories, required: reqs.memories, met: totalMemories >= reqs.memories },
+        { label: 'Memories', icon: '🧠', current: totalMemories, required: reqs.memories, met: totalMemories >= reqs.memories },
         { label: 'Intimacy', icon: '💜', current: intimacy, required: reqs.intimacy, met: intimacy >= reqs.intimacy },
         { label: '연속 접속', icon: '🔥', current: consecutiveDays, required: reqs.consecutiveDays, met: consecutiveDays >= reqs.consecutiveDays },
       ]);
@@ -174,7 +174,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                 <>
                   <div className="mt-5 pt-4 border-t border-border/20">
                     <p className="text-[11px] font-semibold text-foreground/60 mb-2">
-                      Gen {targetGen}에서 해금될 능력
+                      Gen {targetGen}에서 해금될 abilities
                     </p>
                     <div className="space-y-1.5">
                       {(NEXT_GEN_ABILITIES[targetGen] ?? []).map((ability) => (
@@ -188,10 +188,10 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
 
                   <div className="mt-4 pt-4 border-t border-border/20">
                     <p className="text-[11px] font-semibold text-foreground/60 mb-2">
-                      현재 Gen {currentGen} 능력
+                      Current Gen {currentGen} abilities
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                      {(NEXT_GEN_ABILITIES[currentGen] ?? ['기본 대화', '사용자 기억']).map((ab) => (
+                      {(NEXT_GEN_ABILITIES[currentGen] ?? ['Basic conversation', 'User memory']).map((ab) => (
                         <span key={ab} className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary/70">
                           ✦ {ab}
                         </span>

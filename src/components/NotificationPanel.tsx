@@ -80,7 +80,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       });
     }
     for (const e of (evoRes.data ?? []) as any[]) {
-      const typeLabel = e.activity_type === 'learning' ? '📚 학습' : e.activity_type === 'reflection' ? '💭 성찰' : '💌 선제 메시지';
+      const typeLabel = e.activity_type === 'learning' ? '📚 Learning' : e.activity_type === 'reflection' ? '💭 Reflection' : '💌 Proactive';
       notifs.push({
         id: `evo-${e.id}`, type: 'system',
         title: typeLabel, message: e.summary ?? '활동이 기록되었어요',
@@ -164,7 +164,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               </div>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-[10px] text-primary" aria-label="모두 읽음 처리">모두 읽음</button>
+                  <button onClick={markAllRead} className="text-[10px] text-primary" aria-label="Mark all read 처리">Mark all read</button>
                 )}
                 <button onClick={onClose}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"

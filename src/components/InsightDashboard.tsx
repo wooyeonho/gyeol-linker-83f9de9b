@@ -1,5 +1,5 @@
 /**
- * 대화 인사이트 대시보드 — 최근 대화 분석 리포트 목록
+ * 대화 Insights 대시보드 — 최근 대화 Analysis 리포트 목록
  */
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -86,7 +86,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <span aria-hidden="true" className="material-icons-round text-primary text-base">insights</span>
-                  대화 인사이트
+                  대화 Insights
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
                   <span aria-hidden="true" className="material-icons-round text-lg">close</span>
@@ -102,7 +102,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
               ) : insights.length === 0 ? (
                 <div className="text-center py-12">
                   <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20">psychology</span>
-                  <p className="text-[11px] text-muted-foreground/50 mt-2">아직 대화 인사이트가 없어요</p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-2">아직 대화 Insights가 없어요</p>
                   <p className="text-[10px] text-muted-foreground/30 mt-1">AI와 대화를 나눠보세요!</p>
                 </div>
               ) : (
@@ -111,7 +111,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="glass-card rounded-xl p-3 text-center">
                       <p className="text-lg font-bold text-foreground">{totalInsights}</p>
-                      <p className="text-[9px] text-muted-foreground">분석 횟수</p>
+                      <p className="text-[9px] text-muted-foreground">Analysis 횟수</p>
                     </div>
                     <div className="glass-card rounded-xl p-3 text-center">
                       <p className="text-lg">{topEmotion ? (EMOTION_EMOJI[topEmotion[0]] ?? '🙂') : '—'}</p>
@@ -139,7 +139,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
 
                   {/* Insight list */}
                   <div className="space-y-2">
-                    <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">최근 인사이트</p>
+                    <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">최근 Insights</p>
                     {insights.map((ins, i) => (
                       <motion.div
                         key={ins.id}

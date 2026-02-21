@@ -1,5 +1,5 @@
 /**
- * 인벤토리 패널 — 보유 아이템 관리, 장착/사용
+ * Inventory 패널 — Owned 아이템 관리, Equip/Use
  */
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,7 +78,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
         await supabase.from('gyeol_inventory')
           .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
-        setMessage(newEquipped ? `${item.name} 장착! ✨` : `${item.name} 해제`);
+        setMessage(newEquipped ? `${item.name} Equip! ✨` : `${item.name} 해제`);
       } else if (item.category === 'boost') {
         // Consume: reduce quantity
         if (inv.quantity <= 1) {
@@ -102,19 +102,19 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
             .eq('id', agent.id);
           setAgent({ ...agent, evolution_progress: newProgress } as any);
         }
-        setMessage(`${item.name} 사용! 🎉`);
+        setMessage(`${item.name} Use! 🎉`);
       } else {
         // Generic: toggle equip
         const newEquipped = !inv.is_equipped;
         await supabase.from('gyeol_inventory')
           .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
-        setMessage(newEquipped ? `${item.name} 장착!` : `${item.name} 해제`);
+        setMessage(newEquipped ? `${item.name} Equip!` : `${item.name} 해제`);
       }
 
       onReload();
     } catch {
-      setMessage('사용 실패');
+      setMessage('Use 실패');
     }
     setUsing(null);
     setTimeout(() => setMessage(null), 2000);
@@ -142,7 +142,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span>📦</span> 인벤토리
+                  <span>📦</span> Inventory
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{inventory.length}개</span>
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
@@ -200,7 +200,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                         <div className="flex items-center gap-1.5">
                           <span className="text-[11px] font-bold text-foreground">{item?.name ?? '아이템'}</span>
                           {inv.is_equipped && (
-                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">장착중</span>
+                            <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">Equip중</span>
                           )}
                         </div>
                         <p className="text-[9px] text-muted-foreground truncate">{item?.description ?? ''}</p>
@@ -215,7 +215,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                             : 'bg-gradient-to-r from-primary to-secondary text-primary-foreground'
                         }`}
                       >
-                        {using === inv.id ? '...' : inv.is_equipped ? '해제' : item?.category === 'boost' ? '사용' : '장착'}
+                        {using === inv.id ? '...' : inv.is_equipped ? '해제' : item?.category === 'boost' ? 'Use' : 'Equip'}
                       </button>
                     </motion.div>
                   );

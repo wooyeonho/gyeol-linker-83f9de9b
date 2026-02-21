@@ -22,9 +22,9 @@ type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 const TABS: { key: Tab; icon: string; label: string }[] = [
   { key: 'quests', icon: 'assignment', label: 'Quest' },
   { key: 'achievements', icon: 'emoji_events', label: 'Achievement' },
-  { key: 'leaderboard', icon: 'leaderboard', label: '랭킹' },
+  { key: 'leaderboard', icon: 'leaderboard', label: 'Ranking' },
   { key: 'shop', icon: 'storefront', label: 'Shop' },
-  { key: 'season', icon: 'stars', label: '시즌' },
+  { key: 'season', icon: 'stars', label: 'Season' },
 ];
 
 export default function GamificationPage() {
@@ -201,7 +201,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               filter === type ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
             }`}
           >
-            {type === 'daily' ? '일일' : type === 'weekly' ? '주간' : type === 'tutorial' ? '튜토리얼' : '시즌'}
+            {type === 'daily' ? 'Daily' : type === 'weekly' ? 'Weekly' : type === 'tutorial' ? 'Tutorial' : 'Season'}
           </button>
         ))}
       </div>
@@ -483,7 +483,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       <div className="flex gap-2">
         {[
           { key: 'alltime', label: '전체' },
-          { key: 'weekly', label: '주간' },
+          { key: 'weekly', label: 'Weekly' },
           { key: 'monthly', label: '월간' },
         ].map(p => (
           <button key={p.key} onClick={() => setPeriod(p.key)}
@@ -522,8 +522,8 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {filteredBoard.length === 0 ? (
         <div className="text-center py-12">
           <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
-          <p className="text-sm text-muted-foreground">아직 랭킹 데이터가 없습니다</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 Quest를 Done하면 랭킹에 등록됩니다</p>
+          <p className="text-sm text-muted-foreground">아직 Ranking 데이터가 없습니다</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 Quest를 Done하면 Ranking에 등록됩니다</p>
         </div>
       ) : (
         filteredBoard.map((entry, i) => {
@@ -600,7 +600,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           </p>
         </div>
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">인벤토리</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Inventory</p>
           <p className="text-2xl font-bold text-foreground">{inventory.length}</p>
         </div>
       </div>
@@ -663,7 +663,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       {/* Inventory section */}
       {inventory.length > 0 && (
         <>
-          <h3 className="text-sm font-bold text-foreground mt-6">📦 내 인벤토리</h3>
+          <h3 className="text-sm font-bold text-foreground mt-6">📦 내 Inventory</h3>
           <div className="space-y-2">
             {inventory.map((inv) => {
               const item = shopItems.find((s) => s.id === inv.item_id);
