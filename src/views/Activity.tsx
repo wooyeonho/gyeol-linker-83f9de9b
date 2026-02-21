@@ -8,6 +8,11 @@ import { ActivityFilter } from '@/src/components/ActivityFilter';
 import { ActivityExport } from '@/src/components/ActivityExport';
 import { Breadcrumbs, ActivityExportButton, ActivitySummary } from '@/src/components/NavigationDeep';
 import { format, isToday, isYesterday } from 'date-fns';
+import { 
+  GraduationCap, Brain, Users, Mail, Wrench, Shield, Heart, 
+  Info, Zap, TrendingUp, AlertTriangle, Download, ChevronUp, ChevronDown,
+  LayoutDashboard
+} from 'lucide-react';
 
 interface ActivityLog {
   id: string;
@@ -20,10 +25,10 @@ interface ActivityLog {
   source?: string | null;
 }
 
-const TYPE_ICON: Record<string, string> = {
-  learning: 'school', reflection: 'psychology', social: 'group',
-  proactive_message: 'mail', skill_execution: 'build', error: 'shield',
-  heartbeat: 'favorite',
+const TYPE_ICON: Record<string, React.FC<{ className?: string }>> = {
+  learning: GraduationCap, reflection: Brain, social: Users,
+  proactive_message: Mail, skill_execution: Wrench, error: Shield,
+  heartbeat: Heart,
 };
 const TYPE_LABEL: Record<string, string> = {
   learning: 'Learning', reflection: 'Reflection', social: 'Social',
@@ -45,6 +50,11 @@ function formatDate(dateStr: string) {
 }
 
 type FilterType = 'all' | 'learning' | 'reflection' | 'social' | 'proactive_message' | 'skill_execution' | 'error' | 'heartbeat';
+
+function ActivityIcon({ type, className }: { type: string; className?: string }) {
+  const Icon = TYPE_ICON[type] ?? Info;
+  return <Icon className={className} />;
+}
 
 export default function ActivityPage() {
   const { agent } = useInitAgent();
@@ -120,17 +130,16 @@ export default function ActivityPage() {
     setLogs((logsRes.data as ActivityLog[]) ?? []);
   }, [agent?.id]);
 
-  const filterOptions: { key: FilterType; label: string; icon: string }[] = [
-    { key: 'all', label: 'All', icon: 'dashboard' },
-    { key: 'learning', label: 'Learn', icon: 'school' },
-    { key: 'reflection', label: 'Reflect', icon: 'psychology' },
-    { key: 'error', label: 'Security', icon: 'shield' },
-    { key: 'skill_execution', label: 'Skills', icon: 'build' },
+  const filterOptions: { key: FilterType; label: string; Icon: React.FC<{ className?: string }> }[] = [
+    { key: 'all', label: 'All', Icon: LayoutDashboard },
+    { key: 'learning', label: 'Learn', Icon: GraduationCap },
+    { key: 'reflection', label: 'Reflect', Icon: Brain },
+    { key: 'error', label: 'Security', Icon: Shield },
+    { key: 'skill_execution', label: 'Skills', Icon: Wrench },
   ];
 
   return (
     <main role="main" className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      {/* aurora-bg removed — home only */}
       <PullToRefresh onRefresh={handleRefresh} className="flex-1 overflow-y-auto max-w-md mx-auto px-5 pt-6 pb-24 space-y-4 relative z-10">
         {/* B24: Breadcrumbs */}
         <Breadcrumbs items={[{ label: 'Home', path: '/' }, { label: 'Activity' }]} />
@@ -145,7 +154,7 @@ export default function ActivityPage() {
             <ActivityExportButton onExport={(format) => { setExportOpen(true); }} />
             <button onClick={() => setExportOpen(true)}
               className="w-8 h-8 rounded-full flex items-center justify-center glass-card text-muted-foreground hover:text-primary transition">
-              <span aria-hidden="true" className="material-icons-round text-sm">download</span>
+              <Download className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -163,7 +172,7 @@ export default function ActivityPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span aria-hidden="true" className="material-icons-round text-primary/50 text-lg">bolt</span>
+              <Zap className="w-4 h-4 text-primary/50" />
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">+{learningGrowth}%</span>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Interaction Score</p>
@@ -175,7 +184,7 @@ export default function ActivityPage() {
           </div>
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span aria-hidden="true" className="material-icons-round text-secondary/50 text-lg">trending_up</span>
+              <TrendingUp className="w-4 h-4 text-secondary/50" />
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Lv. {growthLevel}</span>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Growth</p>
@@ -191,23 +200,23 @@ export default function ActivityPage() {
 
         {/* Security Audit Summary */}
         {securityLogs.length > 0 && (
-          <div className="glass-card rounded-2xl p-4 border border-[hsl(var(--warning))]/20">
+          <div className="glass-card rounded-2xl p-4 border border-warning/20">
             <div className="flex items-center gap-2 mb-3">
-              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-lg">security</span>
+              <Shield className="w-4 h-4 text-warning" />
               <h3 className="text-sm font-bold text-foreground">Security Audit</h3>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] font-medium">{securityLogs.length} events</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-warning/10 text-warning font-medium">{securityLogs.length} events</span>
             </div>
             <div className="space-y-2">
               {securityLogs.slice(0, 3).map(log => (
                 <div key={log.id} className="flex items-start gap-2">
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                    log.security_flags?.length ? 'bg-destructive/10' : 'bg-[hsl(var(--warning)/0.1)]'
+                    log.security_flags?.length ? 'bg-destructive/10' : 'bg-warning/10'
                   }`}>
-                    <span className={`material-icons-round text-xs ${
-                      log.security_flags?.length ? 'text-destructive' : 'text-[hsl(var(--warning))]'
-                    }`}>
-                      {log.security_flags?.length ? 'warning' : 'info'}
-                    </span>
+                    {log.security_flags?.length ? (
+                      <AlertTriangle className="w-3 h-3 text-destructive" />
+                    ) : (
+                      <Info className="w-3 h-3 text-warning" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-foreground truncate">{log.summary ?? 'Security event'}</p>
@@ -217,7 +226,7 @@ export default function ActivityPage() {
                         <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
                       ))}
                       {log.was_sandboxed && (
-                        <span className="text-[8px] px-1 py-0.5 rounded bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">sandboxed</span>
+                        <span className="text-[8px] px-1 py-0.5 rounded bg-warning/10 text-warning">sandboxed</span>
                       )}
                     </div>
                   </div>
@@ -282,7 +291,7 @@ export default function ActivityPage() {
               {logs.slice(0, 3).map(log => (
                 <div key={log.id} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span aria-hidden="true" className="material-icons-round text-primary text-sm">{TYPE_ICON[log.activity_type] ?? 'info'}</span>
+                    <ActivityIcon type={log.activity_type} className="w-4 h-4 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-medium text-foreground truncate">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</p>
@@ -299,7 +308,7 @@ export default function ActivityPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span aria-hidden="true" className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
+              {showLogs ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               {showLogs ? 'Hide' : 'Show'} Activity Log
             </button>
           </div>
@@ -337,10 +346,10 @@ export default function ActivityPage() {
                               log.activity_type === 'heartbeat' ? 'bg-destructive/[0.07]' :
                               log.activity_type === 'error' ? 'bg-destructive/[0.07]' : 'bg-primary/[0.07]'
                             }`}>
-                              <span className={`material-icons-round text-sm ${
+                              <ActivityIcon type={log.activity_type} className={`w-4 h-4 ${
                                 log.activity_type === 'heartbeat' ? 'text-destructive/50' :
                                 log.activity_type === 'error' ? 'text-destructive/50' : 'text-primary/50'
-                              }`}>{TYPE_ICON[log.activity_type] ?? 'info'}</span>
+                              }`} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -350,7 +359,7 @@ export default function ActivityPage() {
                                   <span className="text-[8px] px-1 py-0.5 rounded bg-primary/5 text-primary/50">{log.source}</span>
                                 )}
                                 {log.was_sandboxed && (
-                                  <span className="text-[8px] px-1 py-0.5 rounded bg-[hsl(var(--warning))]/5 text-[hsl(var(--warning))]/50">sandbox</span>
+                                  <span className="text-[8px] px-1 py-0.5 rounded bg-warning/5 text-warning/50">sandbox</span>
                                 )}
                                 {log.security_flags?.map(flag => (
                                   <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
@@ -384,7 +393,6 @@ export default function ActivityPage() {
         )}
       </PullToRefresh>
       <ActivityExport isOpen={exportOpen} onClose={() => setExportOpen(false)} logs={logs} />
-
 
       <BottomNav />
     </main>

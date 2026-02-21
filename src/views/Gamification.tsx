@@ -16,15 +16,20 @@ import { AchievementRecommend } from '@/src/components/AchievementRecommend';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { ExpBooster, LevelPerks } from '@/src/components/GamificationDeep';
 import { EvolutionCountdown } from '@/src/components/EvolutionEngine';
+import { 
+  BarChart3, Trophy, Medal, Store, Star, Package, Coins, Zap, 
+  CheckCircle, Lock, Share2, Gift, ArrowUp, ArrowDown,
+  ClipboardList, Award, Crown, ShoppingBag, Sparkles
+} from 'lucide-react';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 
-const TABS: { key: Tab; icon: string; label: string }[] = [
-  { key: 'quests', icon: 'assignment', label: 'Quest' },
-  { key: 'achievements', icon: 'emoji_events', label: 'Achievement' },
-  { key: 'leaderboard', icon: 'leaderboard', label: 'Ranking' },
-  { key: 'shop', icon: 'storefront', label: 'Shop' },
-  { key: 'season', icon: 'stars', label: 'Season' },
+const TABS: { key: Tab; Icon: React.FC<{ className?: string }>; label: string }[] = [
+  { key: 'quests', Icon: ClipboardList, label: 'Quest' },
+  { key: 'achievements', Icon: Trophy, label: 'Achievement' },
+  { key: 'leaderboard', Icon: BarChart3, label: 'Ranking' },
+  { key: 'shop', Icon: Store, label: 'Shop' },
+  { key: 'season', Icon: Sparkles, label: 'Season' },
 ];
 
 export default function GamificationPage() {
@@ -50,23 +55,21 @@ export default function GamificationPage() {
 
   return (
     <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      {/* aurora-bg removed — home only */}
-
       {/* Header */}
       <div className="relative z-20 px-5 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-bold text-foreground">Gamification</h1>
           <div className="flex items-center gap-3">
             <button onClick={() => setInsightOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">insights</span>
+              <BarChart3 className="w-3 h-3 text-primary" />
               <span className="font-bold text-foreground">Insights</span>
             </button>
             <button onClick={() => setInventoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">inventory_2</span>
+              <Package className="w-3 h-3 text-primary" />
               <span className="font-bold text-foreground">{inventory.length}</span>
             </button>
             <button onClick={() => setCoinHistoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[12px]">monetization_on</span>
+              <Coins className="w-3 h-3 text-warning" />
               <span className="font-bold text-foreground">{profile?.coins ?? 0}</span>
             </button>
           </div>
@@ -139,7 +142,7 @@ export default function GamificationPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <span aria-hidden="true" className="material-icons-round text-[14px]">{t.icon}</span>
+              <t.Icon className="w-3.5 h-3.5" />
               {t.label}
             </button>
           ))}
@@ -161,7 +164,6 @@ export default function GamificationPage() {
       <CoinHistory isOpen={coinHistoryOpen} onClose={() => setCoinHistoryOpen(false)} agentId={agent?.id} />
       <InsightDashboard isOpen={insightOpen} onClose={() => setInsightOpen(false)} />
       <LevelUpCeremony show={levelUpShow} newLevel={levelUpLevel} onClose={() => setLevelUpShow(false)} />
-
 
       <BottomNav />
     </main>
@@ -226,9 +228,11 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                   completed ? 'bg-[hsl(var(--success,142_71%_45%)/0.2)]' : 'bg-primary/10'
                 }`}>
-                  <span className={`material-icons-round text-lg ${
-                    completed ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-primary'
-                  }`}>{quest.icon}</span>
+                  {completed ? (
+                    <CheckCircle className="w-5 h-5 text-[hsl(var(--success,142_71%_45%))]" />
+                  ) : (
+                    <ClipboardList className="w-5 h-5 text-primary" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -269,13 +273,13 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                   <div className="flex items-center gap-3 mt-2">
                     {quest.reward_exp > 0 && (
                       <span className="text-[9px] text-secondary flex items-center gap-0.5">
-                        <span aria-hidden="true" className="material-icons-round text-[10px]">bolt</span>
+                        <Zap className="w-2.5 h-2.5" />
                         +{quest.reward_exp} EXP
                       </span>
                     )}
                     {quest.reward_coins > 0 && (
-                      <span className="text-[9px] text-[hsl(var(--warning))] flex items-center gap-0.5">
-                        <span aria-hidden="true" className="material-icons-round text-[10px]">monetization_on</span>
+                      <span className="text-[9px] text-warning flex items-center gap-0.5">
+                        <Coins className="w-2.5 h-2.5" />
                         +{quest.reward_coins}
                       </span>
                     )}
@@ -346,11 +350,13 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 ${
                 unlocked ? 'bg-gradient-to-br from-primary/20 to-secondary/20' : 'bg-muted/20'
               }`}>
-                <span className={`material-icons-round text-xl ${
-                  unlocked ? RARITY_COLORS[ach.rarity] : 'text-muted-foreground/30'
-                }`}>
-                  {hidden ? 'lock' : ach.icon}
-                </span>
+                {hidden ? (
+                  <Lock className={`w-5 h-5 text-muted-foreground/30`} />
+                ) : unlocked ? (
+                  <Trophy className={`w-5 h-5 ${RARITY_COLORS[ach.rarity]}`} />
+                ) : (
+                  <Award className={`w-5 h-5 text-muted-foreground/30`} />
+                )}
               </div>
               <p className={`text-[11px] font-bold ${unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {hidden ? '???' : ach.name}
@@ -401,7 +407,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
         className="glass-card rounded-2xl p-6 w-full max-w-[280px] text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto">
-          <span aria-hidden="true" className="material-icons-round text-3xl text-primary">{ach.icon}</span>
+          <Trophy className="w-8 h-8 text-primary" />
         </div>
         <div>
           <span className={`text-[8px] px-2 py-0.5 rounded-full font-bold uppercase ${RARITY_BG[ach.rarity]} ${RARITY_COLORS[ach.rarity]}`}>{ach.rarity}</span>
@@ -419,7 +425,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
             onClose();
           }}
             className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
-            <span aria-hidden="true" className="material-icons-round text-sm">share</span> Share
+            <Share2 className="w-3.5 h-3.5" /> Share
           </button>
         </div>
       </motion.div>
@@ -438,7 +444,6 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
   useEffect(() => {
     const currentRanks: Record<string, number> = {};
     filteredBoard.forEach((e, i) => { currentRanks[e.agent_id] = i + 1; });
-    // Only update prevRanks after first render
     if (Object.keys(prevRanks).length > 0) {
       // prevRanks stays as previous snapshot for comparison
     }
@@ -460,7 +465,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Leaderboard rewards info */}
       <div className="glass-card rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">card_giftcard</span>
+          <Gift className="w-4 h-4 text-warning" />
           <span className="text-[11px] font-bold text-foreground">Rank Rewards</span>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -471,7 +476,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
           ].map(r => (
             <div key={r.rank} className="text-[9px] text-muted-foreground">
               <p className="font-bold text-foreground">{r.rank}</p>
-              <p className="text-[hsl(var(--warning))]">💰{r.coins}</p>
+              <p className="text-warning">💰{r.coins}</p>
               <p className="text-secondary">⚡{r.exp} EXP</p>
             </div>
           ))}
@@ -511,7 +516,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
               <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 {profile.total_exp}
               </span>
-              <p className="text-[9px] text-muted-foreground">점</p>
+              <p className="text-[9px] text-muted-foreground">pts</p>
             </div>
           </div>
         </div>
@@ -520,7 +525,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Leaderboard list */}
       {filteredBoard.length === 0 ? (
         <div className="text-center py-12">
-          <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
+          <BarChart3 className="w-10 h-10 text-muted-foreground/20 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">No ranking data yet</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">Chat and complete quests to appear on rankings</p>
         </div>
@@ -539,7 +544,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
               className={`glass-card rounded-2xl p-3 flex items-center gap-3 ${isMe ? 'glass-card-selected' : ''}`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                i < 3 ? 'bg-gradient-to-br from-amber-400/20 to-amber-600/20 text-[hsl(var(--warning))]' : 'bg-muted/20 text-muted-foreground'
+                i < 3 ? 'bg-gradient-to-br from-amber-400/20 to-amber-600/20 text-warning' : 'bg-muted/20 text-muted-foreground'
               }`}>
                 {medal ?? i + 1}
               </div>
@@ -554,9 +559,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
                 <span className={`text-[9px] font-bold flex items-center gap-0.5 ${
                   rankChange.dir === 'up' ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'
                 }`}>
-                  <span aria-hidden="true" className="material-icons-round text-[10px]">
-                    {rankChange.dir === 'up' ? 'arrow_upward' : 'arrow_downward'}
-                  </span>
+                  {rankChange.dir === 'up' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
                   {rankChange.val}
                 </span>
               )}
@@ -593,8 +596,8 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Your Coins</p>
-          <p className="text-2xl font-bold text-[hsl(var(--warning))] flex items-center gap-1">
-            <span aria-hidden="true" className="material-icons-round text-lg">monetization_on</span>
+          <p className="text-2xl font-bold text-warning flex items-center gap-1">
+            <Coins className="w-5 h-5" />
             {profile?.coins ?? 0}
           </p>
         </div>
@@ -626,14 +629,14 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           return (
             <div key={item.id} className="glass-card rounded-2xl p-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-secondary/10 flex items-center justify-center mb-2">
-                <span aria-hidden="true" className="material-icons-round text-lg text-primary">{item.icon}</span>
+                <ShoppingBag className="w-5 h-5 text-primary" />
               </div>
               <p className="text-[11px] font-bold text-foreground">{item.name}</p>
               <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
               
               <div className="flex items-center justify-between mt-3">
-                <span className="text-[10px] font-bold text-[hsl(var(--warning))] flex items-center gap-0.5">
-                  <span aria-hidden="true" className="material-icons-round text-[10px]">monetization_on</span>
+                <span className="text-[10px] font-bold text-warning flex items-center gap-0.5">
+                  <Coins className="w-2.5 h-2.5" />
                   {item.price_coins}
                 </span>
                 {owned ? (
@@ -650,7 +653,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                         : 'bg-muted/20 text-muted-foreground cursor-not-allowed'
                     }`}
                   >
-                    {buying === item.id ? '...' : !meetsLevel ? `Lv.${item.min_level}+` : '구매'}
+                    {buying === item.id ? '...' : !meetsLevel ? `Lv.${item.min_level}+` : 'Buy'}
                   </button>
                 )}
               </div>
@@ -669,14 +672,14 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               return (
                 <div key={inv.id} className="glass-card rounded-xl p-3 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span aria-hidden="true" className="material-icons-round text-sm text-primary">{item?.icon ?? 'inventory_2'}</span>
+                    <Package className="w-4 h-4 text-primary" />
                   </div>
                   <div className="flex-1">
                     <span className="text-[11px] font-bold text-foreground">{item?.name ?? 'Item'}</span>
                     <span className="text-[9px] text-muted-foreground ml-2">x{inv.quantity}</span>
                   </div>
                   <button className="text-[9px] px-2 py-1 rounded-full glass-card text-primary font-medium">
-                    사용
+                    Use
                   </button>
                 </div>
               );
