@@ -186,7 +186,7 @@ export function ChatCore({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-2 pt-2" role="log" aria-label="Messages">
+        <div className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-44 pt-2" role="log" aria-label="Messages">
           {messages.map((msg) => {
             const isUser = msg.role === 'user';
             const time = new Date(msg.created_at ?? Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -283,7 +283,7 @@ export function ChatCore({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="relative z-[60] px-4 pt-2 pb-2">
+        <div className="fixed bottom-0 left-0 right-0 z-[75] px-4 pt-2 pb-[calc(60px+env(safe-area-inset-bottom,8px))] bg-gradient-to-t from-background via-background/95 to-transparent">
           <AnimatePresence>
             {replyTo && <ReplyPreview replyTo={replyTo} onClear={() => setReplyTo(null)} />}
           </AnimatePresence>

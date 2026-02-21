@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback, forwardRef } from 'react';
+import { Mic, Square } from 'lucide-react';
 
 export interface VoiceInputProps {
   onResult: (text: string) => void;
@@ -80,9 +81,7 @@ export const VoiceInput = forwardRef<HTMLButtonElement, VoiceInputProps>(functio
         aria-label={isListening ? 'Stop' : 'Voice'}
         title={isListening ? 'Stop recording' : 'Voice input'}
       >
-        <span className="material-icons-round text-[22px]">
-          {isListening ? 'stop' : 'mic'}
-        </span>
+        {isListening ? <Square size={18} /> : <Mic size={18} />}
       </button>
     </div>
   );

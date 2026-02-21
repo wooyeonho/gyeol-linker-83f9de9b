@@ -232,7 +232,7 @@ export default function GyeolPage() {
       </AnimatePresence>
 
       {/* Main chat area using ChatCore */}
-      <div className="flex-1 flex flex-col min-h-0 relative z-10 pb-[calc(64px+env(safe-area-inset-bottom,8px))]">
+      <div className="flex-1 flex flex-col min-h-0 relative z-10">
         <ChatCore
           messages={searchQuery ? messages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages}
           isLoading={isLoading}
