@@ -62,7 +62,7 @@ export function ErrorToastContainer() {
             className={`pointer-events-auto rounded-xl px-4 py-3 backdrop-blur-md border shadow-lg flex items-center gap-2 text-xs ${
               t.type === 'error' ? 'bg-destructive/20 border-destructive/30 text-destructive' :
               t.type === 'warning' ? 'bg-[hsl(var(--warning)/0.2)] border-yellow-500/30 text-[hsl(var(--warning))]' :
-              t.type === 'success' ? 'bg-green-500/20 border-green-500/30 text-green-400' :
+              t.type === 'success' ? 'bg-success/20 border-success/30 text-success' :
               'bg-primary/20 border-primary/30 text-primary'
             }`}>
             <span aria-hidden="true" className="material-icons-round text-sm">
@@ -96,7 +96,7 @@ export function OfflineIndicator() {
 
   return (
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-[9998] bg-yellow-500/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
+      className="fixed top-0 left-0 right-0 z-[9998] bg-warning/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
       <span aria-hidden="true" className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
       Offline 상태입니다 — Previous 대화 읽기만 가능합니다
     </motion.div>

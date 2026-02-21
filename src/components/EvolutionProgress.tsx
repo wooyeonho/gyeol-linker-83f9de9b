@@ -149,7 +149,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                             {cond.current}/{cond.required}
                           </span>
                           {cond.met ? (
-                            <span className="text-[10px] text-green-400">✓</span>
+                            <span className="text-[10px] text-success">✓</span>
                           ) : (
                             <span className="text-[10px] text-muted-foreground/30">○</span>
                           )}

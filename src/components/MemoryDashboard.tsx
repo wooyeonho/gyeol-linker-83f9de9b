@@ -23,7 +23,7 @@ const CATEGORY_CONFIG: Record<string, { icon: string; label: string }> = {
 };
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
-  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400">Confirm됨</span>;
+  if (confidence >= 100) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-success/20 text-success">Confirm됨</span>;
   if (confidence >= 70) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))]">신뢰도 {confidence}%</span>;
   if (confidence >= 50) return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]">추정 {confidence}%</span>;
   return <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive">Confirm 필요</span>;

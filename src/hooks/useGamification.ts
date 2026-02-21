@@ -141,7 +141,7 @@ export const RARITY_COLORS: Record<string, string> = {
 };
 
 export const RARITY_BG: Record<string, string> = {
-  common: 'bg-slate-400/10 border-slate-400/20',
+  common: 'bg-muted/40 border-border/20',
   uncommon: 'bg-[hsl(var(--success,142_71%_45%)/0.1)] border-[hsl(var(--success,142_71%_45%)/0.2)]',
   rare: 'bg-[hsl(var(--info)/0.1)] border-[hsl(var(--info))]/20',
   epic: 'bg-primary/10 border-primary/20',

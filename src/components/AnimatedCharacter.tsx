@@ -84,8 +84,8 @@ function JellyCharacter({ mood, isThinking, reaction, gen }: { mood: string; isT
         {/* Blush (gen >= 4) */}
         {gen >= 4 && (
           <>
-            <div className="absolute top-[48%] left-[18%] w-[12%] h-[6%] rounded-full bg-pink-300/30" />
-            <div className="absolute top-[48%] right-[18%] w-[12%] h-[6%] rounded-full bg-pink-300/30" />
+            <div className="absolute top-[48%] left-[18%] w-[12%] h-[6%] rounded-full bg-accent-pink/30" />
+            <div className="absolute top-[48%] right-[18%] w-[12%] h-[6%] rounded-full bg-accent-pink/30" />
           </>
         )}
       </motion.div>
