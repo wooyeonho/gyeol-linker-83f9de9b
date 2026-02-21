@@ -1,7 +1,7 @@
 /**
  * 퀘스트 카운트다운 타이머 — 일일/주간 퀘스트 리셋 시간 표시
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 
 function getNextReset(type: 'daily' | 'weekly'): Date {
@@ -34,7 +34,7 @@ interface Props {
   compact?: boolean;
 }
 
-export function QuestTimer({ type, compact = false }: Props) {
+function QuestTimerInternal({ type, compact = false }: Props) {
   const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
@@ -74,3 +74,5 @@ export function QuestTimer({ type, compact = false }: Props) {
     </motion.div>
   );
 }
+
+export const QuestTimer = memo(QuestTimerInternal);

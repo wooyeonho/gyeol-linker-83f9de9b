@@ -1,3 +1,4 @@
+import { memo } from 'react';
 /**
  * 홈 화면 게이미피케이션 미니 위젯
  */
@@ -5,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useGamification, expToNextLevel } from '@/src/hooks/useGamification';
 
-export function GamificationWidget() {
+function GamificationWidgetInternal() {
   const { profile, quests, loading } = useGamification();
 
   if (loading || !profile) return null;
@@ -59,3 +60,5 @@ export function GamificationWidget() {
     </Link>
   );
 }
+
+export const GamificationWidget = memo(GamificationWidgetInternal);

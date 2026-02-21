@@ -75,7 +75,7 @@ export function ProfilePictureUpload({ currentUrl, onUpload }: { currentUrl?: st
       <div className="relative">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center overflow-hidden">
           {currentUrl ? (
-            <img src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
+            <img loading="lazy" src={currentUrl} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <User className="w-6 h-6 text-primary/50" />
           )}

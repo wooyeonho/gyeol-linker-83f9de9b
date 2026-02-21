@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { useGyeolStore } from '@/store/gyeol-store';
 
@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { to: '/settings', icon: 'tune', label: 'Settings' },
 ] as const;
 
-export function BottomNav() {
+function BottomNavInternal() {
   const { pathname } = useLocation();
   const agent = useGyeolStore((s) => s.agent);
   const [badges, setBadges] = useState<Record<string, number>>({});
@@ -77,3 +77,5 @@ export function BottomNav() {
     </nav>
   );
 }
+
+export const BottomNav = memo(BottomNavInternal);

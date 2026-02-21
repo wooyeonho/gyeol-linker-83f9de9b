@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState , memo } from 'react';
 import type { Message } from '@/lib/gyeol/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
@@ -32,7 +32,7 @@ interface MessageBubbleProps {
   state: SimpleChatState;
 }
 
-export function MessageBubble({ msg, state }: MessageBubbleProps) {
+function MessageBubbleInternal({ msg, state }: MessageBubbleProps) {
   const {
     agentName, fontSize, settings, messages,
     reactions, handleReaction, toggleBookmark, bookmarks,
@@ -229,3 +229,5 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
     </div>
   );
 }
+
+export const MessageBubble = memo(MessageBubbleInternal);

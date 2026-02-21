@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
@@ -6,7 +7,7 @@ interface EmptyStateProps {
   description: string;
 }
 
-export function SocialEmptyState({ icon, title, description }: EmptyStateProps) {
+function SocialEmptyStateInternal({ icon, title, description }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -28,3 +29,5 @@ export function SocialEmptyState({ icon, title, description }: EmptyStateProps) 
     </motion.div>
   );
 }
+
+export const SocialEmptyState = memo(SocialEmptyStateInternal);

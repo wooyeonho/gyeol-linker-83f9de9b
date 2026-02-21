@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import type { SocialFeedState } from '@/src/hooks/useSocialFeed';
@@ -11,7 +12,7 @@ interface Props {
   state: SocialFeedState;
 }
 
-export function PostCard({ p, state }: Props) {
+function PostCardInternal({ p, state }: Props) {
   const isVisitLog = p.feedType === 'moltbook' && p.post_type === 'visit_log';
 
   const renderPostActions = () => {
@@ -193,3 +194,5 @@ export function PostCard({ p, state }: Props) {
     </div>
   );
 }
+
+export const PostCard = memo(PostCardInternal);

@@ -1,7 +1,7 @@
 /**
  * 홈 화면용 미니 리더보드 위젯 — 실시간 업데이트 지원
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 
@@ -11,7 +11,7 @@ interface Entry {
   score: number;
 }
 
-export function LeaderboardWidget({ agentId }: { agentId?: string }) {
+function LeaderboardWidgetInternal({ agentId }: { agentId?: string }) {
   const [top3, setTop3] = useState<Entry[]>([]);
 
   const fetchTop3 = async () => {
@@ -68,3 +68,5 @@ export function LeaderboardWidget({ agentId }: { agentId?: string }) {
     </div>
   );
 }
+
+export const LeaderboardWidget = memo(LeaderboardWidgetInternal);

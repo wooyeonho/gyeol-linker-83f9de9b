@@ -31,7 +31,7 @@ export function ChatInputBar({ state }: ChatInputBarProps) {
         </AnimatePresence>
         {imagePreview && (
           <div className="mb-2 relative inline-block">
-            <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border border-primary/20" />
+            <img loading="lazy" src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border border-primary/20" />
             <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-primary-foreground text-[10px] flex items-center justify-center">✕</button>
           </div>
         )}

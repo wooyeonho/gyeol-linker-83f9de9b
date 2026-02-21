@@ -81,7 +81,7 @@ export function FileAttachmentPreview({ file, onRemove }: { file: File; onRemove
       className="relative inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/20 border border-border/20"
     >
       {preview ? (
-        <img src={preview} alt={file.name} className="w-10 h-10 rounded-lg object-cover" />
+        <img loading="lazy" src={preview} alt={file.name} className="w-10 h-10 rounded-lg object-cover" />
       ) : (
         <Icon className="w-5 h-5 text-primary" />
       )}
