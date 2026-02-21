@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import type { Message } from '@/lib/gyeol/types';
 import { useNavigate } from 'react-router-dom';
 import { useGyeolStore } from '@/store/gyeol-store';
@@ -9,7 +9,7 @@ import { EvolutionCeremony } from '@/src/components/evolution/EvolutionCeremony'
 import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import { supabase } from '@/src/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -23,22 +23,24 @@ import { ReplyPreview, ReplyBubble } from '@/src/components/MessageReply';
 import { ImageMessage } from '@/src/components/ImageMessage';
 import { VoiceRecorder, AudioMessage } from '@/src/components/VoiceRecorder';
 import { TypingIndicator } from '@/src/components/TypingIndicator';
-import { FileDropZone } from '@/src/components/FileDropZone';
-import { LinkPreview } from '@/src/components/LinkPreview';
+import { FileDropZone, FileAttachmentPreview } from '@/src/components/FileDropZone';
+import { LinkPreview, extractUrls } from '@/src/components/LinkPreview';
 import { ReadReceipt } from '@/src/components/ReadReceipt';
-import { TokenUsageDisplay } from '@/src/components/TokenUsageDisplay';
-import { ModelSelector } from '@/src/components/ModelSelector';
-import type { Message as Msg } from '@/lib/gyeol/types';
+import { TokenUsageDisplay, TokenLimitSlider } from '@/src/components/TokenUsageDisplay';
+import { ModelSelector, ProviderComparison, ApiUsageDashboard } from '@/src/components/ModelSelector';
+import { MessageReactions } from '@/src/components/MessageReactions';
+import { ConversationFilter } from '@/src/components/ConversationFilter';
+import { ContinuousVoiceInput, TTSVoiceSelector } from '@/src/components/ContinuousVoiceInput';
+import { SystemPromptEditor } from '@/src/components/SystemPromptEditor';
+import { ChatSearch } from '@/src/components/ChatSearch';
 
-// Emoji reactions for messages
-const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
+const REACTIONS = ['\u2764\ufe0f', '\ud83d\udc4d', '\ud83d\ude02', '\ud83e\udd14', '\ud83d\ude22', '\ud83d\udd25'];
 const TRANSLATE_LANGS = [
-  { code: 'ko', label: '한국어' }, { code: 'en', label: 'English' },
-  { code: 'ja', label: '日本語' }, { code: 'zh', label: '中文' },
-  { code: 'es', label: 'Español' }, { code: 'fr', label: 'Français' },
+  { code: 'ko', label: '\ud55c\uad6d\uc5b4' }, { code: 'en', label: 'English' },
+  { code: 'ja', label: '\u65e5\u672c\u8a9e' }, { code: 'zh', label: '\u4e2d\u6587' },
+  { code: 'es', label: 'Espa\u00f1ol' }, { code: 'fr', label: 'Fran\u00e7ais' },
 ];
 
-// Code block with copy button (extracted to avoid hooks-in-callback)
 function CodeBlockCopy({ children, className }: any) {
   const code = String(children).replace(/\n$/, '');
   const [copied, setCopied] = useState(false);
@@ -48,7 +50,7 @@ function CodeBlockCopy({ children, className }: any) {
       <button
         onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
         className="absolute top-1 right-1 opacity-0 group-hover/code:opacity-100 transition text-[9px] px-2 py-1 rounded-md bg-primary/20 text-primary hover:bg-primary/30"
-      >{copied ? '✓' : 'Copy'}</button>
+      >{copied ? '\u2713' : 'Copy'}</button>
     </div>
   );
 }
@@ -85,6 +87,9 @@ export default function SimpleChat() {
   const [tagText, setTagText] = useState('');
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [editedMessages, setEditedMessages] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('gyeol_edited') ?? '[]')); } catch { return new Set(); }
+  });
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryText, setSummaryText] = useState('');
   const [summarizing, setSummarizing] = useState(false);
@@ -100,6 +105,21 @@ export default function SimpleChat() {
   const [replyMap, setReplyMap] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('gyeol_replies') ?? '{}'); } catch { return {}; }
   });
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [showProviderPanel, setShowProviderPanel] = useState(false);
+  const [maxTokens, setMaxTokens] = useState(4096);
+  const [showSystemPrompt, setShowSystemPrompt] = useState(false);
+  const [showTTSSettings, setShowTTSSettings] = useState(false);
+  const [continuousVoice, setContinuousVoice] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<{ dateFrom?: string; dateTo?: string; tags: string[]; keyword: string }>({ tags: [], keyword: '' });
+
+  const allTags = useMemo(() => {
+    const s = new Set<string>();
+    Object.values(tags).forEach(arr => arr.forEach(t => s.add(t)));
+    return [...s];
+  }, [tags]);
+
   const toggleBookmark = (msgId: string) => {
     setBookmarks(prev => {
       const next = new Set(prev);
@@ -116,6 +136,9 @@ export default function SimpleChat() {
       localStorage.setItem('gyeol_pinned', JSON.stringify([...next]));
       return next;
     });
+    if (!msgId.startsWith('local-')) {
+      supabase.from('gyeol_conversations' as any).update({ is_pinned: !pinnedMessages.has(msgId) } as any).eq('id', msgId);
+    }
   };
 
   const addTag = (msgId: string, tag: string) => {
@@ -140,20 +163,31 @@ export default function SimpleChat() {
 
   const handleEditMessage = async (msgId: string) => {
     if (!editText.trim()) return;
-    // Update locally
     setMessages((prev: Message[]) => prev.map(m => m.id === msgId ? { ...m, content: editText.trim() } : m));
-    // Also update in DB if not local
+    setEditedMessages(prev => {
+      const next = new Set(prev);
+      next.add(msgId);
+      localStorage.setItem('gyeol_edited', JSON.stringify([...next]));
+      return next;
+    });
     if (!msgId.startsWith('local-')) {
-      await supabase.from('gyeol_conversations' as any).update({ content: editText.trim() } as any).eq('id', msgId);
+      await supabase.from('gyeol_conversations' as any).update({ content: editText.trim(), is_edited: true } as any).eq('id', msgId);
     }
     setEditingMsg(null); setEditText('');
+  };
+
+  const handleReaction = (msgId: string, emoji: string) => {
+    setReactions(prev => ({ ...prev, [msgId]: emoji }));
+    if (!msgId.startsWith('local-')) {
+      supabase.from('gyeol_conversations' as any).update({ reactions: { [emoji]: 1 } } as any).eq('id', msgId);
+    }
   };
 
   const handleTranslate = async (msgId: string, text: string, lang: string) => {
     setTranslatePickerFor(null);
     setTranslating(msgId);
     try {
-      const { data, error } = await supabase.functions.invoke('translate', {
+      const { data } = await supabase.functions.invoke('translate', {
         body: { text, targetLang: lang },
       });
       if (data?.translated) {
@@ -171,9 +205,20 @@ export default function SimpleChat() {
     reader.readAsDataURL(file);
   };
 
+  const handleFileDrop = (file: File) => {
+    if (file.size > 10 * 1024 * 1024) return;
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setAttachedFile(file);
+    }
+  };
+
   const handleSendImage = async () => {
     if (!imagePreview || !agent?.id) return;
-    const imgMsg = `[이미지 전송] 📷`;
+    const imgMsg = `[\uc774\ubbf8\uc9c0 \uc804\uc1a1] \ud83d\udcf7`;
     setImagePreview(null);
     await sendMessage(imgMsg);
   };
@@ -185,7 +230,7 @@ export default function SimpleChat() {
     setSummaryText('');
     try {
       const session = (await supabase.auth.getSession()).data.session;
-      const { data, error } = await supabase.functions.invoke('summarize', {
+      const { data } = await supabase.functions.invoke('summarize', {
         body: { agentId: agent.id, limit: 50 },
         headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
@@ -193,7 +238,7 @@ export default function SimpleChat() {
         setSummaryText(data.summary);
         saveSummaryToHistory(agent.id, data.summary, messages.length);
       } else setSummaryText('Could not generate summary.');
-    } catch (e) {
+    } catch {
       setSummaryText('Error generating summary.');
     }
     setSummarizing(false);
@@ -247,10 +292,16 @@ export default function SimpleChat() {
     if (!text || isLoading || !agent?.id) return;
     setInput('');
     stopSpeaking();
-    // If replying, prefix with reply context
-    const prefix = replyTo ? `[↩ ${replyTo.role === 'user' ? 'You' : agentName}: "${replyTo.content.slice(0, 40)}..."]\n` : '';
+
+    if (attachedFile) {
+      const fileInfo = `[\ud83d\udcce ${attachedFile.name} (${(attachedFile.size / 1024).toFixed(1)}KB)]`;
+      setAttachedFile(null);
+      await sendMessage(fileInfo + '\n' + text);
+      return;
+    }
+
+    const prefix = replyTo ? `[\u21a9 ${replyTo.role === 'user' ? 'You' : agentName}: "${replyTo.content.slice(0, 40)}..."]\n` : '';
     if (replyTo) {
-      // Save reply mapping for the next message
       const localId = `pending-reply-${Date.now()}`;
       setReplyMap(prev => {
         const next = { ...prev, [localId]: replyTo.id };
@@ -271,21 +322,39 @@ export default function SimpleChat() {
     await sendMessage(content);
   };
 
-  // Intimacy info
   const intimacy = (agent as any)?.intimacy ?? 0;
   const intimacyLevel = intimacy < 10 ? 'Stranger' : intimacy < 20 ? 'Acquaintance' : intimacy < 30 ? 'Casual' : intimacy < 40 ? 'Friend' : intimacy < 50 ? 'Good Friend' : intimacy < 60 ? 'Close Friend' : intimacy < 70 ? 'Bestie' : intimacy < 80 ? 'Soulmate' : intimacy < 90 ? 'Family' : 'Inseparable';
-  const intimacyEmoji = intimacy < 10 ? '🤝' : intimacy < 20 ? '👋' : intimacy < 30 ? '😊' : intimacy < 40 ? '💕' : intimacy < 50 ? '💖' : intimacy < 60 ? '💗' : intimacy < 70 ? '💞' : intimacy < 80 ? '💘' : intimacy < 90 ? '👨‍👩‍👧' : '💫';
+  const intimacyEmoji = intimacy < 10 ? '\ud83e\udd1d' : intimacy < 20 ? '\ud83d\udc4b' : intimacy < 30 ? '\ud83d\ude0a' : intimacy < 40 ? '\ud83d\udc95' : intimacy < 50 ? '\ud83d\udc96' : intimacy < 60 ? '\ud83d\udc97' : intimacy < 70 ? '\ud83d\udc9e' : intimacy < 80 ? '\ud83d\udc98' : intimacy < 90 ? '\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67' : '\ud83d\udcab';
 
-  // Date grouping helper
   const getDateLabel = useCallback((dateStr: string) => {
     const d = new Date(dateStr);
-    if (isToday(d)) return '오늘';
-    if (isYesterday(d)) return '어제';
-    return format(d, 'M월 d일 (EEE)', { locale: ko });
+    if (isToday(d)) return '\uc624\ub298';
+    if (isYesterday(d)) return '\uc5b4\uc81c';
+    return format(d, 'M\uc6d4 d\uc77c (EEE)', { locale: ko });
   }, []);
 
-  // Group messages by date
-  const groupedMessages = messages.reduce<{ date: string; label: string; msgs: Message[] }[]>((acc, msg) => {
+  const filteredMessages = useMemo(() => {
+    let filtered = messages;
+    if (activeFilters.keyword) {
+      const kw = activeFilters.keyword.toLowerCase();
+      filtered = filtered.filter(m => m.content.toLowerCase().includes(kw));
+    }
+    if (activeFilters.tags.length > 0) {
+      filtered = filtered.filter(m => {
+        const msgTags = tags[m.id] ?? [];
+        return activeFilters.tags.some(t => msgTags.includes(t));
+      });
+    }
+    if (activeFilters.dateFrom) {
+      filtered = filtered.filter(m => m.created_at >= activeFilters.dateFrom!);
+    }
+    if (activeFilters.dateTo) {
+      filtered = filtered.filter(m => m.created_at <= activeFilters.dateTo! + 'T23:59:59');
+    }
+    return filtered;
+  }, [messages, activeFilters, tags]);
+
+  const groupedMessages = filteredMessages.reduce<{ date: string; label: string; msgs: Message[] }[]>((acc, msg) => {
     const dateKey = format(new Date(msg.created_at), 'yyyy-MM-dd');
     const last = acc[acc.length - 1];
     if (last && last.date === dateKey) {
@@ -298,7 +367,124 @@ export default function SimpleChat() {
 
   const agentName = agent?.name ?? 'GYEOL';
 
+  const renderMessageActions = (msg: Message, isUser: boolean) => (
+    <div className={`flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'justify-end' : ''}`}>
+      <MessageReactions messageId={msg.id} onReact={handleReaction} currentReaction={reactions[msg.id]} />
+      {isUser && (
+        <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content); }}
+          aria-label="Edit message"
+          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          <span className="material-icons-round text-[12px]">edit</span>
+        </button>
+      )}
+      <button onClick={() => handleDeleteMessage(msg.id)}
+        aria-label="Delete message"
+        className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
+        <span className="material-icons-round text-[12px]">delete</span>
+      </button>
+      <button onClick={() => navigator.clipboard.writeText(msg.content)}
+        aria-label="Copy message"
+        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        <span className="material-icons-round text-[12px]">content_copy</span>
+      </button>
+      {!isUser && (
+        <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
+          aria-label="Read aloud"
+          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          <span className="material-icons-round text-[12px]">volume_up</span>
+        </button>
+      )}
+      {!isUser && (
+        <button onClick={() => setTranslatePickerFor(translatePickerFor === msg.id ? null : msg.id)}
+          aria-label="Translate"
+          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+          <span className="material-icons-round text-[12px]">translate</span>
+        </button>
+      )}
+      <button onClick={() => setReplyTo(msg)}
+        aria-label="Reply"
+        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        <span className="material-icons-round text-[12px]">reply</span>
+      </button>
+      <button onClick={() => togglePin(msg.id)}
+        aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        <span className="material-icons-round text-[12px]">push_pin</span>
+      </button>
+      <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
+        aria-label="Add tag"
+        className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
+        <span className="material-icons-round text-[12px]">label</span>
+      </button>
+      <button onClick={() => toggleBookmark(msg.id)}
+        aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
+      </button>
+    </div>
+  );
+
+  const renderUrlPreviews = (content: string) => {
+    const urls = extractUrls(content);
+    if (urls.length === 0) return null;
+    return (
+      <div className="mt-1 space-y-1">
+        {urls.slice(0, 2).map(url => <LinkPreview key={url} url={url} />)}
+      </div>
+    );
+  };
+
+  const renderTagsAndExtras = (msg: Message, isUser: boolean) => (
+    <>
+      {(tags[msg.id] ?? []).length > 0 && (
+        <div className={`flex flex-wrap gap-1 mt-1 ${isUser ? 'justify-end' : ''}`}>
+          {(tags[msg.id] ?? []).map(t => (
+            <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 flex items-center gap-0.5">
+              #{t}
+              <button onClick={() => removeTag(msg.id, t)} className="text-primary/30 hover:text-primary">\u00d7</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <AnimatePresence>
+        {tagInput === msg.id && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className={`flex gap-1 mt-1 overflow-hidden ${isUser ? 'justify-end' : ''}`}>
+            <input type="text" value={tagText} onChange={e => setTagText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTag(msg.id, tagText)}
+              placeholder="tag name" maxLength={20}
+              className="w-24 rounded-full bg-secondary/50 border border-border/30 px-2 py-1 text-[9px] text-foreground outline-none" autoFocus />
+            <button onClick={() => addTag(msg.id, tagText)}
+              className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary">Add</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {!isUser && translating === msg.id && (
+        <div className="text-[10px] text-muted-foreground mt-1 animate-pulse">\ubc88\uc5ed \uc911...</div>
+      )}
+      {!isUser && translations[msg.id] && (
+        <div className="mt-1 p-2 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-foreground/80">
+          {translations[msg.id]}
+        </div>
+      )}
+      {!isUser && (
+        <AnimatePresence>
+          {translatePickerFor === msg.id && (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              className="flex gap-1 mt-1 flex-wrap">
+              {TRANSLATE_LANGS.map(l => (
+                <button key={l.code} onClick={() => handleTranslate(msg.id, msg.content, l.code)}
+                  className="text-[9px] px-2 py-1 rounded-full glass-card hover:bg-primary/10 text-muted-foreground hover:text-primary transition">{l.label}</button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </>
+  );
+
   return (
+    <FileDropZone onFileDrop={handleFileDrop} accept="image/*,.pdf,.doc,.docx,.txt" disabled={isLoading}>
     <main className="flex flex-col h-[100dvh] bg-background overflow-hidden relative" role="main" aria-label="Chat">
       <div className="aurora-bg" aria-hidden="true" />
 
@@ -306,12 +492,20 @@ export default function SimpleChat() {
       {hasCharacter ? (
         <div className="flex-shrink-0 flex flex-col items-center justify-center pt-6 pb-2 relative z-10"
           style={{ height: '30vh' }}>
-          <button onClick={() => setConvListOpen(true)}
-            aria-label="Conversation history"
-            className="absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
-          </button>
+          <div className="absolute top-4 left-4 flex gap-2">
+            <button onClick={() => setConvListOpen(true)}
+              aria-label="Conversation history"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
+            </button>
+            <button onClick={() => setSearchOpen(true)}
+              aria-label="Search messages"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">search</span>
+            </button>
+          </div>
           <div className="absolute top-4 right-4 flex gap-2">
+            <ConversationFilter onFilter={setActiveFilters} availableTags={allTags} />
             <button onClick={() => setStatsOpen(true)}
               aria-label="Stats"
               className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
@@ -368,13 +562,25 @@ export default function SimpleChat() {
               className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition">
               <span className="material-icons-round text-lg">history</span>
             </button>
+            <button onClick={() => setSearchOpen(true)}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition">
+              <span className="material-icons-round text-lg">search</span>
+            </button>
             <p className="text-base font-medium text-foreground">{agentName}</p>
             <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           </div>
-          <button onClick={() => navigate('/settings')}
-            className="w-11 h-11 rounded-full flex items-center justify-center glass-card">
-            <span className="material-icons-round text-lg text-muted-foreground">settings</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <ConversationFilter onFilter={setActiveFilters} availableTags={allTags} />
+            <button onClick={() => setShowProviderPanel(true)}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
+              aria-label="AI Provider settings">
+              <span className="material-icons-round text-lg">tune</span>
+            </button>
+            <button onClick={() => navigate('/settings')}
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card">
+              <span className="material-icons-round text-lg text-muted-foreground">settings</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -389,7 +595,7 @@ export default function SimpleChat() {
       <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10" role="log" aria-label="Messages" aria-live="polite">
         {/* Pinned messages bar */}
         {pinnedMessages.size > 0 && (
-          <div className="mb-2 p-2 rounded-xl glass-card border border-amber-500/20">
+          <div className="mb-2 p-2 rounded-xl glass-card border border-amber-500/20 sticky top-0 z-20 backdrop-blur-md">
             <div className="flex items-center gap-1 mb-1">
               <span className="material-icons-round text-amber-400 text-[12px]">push_pin</span>
               <span className="text-[10px] text-amber-400 font-medium">Pinned ({pinnedMessages.size})</span>
@@ -409,7 +615,6 @@ export default function SimpleChat() {
         )}
         {groupedMessages.map((group) => (
           <div key={group.date}>
-            {/* Date separator */}
             <div className="flex justify-center py-3">
               <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-slate-400">
                 {group.label}
@@ -421,7 +626,14 @@ export default function SimpleChat() {
                 {msg.role === 'user' ? (
                   <div className="flex gap-2.5 justify-end">
                     <div className="max-w-[80%]">
-                      <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">You · {format(new Date(msg.created_at), 'HH:mm')}</span>
+                      {/* Reply bubble */}
+                      {replyMap[msg.id] && (
+                        <ReplyBubble originalMessage={messages.find(m => m.id === replyMap[msg.id])} agentName={agentName} />
+                      )}
+                      <span className="text-[10px] text-slate-400 font-medium mr-1 mb-1 block text-right">
+                        You \u00b7 {format(new Date(msg.created_at), 'HH:mm')}
+                        {editedMessages.has(msg.id) && <span className="ml-1 text-muted-foreground/40">(\uc218\uc815\ub428)</span>}
+                      </span>
                       <div className={`user-bubble p-4 rounded-2xl rounded-br-sm ${pinnedMessages.has(msg.id) ? 'ring-1 ring-amber-400/30' : ''}`}
                         style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
                         {editingMsg === msg.id ? (
@@ -433,91 +645,19 @@ export default function SimpleChat() {
                               <button onClick={() => handleEditMessage(msg.id)} className="text-[9px] px-2 py-1 rounded bg-primary/20 text-primary">Save</button>
                             </div>
                           </div>
+                        ) : msg.content.startsWith('[') && msg.content.includes('\ud83d\udcf7') && imagePreview ? (
+                          <ImageMessage src={imagePreview} alt="Sent image" />
                         ) : (
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                         )}
                       </div>
-                      {/* Tags */}
-                      {(tags[msg.id] ?? []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1 justify-end">
-                          {tags[msg.id].map(t => (
-                            <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/60 flex items-center gap-0.5">
-                              #{t}
-                              <button onClick={() => removeTag(msg.id, t)} className="text-primary/30 hover:text-primary">×</button>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {/* Reaction display */}
-                      {reactions[msg.id] && (
-                        <div className="flex justify-end mt-0.5">
-                          <span className="text-sm bg-background/50 rounded-full px-1.5 py-0.5 border border-white/5">{reactions[msg.id]}</span>
-                        </div>
-                      )}
-                      {/* Message actions */}
-                      <div className="flex justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
-                          aria-label="Add reaction"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">add_reaction</span>
-                        </button>
-                        <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content); }}
-                          aria-label="Edit message"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">edit</span>
-                        </button>
-                        <button onClick={() => handleDeleteMessage(msg.id)}
-                          aria-label="Delete message"
-                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-                          <span className="material-icons-round text-[12px]">delete</span>
-                        </button>
-                        <button onClick={() => setReplyTo(msg)}
-                          aria-label="Reply"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">reply</span>
-                        </button>
-                        <button onClick={() => togglePin(msg.id)}
-                          aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
-                          className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
-                          <span className="material-icons-round text-[12px]">push_pin</span>
-                        </button>
-                        <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
-                          aria-label="Add tag"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-                          <span className="material-icons-round text-[12px]">label</span>
-                        </button>
-                        <button onClick={() => toggleBookmark(msg.id)}
-                          aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
-                          className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
-                          <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
-                        </button>
+                      {renderUrlPreviews(msg.content)}
+                      {/* Read receipt */}
+                      <div className="flex justify-end mt-0.5">
+                        <ReadReceipt sent={true} read={msg.role === 'user' && messages.some(m => m.role === 'assistant' && new Date(m.created_at) > new Date(msg.created_at))} />
                       </div>
-                      {/* Tag input */}
-                      <AnimatePresence>
-                        {tagInput === msg.id && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                            className="flex gap-1 mt-1 justify-end overflow-hidden">
-                            <input type="text" value={tagText} onChange={e => setTagText(e.target.value)}
-                              onKeyDown={e => e.key === 'Enter' && addTag(msg.id, tagText)}
-                              placeholder="tag name" maxLength={20}
-                              className="w-24 rounded-full bg-secondary/50 border border-border/30 px-2 py-1 text-[9px] text-foreground outline-none" autoFocus />
-                            <button onClick={() => addTag(msg.id, tagText)}
-                              className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary">Add</button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {/* Reaction picker */}
-                      <AnimatePresence>
-                        {reactionPickerFor === msg.id && (
-                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                            className="flex gap-1 mt-1 justify-end">
-                            {REACTIONS.map(r => (
-                              <button key={r} onClick={() => { setReactions(prev => ({ ...prev, [msg.id]: r })); setReactionPickerFor(null); }}
-                                className="text-lg hover:scale-125 transition-transform">{r}</button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {renderTagsAndExtras(msg, true)}
+                      {renderMessageActions(msg, true)}
                     </div>
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-white/10 flex items-center justify-center shadow-lg mt-5">
                       <span className="material-icons-round text-slate-300 text-[14px]">person</span>
@@ -529,90 +669,16 @@ export default function SimpleChat() {
                       <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
                     </div>
                     <div className="max-w-[80%]">
-                      <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName} · {format(new Date(msg.created_at), 'HH:mm')}</span>
+                      <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName} \u00b7 {format(new Date(msg.created_at), 'HH:mm')}</span>
                       <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm"
                         style={{ fontSize: `${fontSize}px`, lineHeight: 1.6 }}>
                         <div className="prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
                           <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ pre: CodeBlockCopy }}>{msg.content}</ReactMarkdown>
                         </div>
                       </div>
-                      {/* Reaction display */}
-                      {reactions[msg.id] && (
-                        <div className="flex mt-0.5">
-                          <span className="text-sm bg-background/50 rounded-full px-1.5 py-0.5 border border-white/5">{reactions[msg.id]}</span>
-                        </div>
-                      )}
-                      {/* AI message actions */}
-                      <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setReactionPickerFor(reactionPickerFor === msg.id ? null : msg.id)}
-                          aria-label="Add reaction"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">add_reaction</span>
-                        </button>
-                        <button onClick={() => handleDeleteMessage(msg.id)}
-                          aria-label="Delete message"
-                          className="text-[9px] text-slate-500 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">delete</span>
-                        </button>
-                        <button onClick={() => navigator.clipboard.writeText(msg.content)}
-                          aria-label="Copy message"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">content_copy</span>
-                        </button>
-                        <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
-                          aria-label="Read aloud"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">volume_up</span>
-                        </button>
-                        <button onClick={() => setTranslatePickerFor(translatePickerFor === msg.id ? null : msg.id)}
-                          aria-label="Translate"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">translate</span>
-                        </button>
-                        <button onClick={() => setReplyTo(msg)}
-                          aria-label="Reply"
-                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">reply</span>
-                        </button>
-                        <button onClick={() => toggleBookmark(msg.id)}
-                          aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
-                          className={`text-[9px] px-1.5 py-0.5 rounded transition focus-visible:outline-2 focus-visible:outline-primary ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400 hover:bg-amber-400/10'}`}>
-                          <span className="material-icons-round text-[12px]" aria-hidden="true">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
-                        </button>
-                      </div>
-                      {/* Translation result */}
-                      {translating === msg.id && (
-                        <div className="text-[10px] text-muted-foreground mt-1 animate-pulse">번역 중...</div>
-                      )}
-                      {translations[msg.id] && (
-                        <div className="mt-1 p-2 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-foreground/80">
-                          {translations[msg.id]}
-                        </div>
-                      )}
-                      {/* Translate picker */}
-                      <AnimatePresence>
-                        {translatePickerFor === msg.id && (
-                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                            className="flex gap-1 mt-1 flex-wrap">
-                            {TRANSLATE_LANGS.map(l => (
-                              <button key={l.code} onClick={() => handleTranslate(msg.id, msg.content, l.code)}
-                                className="text-[9px] px-2 py-1 rounded-full glass-card hover:bg-primary/10 text-muted-foreground hover:text-primary transition">{l.label}</button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {/* Reaction picker */}
-                      <AnimatePresence>
-                        {reactionPickerFor === msg.id && (
-                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                            className="flex gap-1 mt-1">
-                            {REACTIONS.map(r => (
-                              <button key={r} onClick={() => { setReactions(prev => ({ ...prev, [msg.id]: r })); setReactionPickerFor(null); }}
-                                className="text-lg hover:scale-125 transition-transform">{r}</button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {renderUrlPreviews(msg.content)}
+                      {renderTagsAndExtras(msg, false)}
+                      {renderMessageActions(msg, false)}
                     </div>
                   </div>
                 )}
@@ -621,7 +687,7 @@ export default function SimpleChat() {
           </div>
         ))}
 
-        {/* Typing indicator with dots */}
+        {/* Typing indicator */}
         {isLoading && (
           <div className="flex gap-2.5 mb-3 justify-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-white/10 flex items-center justify-center">
@@ -658,9 +724,30 @@ export default function SimpleChat() {
           {imagePreview && (
             <div className="mb-2 relative inline-block">
               <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border border-primary/20" />
-              <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-white text-[10px] flex items-center justify-center">✕</button>
+              <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-white text-[10px] flex items-center justify-center">\u2715</button>
             </div>
           )}
+          {/* File attachment preview */}
+          <AnimatePresence>
+            {attachedFile && (
+              <div className="mb-2">
+                <FileAttachmentPreview file={attachedFile} onRemove={() => setAttachedFile(null)} />
+              </div>
+            )}
+          </AnimatePresence>
+          {/* Model selector chip + token info */}
+          <div className="flex items-center gap-2 mb-1.5">
+            <ModelSelector currentModel={selectedModel} onSelect={setSelectedModel} />
+            <button onClick={() => setShowTokenUsage(true)}
+              className="text-[9px] text-muted-foreground/40 hover:text-muted-foreground transition px-2 py-1 rounded-full glass-card">
+              {messages.length * 150 > 0 ? `${(messages.length * 150).toLocaleString()} tokens` : 'Token usage'}
+            </button>
+            <button onClick={() => setShowProviderPanel(true)}
+              className="text-[9px] text-muted-foreground/40 hover:text-muted-foreground transition px-1.5 py-1 rounded-full glass-card"
+              aria-label="Provider settings">
+              <span className="material-icons-round text-[12px]">tune</span>
+            </button>
+          </div>
           <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
             <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleImageSelect} />
             <button type="button" onClick={() => imageInputRef.current?.click()}
@@ -674,12 +761,18 @@ export default function SimpleChat() {
               aria-label="Message input"
               style={{ fontSize: '16px' }}
               className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500 focus-visible:outline-none" />
-            <VoiceRecorder onRecorded={(url, dur) => {
-              const id = `voice-${Date.now()}`;
-              setVoiceMessages(prev => ({ ...prev, [id]: { url, duration: dur } }));
-              sendMessage(`[🎤 Voice message (${dur}s)]`);
-            }} disabled={isLoading} />
-            <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
+            {continuousVoice ? (
+              <ContinuousVoiceInput onResult={t => { setInput(prev => prev + t); }} disabled={isLoading} />
+            ) : (
+              <>
+                <VoiceRecorder onRecorded={(url, dur) => {
+                  const id = `voice-${Date.now()}`;
+                  setVoiceMessages(prev => ({ ...prev, [id]: { url, duration: dur } }));
+                  sendMessage(`[\ud83c\udfa4 Voice message (${dur}s)]`);
+                }} disabled={isLoading} />
+                <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
+              </>
+            )}
             {input.trim() && (
               <button onClick={handleSend} disabled={isLoading}
                 aria-label="Send message"
@@ -728,10 +821,8 @@ export default function SimpleChat() {
         )}
       </AnimatePresence>
 
-      {/* Summary History */}
       <SummaryHistory isOpen={summaryHistoryOpen} onClose={() => setSummaryHistoryOpen(false)} agentId={agent?.id} />
 
-      {/* Conversation history drawer */}
       {agent?.id && (
         <ConversationList
           isOpen={convListOpen}
@@ -740,14 +831,10 @@ export default function SimpleChat() {
         />
       )}
 
-      {/* Conversation Stats */}
       <ConversationStats isOpen={statsOpen} onClose={() => setStatsOpen(false)} agentId={agent?.id} />
-
-      {/* Conversation Share */}
       <ConversationShare isOpen={shareOpen} onClose={() => setShareOpen(false)} messages={messages} agentName={agentName} />
-
-      {/* Conversation Export */}
       <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
+      <ChatSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} agentId={agent?.id} />
 
       {/* Model Selector Modal */}
       {showModelSelector && (
@@ -763,11 +850,108 @@ export default function SimpleChat() {
       {showTokenUsage && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowTokenUsage(false)} />
-          <div className="relative z-10 w-full max-w-sm p-4">
-            <TokenUsageDisplay tokensUsed={messages.length * 150} dailyTotal={messages.length * 150} maxTokens={100000} />
+          <div className="relative z-10 w-full max-w-sm p-4 glass-card rounded-2xl mx-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground">Token Usage</h3>
+              <button onClick={() => setShowTokenUsage(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
+                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+              </button>
+            </div>
+            <TokenUsageDisplay tokensUsed={messages.length * 150} dailyTotal={messages.length * 150} maxTokens={maxTokens} />
+            <TokenLimitSlider value={maxTokens} onChange={setMaxTokens} />
           </div>
         </div>
       )}
+
+      {/* Provider Panel */}
+      <AnimatePresence>
+        {showProviderPanel && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]" onClick={() => setShowProviderPanel(false)} />
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+              className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[80vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground">AI Provider Settings</h3>
+                <button onClick={() => setShowProviderPanel(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
+                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                </button>
+              </div>
+              <ProviderComparison />
+              <ApiUsageDashboard agentId={agent?.id} />
+              <TokenLimitSlider value={maxTokens} onChange={setMaxTokens} />
+              <div className="pt-2 border-t border-border/10">
+                <button onClick={() => { setShowProviderPanel(false); setShowSystemPrompt(true); }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl glass-card hover:bg-muted/10 transition text-left">
+                  <span className="material-icons-round text-primary text-base">psychology</span>
+                  <div>
+                    <p className="text-[11px] font-medium text-foreground">System Prompt Editor</p>
+                    <p className="text-[9px] text-muted-foreground">Customize AI behavior</p>
+                  </div>
+                </button>
+              </div>
+              <div className="pt-2 border-t border-border/10">
+                <button onClick={() => { setShowProviderPanel(false); setShowTTSSettings(true); }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl glass-card hover:bg-muted/10 transition text-left">
+                  <span className="material-icons-round text-primary text-base">record_voice_over</span>
+                  <div>
+                    <p className="text-[11px] font-medium text-foreground">TTS Voice Settings</p>
+                    <p className="text-[9px] text-muted-foreground">Change voice, speed, pitch</p>
+                  </div>
+                </button>
+              </div>
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] text-foreground/60">Continuous Voice Input</span>
+                <button onClick={() => setContinuousVoice(!continuousVoice)}
+                  className={`w-10 h-5 rounded-full transition-colors ${continuousVoice ? 'bg-primary' : 'bg-muted/30'}`}>
+                  <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${continuousVoice ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* System Prompt Editor Modal */}
+      <AnimatePresence>
+        {showSystemPrompt && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]" onClick={() => setShowSystemPrompt(false)} />
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+              className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[70vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">System Prompt</h3>
+                <button onClick={() => setShowSystemPrompt(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
+                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                </button>
+              </div>
+              <SystemPromptEditor agent={agent} onUpdate={() => {}} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* TTS Voice Settings Modal */}
+      <AnimatePresence>
+        {showTTSSettings && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]" onClick={() => setShowTTSSettings(false)} />
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+              className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[70vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">TTS Voice Settings</h3>
+                <button onClick={() => setShowTTSSettings(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
+                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                </button>
+              </div>
+              <TTSVoiceSelector />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </main>
+    </FileDropZone>
   );
 }

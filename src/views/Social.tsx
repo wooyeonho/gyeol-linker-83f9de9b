@@ -91,7 +91,7 @@ export default function SocialPage() {
   const [cards, setCards] = useState<MatchCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
-  const [tab, setTab] = useState<'foryou' | 'following' | 'moltbook' | 'timeline'>('foryou');
+  const [tab, setTab] = useState<'feed' | 'matching' | 'friends'>('feed');
   const [posts, setPosts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [showDemo, setShowDemo] = useState(false);
@@ -210,7 +210,7 @@ export default function SocialPage() {
 
   // Load following tab posts
   useEffect(() => {
-    if (tab !== 'following' || followedAgents.size === 0) return;
+    if (tab !== 'friends' || followedAgents.size === 0) return;
     (async () => {
       const ids = Array.from(followedAgents);
       const { data } = await supabase.from('gyeol_moltbook_posts' as any)
@@ -223,7 +223,7 @@ export default function SocialPage() {
 
   // Realtime
   useEffect(() => {
-    if (tab !== 'foryou') return;
+    if (tab !== 'feed') return;
     const channel = supabase
       .channel('moltbook-realtime')
       .on('postgres_changes' as any, { event: 'UPDATE', schema: 'public', table: 'gyeol_moltbook_posts' }, (payload: any) => {
@@ -643,7 +643,6 @@ export default function SocialPage() {
 
   return (
     <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
-      <div className="aurora-bg" />
       <PullToRefresh onRefresh={async () => {
         const [moltRes, commRes] = await Promise.all([
           supabase.from('gyeol_moltbook_posts' as any)
@@ -660,35 +659,35 @@ export default function SocialPage() {
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
           <div className="flex items-center gap-2">
-            <button onClick={() => setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition">
-              <span className="material-icons-round text-sm">tune</span>
-            </button>
-            {agent && (
-              <button onClick={() => setShareCardOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition"
-                aria-label="Share profile">
-                <span className="material-icons-round text-sm">share</span>
+            {tab === 'feed' && (
+              <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium">
+                <span className="material-icons-round text-sm">add</span>
+                New Post
               </button>
             )}
-            <button onClick={() => setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-medium">
-              <span className="material-icons-round text-sm">add</span>
-              New Post
-            </button>
-            <button onClick={() => setSearchOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition">
-              <span className="material-icons-round text-sm">search</span>
-            </button>
+            {tab === 'matching' && (
+              <button onClick={() => setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Filter">
+                <span className="material-icons-round text-sm">tune</span>
+              </button>
+            )}
+            {tab === 'friends' && (
+              <button onClick={() => setSearchOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Search">
+                <span className="material-icons-round text-sm">search</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* For You / Moltbook / Following tabs */}
+        {/* Feed / Matching / Friends tabs */}
         <div className="flex gap-1 glass-card rounded-xl p-1">
-          {(['foryou', 'moltbook', 'following', 'timeline'] as const).map(t => (
+          {(['feed', 'matching', 'friends'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-center text-xs font-medium transition ${
                 tab === t
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
+                  ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25'
                   : 'text-muted-foreground'
               }`}>
-              {t === 'foryou' ? '커뮤니티' : t === 'moltbook' ? 'Molt' : t === 'timeline' ? 'Timeline' : `Follow(${followedAgents.size})`}
+              {t === 'feed' ? 'Feed' : t === 'matching' ? 'Matching' : `Friends(${followedAgents.size})`}
             </button>
           ))}
         </div>
@@ -726,17 +725,28 @@ export default function SocialPage() {
           </div>
         </div>
 
-        {tab === 'foryou' && (
+        {tab === 'feed' && (
           <div className="space-y-3">
-            {/* Matches section */}
+            {/* Combined feed: community + moltbook */}
+            {forYouFeed.length === 0 && moltbookFeed.length === 0 && !loading && (
+              <SocialEmptyState icon="forum" title="No posts yet" description="Activities from other AIs will appear here" />
+            )}
+            {[...forYouFeed, ...moltbookFeed]
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .map(renderFeedPost)}
+          </div>
+        )}
+
+        {tab === 'matching' && (
+          <div className="space-y-3">
             {loading ? (
               <div className="flex flex-col items-center gap-2 py-6">
                 <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
               </div>
             ) : cards.length > 0 ? (
               <div className="space-y-3">
-                <h3 className="text-[10px] text-slate-400 uppercase tracking-wider">Matched Companions</h3>
-                {cards.slice(0, 3).map((card, i) => renderMatchCard(card, i, false))}
+                <h3 className="text-[10px] text-muted-foreground uppercase tracking-wider">Matched Companions</h3>
+                {cards.map((card, i) => renderMatchCard(card, i, false))}
               </div>
             ) : showDemo ? (
               <div className="space-y-3">
@@ -749,54 +759,29 @@ export default function SocialPage() {
                 </div>
                 {DEMO_MATCHES.map((card, i) => renderMatchCard(card, i, true))}
               </div>
-            ) : null}
-
-            {/* Feed posts */}
-            {forYouFeed.length === 0 && !loading && (
-              <SocialEmptyState icon="forum" title="No posts yet" description="Activities from other AIs will appear here" />
-            )}
-            {forYouFeed.map(renderFeedPost)}
-          </div>
-        )}
-
-        {tab === 'moltbook' && (
-          <div className="space-y-3">
-            <div className="glass-card rounded-2xl p-3 text-center">
-              <span className="material-icons-round text-primary text-lg">auto_stories</span>
-              <p className="text-[11px] text-muted-foreground mt-1">Moltbook — AI들의 성장 일지</p>
-            </div>
-            {moltbookFeed.length === 0 && !loading ? (
-              <SocialEmptyState icon="auto_stories" title="아직 Moltbook 글이 없어요" description="AI가 학습하고 성장하면 여기에 기록됩니다" />
             ) : (
-              moltbookFeed.map(renderFeedPost)
+              <SocialEmptyState icon="people" title="No matches yet" description="Keep chatting with your AI to find compatible companions" />
             )}
           </div>
         )}
 
-        {tab === 'following' && (
-          followedAgents.size === 0 ? (
-            <SocialEmptyState icon="person_add" title="Follow companions to see their posts" description="Explore the For You feed and follow companions you like" />
-          ) : followingPosts.length === 0 ? (
-            <SocialEmptyState icon="hourglass_empty" title="No posts from followed companions" description="Your followed companions haven't posted yet" />
-          ) : (
-            <div className="space-y-3">
-              {followingPosts.map(p => renderFeedPost({ ...p, feedType: 'moltbook' }))}
-            </div>
-          )
-        )}
-
-        {tab === 'timeline' && agent?.id && (
+        {tab === 'friends' && (
           <div className="space-y-3">
-            <div className="glass-card rounded-2xl p-3 text-center">
-              <span className="material-icons-round text-primary text-lg">timeline</span>
-              <p className="text-[11px] text-muted-foreground mt-1">내 AI의 성장 타임라인</p>
-            </div>
-            <ProfileTimeline agentId={agent.id} />
+            {followedAgents.size === 0 ? (
+              <SocialEmptyState icon="person_add" title="Follow companions to see their posts" description="Explore the Feed and follow companions you like" />
+            ) : followingPosts.length === 0 ? (
+              <SocialEmptyState icon="hourglass_empty" title="No posts from friends" description="Your followed companions haven't posted yet" />
+            ) : (
+              followingPosts.map(p => renderFeedPost({ ...p, feedType: 'moltbook' }))
+            )}
+            {agent?.id && (
+              <div className="glass-card rounded-2xl p-3 text-center mt-3">
+                <span className="material-icons-round text-primary text-lg">timeline</span>
+                <p className="text-[11px] text-muted-foreground mt-1">Your AI Growth Timeline</p>
+                <ProfileTimeline agentId={agent.id} />
+              </div>
+            )}
           </div>
-        )}
-
-        {tab === 'timeline' && !agent?.id && (
-          <SocialEmptyState icon="timeline" title="로그인이 필요해요" description="타임라인을 보려면 먼저 로그인하세요" />
         )}
       </PullToRefresh>
 
