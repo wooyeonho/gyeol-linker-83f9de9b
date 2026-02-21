@@ -12,13 +12,13 @@ interface MemoryItem {
 }
 
 const CATEGORY_CONFIG: Record<string, { icon: string; label: string }> = {
-  identity: { icon: '🧑', label: '사용자 정보' },
-  preference: { icon: '❤️', label: '좋아하는 것' },
-  interest: { icon: '🎯', label: '관심사' },
-  goal: { icon: '🎯', label: '목표' },
+  identity: { icon: '🧑', label: 'User Info' },
+  preference: { icon: '❤️', label: 'Likes' },
+  interest: { icon: '🎯', label: 'Interests' },
+  goal: { icon: '🎯', label: 'Goals' },
   relationship: { icon: '👥', label: 'Relationships' },
-  emotion: { icon: '😊', label: '최근 Emotions' },
-  style: { icon: '🗣️', label: '대화 스타일' },
+  emotion: { icon: '😊', label: 'Recent Emotions' },
+  style: { icon: '🗣️', label: 'Chat Style' },
   learning: { icon: '📚', label: 'Learned topics' },
 };
 
@@ -145,9 +145,9 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🧠</span>
-                  <h2 className="text-sm font-bold text-foreground">AI의 기억</h2>
+                  <h2 className="text-sm font-bold text-foreground">AI Memories</h2>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                    {memories.length}개의 기억
+                    {memories.length} memories
                   </span>
                 </div>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
@@ -161,13 +161,13 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="void-dot" />
-                  <span className="ml-3 text-[11px] text-muted-foreground/50">기억을 불러오는 중...</span>
+                  <span className="ml-3 text-[11px] text-muted-foreground/50">Loading memories...</span>
                 </div>
               ) : memories.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-2xl">🫧</span>
-                  <p className="text-[11px] text-muted-foreground/50 mt-2">아직 기억이 없어요</p>
-                  <p className="text-[10px] text-muted-foreground/30 mt-1">대화를 나누면 기억이 쌓여요</p>
+                  <p className="text-[11px] text-muted-foreground/50 mt-2">No memories yet</p>
+                  <p className="text-[10px] text-muted-foreground/30 mt-1">Memories build up as you chat</p>
                 </div>
               ) : (
                 Object.entries(grouped).map(([cat, items]) => {
@@ -237,9 +237,9 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
               {/* Correction prompt */}
               {memories.length > 0 && (
                 <div className="mt-4 px-3 py-3 rounded-xl bg-primary/5 border border-primary/10 text-center">
-                  <p className="text-[11px] text-foreground/50">⚠️ 잘못된 기억이 있나요?</p>
+                  <p className="text-[11px] text-foreground/50">⚠️ Found an incorrect memory?</p>
                   <p className="text-[10px] text-muted-foreground/40 mt-1">
-                    채팅에서 "내 이름은 ○○이야" 라고 말하면 기억이 업데이트돼요
+                    Say "My name is ___" in chat to update your memories
                   </p>
                 </div>
               )}
@@ -254,7 +254,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                   exit={{ opacity: 0, y: 20 }}
                   className="absolute bottom-0 left-0 right-0 glass-panel border-t border-foreground/[0.06] px-5 py-4"
                 >
-                  <p className="text-[12px] text-foreground/80 mb-3">이 기억을 Delete할까요?</p>
+                  <p className="text-[12px] text-foreground/80 mb-3">Delete this memory?</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleDelete(deleteTarget)}

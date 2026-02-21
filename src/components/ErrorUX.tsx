@@ -22,20 +22,20 @@ export function handleApiError(error: any, context?: string) {
   const status = error?.status ?? error?.statusCode;
   if (status === 429) {
     const reset = error?.resetSeconds ?? 60;
-    showErrorToast(`너무 빠르게 보내고 있어요. ${reset}초 후 Please try again`, 'warning');
+    showErrorToast(`Too many messages. Please try again in ${reset} seconds`, 'warning');
   } else if (status === 401) {
     supabase.auth.refreshSession().then(({ error: refreshErr }) => {
       if (refreshErr) {
-        showErrorToast('세션이 만료되었습니다. 다시 로그인해주세요', 'error');
+        showErrorToast('Session expired. Please log in again', 'error');
         setTimeout(() => { window.location.href = '/auth'; }, 1500);
       }
     });
   } else if (status === 500 || status === 502 || status === 503) {
-    showErrorToast('서버가 잠시 바쁩니다. 곧 돌아올게요!', 'error');
+    showErrorToast('Server is busy. Please try again shortly', 'error');
   } else if (!navigator.onLine) {
-    showErrorToast('인터넷 연결을 Confirm해주세요', 'warning');
+    showErrorToast('Please check your internet connection', 'warning');
   } else {
-    showErrorToast(context ?? '오류가 발생했습니다. Please try again', 'error');
+    showErrorToast(context ?? 'An error occurred. Please try again', 'error');
   }
 }
 
@@ -108,7 +108,7 @@ interface RetryButtonProps {
   label?: string;
 }
 
-export function MessageRetryButton({ onRetry, label = '다시 보내기' }: RetryButtonProps) {
+export function MessageRetryButton({ onRetry, label = 'Retry' }: RetryButtonProps) {
   return (
     <button onClick={onRetry}
       className="inline-flex items-center gap-1 text-[10px] text-destructive hover:text-destructive/80 transition mt-1">

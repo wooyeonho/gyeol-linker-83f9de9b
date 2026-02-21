@@ -12,10 +12,10 @@ interface Props {
 }
 
 const WARNINGS = [
-  { icon: 'chat_bubble', text: '모든 대화 기록이 영구 Delete됩니다' },
-  { icon: 'psychology', text: 'AI Personality과 기억이 모두 사라집니다' },
-  { icon: 'emoji_events', text: 'Achievement, Level, Coins이 초기화됩니다' },
-  { icon: 'group', text: '소셜 활동과 Follow가 Delete됩니다' },
+  { icon: 'chat_bubble', text: 'All conversations will be permanently deleted' },
+  { icon: 'psychology', text: 'AI personality and memories will be erased' },
+  { icon: 'emoji_events', text: 'Achievements, levels, and coins will be reset' },
+  { icon: 'group', text: 'Social activity and follows will be deleted' },
 ];
 
 export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
@@ -24,7 +24,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canDelete = confirmText === 'Delete합니다';
+  const canDelete = confirmText === 'DELETE';
 
   const handleDelete = async () => {
     if (!canDelete || deleting) return;
@@ -47,10 +47,10 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
         onDeleted();
       } else {
         const data = await res.json();
-        setError(data.error || 'Delete에 실패했어요');
+        setError(data.error || 'Failed to delete account');
       }
     } catch {
-      setError('서버 오류가 발생했어요');
+      setError('Server error occurred');
     }
     setDeleting(false);
   };
@@ -89,7 +89,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     className="space-y-4">
                     <div className="text-center">
                       <span className="text-4xl">⚠️</span>
-                      <h2 className="text-base font-bold text-foreground mt-2">정말 Delete하시겠어요?</h2>
+                      <h2 className="text-base font-bold text-foreground mt-2">Are you sure you want to delete?</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">This action cannot be undone</p>
                     </div>
                     <div className="space-y-2">
@@ -107,7 +107,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                       </button>
                       <button onClick={() => setStep(1)}
                         className="flex-1 py-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium transition hover:bg-destructive/20">
-                        계속
+                        Continue
                       </button>
                     </div>
                   </motion.div>
@@ -117,16 +117,16 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                     className="space-y-4">
                     <div className="text-center">
-                      <h2 className="text-base font-bold text-foreground">Confirm 입력</h2>
+                      <h2 className="text-base font-bold text-foreground">Confirmation</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        Confirm하려면 <strong className="text-destructive">"Delete합니다"</strong>를 입력하세요
+                        Type <strong className="text-destructive">"DELETE"</strong> to confirm
                       </p>
                     </div>
                     <input
                       type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)}
-                      placeholder="Delete합니다"
+                      placeholder="DELETE"
                       className="w-full rounded-xl bg-secondary/50 border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-destructive/40 transition"
-                      aria-label="Delete Confirm 텍스트 입력"
+                      aria-label="Delete confirmation text input"
                       autoComplete="off"
                     />
                     <div className="flex gap-2">
@@ -147,18 +147,18 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     className="space-y-4">
                     <div className="text-center">
                       <span className="text-4xl">🔥</span>
-                      <h2 className="text-base font-bold text-destructive mt-2">최종 Confirm</h2>
+                      <h2 className="text-base font-bold text-destructive mt-2">Final Confirmation</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        이 버튼을 누르면 모든 데이터가<br />영구적으로 Delete됩니다
+                        Pressing this button will permanently<br />delete all your data
                       </p>
                     </div>
                     {error && <p className="text-[11px] text-destructive text-center">{error}</p>}
                     <button onClick={handleDelete} disabled={deleting}
                       className="w-full py-3 rounded-xl bg-destructive/20 text-destructive font-bold text-sm disabled:opacity-50 transition hover:bg-destructive/30 flex items-center justify-center gap-2">
                       {deleting ? (
-                        <><div className="void-dot w-3 h-3" /> Delete 중...</>
+                        <><div className="void-dot w-3 h-3" /> Deleting...</>
                       ) : (
-                        <><span aria-hidden="true" className="material-icons-round text-sm">delete_forever</span> 영구 Delete</>
+                        <><span aria-hidden="true" className="material-icons-round text-sm">delete_forever</span> Delete Permanently</>
                       )}
                     </button>
                     <button onClick={() => setStep(1)}

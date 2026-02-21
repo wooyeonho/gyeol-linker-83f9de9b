@@ -11,10 +11,10 @@ interface SeasonProgress { season_id: string; season_exp: number; tier: number; 
 
 const TIER_REWARDS = [
   { tier: 1, exp: 100, reward: '🎁 10 Coins', icon: 'monetization_on' },
-  { tier: 2, exp: 300, reward: '✨ 50 EXP 부스터', icon: 'bolt' },
-  { tier: 3, exp: 600, reward: '🎨 시즌 스킨', icon: 'palette' },
-  { tier: 4, exp: 1000, reward: '🏷️ 시즌 칭호', icon: 'badge' },
-  { tier: 5, exp: 1500, reward: '👑 레전더리 보상', icon: 'workspace_premium' },
+  { tier: 2, exp: 300, reward: '✨ 50 EXP Booster', icon: 'bolt' },
+  { tier: 3, exp: 600, reward: '🎨 Season Skin', icon: 'palette' },
+  { tier: 4, exp: 1000, reward: '🏷️ Season Title', icon: 'badge' },
+  { tier: 5, exp: 1500, reward: '👑 Legendary Reward', icon: 'workspace_premium' },
 ];
 
 export function SeasonPass() {

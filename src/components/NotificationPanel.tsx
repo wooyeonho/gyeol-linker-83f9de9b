@@ -25,8 +25,8 @@ const TYPE_STYLES: Record<string, { bg: string; text: string; label: string }> =
   achievement: { bg: 'bg-[hsl(var(--warning)/0.1)]', text: 'text-[hsl(var(--warning))]', label: 'Achievement' },
   quest: { bg: 'bg-[hsl(var(--success,142_71%_45%)/0.1)]', text: 'text-[hsl(var(--success,142_71%_45%))]', label: 'Quest' },
   evolution: { bg: 'bg-primary/10', text: 'text-primary', label: 'Evolution' },
-  social: { bg: 'bg-secondary/10', text: 'text-secondary', label: '소셜' },
-  system: { bg: 'bg-primary/10', text: 'text-primary', label: '시스템' },
+  social: { bg: 'bg-secondary/10', text: 'text-secondary', label: 'Social' },
+  system: { bg: 'bg-primary/10', text: 'text-primary', label: 'System' },
 };
 
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
@@ -65,7 +65,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       notifs.push({
         id: `ach-${a.id}`, type: 'achievement',
         title: `🏆 ${a.gyeol_achievements?.name ?? 'Achievement'}`,
-        message: 'Achievement을 달성했어요!',
+        message: 'Achievement unlocked!',
         icon: a.gyeol_achievements?.icon ?? 'emoji_events',
         read: !a.is_new, created_at: a.unlocked_at,
       });
@@ -74,7 +74,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       notifs.push({
         id: `quest-${q.id}`, type: 'quest',
         title: `✅ ${q.gyeol_quests?.title ?? 'Quest'}`,
-        message: 'Quest를 Done했어요!',
+        message: 'Quest completed!',
         icon: q.gyeol_quests?.icon ?? 'assignment_turned_in',
         read: true, created_at: q.completed_at ?? new Date().toISOString(),
       });
@@ -83,7 +83,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       const typeLabel = e.activity_type === 'learning' ? '📚 Learning' : e.activity_type === 'reflection' ? '💭 Reflection' : '💌 Proactive';
       notifs.push({
         id: `evo-${e.id}`, type: 'system',
-        title: typeLabel, message: e.summary ?? '활동이 기록되었어요',
+        title: typeLabel, message: e.summary ?? 'Activity logged',
         icon: e.activity_type === 'learning' ? 'school' : 'psychology',
         read: true, created_at: e.created_at,
       });
@@ -117,10 +117,10 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
   const relTime = (d: string) => {
     const diff = Date.now() - new Date(d).getTime();
-    if (diff < 60000) return '방금';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}분 전`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}시간 전`;
-    return `${Math.floor(diff / 86400000)}일 전`;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return `${Math.floor(diff / 86400000)}d ago`;
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -134,10 +134,10 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   }
 
   const FILTERS = [
-    { key: null, label: '전체' },
+    { key: null, label: 'All' },
     { key: 'achievement', label: 'Achievement' },
     { key: 'quest', label: 'Quest' },
-    { key: 'system', label: '시스템' },
+    { key: 'system', label: 'System' },
   ];
 
   return (
@@ -151,7 +151,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 250 }}
             className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[360px] bg-background z-[81] flex flex-col shadow-2xl"
-            role="dialog" aria-label="Notifications 패널" aria-modal="true"
+            role="dialog" aria-label="Notifications panel" aria-modal="true"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/20">
@@ -159,16 +159,16 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 <h2 className="text-sm font-bold text-foreground">Notifications</h2>
                 {unreadCount > 0 && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold"
-                    aria-label={`읽지 않은 Notifications ${unreadCount}개`}>{unreadCount}</span>
+                    aria-label={`${unreadCount} unread notifications`}>{unreadCount}</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-[10px] text-primary" aria-label="Mark all read 처리">Mark all read</button>
+                  <button onClick={markAllRead} className="text-[10px] text-primary" aria-label="Mark all as read">Mark all read</button>
                 )}
                 <button onClick={onClose}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
-                  aria-label="Notifications 패널 닫기">
+                  aria-label="Close notifications">
                   <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
@@ -190,14 +190,14 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto" role="list" aria-label="Notifications 목록">
+            <div className="flex-1 overflow-y-auto" role="list" aria-label="Notifications list">
               {loading ? (
                 <div className="flex items-center justify-center py-20"><div className="void-dot" /></div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
                   <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20">notifications_none</span>
                   <p className="text-sm text-muted-foreground">
-                    {filter ? '해당 종류의 Notifications이 없어요' : '아직 Notifications이 없어요'}
+                    {filter ? 'No notifications of this type' : 'No notifications yet'}
                   </p>
                 </div>
               ) : (
@@ -229,7 +229,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                             <p className="text-[10px] text-muted-foreground mt-0.5">{n.message}</p>
                             <p className="text-[9px] text-muted-foreground/60 mt-1">{relTime(n.created_at)}</p>
                           </div>
-                          {!n.read && <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" aria-label="읽지 않음" />}
+                          {!n.read && <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" aria-label="Unread" />}
                         </motion.div>
                       );
                     })}

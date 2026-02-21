@@ -56,11 +56,11 @@ export default function GamificationPage() {
       {/* Header */}
       <div className="relative z-20 px-5 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-bold text-foreground">게이미피케이션</h1>
+          <h1 className="text-lg font-bold text-foreground">Gamification</h1>
           <div className="flex items-center gap-3">
             <button onClick={() => setInsightOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
               <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">insights</span>
-              <span className="font-bold text-foreground">인사이트</span>
+              <span className="font-bold text-foreground">Insights</span>
             </button>
             <button onClick={() => setInventoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
               <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">inventory_2</span>
@@ -100,10 +100,10 @@ export default function GamificationPage() {
               </div>
               <div className="flex items-center gap-3 mt-1.5">
                 <span className="text-[9px] text-muted-foreground">
-                  🔥 {profile?.streak_days ?? 0}일 연속
+                  🔥 {profile?.streak_days ?? 0}-day streak
                 </span>
                 <span className="text-[9px] text-muted-foreground">
-                  ⭐ {profile?.total_exp ?? 0} 총 EXP
+                  ⭐ {profile?.total_exp ?? 0}  Total EXP
                 </span>
                 {profile?.title && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
@@ -208,7 +208,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground text-sm">
-          진행 가능한 Quest가 없습니다
+          No quests available
         </div>
       ) : (
         filtered.map((quest) => {
@@ -309,7 +309,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           {unlockedCount}
         </span>
         <span className="text-lg text-muted-foreground"> / {achievements.length}</span>
-        <p className="text-[10px] text-muted-foreground mt-1">Achievement 달성</p>
+        <p className="text-[10px] text-muted-foreground mt-1">Achievements earned</p>
       </div>
 
       {/* Achievement recommendations */}
@@ -325,7 +325,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               filter === cat ? 'bg-primary/20 text-primary' : 'glass-card text-muted-foreground'
             }`}
           >
-            {cat === 'all' ? '전체' : cat === 'general' ? '일반' : cat === 'chat' ? '대화' : cat === 'evolution' ? 'Evolution' : cat === 'social' ? '소셜' : '마켓'}
+            {cat === 'all' ? 'All' : cat === 'general' ? 'General' : cat === 'chat' ? 'Chat' : cat === 'evolution' ? 'Evolution' : cat === 'social' ? 'Social' : 'Market'}
           </button>
         ))}
       </div>
@@ -357,7 +357,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                 {hidden ? '???' : ach.name}
               </p>
               <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">
-                {hidden ? '조건을 충족하면 공개됩니다' : ach.description}
+                {hidden ? 'Complete conditions to reveal' : ach.description}
               </p>
               {!hidden && (
                 <div className="flex items-center gap-1 mt-1.5">
@@ -395,7 +395,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
 }
 
 function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void }) {
-  const shareText = `🏆 GYEOL Achievement 달성!\n${ach.name}\n${ach.description ?? ''}\n\n#GYEOL #AI동반자`;
+  const shareText = `🏆 GYEOL Achievements earned!\n${ach.name}\n${ach.description ?? ''}\n\n#GYEOL #AI동반자`;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-6" onClick={onClose}>
@@ -410,7 +410,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
           <p className="text-[11px] text-muted-foreground mt-1">{ach.description}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">닫기</button>
+          <button onClick={onClose} className="flex-1 py-2 rounded-xl glass-card text-xs text-muted-foreground">Close</button>
           <button onClick={async () => {
             if (navigator.share) {
               await navigator.share({ title: `GYEOL Achievement: ${ach.name}`, text: shareText });
@@ -462,13 +462,13 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       <div className="glass-card rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
           <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">card_giftcard</span>
-          <span className="text-[11px] font-bold text-foreground">순위 보상</span>
+          <span className="text-[11px] font-bold text-foreground">Rank Rewards</span>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
           {[
-            { rank: '🥇 1위', coins: 500, exp: 200 },
-            { rank: '🥈 2위', coins: 300, exp: 120 },
-            { rank: '🥉 3위', coins: 150, exp: 80 },
+            { rank: '🥇 1st', coins: 500, exp: 200 },
+            { rank: '🥈 2nd', coins: 300, exp: 120 },
+            { rank: '🥉 3rd', coins: 150, exp: 80 },
           ].map(r => (
             <div key={r.rank} className="text-[9px] text-muted-foreground">
               <p className="font-bold text-foreground">{r.rank}</p>
@@ -482,9 +482,9 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Period filter */}
       <div className="flex gap-2">
         {[
-          { key: 'alltime', label: '전체' },
+          { key: 'alltime', label: 'All' },
           { key: 'weekly', label: 'Weekly' },
-          { key: 'monthly', label: '월간' },
+          { key: 'monthly', label: 'Monthly' },
         ].map(p => (
           <button key={p.key} onClick={() => setPeriod(p.key)}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
@@ -503,7 +503,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
               </span>
             </div>
             <div className="flex-1">
-              <span className="text-sm font-bold text-foreground">내 순위</span>
+              <span className="text-sm font-bold text-foreground">My Rank</span>
               <p className="text-[10px] text-muted-foreground">
                 Lv.{profile.level} • 총 {profile.total_exp} EXP
               </p>
@@ -522,8 +522,8 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {filteredBoard.length === 0 ? (
         <div className="text-center py-12">
           <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
-          <p className="text-sm text-muted-foreground">아직 Ranking 데이터가 없습니다</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 Quest를 Done하면 Ranking에 등록됩니다</p>
+          <p className="text-sm text-muted-foreground">No ranking data yet</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-1">Chat and complete quests to appear on rankings</p>
         </div>
       ) : (
         filteredBoard.map((entry, i) => {
@@ -580,9 +580,9 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
     setBuying(itemId);
     const result = await purchaseItem(itemId);
     if (!result.success) {
-      setMessage(result.error ?? '구매 실패');
+      setMessage(result.error ?? 'Purchase failed');
     } else {
-      setMessage('구매 Done! 🎉');
+      setMessage('Purchase complete! 🎉');
     }
     setBuying(null);
     setTimeout(() => setMessage(null), 3000);
@@ -593,7 +593,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       {/* Coins display */}
       <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">보유 Coins</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Your Coins</p>
           <p className="text-2xl font-bold text-[hsl(var(--warning))] flex items-center gap-1">
             <span aria-hidden="true" className="material-icons-round text-lg">monetization_on</span>
             {profile?.coins ?? 0}
@@ -639,7 +639,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                 </span>
                 {owned ? (
                   <span className="text-[9px] text-[hsl(var(--success,142_71%_45%))] font-medium">
-                    보유 x{owned.quantity}
+                    Owned x{owned.quantity}
                   </span>
                 ) : (
                   <button
@@ -663,7 +663,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       {/* Inventory section */}
       {inventory.length > 0 && (
         <>
-          <h3 className="text-sm font-bold text-foreground mt-6">📦 내 Inventory</h3>
+          <h3 className="text-sm font-bold text-foreground mt-6">📦 My Inventory</h3>
           <div className="space-y-2">
             {inventory.map((inv) => {
               const item = shopItems.find((s) => s.id === inv.item_id);
@@ -673,7 +673,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                     <span aria-hidden="true" className="material-icons-round text-sm text-primary">{item?.icon ?? 'inventory_2'}</span>
                   </div>
                   <div className="flex-1">
-                    <span className="text-[11px] font-bold text-foreground">{item?.name ?? '아이템'}</span>
+                    <span className="text-[11px] font-bold text-foreground">{item?.name ?? 'Item'}</span>
                     <span className="text-[9px] text-muted-foreground ml-2">x{inv.quantity}</span>
                   </div>
                   <button className="text-[9px] px-2 py-1 rounded-full glass-card text-primary font-medium">

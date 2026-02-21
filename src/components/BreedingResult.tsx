@@ -28,12 +28,12 @@ const MOCK_PARENT_B: ParentInfo = { name: 'GYEOL-B', gen: 3, warmth: 65, logic: 
 const MOCK_CHILD: ChildInfo = {
   name: '결이', gen: 3, warmth: 73, logic: 52, creativity: 68, energy: 58, humor: 71,
   memories: [
-    { category: '🧑', value: '사용자 이름: 연호' },
-    { category: '❤️', value: '좋아하는 음식: 돈볶이' },
-    { category: '🎯', value: '관심사: 주식 투자' },
-    { category: '📚', value: '학습 주제: AI 기술 트렌드' },
+    { category: '🧑', value: 'Username: Yeonho' },
+    { category: '❤️', value: 'Favorite food: Tteokbokki' },
+    { category: '🎯', value: 'Interest: Stock investing' },
+    { category: '📚', value: 'Study topic: AI tech trends' },
   ],
-  mutation: 'Creativity +15 폭발!',
+  mutation: 'Creativity +15 burst!',
 };
 
 const STATS = ['warmth', 'logic', 'creativity', 'energy', 'humor'] as const;
@@ -90,7 +90,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
               >
                 🎉
               </motion.p>
-              <h2 className="text-sm font-bold text-foreground">탄생! 결이 하이브리드!</h2>
+              <h2 className="text-sm font-bold text-foreground">Born! Gyeol Hybrid!</h2>
 
               {/* Parent spheres + child */}
               <div className="flex items-center justify-center gap-3 mt-4">
@@ -124,7 +124,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
 
             {/* Personality comparison */}
             <div className="px-5 py-3 space-y-2">
-              <p className="text-[10px] font-semibold text-foreground/60 mb-2">물려받은 Personality</p>
+              <p className="text-[10px] font-semibold text-foreground/60 mb-2">Inherited Personality</p>
               {STATS.map((stat) => (
                 <StatBar
                   key={stat}
@@ -140,7 +140,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
             {/* Inherited memories */}
             <div className="px-5 py-3 border-t border-border/20">
               <p className="text-[10px] font-semibold text-foreground/60 mb-2">
-                물려받은 기억 ({child.memories.length}개)
+                Inherited Memories ({child.memories.length})
               </p>
               <div className="space-y-1">
                 {child.memories.slice(0, 4).map((m, i) => (
@@ -150,7 +150,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                   </div>
                 ))}
                 {child.memories.length > 4 && (
-                  <p className="text-[9px] text-muted-foreground/40">... 외 {child.memories.length - 4}개</p>
+                  <p className="text-[9px] text-muted-foreground/40">... and {child.memories.length - 4}개</p>
                 )}
               </div>
             </div>
@@ -164,7 +164,7 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                 transition={{ delay: 0.5 }}
               >
                 <p className="text-[10px] text-[hsl(var(--warning))] font-medium">
-                  🫧 돌연변이! {child.mutation}
+                  🫧 Mutation! {child.mutation}
                 </p>
               </motion.div>
             )}
@@ -175,13 +175,13 @@ export function BreedingResult({ isOpen, onClose, parentA = MOCK_PARENT_A, paren
                 onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl bg-primary/20 text-primary text-[12px] font-medium hover:bg-primary/30 transition"
               >
-                자녀와 대화하기
+                Chat with offspring
               </button>
               <button
                 onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl bg-surface border border-border/30 text-foreground/60 text-[12px] hover:bg-surface/80 transition"
               >
-                커뮤니티 Share
+                Share to Community
               </button>
             </div>
           </motion.div>
