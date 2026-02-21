@@ -639,35 +639,59 @@ export type Database = {
       gyeol_conversations: {
         Row: {
           agent_id: string
+          attachments: Json | null
           channel: string
           content: string
           created_at: string
           id: string
+          is_archived: boolean | null
+          is_edited: boolean | null
+          is_pinned: boolean | null
           provider: string | null
+          reactions: Json | null
+          read_at: string | null
+          reply_to: string | null
           response_time_ms: number | null
           role: string
+          tags: string[] | null
           tokens_used: number | null
         }
         Insert: {
           agent_id: string
+          attachments?: Json | null
           channel?: string
           content: string
           created_at?: string
           id?: string
+          is_archived?: boolean | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
           provider?: string | null
+          reactions?: Json | null
+          read_at?: string | null
+          reply_to?: string | null
           response_time_ms?: number | null
           role: string
+          tags?: string[] | null
           tokens_used?: number | null
         }
         Update: {
           agent_id?: string
+          attachments?: Json | null
           channel?: string
           content?: string
           created_at?: string
           id?: string
+          is_archived?: boolean | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
           provider?: string | null
+          reactions?: Json | null
+          read_at?: string | null
+          reply_to?: string | null
           response_time_ms?: number | null
           role?: string
+          tags?: string[] | null
           tokens_used?: number | null
         }
         Relationships: [

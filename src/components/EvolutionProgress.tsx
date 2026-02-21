@@ -59,7 +59,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
 
       // Get memories count from gyeol_user_memories (AI-extracted real memories)
       const { count: memoryCount } = await supabase
-        .from('gyeol_user_memories' as any)
+        .from('gyeol_user_memories')
         .select('*', { count: 'exact', head: true })
         .eq('agent_id', agent.id);
 
@@ -105,7 +105,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🧬</span>
-                  <h2 className="text-sm font-bold text-foreground">Evolution 현황</h2>
+                  <h2 className="text-sm font-bold text-foreground">Evolution Progress</h2>
                 </div>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
                   <span aria-hidden="true" className="material-icons-round text-lg">close</span>
@@ -174,7 +174,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                 <>
                   <div className="mt-5 pt-4 border-t border-border/20">
                     <p className="text-[11px] font-semibold text-foreground/60 mb-2">
-                      Gen {targetGen}unlocked abilities
+                      Gen {targetGen} Unlocked Abilities
                     </p>
                     <div className="space-y-1.5">
                       {(NEXT_GEN_ABILITIES[targetGen] ?? []).map((ability) => (

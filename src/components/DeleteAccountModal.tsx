@@ -132,7 +132,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     <div className="flex gap-2">
                       <button onClick={() => setStep(0)}
                         className="flex-1 py-3 rounded-xl bg-muted/10 text-foreground/70 text-sm font-medium transition hover:bg-muted/20">
-                        뒤로
+                        Back
                       </button>
                       <button onClick={() => canDelete && setStep(2)} disabled={!canDelete}
                         className="flex-1 py-3 rounded-xl bg-destructive/10 text-destructive text-sm font-medium transition hover:bg-destructive/20 disabled:opacity-30">
@@ -163,7 +163,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     </button>
                     <button onClick={() => setStep(1)}
                       className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition">
-                      뒤로
+                      Back
                     </button>
                   </motion.div>
                 )}
