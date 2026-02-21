@@ -18,6 +18,11 @@ import { StreakBonus } from '@/src/components/StreakBonus';
 
 // Emoji reactions for messages
 const REACTIONS = ['❤️', '👍', '😂', '🤔', '😢', '🔥'];
+const TRANSLATE_LANGS = [
+  { code: 'ko', label: '한국어' }, { code: 'en', label: 'English' },
+  { code: 'ja', label: '日本語' }, { code: 'zh', label: '中文' },
+  { code: 'es', label: 'Español' }, { code: 'fr', label: 'Français' },
+];
 
 // Code block with copy button (extracted to avoid hooks-in-callback)
 function CodeBlockCopy({ children, className }: any) {
@@ -48,6 +53,41 @@ export default function SimpleChat() {
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [convListOpen, setConvListOpen] = useState(false);
+  const [translatePickerFor, setTranslatePickerFor] = useState<string | null>(null);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translating, setTranslating] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTranslate = async (msgId: string, text: string, lang: string) => {
+    setTranslatePickerFor(null);
+    setTranslating(msgId);
+    try {
+      const { data, error } = await supabase.functions.invoke('translate', {
+        body: { text, targetLang: lang },
+      });
+      if (data?.translated) {
+        setTranslations(prev => ({ ...prev, [msgId]: data.translated }));
+      }
+    } catch (e) { console.error('translate failed', e); }
+    setTranslating(null);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSendImage = async () => {
+    if (!imagePreview || !agent?.id) return;
+    // Send as text message with image indicator
+    const imgMsg = `[이미지 전송] 📷`;
+    setImagePreview(null);
+    await sendMessage(imgMsg);
+  };
 
   const [isDark, setIsDark] = useState(
     typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
@@ -299,7 +339,33 @@ export default function SimpleChat() {
                           className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
                           <span className="material-icons-round text-[12px]" aria-hidden="true">volume_up</span>
                         </button>
+                        <button onClick={() => setTranslatePickerFor(translatePickerFor === msg.id ? null : msg.id)}
+                          aria-label="Translate"
+                          className="text-[9px] text-slate-500 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition focus-visible:outline-2 focus-visible:outline-primary">
+                          <span className="material-icons-round text-[12px]" aria-hidden="true">translate</span>
+                        </button>
                       </div>
+                      {/* Translation result */}
+                      {translating === msg.id && (
+                        <div className="text-[10px] text-muted-foreground mt-1 animate-pulse">번역 중...</div>
+                      )}
+                      {translations[msg.id] && (
+                        <div className="mt-1 p-2 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-foreground/80">
+                          {translations[msg.id]}
+                        </div>
+                      )}
+                      {/* Translate picker */}
+                      <AnimatePresence>
+                        {translatePickerFor === msg.id && (
+                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex gap-1 mt-1 flex-wrap">
+                            {TRANSLATE_LANGS.map(l => (
+                              <button key={l.code} onClick={() => handleTranslate(msg.id, msg.content, l.code)}
+                                className="text-[9px] px-2 py-1 rounded-full glass-card hover:bg-primary/10 text-muted-foreground hover:text-primary transition">{l.label}</button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       {/* Reaction picker */}
                       <AnimatePresence>
                         {reactionPickerFor === msg.id && (
@@ -349,9 +415,18 @@ export default function SimpleChat() {
       <div className="flex-shrink-0 relative z-10"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}>
         <div className="bg-gradient-to-t from-background to-transparent pt-6 px-4">
+          {/* Image preview */}
+          {imagePreview && (
+            <div className="mb-2 relative inline-block">
+              <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border border-primary/20" />
+              <button onClick={() => setImagePreview(null)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-white text-[10px] flex items-center justify-center">✕</button>
+            </div>
+          )}
           <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
-            <button type="button" className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
-              <span className="material-icons-round text-[20px]">add_circle_outline</span>
+            <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleImageSelect} />
+            <button type="button" onClick={() => imageInputRef.current?.click()}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
+              <span className="material-icons-round text-[20px]">add_photo_alternate</span>
             </button>
             <input type="text" value={input}
               onChange={e => setInput(e.target.value)}

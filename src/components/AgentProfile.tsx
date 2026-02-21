@@ -1,9 +1,11 @@
 /**
- * Phase 5: 에이전트 공개 프로필 모달
+ * Phase 5: 에이전트 공개 프로필 모달 — 배지 시스템 포함
  */
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PersonalityRadar } from './PersonalityRadar';
 import { MoodHistory } from './MoodHistory';
+import { supabase } from '@/src/lib/supabase';
 
 interface AgentProfileProps {
   isOpen: boolean;
@@ -35,6 +37,22 @@ const MOOD_EMOJI: Record<string, string> = {
 };
 
 export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfileProps) {
+  const [badges, setBadges] = useState<{ name: string; icon: string; rarity: string }[]>([]);
+
+  useEffect(() => {
+    if (!agent?.id || !isOpen) return;
+    (async () => {
+      const { data: unlocks } = await supabase.from('gyeol_achievement_unlocks')
+        .select('achievement_id').eq('agent_id', agent.id);
+      if (unlocks && unlocks.length > 0) {
+        const ids = unlocks.map((u: any) => u.achievement_id);
+        const { data: achs } = await supabase.from('gyeol_achievements')
+          .select('name, icon, rarity').in('id', ids);
+        setBadges((achs ?? []).slice(0, 6) as any);
+      }
+    })();
+  }, [agent?.id, isOpen]);
+
   if (!agent) return null;
 
   const daysSinceCreation = Math.floor((Date.now() - new Date(agent.created_at).getTime()) / (1000 * 60 * 60 * 24));
@@ -97,6 +115,27 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
                   </div>
                 ))}
               </div>
+
+              {/* Badges */}
+              {badges.length > 0 && (
+                <div>
+                  <h3 className="text-[11px] font-bold text-foreground mb-2">🏅 배지</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {badges.map((b, i) => {
+                      const rarityColor: Record<string, string> = {
+                        common: 'text-muted-foreground', uncommon: 'text-emerald-400',
+                        rare: 'text-blue-400', epic: 'text-purple-400', legendary: 'text-amber-400',
+                      };
+                      return (
+                        <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full glass-card text-[9px]">
+                          <span className={`material-icons-round text-[12px] ${rarityColor[b.rarity] ?? 'text-primary'}`}>{b.icon}</span>
+                          <span className="text-foreground/70">{b.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Personality Radar */}
               <div className="flex justify-center">
