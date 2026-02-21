@@ -100,7 +100,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
           await supabase.from('gyeol_agents')
             .update({ evolution_progress: newProgress })
             .eq('id', agent.id);
-          setAgent({ ...agent, evolution_progress: newProgress } as any);
+          setAgent({ ...agent, evolution_progress: newProgress } as never);
         }
         setMessage(`${item.name} Use! 🎉`);
       } else {

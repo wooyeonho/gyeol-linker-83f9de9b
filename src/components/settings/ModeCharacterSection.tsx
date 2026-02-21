@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { AnimatedCharacter } from '@/src/components/AnimatedCharacter';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const CHARS = [
   { key: null, emoji: 'mail', label: 'Text Only' },
@@ -81,11 +82,11 @@ export function ModeCharacterSection({
                 {CHARS.map(c => (
                   <button key={String(c.key)} type="button" onClick={async () => {
                     setCharPreset(c.key);
-                    const s = (agent?.settings as any) ?? {};
+                    const s = parseSettings(agent?.settings);
                     const newSettings = { ...s, characterPreset: c.key };
                     await supabase.from('gyeol_agents')
                       .update({ settings: newSettings }).eq('id', agent?.id);
-                    if (agent) setAgent({ ...agent, settings: newSettings } as any);
+                    if (agent) setAgent({ ...agent, settings: newSettings } as never);
                   }}
                     className={`flex flex-col items-center p-3 rounded-xl transition ${
                       charPreset === c.key ? 'glass-card-selected' : 'glass-card'
@@ -102,38 +103,38 @@ export function ModeCharacterSection({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[9px] text-foreground/20 block mb-1">Primary Color</label>
-                      <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}
+                      <input type="color" defaultValue={parseSettings(agent?.settings)?.customChar?.color1 ?? '#7C3AED'}
                         onChange={async (e) => {
-                          const s = (agent?.settings as any) ?? {};
+                          const s = parseSettings(agent?.settings);
                           const cc = { ...(s.customChar ?? {}), color1: e.target.value };
                           const ns = { ...s, customChar: cc };
                           await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                          if (agent) setAgent({ ...agent, settings: ns } as any);
+                          if (agent) setAgent({ ...agent, settings: ns } as never);
                         }}
                         className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
                     </div>
                     <div>
                       <label className="text-[9px] text-foreground/20 block mb-1">Secondary Color</label>
-                      <input type="color" defaultValue={(agent?.settings as any)?.customChar?.color2 ?? '#A78BFA'}
+                      <input type="color" defaultValue={parseSettings(agent?.settings)?.customChar?.color2 ?? '#A78BFA'}
                         onChange={async (e) => {
-                          const s = (agent?.settings as any) ?? {};
+                          const s = parseSettings(agent?.settings);
                           const cc = { ...(s.customChar ?? {}), color2: e.target.value };
                           const ns = { ...s, customChar: cc };
                           await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                          if (agent) setAgent({ ...agent, settings: ns } as any);
+                          if (agent) setAgent({ ...agent, settings: ns } as never);
                         }}
                         className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
                     </div>
                   </div>
                   <div>
                     <label className="text-[9px] text-foreground/20 block mb-1">Glow Intensity</label>
-                    <input type="range" min={0} max={100} defaultValue={((agent?.settings as any)?.customChar?.glow ?? 50)}
+                    <input type="range" min={0} max={100} defaultValue={(parseSettings(agent?.settings)?.customChar?.glow ?? 50)}
                       onChange={async (e) => {
-                        const s = (agent?.settings as any) ?? {};
+                        const s = parseSettings(agent?.settings);
                         const cc = { ...(s.customChar ?? {}), glow: Number(e.target.value) };
                         const ns = { ...s, customChar: cc };
                         await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                        if (agent) setAgent({ ...agent, settings: ns } as any);
+                        if (agent) setAgent({ ...agent, settings: ns } as never);
                       }}
                       className="w-full" />
                   </div>
@@ -142,14 +143,14 @@ export function ModeCharacterSection({
                     <div className="flex gap-1 flex-wrap">
                       {['\u{1F31F}', '\u{1F52E}', '\u{1F48E}', '\u{1F319}', '\u{2B50}', '\u{1F98B}', '\u{1F409}', '\u{1F338}', '\u{1F340}', '\u{2744}\uFE0F', '\u{1F308}', '\u{1F3AD}'].map(emoji => (
                         <button key={emoji} type="button" onClick={async () => {
-                          const s = (agent?.settings as any) ?? {};
+                          const s = parseSettings(agent?.settings);
                           const cc = { ...(s.customChar ?? {}), emoji };
                           const ns = { ...s, customChar: cc };
                           await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                          if (agent) setAgent({ ...agent, settings: ns } as any);
+                          if (agent) setAgent({ ...agent, settings: ns } as never);
                         }}
                           className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
-                            (agent?.settings as any)?.customChar?.emoji === emoji ? 'glass-card-selected' : 'glass-card'
+                            parseSettings(agent?.settings)?.customChar?.emoji === emoji ? 'glass-card-selected' : 'glass-card'
                           }`}>
                           {emoji}
                         </button>
@@ -159,10 +160,10 @@ export function ModeCharacterSection({
                   <div className="flex justify-center py-2">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
                       style={{
-                        background: `radial-gradient(circle, ${(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}, ${(agent?.settings as any)?.customChar?.color2 ?? '#A78BFA'})`,
-                        boxShadow: `0 0 ${((agent?.settings as any)?.customChar?.glow ?? 50) / 3}px ${(agent?.settings as any)?.customChar?.color1 ?? '#7C3AED'}`,
+                        background: `radial-gradient(circle, ${parseSettings(agent?.settings)?.customChar?.color1 ?? '#7C3AED'}, ${parseSettings(agent?.settings)?.customChar?.color2 ?? '#A78BFA'})`,
+                        boxShadow: `0 0 ${(parseSettings(agent?.settings)?.customChar?.glow ?? 50) / 3}px ${parseSettings(agent?.settings)?.customChar?.color1 ?? '#7C3AED'}`,
                       }}>
-                      {(agent?.settings as any)?.customChar?.emoji ?? '\u{1F31F}'}
+                      {parseSettings(agent?.settings)?.customChar?.emoji ?? '\u{1F31F}'}
                     </div>
                   </div>
                 </div>

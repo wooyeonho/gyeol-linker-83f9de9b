@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 interface Props {
   agent: any;
@@ -24,7 +25,7 @@ export function SafetySection({ agent, activeSection, SectionHeader, kidsSafe, s
               </div>
               <button type="button" onClick={async () => {
                 const v = !kidsSafe; setKidsSafe(v);
-                const s = (agent?.settings as any) ?? {};
+                const s = parseSettings(agent?.settings);
                 await supabase.from('gyeol_agents')
                   .update({ settings: { ...s, kidsSafe: v } } as any).eq('id', agent?.id);
               }}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const PERSONALITY_PRESETS = [
   { label: 'Calm', warmth: 70, logic: 40, creativity: 50, energy: 30, humor: 40 },
@@ -80,22 +81,22 @@ export function PersonalitySection({
                 <p className="text-[9px] text-foreground/25">Lock to prevent conversation changes</p>
               </div>
               <button type="button" onClick={async () => {
-                const locked = !((agent?.settings as any)?.personalityLocked);
-                const s = { ...(agent?.settings as any), personalityLocked: locked };
+                const locked = !(parseSettings(agent?.settings)?.personalityLocked);
+                const s = { ...parseSettings(agent?.settings), personalityLocked: locked };
                 await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-                if (agent) setAgent({ ...agent, settings: s } as any);
+                if (agent) setAgent({ ...agent, settings: s } as never);
               }}
-                className={`w-10 h-6 rounded-full transition ${(agent?.settings as any)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${(agent?.settings as any)?.personalityLocked ? 'translate-x-4' : ''}`} />
+                className={`w-10 h-6 rounded-full transition ${parseSettings(agent?.settings)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white mx-1 transition-transform shadow-sm ${parseSettings(agent?.settings)?.personalityLocked ? 'translate-x-4' : ''}`} />
               </button>
             </div>
 
             <div className="space-y-1">
               <p className="text-[10px] text-foreground/30">Custom Persona</p>
-              <select value={(agent?.settings as any)?.persona ?? 'friend'} onChange={async (e) => {
-                const s = { ...(agent?.settings as any), persona: e.target.value };
+              <select value={parseSettings(agent?.settings)?.persona ?? 'friend'} onChange={async (e) => {
+                const s = { ...parseSettings(agent?.settings), persona: e.target.value };
                 await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-                if (agent) setAgent({ ...agent, settings: s } as any);
+                if (agent) setAgent({ ...agent, settings: s } as never);
               }}
                 className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground outline-none">
                 <option value="friend">Friend</option>
@@ -106,12 +107,12 @@ export function PersonalitySection({
                 <option value="teacher">Teacher</option>
               </select>
               <input type="text" placeholder="Or type custom persona"
-                defaultValue={(agent?.settings as any)?.personaCustom ?? ''}
+                defaultValue={parseSettings(agent?.settings)?.personaCustom ?? ''}
                 onBlur={async (e) => {
                   const val = e.target.value.trim();
-                  const s = { ...(agent?.settings as any), personaCustom: val, ...(val ? { persona: val } : {}) };
+                  const s = { ...parseSettings(agent?.settings), personaCustom: val, ...(val ? { persona: val } : {}) };
                   await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-                  if (agent) setAgent({ ...agent, settings: s } as any);
+                  if (agent) setAgent({ ...agent, settings: s } as never);
                 }}
                 className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none" />
             </div>
@@ -136,12 +137,12 @@ export function PersonalitySection({
                 <p className="text-[10px] text-foreground/30">Quick Presets</p>
                 <button type="button" onClick={async () => {
                   const preset = { label: `Custom ${new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`, warmth, logic, creativity, energy, humor };
-                  const s = (agent?.settings as any) ?? {};
+                  const s = parseSettings(agent?.settings);
                   const saved = s.savedPresets ?? [];
                   const updated = [...saved, preset].slice(-6);
                   const ns = { ...s, savedPresets: updated };
                   await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                  if (agent) setAgent({ ...agent, settings: ns } as any);
+                  if (agent) setAgent({ ...agent, settings: ns } as never);
                 }}
                   className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary/70 hover:bg-primary/20 transition flex items-center gap-1">
                   <span aria-hidden="true" className="material-icons-round text-[10px]">save</span> Save Current
@@ -158,11 +159,11 @@ export function PersonalitySection({
                   </button>
                 ))}
               </div>
-              {((agent?.settings as any)?.savedPresets ?? []).length > 0 && (
+              {(parseSettings(agent?.settings)?.savedPresets ?? []).length > 0 && (
                 <div className="mt-2">
                   <p className="text-[9px] text-foreground/20 mb-1">Saved Presets</p>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {((agent?.settings as any)?.savedPresets ?? []).map((p: any, i: number) => (
+                    {(parseSettings(agent?.settings)?.savedPresets ?? []).map((p: any, i: number) => (
                       <button key={i} type="button" onClick={() => {
                         setWarmth(p.warmth); setLogic(p.logic); setCreativity(p.creativity);
                         setEnergy(p.energy); setHumor(p.humor);
@@ -171,11 +172,11 @@ export function PersonalitySection({
                         <span className="text-[8px] text-primary/60 block truncate">{p.label}</span>
                         <button onClick={async (e) => {
                           e.stopPropagation();
-                          const s = (agent?.settings as any) ?? {};
+                          const s = parseSettings(agent?.settings);
                           const saved = (s.savedPresets ?? []).filter((_: any, j: number) => j !== i);
                           const ns = { ...s, savedPresets: saved };
                           await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
-                          if (agent) setAgent({ ...agent, settings: ns } as any);
+                          if (agent) setAgent({ ...agent, settings: ns } as never);
                         }}
                           className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive/80 text-foreground text-[8px] flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition">&times;</button>
                       </button>
@@ -194,16 +195,16 @@ export function PersonalitySection({
                   </div>
                   <input type="range" min={0} max={100} value={personality[i]}
                     onChange={e => setters[i](Number(e.target.value))}
-                    disabled={(agent?.settings as any)?.personalityLocked}
+                    disabled={parseSettings(agent?.settings)?.personalityLocked}
                     aria-label={label}
                     className="w-full disabled:opacity-30" />
                 </div>
               ))}
             </div>
 
-            <button type="button" onClick={savePersonality} disabled={personalitySaving || (agent?.settings as any)?.personalityLocked}
+            <button type="button" onClick={savePersonality} disabled={personalitySaving || parseSettings(agent?.settings)?.personalityLocked}
               className="w-full py-2 rounded-xl text-xs font-medium bg-primary/10 text-primary/80 border border-primary/10 hover:bg-primary/15 transition disabled:opacity-40">
-              {personalitySaving ? 'Saving...' : (agent?.settings as any)?.personalityLocked ? 'Locked' : 'Save Personality'}
+              {personalitySaving ? 'Saving...' : parseSettings(agent?.settings)?.personalityLocked ? 'Locked' : 'Save Personality'}
             </button>
           </motion.div>
         )}

@@ -234,7 +234,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
   useEffect(() => {
     if (tab !== 'feed') return;
     const channel = supabase.channel('moltbook-realtime')
-      .on('postgres_changes' as any, { event: 'UPDATE', schema: 'public', table: 'gyeol_moltbook_posts' }, (payload: any) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'gyeol_moltbook_posts' }, (payload: any) => {
         setPosts(prev => prev.map(p => p.id === payload.new.id ? { ...p, likes: payload.new.likes, comments_count: payload.new.comments_count } : p));
       }).subscribe();
     return () => { supabase.removeChannel(channel); };

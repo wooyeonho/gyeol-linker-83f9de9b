@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/integrations/supabase/client';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 interface NotifCategory {
   key: string;
@@ -29,7 +30,7 @@ interface Props {
 }
 
 export function NotificationSettings({ agent, onUpdate }: Props) {
-  const settings = (agent?.settings as any) ?? {};
+  const settings = parseSettings(agent?.settings);
   const notifSettings = settings.notifications ?? {};
 
   const [toggles, setToggles] = useState<Record<string, boolean>>(() => {

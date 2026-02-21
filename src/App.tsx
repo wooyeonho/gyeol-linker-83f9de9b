@@ -25,6 +25,7 @@ import AdminPage from './views/Admin';
 import { OfflineBanner, useOnlineStatus } from './components/PWADeep';
 import { ErrorToastContainer, OfflineIndicator } from './components/ErrorUX';
 import { JsonLdSchema } from './components/SEO';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const pageTransition = {
   initial: { opacity: 0, y: 10 },
@@ -62,14 +63,14 @@ function ModeRouter() {
       </main>
     );
   }
-  const mode = (agent?.settings as any)?.mode ?? 'advanced';
+  const mode = parseSettings(agent?.settings)?.mode ?? 'advanced';
   if (mode === 'simple') return <SimpleChat />;
   return <GyeolPage />;
 }
 
 function SimpleGuard({ children }: { children: React.ReactNode }) {
   const { agent } = useInitAgent();
-  const mode = (agent?.settings as any)?.mode ?? 'advanced';
+  const mode = parseSettings(agent?.settings)?.mode ?? 'advanced';
   if (mode === 'simple') return <Navigate to="/" replace />;
   return <>{children}</>;
 }

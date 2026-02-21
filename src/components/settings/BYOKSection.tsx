@@ -3,6 +3,7 @@ import { supabase } from '@/src/lib/supabase';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { SafetyContentFilter, PIIFilter } from '@/src/components/SettingsDeep';
 import { SocialLoginButtons, ProfilePictureUpload } from '@/src/components/AuthDeep';
+import { parseSettings } from '@/src/utils/agent-settings';
 
 const BYOK_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'groq', 'gemini'] as const;
 
@@ -34,7 +35,7 @@ export function BYOKSection({
     if (!byokKey.trim() || !user) return;
     setByokSaving(true);
     try {
-      await supabase.from('gyeol_byok_keys').upsert({ user_id: user.id, provider, encrypted_key: byokKey.trim() } as any, { onConflict: 'user_id,provider' });
+      await supabase.from('gyeol_byok_keys').upsert({ user_id: user.id, provider, encrypted_key: byokKey.trim() }, { onConflict: 'user_id,provider' });
       setByokList(prev => [...prev.filter(x => x.provider !== provider), { provider, masked: '****' + byokKey.trim().slice(-4) }]);
       setByokOpen(null); setByokKey('');
     } finally { setByokSaving(false); }
@@ -98,11 +99,11 @@ export function BYOKSection({
             <div className="space-y-3">
               <p className="text-[10px] text-foreground/30">Account</p>
               <ProfilePictureUpload
-                currentUrl={(agent?.settings as any)?.profilePicture}
+                currentUrl={parseSettings(agent?.settings)?.profilePicture}
                 onUpload={async (url) => {
-                  const s = { ...(agent?.settings as any), profilePicture: url };
+                  const s = { ...parseSettings(agent?.settings), profilePicture: url };
                   await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
-                  if (agent) setAgent({ ...agent, settings: s } as any);
+                  if (agent) setAgent({ ...agent, settings: s } as never);
                 }}
               />
               <SocialLoginButtons onLogin={(provider) => console.log('Social login:', provider)} />
