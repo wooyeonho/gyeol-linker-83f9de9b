@@ -40,7 +40,7 @@ export function PersonalityHistory({ agentId }: Props) {
         .eq('agent_id', agentId)
         .order('created_at', { ascending: false })
         .limit(20);
-      setEntries((data ?? []) ?? []);
+      setEntries((data ?? []).map(d => ({ ...d, personality_delta: d.personality_delta as unknown as Record<string, number> })));
       setLoading(false);
     })();
   }, [agentId]);

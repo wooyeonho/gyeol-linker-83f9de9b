@@ -30,7 +30,7 @@ export function EvolutionHistory({ agentId }: Props) {
         .in('activity_type', ['evolution', 'evolution_attempt', 'evolution_success', 'evolution_fail'])
         .order('created_at', { ascending: false })
         .limit(20);
-      setLogs((data ?? []) ?? []);
+      setLogs(data ?? []);
       setLoading(false);
     })();
   }, [agentId]);

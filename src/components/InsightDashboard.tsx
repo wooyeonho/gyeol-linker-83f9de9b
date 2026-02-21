@@ -47,7 +47,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
         .eq('agent_id', agent.id)
         .order('created_at', { ascending: false })
         .limit(20);
-      setInsights((data ?? []) ?? []);
+      setInsights((data ?? []).map(d => ({ ...d, topics: d.topics as unknown as string[], personality_delta: d.personality_delta as unknown as Record<string, number> })));
       setLoading(false);
     })();
   }, [isOpen, agent?.id]);
