@@ -59,7 +59,7 @@ export function BottomNav() {
                   {item.icon}
                 </span>
                 {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] rounded-full bg-red-500 text-foreground text-[8px] font-bold flex items-center justify-center px-0.5 shadow-lg shadow-red-500/40 animate-pulse">
+                  <span className="absolute -top-1.5 -right-2 min-w-[14px] h-[14px] rounded-full bg-destructive text-foreground text-[8px] font-bold flex items-center justify-center px-0.5 shadow-lg shadow-red-500/40 animate-pulse">
                     {badge > 99 ? '99+' : badge}
                   </span>
                 )}

@@ -55,7 +55,7 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
               🔥 {streakDays}일 연속 접속!
             </p>
             {streakDays >= 7 && (
-              <p className="text-[10px] text-center text-amber-400 font-bold mb-3">
+              <p className="text-[10px] text-center text-[hsl(var(--warning))] font-bold mb-3">
                 ⭐ {streakDays >= 30 ? '3x' : streakDays >= 14 ? '2x' : '1.5x'} 보너스 적용중!
               </p>
             )}
@@ -78,7 +78,7 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
                   >
                     <span className="text-sm">{isPast ? '✅' : r.icon}</span>
                     <span className="text-[7px] text-muted-foreground mt-0.5">D{r.day}</span>
-                    <span className="text-[7px] text-amber-400 font-bold">{r.coins}🪙</span>
+                    <span className="text-[7px] text-[hsl(var(--warning))] font-bold">{r.coins}🪙</span>
                   </div>
                 );
               })}

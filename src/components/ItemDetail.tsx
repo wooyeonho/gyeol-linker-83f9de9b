@@ -57,7 +57,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
                     {CATEGORY_LABELS[item.category] ?? item.category}
                   </span>
                   {item.is_limited && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-medium">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] font-medium">
                       한정판
                     </span>
                   )}
@@ -94,7 +94,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
                 )}
                 {effects.coin_boost && (
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="material-icons-round text-amber-400 text-xs">monetization_on</span>
+                    <span className="material-icons-round text-[hsl(var(--warning))] text-xs">monetization_on</span>
                     <span className="text-foreground">코인 +{effects.coin_boost}</span>
                   </div>
                 )}
@@ -104,7 +104,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
             {/* Price & Stock */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="material-icons-round text-amber-400 text-sm">monetization_on</span>
+                <span className="material-icons-round text-[hsl(var(--warning))] text-sm">monetization_on</span>
                 <span className="text-sm font-bold text-foreground">{item.price_coins}</span>
               </div>
               {item.stock !== null && (

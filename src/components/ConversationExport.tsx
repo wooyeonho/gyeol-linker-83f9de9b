@@ -15,7 +15,7 @@ const FORMATS = [
   { id: 'txt', icon: 'description', color: 'text-primary', label: '텍스트 (.txt)', desc: '읽기 쉬운 텍스트 형식' },
   { id: 'md', icon: 'article', color: 'text-[hsl(var(--success,142_71%_45%))]', label: '마크다운 (.md)', desc: '포맷 유지 마크다운' },
   { id: 'json', icon: 'code', color: 'text-secondary', label: 'JSON (.json)', desc: '구조화된 데이터 형식' },
-  { id: 'pdf', icon: 'picture_as_pdf', color: 'text-red-400', label: 'PDF (.pdf)', desc: '인쇄/공유용 PDF 형식' },
+  { id: 'pdf', icon: 'picture_as_pdf', color: 'text-destructive', label: 'PDF (.pdf)', desc: '인쇄/공유용 PDF 형식' },
 ] as const;
 
 export function ConversationExport({ isOpen, onClose, messages, agentName }: ConversationExportProps) {

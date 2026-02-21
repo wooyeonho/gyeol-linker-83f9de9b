@@ -104,7 +104,7 @@ export function MatchingTab({ state, agent }: Props) {
                     if (data.success) { state.setBreedResult({ success: true, name: data.child?.name ?? '???' }); }
                     else { state.setBreedResult({ success: false, name: data.message || data.reason || 'Breeding failed' }); }
                   }}
-                  className="w-full py-2 rounded-xl bg-purple-500/20 text-purple-400 text-xs font-medium">
+                  className="w-full py-2 rounded-xl bg-primary/20 text-primary text-xs font-medium">
                   Breed
                 </button>
               </>

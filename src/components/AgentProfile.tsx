@@ -124,7 +124,7 @@ export function AgentProfile({ isOpen, onClose, onShareCard, agent }: AgentProfi
                     {badges.map((b, i) => {
                       const rarityColor: Record<string, string> = {
                         common: 'text-muted-foreground', uncommon: 'text-[hsl(var(--success,142_71%_45%))]',
-                        rare: 'text-blue-400', epic: 'text-purple-400', legendary: 'text-amber-400',
+                        rare: 'text-[hsl(var(--info))]', epic: 'text-primary', legendary: 'text-[hsl(var(--warning))]',
                       };
                       return (
                         <div key={i} className="flex items-center gap-1 px-2 py-1 rounded-full glass-card text-[9px]">

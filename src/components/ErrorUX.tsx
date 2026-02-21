@@ -61,7 +61,7 @@ export function ErrorToastContainer() {
             exit={{ opacity: 0, x: 50, scale: 0.95 }}
             className={`pointer-events-auto rounded-xl px-4 py-3 backdrop-blur-md border shadow-lg flex items-center gap-2 text-xs ${
               t.type === 'error' ? 'bg-destructive/20 border-destructive/30 text-destructive' :
-              t.type === 'warning' ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400' :
+              t.type === 'warning' ? 'bg-[hsl(var(--warning)/0.2)] border-yellow-500/30 text-[hsl(var(--warning))]' :
               t.type === 'success' ? 'bg-green-500/20 border-green-500/30 text-green-400' :
               'bg-primary/20 border-primary/30 text-primary'
             }`}>

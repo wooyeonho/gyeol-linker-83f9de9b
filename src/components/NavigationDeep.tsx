@@ -176,7 +176,7 @@ export function ActivityStreakDisplay({ streak, bestStreak }: { streak: number; 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl glass-card">
       <div className="text-center">
-        <Flame className="w-5 h-5 text-amber-400 mx-auto" />
+        <Flame className="w-5 h-5 text-[hsl(var(--warning))] mx-auto" />
         <p className="text-lg font-bold text-foreground mt-0.5">{streak}</p>
         <p className="text-[8px] text-muted-foreground">Current</p>
       </div>

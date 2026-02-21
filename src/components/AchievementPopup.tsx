@@ -18,18 +18,18 @@ interface AchievementData {
 
 const RARITY_GRADIENT: Record<string, string> = {
   common: 'from-slate-400/20 to-slate-500/10',
-  uncommon: 'from-emerald-400/20 to-emerald-500/10',
+  uncommon: 'from-[hsl(var(--success))]/20 to-[hsl(var(--success))]/10',
   rare: 'from-blue-400/20 to-blue-500/10',
-  epic: 'from-purple-400/20 to-purple-500/10',
+  epic: 'from-primary/20 to-primary/10',
   legendary: 'from-amber-400/20 to-amber-500/10',
 };
 
 const RARITY_BORDER: Record<string, string> = {
   common: 'border-slate-400/30',
   uncommon: 'border-[hsl(var(--success,142_71%_45%)/0.3)]',
-  rare: 'border-blue-400/30',
-  epic: 'border-purple-400/30',
-  legendary: 'border-amber-400/30',
+  rare: 'border-[hsl(var(--info))]/30',
+  epic: 'border-primary/30',
+  legendary: 'border-[hsl(var(--warning))]/30',
 };
 
 export function AchievementPopup() {
@@ -106,7 +106,7 @@ export function AchievementPopup() {
                     <span className="text-[9px] text-secondary">+{achievement.reward_exp} EXP</span>
                   )}
                   {achievement.reward_coins > 0 && (
-                    <span className="text-[9px] text-amber-400">+{achievement.reward_coins}🪙</span>
+                    <span className="text-[9px] text-[hsl(var(--warning))]">+{achievement.reward_coins}🪙</span>
                   )}
                   {achievement.reward_title && (
                     <span className="text-[9px] text-primary">🏷 {achievement.reward_title}</span>

@@ -180,8 +180,8 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                                   </div>
                                 )}
                                 {ins.what_to_improve && (
-                                  <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-2">
-                                    <p className="text-[8px] text-amber-400/70 font-bold mb-1">↗ 개선점</p>
+                                  <div className="rounded-lg bg-[hsl(var(--warning))]/5 border border-[hsl(var(--warning))]/10 p-2">
+                                    <p className="text-[8px] text-[hsl(var(--warning))]/70 font-bold mb-1">↗ 개선점</p>
                                     <p className="text-[10px] text-foreground/70">{ins.what_to_improve}</p>
                                   </div>
                                 )}

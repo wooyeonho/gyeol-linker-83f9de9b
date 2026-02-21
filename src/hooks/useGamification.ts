@@ -135,17 +135,17 @@ export function expToNextLevel(currentExp: number, currentLevel: number): { need
 export const RARITY_COLORS: Record<string, string> = {
   common: 'text-muted-foreground',
   uncommon: 'text-[hsl(var(--success,142_71%_45%))]',
-  rare: 'text-blue-400',
-  epic: 'text-purple-400',
-  legendary: 'text-amber-400',
+  rare: 'text-[hsl(var(--info))]',
+  epic: 'text-primary',
+  legendary: 'text-[hsl(var(--warning))]',
 };
 
 export const RARITY_BG: Record<string, string> = {
   common: 'bg-slate-400/10 border-slate-400/20',
   uncommon: 'bg-[hsl(var(--success,142_71%_45%)/0.1)] border-[hsl(var(--success,142_71%_45%)/0.2)]',
-  rare: 'bg-blue-400/10 border-blue-400/20',
-  epic: 'bg-purple-400/10 border-purple-400/20',
-  legendary: 'bg-amber-400/10 border-amber-400/20',
+  rare: 'bg-[hsl(var(--info)/0.1)] border-[hsl(var(--info))]/20',
+  epic: 'bg-primary/10 border-primary/20',
+  legendary: 'bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning))]/20',
 };
 
 export const RARITY_GLOW: Record<string, string> = {

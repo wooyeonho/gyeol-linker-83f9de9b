@@ -86,8 +86,8 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
               <p className="text-[8px] text-[hsl(var(--success,142_71%_45%)/0.7)] font-bold mb-1 uppercase tracking-wider">✦ 효과적</p>
               <p className="text-[10px] text-foreground/70 leading-relaxed">{insight.whatWorked}</p>
             </div>
-            <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-2.5">
-              <p className="text-[8px] text-amber-400/70 font-bold mb-1 uppercase tracking-wider">↗ 개선점</p>
+            <div className="rounded-xl bg-[hsl(var(--warning))]/5 border border-[hsl(var(--warning))]/10 p-2.5">
+              <p className="text-[8px] text-[hsl(var(--warning))]/70 font-bold mb-1 uppercase tracking-wider">↗ 개선점</p>
               <p className="text-[10px] text-foreground/70 leading-relaxed">{insight.whatToImprove}</p>
             </div>
           </div>

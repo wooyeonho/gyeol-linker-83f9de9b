@@ -33,7 +33,7 @@ const TYPE_LABEL: Record<string, string> = {
 
 const SEVERITY_COLOR: Record<string, string> = {
   error: 'text-destructive bg-destructive/10',
-  warning: 'text-amber-400 bg-amber-400/10',
+  warning: 'text-[hsl(var(--warning))] bg-[hsl(var(--warning)/0.1)]',
   info: 'text-primary bg-primary/10',
 };
 
@@ -191,20 +191,20 @@ export default function ActivityPage() {
 
         {/* Security Audit Summary */}
         {securityLogs.length > 0 && (
-          <div className="glass-card rounded-2xl p-4 border border-amber-500/20">
+          <div className="glass-card rounded-2xl p-4 border border-[hsl(var(--warning))]/20">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-icons-round text-amber-400 text-lg">security</span>
+              <span className="material-icons-round text-[hsl(var(--warning))] text-lg">security</span>
               <h3 className="text-sm font-bold text-foreground">Security Audit</h3>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-400/10 text-amber-400 font-medium">{securityLogs.length} events</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] font-medium">{securityLogs.length} events</span>
             </div>
             <div className="space-y-2">
               {securityLogs.slice(0, 3).map(log => (
                 <div key={log.id} className="flex items-start gap-2">
                   <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                    log.security_flags?.length ? 'bg-destructive/10' : 'bg-amber-400/10'
+                    log.security_flags?.length ? 'bg-destructive/10' : 'bg-[hsl(var(--warning)/0.1)]'
                   }`}>
                     <span className={`material-icons-round text-xs ${
-                      log.security_flags?.length ? 'text-destructive' : 'text-amber-400'
+                      log.security_flags?.length ? 'text-destructive' : 'text-[hsl(var(--warning))]'
                     }`}>
                       {log.security_flags?.length ? 'warning' : 'info'}
                     </span>
@@ -217,7 +217,7 @@ export default function ActivityPage() {
                         <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>
                       ))}
                       {log.was_sandboxed && (
-                        <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-500">sandboxed</span>
+                        <span className="text-[8px] px-1 py-0.5 rounded bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">sandboxed</span>
                       )}
                     </div>
                   </div>
@@ -350,7 +350,7 @@ export default function ActivityPage() {
                                   <span className="text-[8px] px-1 py-0.5 rounded bg-primary/5 text-primary/50">{log.source}</span>
                                 )}
                                 {log.was_sandboxed && (
-                                  <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/5 text-amber-500/50">sandbox</span>
+                                  <span className="text-[8px] px-1 py-0.5 rounded bg-[hsl(var(--warning))]/5 text-[hsl(var(--warning))]/50">sandbox</span>
                                 )}
                                 {log.security_flags?.map(flag => (
                                   <span key={flag} className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive">{flag}</span>

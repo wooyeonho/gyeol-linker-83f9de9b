@@ -67,7 +67,7 @@ export default function GamificationPage() {
               <span className="font-bold text-foreground">{inventory.length}</span>
             </button>
             <button onClick={() => setCoinHistoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span className="material-icons-round text-amber-400 text-[12px]">monetization_on</span>
+              <span className="material-icons-round text-[hsl(var(--warning))] text-[12px]">monetization_on</span>
               <span className="font-bold text-foreground">{profile?.coins ?? 0}</span>
             </button>
           </div>
@@ -275,7 +275,7 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                       </span>
                     )}
                     {quest.reward_coins > 0 && (
-                      <span className="text-[9px] text-amber-400 flex items-center gap-0.5">
+                      <span className="text-[9px] text-[hsl(var(--warning))] flex items-center gap-0.5">
                         <span className="material-icons-round text-[10px]">monetization_on</span>
                         +{quest.reward_coins}
                       </span>
@@ -378,7 +378,7 @@ function AchievementsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               )}
               {unlocked && ach.unlocked?.is_new && (
                 <div className="absolute top-2 right-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-destructive inline-block animate-pulse" />
                 </div>
               )}
             </motion.div>
@@ -461,7 +461,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Leaderboard rewards info */}
       <div className="glass-card rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="material-icons-round text-amber-400 text-sm">card_giftcard</span>
+          <span className="material-icons-round text-[hsl(var(--warning))] text-sm">card_giftcard</span>
           <span className="text-[11px] font-bold text-foreground">순위 보상</span>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -472,7 +472,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
           ].map(r => (
             <div key={r.rank} className="text-[9px] text-muted-foreground">
               <p className="font-bold text-foreground">{r.rank}</p>
-              <p className="text-amber-400">💰{r.coins}</p>
+              <p className="text-[hsl(var(--warning))]">💰{r.coins}</p>
               <p className="text-secondary">⚡{r.exp} EXP</p>
             </div>
           ))}
@@ -540,7 +540,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
               className={`glass-card rounded-2xl p-3 flex items-center gap-3 ${isMe ? 'glass-card-selected' : ''}`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                i < 3 ? 'bg-gradient-to-br from-amber-400/20 to-amber-600/20 text-amber-400' : 'bg-muted/20 text-muted-foreground'
+                i < 3 ? 'bg-gradient-to-br from-amber-400/20 to-amber-600/20 text-[hsl(var(--warning))]' : 'bg-muted/20 text-muted-foreground'
               }`}>
                 {medal ?? i + 1}
               </div>
@@ -594,7 +594,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
       <div className="glass-card rounded-2xl p-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">보유 코인</p>
-          <p className="text-2xl font-bold text-amber-400 flex items-center gap-1">
+          <p className="text-2xl font-bold text-[hsl(var(--warning))] flex items-center gap-1">
             <span className="material-icons-round text-lg">monetization_on</span>
             {profile?.coins ?? 0}
           </p>
@@ -633,7 +633,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
               
               <div className="flex items-center justify-between mt-3">
-                <span className="text-[10px] font-bold text-amber-400 flex items-center gap-0.5">
+                <span className="text-[10px] font-bold text-[hsl(var(--warning))] flex items-center gap-0.5">
                   <span className="material-icons-round text-[10px]">monetization_on</span>
                   {item.price_coins}
                 </span>

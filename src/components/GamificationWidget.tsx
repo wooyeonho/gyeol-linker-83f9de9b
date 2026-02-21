@@ -29,7 +29,7 @@ export function GamificationWidget() {
             <div>
               <span className="text-[10px] font-bold text-foreground">{profile.title ?? '초보 동반자'}</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] text-amber-400">🪙 {profile.coins}</span>
+                <span className="text-[8px] text-[hsl(var(--warning))]">🪙 {profile.coins}</span>
                 <span className="text-[8px] text-muted-foreground">🔥 {profile.streak_days}d</span>
               </div>
             </div>

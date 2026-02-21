@@ -20,10 +20,10 @@ export function ExpBooster({ active, multiplier, endsAt }: { active: boolean; mu
   if (!active) return null;
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-      <Zap className="w-3 h-3 text-amber-400" />
-      <span className="text-[9px] font-bold text-amber-400">{multiplier}x EXP</span>
-      {timeLeft && <span className="text-[8px] text-amber-400/60">{timeLeft}</span>}
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[hsl(var(--warning)/0.1)] border border-[hsl(var(--warning))]/20">
+      <Zap className="w-3 h-3 text-[hsl(var(--warning))]" />
+      <span className="text-[9px] font-bold text-[hsl(var(--warning))]">{multiplier}x EXP</span>
+      {timeLeft && <span className="text-[8px] text-[hsl(var(--warning))]/60">{timeLeft}</span>}
     </motion.div>
   );
 }
@@ -77,13 +77,13 @@ export function PrestigeSystem({ level, prestige, onPrestige }: { level: number;
   return (
     <div className="p-3 rounded-xl glass-card space-y-2">
       <div className="flex items-center gap-2">
-        <Crown className="w-4 h-4 text-amber-400" />
+        <Crown className="w-4 h-4 text-[hsl(var(--warning))]" />
         <span className="text-[11px] font-bold text-foreground">Prestige {prestige > 0 ? `★${prestige}` : ''}</span>
       </div>
       <p className="text-[9px] text-muted-foreground">Reset to Lv.1 for permanent bonuses and exclusive rewards.</p>
       <button onClick={onPrestige} disabled={!canPrestige}
         className={`w-full py-2 rounded-xl text-[10px] font-medium transition ${
-          canPrestige ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-muted/10 text-muted-foreground/40'
+          canPrestige ? 'bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.2)]' : 'bg-muted/10 text-muted-foreground/40'
         }`}>
         {canPrestige ? `Prestige → ★${prestige + 1}` : `Reach Lv.25 (Current: Lv.${level})`}
       </button>
@@ -101,7 +101,7 @@ export function CoinExchange({ balance, onExchange }: { balance: number; onExcha
   return (
     <div className="space-y-2">
       <h4 className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-        <Coins className="w-3.5 h-3.5 text-amber-400" /> Coin Exchange
+        <Coins className="w-3.5 h-3.5 text-[hsl(var(--warning))]" /> Coin Exchange
       </h4>
       <p className="text-[10px] text-foreground/60">Balance: {balance.toLocaleString()} 🪙</p>
       {rates.map(r => (
@@ -109,7 +109,7 @@ export function CoinExchange({ balance, onExchange }: { balance: number; onExcha
           className="w-full flex items-center gap-2 p-2 rounded-xl glass-card hover:bg-primary/5 transition disabled:opacity-40">
           <span>{r.icon}</span>
           <span className="text-[10px] text-foreground/70 flex-1">{r.label}</span>
-          <span className="text-[9px] text-amber-400 font-mono">{r.rate} 🪙</span>
+          <span className="text-[9px] text-[hsl(var(--warning))] font-mono">{r.rate} 🪙</span>
         </button>
       ))}
     </div>
@@ -137,7 +137,7 @@ export function QuestChain({ quests }: { quests: { title: string; progress: numb
                 </div>
                 <span className="text-[8px] text-muted-foreground">{q.progress}/{q.total}</span>
               </div>
-              <span className="text-[8px] text-amber-400">{q.reward}</span>
+              <span className="text-[8px] text-[hsl(var(--warning))]">{q.reward}</span>
             </div>
           </div>
         ))}
@@ -158,7 +158,7 @@ export function HiddenQuestReveal({ quest, onClaim }: { quest: { title: string; 
         <h3 className="text-sm font-bold text-foreground">Hidden Quest Discovered!</h3>
         <p className="text-[10px] font-medium text-primary">{quest.title}</p>
         <p className="text-[9px] text-muted-foreground">{quest.description}</p>
-        <p className="text-[10px] text-amber-400">Reward: {quest.reward}</p>
+        <p className="text-[10px] text-[hsl(var(--warning))]">Reward: {quest.reward}</p>
         <button onClick={onClaim}
           className="w-full py-2 rounded-xl bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20 transition">
           Accept Quest
@@ -188,7 +188,7 @@ export function BossQuest({ boss, onStart }: { boss: { name: string; hp: number;
             className="h-full rounded-full bg-gradient-to-r from-destructive to-destructive/60" />
         </div>
       </div>
-      <p className="text-[9px] text-amber-400">Reward: {boss.reward}</p>
+      <p className="text-[9px] text-[hsl(var(--warning))]">Reward: {boss.reward}</p>
       <button onClick={onStart}
         className="w-full py-2 rounded-xl bg-destructive/10 text-destructive text-[10px] font-medium hover:bg-destructive/20 transition">
         ⚔️ Challenge Boss
@@ -201,9 +201,9 @@ export function AchievementTier({ points, tier }: { points: number; tier: number
   const tiers = [
     { name: 'Bronze', min: 0, color: 'text-amber-600', icon: '🥉' },
     { name: 'Silver', min: 100, color: 'text-muted-foreground', icon: '🥈' },
-    { name: 'Gold', min: 500, color: 'text-amber-400', icon: '🥇' },
+    { name: 'Gold', min: 500, color: 'text-[hsl(var(--warning))]', icon: '🥇' },
     { name: 'Platinum', min: 1000, color: 'text-primary', icon: '💎' },
-    { name: 'Diamond', min: 5000, color: 'text-cyan-400', icon: '👑' },
+    { name: 'Diamond', min: 5000, color: 'text-secondary', icon: '👑' },
   ];
   const current = tiers[tier] ?? tiers[0];
   const next = tiers[tier + 1];
@@ -261,7 +261,7 @@ export function ShopItemPreview({ item, onBuy }: {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="text-[10px] text-amber-400">{'⭐'.repeat(Math.round(item.rating))}</span>
+          <span className="text-[10px] text-[hsl(var(--warning))]">{'⭐'.repeat(Math.round(item.rating))}</span>
           <span className="text-[8px] text-muted-foreground">({item.reviews})</span>
         </div>
         <button onClick={onBuy}
@@ -303,7 +303,7 @@ export function ShopBundle({ items, discount, onBuy }: {
 export function WishlistButton({ isWishlisted, onToggle }: { isWishlisted: boolean; onToggle: () => void }) {
   return (
     <button onClick={onToggle}
-      className={`p-1.5 rounded-full transition ${isWishlisted ? 'text-pink-400' : 'text-muted-foreground/40 hover:text-pink-400'}`}>
+      className={`p-1.5 rounded-full transition ${isWishlisted ? 'text-primary' : 'text-muted-foreground/40 hover:text-primary'}`}>
       <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
     </button>
   );
@@ -318,7 +318,7 @@ export function PurchaseHistory({ purchases }: { purchases: { date: string; item
       {purchases.map((p, i) => (
         <div key={i} className="flex items-center gap-2 p-2 rounded-lg glass-card text-[9px]">
           <span className="text-foreground/70 flex-1 truncate">{p.item}</span>
-          <span className="text-amber-400 font-mono">{p.price} 🪙</span>
+          <span className="text-[hsl(var(--warning))] font-mono">{p.price} 🪙</span>
           <span className={p.status === 'refunded' ? 'text-destructive' : 'text-primary'}>{p.status}</span>
         </div>
       ))}

@@ -11,11 +11,11 @@ interface Persona {
 }
 
 const PERSONA_PRESETS: Persona[] = [
-  { id: 'expert', name: 'Expert', description: 'Professional and knowledgeable advisor', icon: '🎓', color: 'text-blue-400' },
+  { id: 'expert', name: 'Expert', description: 'Professional and knowledgeable advisor', icon: '🎓', color: 'text-[hsl(var(--info))]' },
   { id: 'friend', name: 'Friend', description: 'Casual and supportive companion', icon: '👋', color: 'text-[hsl(var(--success,142_71%_45%))]' },
-  { id: 'teacher', name: 'Teacher', description: 'Patient and educational guide', icon: '📚', color: 'text-amber-400' },
-  { id: 'coach', name: 'Coach', description: 'Motivating and goal-oriented', icon: '💪', color: 'text-red-400' },
-  { id: 'poet', name: 'Poet', description: 'Creative and expressive soul', icon: '✒️', color: 'text-purple-400' },
+  { id: 'teacher', name: 'Teacher', description: 'Patient and educational guide', icon: '📚', color: 'text-[hsl(var(--warning))]' },
+  { id: 'coach', name: 'Coach', description: 'Motivating and goal-oriented', icon: '💪', color: 'text-destructive' },
+  { id: 'poet', name: 'Poet', description: 'Creative and expressive soul', icon: '✒️', color: 'text-primary' },
 ];
 
 export function PersonaSelector({ current, onSelect }: { current: string; onSelect: (id: string) => void }) {

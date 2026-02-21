@@ -5,9 +5,9 @@ import { supabase } from '@/src/lib/supabase';
 
 export function SocialLoginButtons({ onLogin }: { onLogin: (provider: string) => void }) {
   const providers = [
-    { id: 'google', label: 'Google', icon: '🔵', color: 'hover:bg-blue-500/10' },
+    { id: 'google', label: 'Google', icon: '🔵', color: 'hover:bg-[hsl(var(--info)/0.1)]' },
     { id: 'github', label: 'GitHub', icon: '⚫', color: 'hover:bg-slate-500/10' },
-    { id: 'kakao', label: 'Kakao', icon: '💛', color: 'hover:bg-amber-500/10' },
+    { id: 'kakao', label: 'Kakao', icon: '💛', color: 'hover:bg-[hsl(var(--warning)/0.1)]' },
   ];
 
   return (

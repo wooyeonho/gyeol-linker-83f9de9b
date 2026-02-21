@@ -59,10 +59,10 @@ export function EvolutionHistory({ agentId }: Props) {
                 className="flex items-center gap-2.5"
               >
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  success ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-red-500/10'
+                  success ? 'bg-[hsl(var(--success,142_71%_45%)/0.1)]' : 'bg-destructive/10'
                 }`}>
                   <span className={`material-icons-round text-xs ${
-                    success ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-red-400'
+                    success ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'
                   }`}>
                     {success ? 'arrow_upward' : 'close'}
                   </span>

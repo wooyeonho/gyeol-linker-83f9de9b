@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const INTIMACY_TIERS = [
   { min: 0, label: '낯선 사이', icon: '🌱', color: 'from-muted to-muted-foreground/30' },
-  { min: 20, label: '아는 사이', icon: '🌿', color: 'from-emerald-500/30 to-teal-500/30' },
-  { min: 40, label: '친한 사이', icon: '💚', color: 'from-green-500/30 to-emerald-500/30' },
+  { min: 20, label: '아는 사이', icon: '🌿', color: 'from-[hsl(var(--success))]/30 to-teal-500/30' },
+  { min: 40, label: '친한 사이', icon: '💚', color: 'from-green-500/30 to-[hsl(var(--success))]/30' },
   { min: 60, label: '가까운 사이', icon: '💙', color: 'from-blue-500/30 to-indigo-500/30' },
-  { min: 80, label: '특별한 사이', icon: '💜', color: 'from-violet-500/30 to-purple-500/30' },
+  { min: 80, label: '특별한 사이', icon: '💜', color: 'from-violet-500/30 to-primary/30' },
   { min: 95, label: '유일한 존재', icon: '✨', color: 'from-amber-500/30 to-rose-500/30' },
 ];
 

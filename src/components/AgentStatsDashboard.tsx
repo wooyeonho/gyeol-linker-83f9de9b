@@ -126,7 +126,7 @@ export function AgentStatsDashboard({ agentId, isOpen, onClose }: AgentStatsDash
                   <p className="text-[11px] text-foreground/80 font-medium">Level {stats.level}</p>
                   <div className="flex gap-3 mt-1">
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                      <span className="material-icons-round text-amber-400 text-[10px]">monetization_on</span>
+                      <span className="material-icons-round text-[hsl(var(--warning))] text-[10px]">monetization_on</span>
                       {stats.coins}
                     </span>
                     <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">

@@ -53,17 +53,17 @@ export default function SimpleChat() {
 
       <div className="flex-1 overflow-y-auto px-4 pb-2 relative z-10" role="log" aria-label="Messages" aria-live="polite">
         {pinnedMessages.size > 0 && (
-          <div className="mb-2 p-2 rounded-xl glass-card border border-amber-500/20 sticky top-0 z-20 backdrop-blur-md">
+          <div className="mb-2 p-2 rounded-xl glass-card border border-[hsl(var(--warning))]/20 sticky top-0 z-20 backdrop-blur-md">
             <div className="flex items-center gap-1 mb-1">
-              <span className="material-icons-round text-amber-400 text-[12px]">push_pin</span>
-              <span className="text-[10px] text-amber-400 font-medium">Pinned ({pinnedMessages.size})</span>
+              <span className="material-icons-round text-[hsl(var(--warning))] text-[12px]">push_pin</span>
+              <span className="text-[10px] text-[hsl(var(--warning))] font-medium">Pinned ({pinnedMessages.size})</span>
             </div>
             <div className="space-y-1 max-h-20 overflow-y-auto">
               {messages.filter(m => pinnedMessages.has(m.id)).map(m => (
                 <div key={` + "pin-" + $ + "{m.id}" + `} className="text-[10px] text-foreground/60 truncate flex items-center gap-1">
                   <span className={m.role === 'user' ? 'text-primary/50' : 'text-secondary/50'}>{m.role === 'user' ? 'You' : agentName}:</span>
                   <span className="truncate">{m.content.slice(0, 60)}</span>
-                  <button onClick={() => togglePin(m.id)} className="ml-auto text-amber-400/50 hover:text-amber-400 shrink-0">
+                  <button onClick={() => togglePin(m.id)} className="ml-auto text-[hsl(var(--warning))]/50 hover:text-[hsl(var(--warning))] shrink-0">
                     <span className="material-icons-round text-[10px]">close</span>
                   </button>
                 </div>

@@ -88,7 +88,7 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
       </button>
       <button onClick={() => togglePin(msg.id)}
         aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
-        className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground hover:text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]'}`}>
         <span className="material-icons-round text-[12px]">push_pin</span>
       </button>
       <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
@@ -98,7 +98,7 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
       </button>
       <button onClick={() => toggleBookmark(msg.id)}
         aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
-        className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10'}`}>
+        className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground hover:text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]'}`}>
         <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
       </button>
     </div>

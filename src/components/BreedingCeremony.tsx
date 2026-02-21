@@ -30,7 +30,7 @@ export function BreedingCeremony({ show, parentAName, parentBName, childName, on
             <div className="relative h-48 flex items-center justify-center mb-6">
               {/* Parent A orb */}
               <motion.div
-                className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/40 to-blue-600/20 border border-blue-500/30 flex items-center justify-center"
+                className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/40 to-blue-600/20 border border-[hsl(var(--info))]/30 flex items-center justify-center"
                 initial={{ x: -80, y: -40, opacity: 0 }}
                 animate={{
                   x: [- 80, -40, 0],
@@ -40,7 +40,7 @@ export function BreedingCeremony({ show, parentAName, parentBName, childName, on
                 }}
                 transition={{ duration: 2, ease: 'easeInOut' }}
               >
-                <span className="text-[10px] text-blue-400 font-bold">{parentAName.slice(0, 4)}</span>
+                <span className="text-[10px] text-[hsl(var(--info))] font-bold">{parentAName.slice(0, 4)}</span>
               </motion.div>
 
               {/* Parent B orb */}
@@ -55,7 +55,7 @@ export function BreedingCeremony({ show, parentAName, parentBName, childName, on
                 }}
                 transition={{ duration: 2, ease: 'easeInOut' }}
               >
-                <span className="text-[10px] text-pink-400 font-bold">{parentBName.slice(0, 4)}</span>
+                <span className="text-[10px] text-primary font-bold">{parentBName.slice(0, 4)}</span>
               </motion.div>
 
               {/* Merge explosion */}
@@ -113,9 +113,9 @@ export function BreedingCeremony({ show, parentAName, parentBName, childName, on
             >
               <h2 className="text-xl font-black text-foreground">🎉 탄생!</h2>
               <p className="text-sm text-muted-foreground">
-                <span className="text-blue-400">{parentAName}</span>
+                <span className="text-[hsl(var(--info))]">{parentAName}</span>
                 {' × '}
-                <span className="text-pink-400">{parentBName}</span>
+                <span className="text-primary">{parentBName}</span>
               </p>
               <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                 {childName}

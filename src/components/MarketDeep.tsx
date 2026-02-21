@@ -30,7 +30,7 @@ export function SkinPreviewCard({ skin, onBuy, onWishlist }: {
           {skin.category && <span className="px-1 py-0.5 rounded bg-muted/10">{skin.category}</span>}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-amber-400">{'⭐'.repeat(Math.round(skin.rating))}</span>
+          <span className="text-[9px] text-[hsl(var(--warning))]">{'⭐'.repeat(Math.round(skin.rating))}</span>
           <span className="text-[8px] text-muted-foreground">{skin.downloads} downloads</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -43,7 +43,7 @@ export function SkinPreviewCard({ skin, onBuy, onWishlist }: {
             )}
           </button>
           <button onClick={onWishlist}
-            className="p-1.5 rounded-lg glass-card text-muted-foreground hover:text-pink-400 transition">
+            className="p-1.5 rounded-lg glass-card text-muted-foreground hover:text-primary transition">
             <Star className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -232,7 +232,7 @@ export function ReviewCard({ review, onHelpful }: {
     <div className="p-3 rounded-xl glass-card space-y-1.5">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-medium text-foreground">{review.author}</span>
-        <span className="text-[9px] text-amber-400">{'⭐'.repeat(review.rating)}</span>
+        <span className="text-[9px] text-[hsl(var(--warning))]">{'⭐'.repeat(review.rating)}</span>
       </div>
       <p className="text-[9px] text-foreground/70 leading-relaxed">{review.content}</p>
       <div className="flex items-center justify-between text-[8px]">

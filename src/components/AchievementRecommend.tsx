@@ -38,7 +38,7 @@ export function AchievementRecommend({ achievements, onSelect }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-amber-400 text-sm">recommend</span>
+        <span className="material-icons-round text-[hsl(var(--warning))] text-sm">recommend</span>
         <h4 className="text-[11px] font-bold text-foreground">추천 업적</h4>
       </div>
       {recommendations.map((ach, i) => (

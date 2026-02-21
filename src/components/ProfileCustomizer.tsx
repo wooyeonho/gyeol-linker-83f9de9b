@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/src/integrations/supabase/client';
 
 const BANNER_GRADIENTS = [
-  { label: 'Indigo', value: 'from-indigo-500/30 to-purple-500/20' },
-  { label: 'Emerald', value: 'from-emerald-500/30 to-teal-500/20' },
+  { label: 'Indigo', value: 'from-indigo-500/30 to-primary/20' },
+  { label: 'Emerald', value: 'from-[hsl(var(--success))]/30 to-teal-500/20' },
   { label: 'Rose', value: 'from-rose-500/30 to-pink-500/20' },
   { label: 'Amber', value: 'from-amber-500/30 to-orange-500/20' },
   { label: 'Cyan', value: 'from-cyan-500/30 to-blue-500/20' },

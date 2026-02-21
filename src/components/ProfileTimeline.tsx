@@ -69,8 +69,8 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
   }, [agentId]);
 
   const typeColors: Record<string, string> = {
-    evolution: 'text-amber-400', conversation: 'text-primary',
-    achievement: 'text-[hsl(var(--success,142_71%_45%))]', social: 'text-secondary', learning: 'text-cyan-400',
+    evolution: 'text-[hsl(var(--warning))]', conversation: 'text-primary',
+    achievement: 'text-[hsl(var(--success,142_71%_45%))]', social: 'text-secondary', learning: 'text-secondary',
   };
 
   if (loading) return (

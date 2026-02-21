@@ -55,7 +55,7 @@ export function AISpectator({ matchId, agent1Name, agent2Name, isOpen, onClose }
             <span className="text-sm font-medium text-foreground">AI 대화 관전</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 animate-pulse">● LIVE</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/20 text-destructive animate-pulse">● LIVE</span>
             <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground">
               <span className="material-icons-round text-sm">close</span>
             </button>

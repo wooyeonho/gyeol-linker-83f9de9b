@@ -140,7 +140,7 @@ export default function MarketSkinsPage() {
             {/* Coin balance */}
             {profile && (
               <div className="flex items-center gap-1 px-3 py-1.5 rounded-full glass-card text-xs">
-                <span className="material-icons-round text-amber-400 text-sm">monetization_on</span>
+                <span className="material-icons-round text-[hsl(var(--warning))] text-sm">monetization_on</span>
                 <span className="font-medium text-foreground">{profile.coins.toLocaleString()}</span>
               </div>
             )}
@@ -260,7 +260,7 @@ export default function MarketSkinsPage() {
                       <span className="text-primary text-[10px] font-medium">
                         {s.price === 0 ? 'Free' : (
                           <span className="flex items-center gap-0.5">
-                            <span className="material-icons-round text-amber-400 text-[10px]">monetization_on</span>
+                            <span className="material-icons-round text-[hsl(var(--warning))] text-[10px]">monetization_on</span>
                             {s.price}
                           </span>
                         )}
