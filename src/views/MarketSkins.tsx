@@ -8,6 +8,7 @@ import { useGamification } from '@/src/hooks/useGamification';
 import { BottomNav } from '../components/BottomNav';
 import { PurchaseConfirmModal } from '../components/PurchaseConfirmModal';
 import { showToast } from '../components/Toast';
+import { MarketDeep } from '@/src/components/MarketDeep';
 
 interface SkinItem {
   id: string; name: string; description: string | null; price: number;
@@ -37,6 +38,7 @@ export default function MarketSkinsPage() {
 
   const [confirmSkin, setConfirmSkin] = useState<SkinItem | null>(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [marketDeepOpen, setMarketDeepOpen] = useState(false);
 
   useEffect(() => {
     if (agent?.skin_id) setAppliedId(agent.skin_id as string);
@@ -291,6 +293,10 @@ export default function MarketSkinsPage() {
         currentBalance={profile?.coins ?? 0}
         loading={purchasing}
       />
+      {/* B16: Market Deep */}
+      {agent?.id && (
+        <MarketDeep isOpen={marketDeepOpen} onClose={() => setMarketDeepOpen(false)} agentId={agent.id} />
+      )}
       <BottomNav />
     </main>
   );

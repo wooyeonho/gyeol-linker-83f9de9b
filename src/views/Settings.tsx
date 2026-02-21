@@ -18,6 +18,14 @@ import { NotificationSettings } from '@/src/components/NotificationSettings';
 import { ProfileCustomizer } from '@/src/components/ProfileCustomizer';
 import { AgentStatsDashboard } from '@/src/components/AgentStatsDashboard';
 import { SystemPromptEditor } from '@/src/components/SystemPromptEditor';
+import { AgentManager } from '@/src/components/AgentManager';
+import { PersonalityPresets } from '@/src/components/PersonalityPresets';
+import { IntimacySystem } from '@/src/components/IntimacySystem';
+import { MoodSelector } from '@/src/components/MoodSelector';
+import { PersonaSystem } from '@/src/components/PersonaSystem';
+import { SettingsDeep } from '@/src/components/SettingsDeep';
+import { CharacterEditor } from '@/src/components/CharacterEditor';
+import { AuthDeep } from '@/src/components/AuthDeep';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -133,6 +141,12 @@ export default function SettingsPage() {
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [profileCustomOpen, setProfileCustomOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
+  const [agentManagerOpen, setAgentManagerOpen] = useState(false);
+  const [intimacyOpen, setIntimacyOpen] = useState(false);
+  const [personaOpen, setPersonaOpen] = useState(false);
+  const [characterEditorOpen, setCharacterEditorOpen] = useState(false);
+  const [authDeepOpen, setAuthDeepOpen] = useState(false);
+  const [settingsDeepOpen, setSettingsDeepOpen] = useState(false);
   useEffect(() => {
     if (!agent) return;
     setWarmth(agent.warmth);
@@ -1199,6 +1213,34 @@ export default function SettingsPage() {
       {/* Agent Stats Dashboard */}
       {agent?.id && (
         <AgentStatsDashboard isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} agentId={agent.id} />
+      )}
+
+      {/* B12: Agent Manager */}
+      {agent?.id && (
+        <AgentManager isOpen={agentManagerOpen} onClose={() => setAgentManagerOpen(false)} agentId={agent.id} />
+      )}
+
+      {/* B12: Intimacy System */}
+      {agent?.id && (
+        <IntimacySystem isOpen={intimacyOpen} onClose={() => setIntimacyOpen(false)} agentId={agent.id} intimacy={agent.intimacy} />
+      )}
+
+      {/* B12: Persona System */}
+      {agent?.id && (
+        <PersonaSystem isOpen={personaOpen} onClose={() => setPersonaOpen(false)} agentId={agent.id} />
+      )}
+
+      {/* B18: Character Editor */}
+      {agent && (
+        <CharacterEditor isOpen={characterEditorOpen} onClose={() => setCharacterEditorOpen(false)} agent={agent} onUpdate={(updated) => setAgent(updated)} />
+      )}
+
+      {/* B20: Auth Deep */}
+      <AuthDeep isOpen={authDeepOpen} onClose={() => setAuthDeepOpen(false)} />
+
+      {/* B17: Settings Deep */}
+      {agent?.id && (
+        <SettingsDeep isOpen={settingsDeepOpen} onClose={() => setSettingsDeepOpen(false)} agentId={agent.id} />
       )}
 
       <BottomNav />
