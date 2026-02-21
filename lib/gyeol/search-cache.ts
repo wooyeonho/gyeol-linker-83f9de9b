@@ -37,10 +37,10 @@ export async function setCachedSearch(query: string, type: 'web' | 'image', resu
 export async function cleanExpiredCache(): Promise<number> {
   const supabase = createGyeolServerClient();
   if (!supabase) return 0;
-  const { count } = await supabase
+  const { data } = await supabase
     .from('gyeol_search_cache')
     .delete()
     .lt('expires_at', new Date().toISOString())
-    .select('*', { count: 'exact', head: true });
-  return count ?? 0;
+    .select('query_hash');
+  return data?.length ?? 0;
 }

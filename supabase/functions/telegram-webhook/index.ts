@@ -231,7 +231,26 @@ async function callAI(systemPrompt: string, userText: string, history: ChatMsg[]
 }
 
 function cleanResponse(text: string): string {
-  return text.replace(/\*\*/g, '').replace(/#{1,6}\s/g, '').replace(/^[-*]\s/gm, '').replace(/```[^`]*```/gs, '').trim()
+  let cleaned = text
+  // Remove Chinese characters (한자 제거)
+  cleaned = cleaned.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/g, '')
+  // Remove system tokens
+  cleaned = cleaned.replace(/<\|[^|]*\|>/g, '')
+  cleaned = cleaned.replace(/<\/?(?:system|user|assistant|im_start|im_end)[^>]*>/gi, '')
+  cleaned = cleaned.replace(/\[\/?\s*INST\s*\]/gi, '')
+  // Remove markdown
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, (m) => m.replace(/```\w*\n?/g, '').replace(/```/g, ''))
+  cleaned = cleaned.replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+  cleaned = cleaned.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1')
+  cleaned = cleaned.replace(/#{1,6}\s/g, '')
+  cleaned = cleaned.replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '')
+  cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  // Remove arrow artifacts
+  const arrowMatch = cleaned.match(/^.+?->\s*(.+)$/s)
+  if (arrowMatch && arrowMatch[1].length > 10) cleaned = arrowMatch[1].trim()
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim()
+  return cleaned
 }
 
 Deno.serve(async (req) => {
@@ -325,8 +344,8 @@ Deno.serve(async (req) => {
     // Get personality + memories + history in parallel
     const [agentRes, memoriesRes, recentRes] = await Promise.all([
       supabase.from('gyeol_agents').select('*').eq('id', agentId).single(),
-      supabase.from('gyeol_user_memories').select('category, key, value').eq('agent_id', agentId).order('confidence', { ascending: false }).limit(10),
-      supabase.from('gyeol_conversations').select('role, content, provider').eq('agent_id', agentId).order('created_at', { ascending: false }).limit(15),
+      supabase.from('gyeol_user_memories').select('category, key, value').eq('agent_id', agentId).order('confidence', { ascending: false }).limit(15),
+      supabase.from('gyeol_conversations').select('role, content, provider').eq('agent_id', agentId).order('created_at', { ascending: false }).limit(25),
     ])
 
     const agent = agentRes.data as any
@@ -343,8 +362,8 @@ Deno.serve(async (req) => {
     const memories = (memoriesRes.data ?? []).map((m: any) => `- [${m.category}] ${m.key}: ${m.value}`)
 
     const history = (recentRes.data ?? [])
-      .filter((r: any) => r.provider !== 'heartbeat')
-      .reverse().slice(-10)
+      .filter((r: any) => r.provider !== 'heartbeat' && r.provider !== 'proactive')
+      .reverse().slice(-20)
       .map((r: any) => ({ role: r.role, content: r.content }))
 
     // Auto-search
@@ -376,32 +395,69 @@ Deno.serve(async (req) => {
       total_conversations: newTotal,
     } as any).eq('id', agentId)
 
-    // Fire-and-forget: auto-persona evolution (every 20 convs or at 5th)
-    if (GROQ_API_KEY && userText.length > 3 && (newTotal % 20 === 0 || newTotal === 5)) {
+    // Fire-and-forget: memory extraction + persona evolution
+    if (LOVABLE_API_KEY && userText.length > 3) {
       (async () => {
+        // Memory extraction (매 대화마다)
         try {
-          const { data: recentMsgs } = await supabase.from('gyeol_conversations')
-            .select('role, content').eq('agent_id', agentId)
-            .order('created_at', { ascending: false }).limit(30)
-          if (recentMsgs && recentMsgs.length >= 5) {
-            const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join('\n').slice(0, 3000)
-            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [
-                  { role: 'system', content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
+          const memRes = await fetch(AI_GATEWAY, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash-lite',
+              messages: [
+                { role: 'system', content: `사용자 메시지에서 개인 정보를 추출. JSON 배열만 반환.
+각 항목: {"category":"identity|preference|interest|relationship|goal|emotion|experience|style|knowledge_level","key":"짧은키","value":"한국어 값","confidence":50-100}
+없으면 빈 배열 []` },
+                { role: 'user', content: userText },
+              ],
+              max_tokens: 300,
+            }),
+          })
+          if (memRes.ok) {
+            const data = await memRes.json()
+            const raw = data.choices?.[0]?.message?.content ?? ''
+            const match = raw.match(/\[[\s\S]*\]/)
+            if (match) {
+              const items = JSON.parse(match[0])
+              for (const m of items.slice(0, 3)) {
+                if (m.category && m.key && m.value) {
+                  await supabase.from('gyeol_user_memories').upsert({
+                    agent_id: agentId, category: m.category, key: m.key,
+                    value: m.value, confidence: Math.min(100, Math.max(0, m.confidence || 50)),
+                    updated_at: new Date().toISOString(),
+                  }, { onConflict: 'agent_id,category,key' })
+                }
+              }
+            }
+          }
+        } catch (e) { console.warn('[telegram] memory extraction failed:', e) }
+
+        // Auto-persona evolution (every 20 convs or at 5th)
+        if (newTotal % 20 === 0 || newTotal === 5) {
+          try {
+            const { data: recentMsgs } = await supabase.from('gyeol_conversations')
+              .select('role, content').eq('agent_id', agentId)
+              .order('created_at', { ascending: false }).limit(30)
+            if (recentMsgs && recentMsgs.length >= 5) {
+              const convText = recentMsgs.reverse().map((m: any) => `[${m.role}]: ${m.content}`).join('\n').slice(0, 3000)
+              const res = await fetch(AI_GATEWAY, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  model: 'google/gemini-2.5-flash-lite',
+                  messages: [
+                    { role: 'system', content: `대화 패턴을 분석해서 이 사용자에게 최적화된 AI 페르소나를 자유롭게 생성해. JSON만 반환.
 {"persona":"이 AI만의 고유한 정체성을 한국어 1-2문장으로 자유롭게 서술. 카테고리가 아니라 세상에 하나뿐인 성격 묘사.","domains":{"crypto":bool,"stocks":bool,"forex":bool,"commodities":bool,"macro":bool,"academic":bool},"reason":"판단 이유 한줄"}
 규칙:
 - persona는 정해진 카테고리가 아니라, 대화에서 드러나는 관계성과 AI의 고유 성격을 자유 서술
 - 대화 톤, 주제 패턴, 감정 교류 방식을 종합 반영
 - domains는 반복 등장 주제만 true` },
-                  { role: 'user', content: convText },
-                ],
-                max_tokens: 200, temperature: 0.3,
-              }),
-            })
+                    { role: 'user', content: convText },
+                  ],
+                  max_tokens: 200, temperature: 0.3,
+                }),
+              })
             if (res.ok) {
               const pData = await res.json()
               const pRaw = pData.choices?.[0]?.message?.content ?? ''
