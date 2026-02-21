@@ -59,15 +59,15 @@ export function useMarket() {
   }, [searchQuery, sortBy]);
 
   const loadSkills = useCallback(async () => {
-    let query = supabase.from('gyeol_market_skills' as any).select('*');
-    if (searchQuery) query = query.ilike('name' as any, `%${searchQuery}%`);
-    if (category !== 'all') query = query.eq('category' as any, category);
+    let query: any = supabase.from('gyeol_skills').select('*');
+    if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
+    if (category !== 'all') query = query.eq('category', category);
     const { data } = await query.order('downloads', { ascending: false }).limit(50);
     if (data) setSkills(data as any);
   }, [searchQuery, category]);
 
   const loadOwnedSkins = useCallback(async (agentId: string) => {
-    const { data } = await supabase.from('gyeol_inventory' as any).select('item_id').eq('agent_id', agentId).eq('item_type' as any, 'skin');
+    const { data }: any = await supabase.from('gyeol_inventory').select('item_id').eq('agent_id', agentId);
     if (data) setOwnedSkins(new Set(data.map((d: any) => d.item_id)));
   }, []);
 
