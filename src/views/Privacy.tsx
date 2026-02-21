@@ -37,7 +37,7 @@ const PRIVACY_EN = {
 };
 
 export default function Privacy() {
-  const [lang, setLang] = useState<'ko' | 'en'>('ko');
+  const [lang, setLang] = useState<'ko' | 'en'>('en');
   const t = lang === 'ko' ? PRIVACY_KO : PRIVACY_EN;
 
   return (
