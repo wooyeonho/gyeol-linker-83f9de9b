@@ -222,7 +222,7 @@ export default function GyeolPage() {
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
               <ConversationFilter onFilter={() => {}} availableTags={[]} />
               <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
-                <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">close</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">close</span>
               </button>
             </div>
           </motion.div>

@@ -83,7 +83,7 @@ export function ChatInputBar({ state }: ChatInputBarProps) {
             <button onClick={handleSend} disabled={isLoading}
               aria-label="Send message"
               className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
-              <span aria-hidden="true" className="material-icons-round text-primary-foreground text-base" aria-hidden="true">arrow_upward</span>
+              <span aria-hidden="true" className="material-icons-round text-primary-foreground text-base">arrow_upward</span>
             </button>
           )}
         </div>

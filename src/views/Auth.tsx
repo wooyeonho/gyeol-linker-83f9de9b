@@ -113,7 +113,7 @@ export default function AuthPage() {
             <div>
               <label htmlFor="auth-email" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Email Address</label>
               <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03] transition-all">
-                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">email</span>
+                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">email</span>
                 <input
                   id="auth-email"
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -128,7 +128,7 @@ export default function AuthPage() {
             <div>
               <label htmlFor="auth-password" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Password</label>
               <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03] transition-all">
-                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">lock</span>
+                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">lock</span>
                 <input
                   id="auth-password"
                   type={showPassword ? 'text' : 'password'}
@@ -140,7 +140,7 @@ export default function AuthPage() {
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors focus-visible:outline-2 focus-visible:outline-primary">
-                  <span aria-hidden="true" className="material-icons-round text-lg" aria-hidden="true">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
                 </button>
               </div>
             </div>
