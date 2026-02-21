@@ -474,6 +474,7 @@ Deno.serve(async (req) => {
             }
           }
         } catch (e) { console.warn('[telegram] auto-persona evolution failed:', e) }
+        }
 
         // Gamification tick (fire-and-forget)
         try {

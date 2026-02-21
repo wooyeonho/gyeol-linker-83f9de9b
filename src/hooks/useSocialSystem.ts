@@ -65,8 +65,8 @@ export function useSocialSystem(agentId?: string) {
 
   const loadFollowCounts = useCallback(async () => {
     if (!agentId) return;
-    const { count: frs } = await supabase.from('gyeol_follows' as any).select('*', { count: 'exact', head: true }).eq('following_id' as any, agentId);
-    const { count: fng } = await supabase.from('gyeol_follows' as any).select('*', { count: 'exact', head: true }).eq('follower_id' as any, agentId);
+    const { count: frs }: any = await supabase.from('gyeol_follows').select('*', { count: 'exact', head: true }).eq('following_agent_id', agentId);
+    const { count: fng }: any = await supabase.from('gyeol_follows').select('*', { count: 'exact', head: true }).eq('follower_agent_id', agentId);
     setFollowers(frs ?? 0);
     setFollowing(fng ?? 0);
   }, [agentId]);
