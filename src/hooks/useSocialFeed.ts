@@ -153,8 +153,8 @@ export function useSocialFeed(agentId?: string, agent?: any) {
   useEffect(() => {
     if (!agentId) return;
     (async () => {
-      const { data } = await supabase.from('gyeol_follows' as any).select('following_agent_id').eq('follower_agent_id', agentId);
-      if (data) setFollowedAgents(new Set((data as any[]).map((f: any) => f.following_agent_id)));
+      const { data } = await supabase.from('gyeol_follows').select('following_agent_id').eq('follower_agent_id', agentId);
+      if (data) setFollowedAgents(new Set((data ?? []).map((f: any) => f.following_agent_id)));
     })();
   }, [agentId]);
 
@@ -180,7 +180,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
         .order('compatibility_score', { ascending: false }).limit(20);
       if (matches && (matches as any[]).length > 0) {
         const otherIds = (matches as any[]).map((m: any) => m.agent_1_id === agentId ? m.agent_2_id : m.agent_1_id);
-        const { data: agents } = await supabase.from('gyeol_agents' as any).select('id, name, gen, warmth, logic, creativity, energy, humor').in('id', otherIds);
+        const { data: agents } = await supabase.from('gyeol_agents').select('id, name, gen, warmth, logic, creativity, energy, humor').in('id', otherIds);
         const agentMap = new Map((agents as any[] ?? []).map((a: any) => [a.id, a]));
         setCards((matches as any[]).map((m: any) => {
           const otherId = m.agent_1_id === agentId ? m.agent_2_id : m.agent_1_id;
@@ -204,17 +204,17 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     if (tab !== 'feed') return;
     (async () => {
       const [moltRes, commRes] = await Promise.all([
-        supabase.from('gyeol_moltbook_posts' as any)
+        supabase.from('gyeol_moltbook_posts')
           .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
           .order('created_at', { ascending: false }).limit(20),
-        supabase.from('gyeol_community_activities' as any)
+        supabase.from('gyeol_community_activities')
           .select('id, agent_id, activity_type, content, agent_gen, agent_name, created_at')
           .order('created_at', { ascending: false }).limit(20),
       ]);
       setPosts((moltRes.data as any[]) ?? []);
       setCommunityPosts((commRes.data as any[]) ?? []);
       if (agentId) {
-        const { data: likes } = await supabase.from('gyeol_moltbook_likes' as any).select('post_id').eq('agent_id', agentId);
+        const { data: likes } = await supabase.from('gyeol_moltbook_likes').select('post_id').eq('agent_id', agentId);
         if (likes) setLikedPosts(new Set((likes as any[]).map((l: any) => l.post_id)));
       }
     })();
@@ -224,10 +224,10 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     if (tab !== 'friends' || followedAgents.size === 0) return;
     (async () => {
       const ids = Array.from(followedAgents);
-      const { data } = await supabase.from('gyeol_moltbook_posts' as any)
+      const { data } = await supabase.from('gyeol_moltbook_posts')
         .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
         .in('agent_id', ids).order('created_at', { ascending: false }).limit(30);
-      setFollowingPosts((data as any[]) ?? []);
+      setFollowingPosts((data ?? []) ?? []);
     })();
   }, [tab, followedAgents]);
 
@@ -245,19 +245,19 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     const isFollowing = followedAgents.has(targetAgentId);
     if (isFollowing) {
       setFollowedAgents(prev => { const s = new Set(prev); s.delete(targetAgentId); return s; });
-      await supabase.from('gyeol_follows' as any).delete().eq('follower_agent_id', agentId).eq('following_agent_id', targetAgentId);
+      await supabase.from('gyeol_follows').delete().eq('follower_agent_id', agentId).eq('following_agent_id', targetAgentId);
     } else {
       setFollowedAgents(prev => new Set(prev).add(targetAgentId));
-      await supabase.from('gyeol_follows' as any).insert({ follower_agent_id: agentId, following_agent_id: targetAgentId } as any);
+      await supabase.from('gyeol_follows').insert({ follower_agent_id: agentId, following_agent_id: targetAgentId });
     }
   }, [agentId, followedAgents]);
 
   const handleDeletePost = useCallback(async (postId: string, feedType: 'moltbook' | 'community') => {
     if (feedType === 'moltbook') {
-      await supabase.from('gyeol_moltbook_posts' as any).delete().eq('id', postId);
+      await supabase.from('gyeol_moltbook_posts').delete().eq('id', postId);
       setPosts(prev => prev.filter(p => p.id !== postId));
     } else {
-      await supabase.from('gyeol_community_activities' as any).delete().eq('id', postId);
+      await supabase.from('gyeol_community_activities').delete().eq('id', postId);
       setCommunityPosts(prev => prev.filter(p => p.id !== postId));
     }
     setPostMenu(null);
@@ -266,10 +266,10 @@ export function useSocialFeed(agentId?: string, agent?: any) {
   const handleEditPost = useCallback(async (postId: string, feedType: 'moltbook' | 'community') => {
     if (!editContent.trim()) return;
     if (feedType === 'moltbook') {
-      await supabase.from('gyeol_moltbook_posts' as any).update({ content: editContent.trim() } as any).eq('id', postId);
+      await supabase.from('gyeol_moltbook_posts').update({ content: editContent.trim() }).eq('id', postId);
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editContent.trim() } : p));
     } else {
-      await supabase.from('gyeol_community_activities' as any).update({ content: editContent.trim() } as any).eq('id', postId);
+      await supabase.from('gyeol_community_activities').update({ content: editContent.trim() }).eq('id', postId);
       setCommunityPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editContent.trim() } : p));
     }
     setEditingPost(null); setEditContent('');
@@ -281,34 +281,34 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     if (alreadyLiked) {
       setLikedPosts(prev => { const s = new Set(prev); s.delete(postId); return s; });
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes ?? 1) - 1) } : p));
-      await supabase.from('gyeol_moltbook_likes' as any).delete().eq('post_id', postId).eq('agent_id', agentId);
+      await supabase.from('gyeol_moltbook_likes').delete().eq('post_id', postId).eq('agent_id', agentId);
     } else {
       setLikedPosts(prev => new Set(prev).add(postId));
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes ?? 0) + 1 } : p));
-      await supabase.from('gyeol_moltbook_likes' as any).insert({ post_id: postId, agent_id: agentId } as any);
+      await supabase.from('gyeol_moltbook_likes').insert({ post_id: postId, agent_id: agentId });
     }
-    const { count } = await supabase.from('gyeol_moltbook_likes' as any).select('*', { count: 'exact', head: true }).eq('post_id', postId);
+    const { count } = await supabase.from('gyeol_moltbook_likes').select('*', { count: 'exact', head: true }).eq('post_id', postId);
     const serverCount = count ?? 0;
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: serverCount } : p));
-    await supabase.from('gyeol_moltbook_posts' as any).update({ likes: serverCount } as any).eq('id', postId);
+    await supabase.from('gyeol_moltbook_posts').update({ likes: serverCount }).eq('id', postId);
   }, [likedPosts, agentId]);
 
   const loadComments = useCallback(async (postId: string) => {
-    const { data } = await supabase.from('gyeol_moltbook_comments' as any)
+    const { data } = await supabase.from('gyeol_moltbook_comments')
       .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
       .eq('post_id', postId).order('created_at', { ascending: true }).limit(20);
-    setComments(prev => ({ ...prev, [postId]: (data as any[]) ?? [] }));
+    setComments(prev => ({ ...prev, [postId]: (data ?? []) ?? [] }));
   }, []);
 
   const handleComment = useCallback(async (postId: string) => {
     if (!agentId || !commentText.trim() || submittingComment) return;
     setSubmittingComment(true);
     const content = commentText.trim(); setCommentText('');
-    await supabase.from('gyeol_moltbook_comments' as any).insert({ post_id: postId, agent_id: agentId, content } as any);
+    await supabase.from('gyeol_moltbook_comments').insert({ post_id: postId, agent_id: agentId, content });
     const post = posts.find(p => p.id === postId);
     if (post) {
       const newCount = (post.comments_count ?? 0) + 1;
-      await supabase.from('gyeol_moltbook_posts' as any).update({ comments_count: newCount } as any).eq('id', postId);
+      await supabase.from('gyeol_moltbook_posts').update({ comments_count: newCount }).eq('id', postId);
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: newCount } : p));
     }
     await loadComments(postId);
@@ -321,10 +321,10 @@ export function useSocialFeed(agentId?: string, agent?: any) {
   }, [expandedComments, comments, loadComments]);
 
   const loadCommunityReplies = useCallback(async (activityId: string) => {
-    const { data } = await supabase.from('gyeol_community_replies' as any)
+    const { data } = await supabase.from('gyeol_community_replies')
       .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
       .eq('activity_id', activityId).order('created_at', { ascending: true }).limit(20);
-    setCommunityComments(prev => ({ ...prev, [activityId]: (data as any[]) ?? [] }));
+    setCommunityComments(prev => ({ ...prev, [activityId]: (data ?? []) ?? [] }));
   }, []);
 
   const toggleCommunityComments = useCallback(async (activityId: string) => {
@@ -336,7 +336,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     if (!agentId || !communityCommentText.trim() || submittingCommunityComment) return;
     setSubmittingCommunityComment(true);
     const content = communityCommentText.trim(); setCommunityCommentText('');
-    await supabase.from('gyeol_community_replies' as any).insert({ activity_id: activityId, agent_id: agentId, content } as any);
+    await supabase.from('gyeol_community_replies').insert({ activity_id: activityId, agent_id: agentId, content });
     await loadCommunityReplies(activityId);
     setSubmittingCommunityComment(false);
   }, [agentId, communityCommentText, submittingCommunityComment, loadCommunityReplies]);
@@ -350,10 +350,10 @@ export function useSocialFeed(agentId?: string, agent?: any) {
 
   const refreshFeed = async () => {
     const [moltRes, commRes] = await Promise.all([
-      supabase.from('gyeol_moltbook_posts' as any)
+      supabase.from('gyeol_moltbook_posts')
         .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
         .order('created_at', { ascending: false }).limit(20),
-      supabase.from('gyeol_community_activities' as any)
+      supabase.from('gyeol_community_activities')
         .select('id, agent_id, activity_type, content, agent_gen, agent_name, created_at')
         .order('created_at', { ascending: false }).limit(20),
     ]);
@@ -366,11 +366,11 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     setDeleting(true);
     try {
       if (deleteConfirm.type === 'comment') {
-        await supabase.from('gyeol_moltbook_comments' as any).delete().eq('id', deleteConfirm.id);
+        await supabase.from('gyeol_moltbook_comments').delete().eq('id', deleteConfirm.id);
         setComments(prev => ({ ...prev, [deleteConfirm.postId!]: (prev[deleteConfirm.postId!] ?? []).filter((x: any) => x.id !== deleteConfirm.id) }));
         setPosts(prev => prev.map(post => post.id === deleteConfirm.postId ? { ...post, comments_count: Math.max(0, (post.comments_count ?? 1) - 1) } : post));
       } else {
-        await supabase.from('gyeol_community_replies' as any).delete().eq('id', deleteConfirm.id);
+        await supabase.from('gyeol_community_replies').delete().eq('id', deleteConfirm.id);
         setCommunityComments(prev => ({ ...prev, [deleteConfirm.postId!]: (prev[deleteConfirm.postId!] ?? []).filter((x: any) => x.id !== deleteConfirm.id) }));
       }
       showToast({ type: 'success', title: 'Comment deleted', icon: 'delete' });

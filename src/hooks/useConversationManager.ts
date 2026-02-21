@@ -22,7 +22,7 @@ export function useConversationManager(agentId?: string) {
   const loadConversations = useCallback(async () => {
     if (!agentId) return;
     const baseQuery = supabase
-      .from('gyeol_conversations' as any)
+      .from('gyeol_conversations')
       .select('id, agent_id, content, role, created_at, is_pinned, is_archived, tags, reply_to_id, read_at')
       .eq('agent_id', agentId)
       .order('created_at', { ascending: false })
@@ -40,14 +40,14 @@ export function useConversationManager(agentId?: string) {
     if (!msg) return;
     const pinnedCount = conversations.filter(c => c.is_pinned).length;
     if (!msg.is_pinned && pinnedCount >= 5) return;
-    await supabase.from('gyeol_conversations' as any).update({ is_pinned: !msg.is_pinned } as any).eq('id', msgId);
+    await supabase.from('gyeol_conversations').update({ is_pinned: !msg.is_pinned }).eq('id', msgId);
     setConversations(prev => prev.map(c => c.id === msgId ? { ...c, is_pinned: !c.is_pinned } : c));
   }, [conversations]);
 
   const toggleArchive = useCallback(async (msgId: string) => {
     const msg = conversations.find(c => c.id === msgId);
     if (!msg) return;
-    await supabase.from('gyeol_conversations' as any).update({ is_archived: !msg.is_archived } as any).eq('id', msgId);
+    await supabase.from('gyeol_conversations').update({ is_archived: !msg.is_archived }).eq('id', msgId);
     setConversations(prev => prev.filter(c => c.id !== msgId));
   }, [conversations]);
 
@@ -55,7 +55,7 @@ export function useConversationManager(agentId?: string) {
     const msg = conversations.find(c => c.id === msgId);
     if (!msg) return;
     const newTags = [...(msg.tags ?? []), tag].filter((v, i, a) => a.indexOf(v) === i);
-    await supabase.from('gyeol_conversations' as any).update({ tags: newTags } as any).eq('id', msgId);
+    await supabase.from('gyeol_conversations').update({ tags: newTags }).eq('id', msgId);
     setConversations(prev => prev.map(c => c.id === msgId ? { ...c, tags: newTags } : c));
   }, [conversations]);
 
@@ -63,12 +63,12 @@ export function useConversationManager(agentId?: string) {
     const msg = conversations.find(c => c.id === msgId);
     if (!msg) return;
     const newTags = (msg.tags ?? []).filter(t => t !== tag);
-    await supabase.from('gyeol_conversations' as any).update({ tags: newTags } as any).eq('id', msgId);
+    await supabase.from('gyeol_conversations').update({ tags: newTags }).eq('id', msgId);
     setConversations(prev => prev.map(c => c.id === msgId ? { ...c, tags: newTags } : c));
   }, [conversations]);
 
   const markRead = useCallback(async (msgId: string) => {
-    await supabase.from('gyeol_conversations' as any).update({ read_at: new Date().toISOString() } as any).eq('id', msgId);
+    await supabase.from('gyeol_conversations').update({ read_at: new Date().toISOString() }).eq('id', msgId);
     setConversations(prev => prev.map(c => c.id === msgId ? { ...c, read_at: new Date().toISOString() } : c));
   }, []);
 

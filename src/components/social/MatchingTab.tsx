@@ -80,7 +80,7 @@ export function MatchingTab({ state, agent }: Props) {
               <>
                 <button type="button"
                   onClick={async () => {
-                    const { data: targetAgent } = await supabase.from('gyeol_agents' as any)
+                    const { data: targetAgent } = await supabase.from('gyeol_agents')
                       .select('name, gen, warmth, logic, creativity, energy, humor')
                       .eq('id', card.agentId).single();
                     if (targetAgent) {

@@ -53,7 +53,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
     (async () => {
       // Get unique topics count
       const { count: topicCount } = await supabase
-        .from('gyeol_learned_topics' as any)
+        .from('gyeol_learned_topics')
         .select('*', { count: 'exact', head: true })
         .eq('agent_id', agent.id);
 

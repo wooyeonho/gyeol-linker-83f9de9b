@@ -19,7 +19,7 @@ export function useInitAgent() {
     (async () => {
       try {
         const { data: existing } = await supabase
-          .from('gyeol_agents' as any)
+          .from('gyeol_agents')
           .select('*')
           .eq('user_id', user.id)
           .maybeSingle();
@@ -28,7 +28,7 @@ export function useInitAgent() {
           setAgent(existing as any);
           setNeedsOnboarding(false);
           const { data: convs } = await supabase
-            .from('gyeol_conversations' as any)
+            .from('gyeol_conversations')
             .select('*')
             .eq('agent_id', (existing as any).id)
             .order('created_at', { ascending: true })

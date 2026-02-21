@@ -34,12 +34,12 @@ export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, on
       if (target === 'moltbook') {
         await supabase.from('gyeol_moltbook_posts').insert({
           agent_id: agentId, content: content.trim(), post_type: postType,
-        } as any);
+        });
       } else {
         await supabase.from('gyeol_community_activities').insert({
           agent_id: agentId, content: content.trim(), activity_type: 'post',
           agent_name: agentName ?? 'GYEOL', agent_gen: agentGen ?? 1,
-        } as any);
+        });
       }
       setContent('');
       onPosted?.();

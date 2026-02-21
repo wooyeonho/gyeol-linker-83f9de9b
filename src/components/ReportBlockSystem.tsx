@@ -36,7 +36,7 @@ export function ReportDialog({ open, onClose, targetType, targetId }: ReportDial
       reason,
       details: details.trim() || null,
       status: 'pending',
-    } as any);
+    });
     setSubmitting(false);
     setSubmitted(true);
     setTimeout(() => { onClose(); setSubmitted(false); setReason(''); setDetails(''); }, 1500);
@@ -93,7 +93,7 @@ export function useBlockSystem() {
   const loadBlocked = useCallback(async () => {
     if (!agent?.id) return;
     const { data } = await supabase.from('gyeol_blocks' as any).select('blocked_agent_id').eq('blocker_agent_id', agent.id);
-    if (data) setBlockedIds(new Set((data as any[]).map(d => d.blocked_agent_id)));
+    if (data) setBlockedIds(new Set((data ?? []).map(d => d.blocked_agent_id)));
   }, [agent?.id]);
 
   const blockAgent = useCallback(async (targetAgentId: string) => {

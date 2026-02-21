@@ -21,15 +21,15 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
     (async () => {
       setLoading(true);
       const [logsRes, achievementsRes, postsRes] = await Promise.all([
-        supabase.from('gyeol_autonomous_logs' as any)
+        supabase.from('gyeol_autonomous_logs')
           .select('id, activity_type, summary, created_at')
           .eq('agent_id', agentId)
           .order('created_at', { ascending: false }).limit(10),
-        supabase.from('gyeol_achievement_unlocks' as any)
+        supabase.from('gyeol_achievement_unlocks')
           .select('id, unlocked_at, gyeol_achievements!inner(name, icon)')
           .eq('agent_id', agentId)
           .order('unlocked_at', { ascending: false }).limit(5),
-        supabase.from('gyeol_moltbook_posts' as any)
+        supabase.from('gyeol_moltbook_posts')
           .select('id, content, post_type, created_at')
           .eq('agent_id', agentId)
           .order('created_at', { ascending: false }).limit(5),

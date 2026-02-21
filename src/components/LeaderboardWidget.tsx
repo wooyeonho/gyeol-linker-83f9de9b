@@ -20,7 +20,7 @@ function LeaderboardWidgetInternal({ agentId }: { agentId?: string }) {
       .eq('period', 'alltime')
       .order('score', { ascending: false })
       .limit(3);
-    setTop3((data as any[]) ?? []);
+    setTop3((data ?? []) ?? []);
   };
 
   useEffect(() => {

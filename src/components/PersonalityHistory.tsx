@@ -40,7 +40,7 @@ export function PersonalityHistory({ agentId }: Props) {
         .eq('agent_id', agentId)
         .order('created_at', { ascending: false })
         .limit(20);
-      setEntries((data as any[]) ?? []);
+      setEntries((data ?? []) ?? []);
       setLoading(false);
     })();
   }, [agentId]);

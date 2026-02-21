@@ -101,7 +101,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const markAllRead = async () => {
     if (!agent?.id) return;
     await supabase.from('gyeol_achievement_unlocks')
-      .update({ is_new: false } as any)
+      .update({ is_new: false })
       .eq('agent_id', agent.id)
       .eq('is_new', true);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

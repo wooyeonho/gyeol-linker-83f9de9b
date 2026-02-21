@@ -46,10 +46,10 @@ export default function MarketSkinsPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from('gyeol_skins' as any)
+      const { data } = await supabase.from('gyeol_skins')
         .select('id, name, description, price, preview_url, rating, downloads, category')
         .eq('is_approved', true).order('downloads', { ascending: false }).limit(50);
-      setSkins((data as any[]) ?? []);
+      setSkins((data ?? []) ?? []);
       setLoading(false);
     })();
   }, []);
@@ -113,10 +113,10 @@ export default function MarketSkinsPage() {
           uploadedUrl = urlData?.publicUrl ?? null;
         }
       }
-      await supabase.from('gyeol_skins' as any).insert({
+      await supabase.from('gyeol_skins').insert({
         name: uploadName.trim(), description: uploadDesc.trim() || null, category: uploadCategory,
         creator_id: user.id, is_approved: false, price: 0, preview_url: uploadedUrl,
-      } as any);
+      });
       setUploadName(''); setUploadDesc(''); setPreviewFile(null); setPreviewUrl(null); setShowUpload(false);
       showToast({ type: 'success', title: 'Skin submitted for review!' });
     } catch (err) { console.warn('Failed to upload skin:', err); }

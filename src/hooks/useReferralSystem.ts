@@ -16,7 +16,7 @@ export function useReferralSystem() {
 
   const loadOrCreateCode = useCallback(async () => {
     if (!agent?.id) return;
-    const settings = (agent as any)?.settings ?? {};
+    const settings = agent?.settings ?? {};
     if (settings.referral_code) {
       setReferralCode(settings.referral_code);
     } else {
@@ -49,7 +49,7 @@ export function useReferralSystem() {
     await supabase.from("gyeol_referrals" as any).insert({
       referrer_agent_id: referrer.id, referee_agent_id: agent.id,
       referral_code: code, referrer_reward: 100, referee_reward: 50,
-    } as any);
+    });
     await supabase.rpc("increment_coins" as any, { agent_id_input: referrer.id, amount_input: 100 });
     await supabase.rpc("increment_coins" as any, { agent_id_input: agent.id, amount_input: 50 });
     setLoading(false);

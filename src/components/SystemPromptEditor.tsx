@@ -31,7 +31,7 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
     if (!agent?.id) return;
     setSaving(true);
     const ns = { ...settings, customSystemPrompt: newPrompt };
-    await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent.id);
+    await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent.id);
     setAgent({ ...agent, settings: ns } as any);
     onUpdate(ns);
     setSaving(false);

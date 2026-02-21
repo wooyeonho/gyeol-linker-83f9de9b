@@ -76,7 +76,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
         // Toggle equip
         const newEquipped = !inv.is_equipped;
         await supabase.from('gyeol_inventory')
-          .update({ is_equipped: newEquipped } as any)
+          .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
         setMessage(newEquipped ? `${item.name} 장착! ✨` : `${item.name} 해제`);
       } else if (item.category === 'boost') {
@@ -85,20 +85,20 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
           await supabase.from('gyeol_inventory').delete().eq('id', inv.id);
         } else {
           await supabase.from('gyeol_inventory')
-            .update({ quantity: inv.quantity - 1 } as any)
+            .update({ quantity: inv.quantity - 1 })
             .eq('id', inv.id);
         }
 
         // Apply boost effects
         if (itemData.exp_boost) {
           await supabase.from('gyeol_gamification_profiles')
-            .update({ exp: (agent as any).exp + (itemData.exp_boost as number) } as any)
+            .update({ exp: (agent as any).exp + (itemData.exp_boost as number) })
             .eq('agent_id', agent.id);
         }
         if (itemData.evolution_boost) {
           const newProgress = Math.min(100, Number(agent.evolution_progress ?? 0) + (itemData.evolution_boost as number));
           await supabase.from('gyeol_agents')
-            .update({ evolution_progress: newProgress } as any)
+            .update({ evolution_progress: newProgress })
             .eq('id', agent.id);
           setAgent({ ...agent, evolution_progress: newProgress } as any);
         }
@@ -107,7 +107,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
         // Generic: toggle equip
         const newEquipped = !inv.is_equipped;
         await supabase.from('gyeol_inventory')
-          .update({ is_equipped: newEquipped } as any)
+          .update({ is_equipped: newEquipped })
           .eq('id', inv.id);
         setMessage(newEquipped ? `${item.name} 장착!` : `${item.name} 해제`);
       }

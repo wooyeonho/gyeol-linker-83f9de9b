@@ -25,7 +25,7 @@ export function SafetySection({ agent, activeSection, SectionHeader, kidsSafe, s
               <button type="button" onClick={async () => {
                 const v = !kidsSafe; setKidsSafe(v);
                 const s = (agent?.settings as any) ?? {};
-                await supabase.from('gyeol_agents' as any)
+                await supabase.from('gyeol_agents')
                   .update({ settings: { ...s, kidsSafe: v } } as any).eq('id', agent?.id);
               }}
                 className={`w-10 h-6 rounded-full transition ${kidsSafe ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>

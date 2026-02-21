@@ -72,7 +72,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
 
       // 2. Load learned topics as separate category
       const { data: topics } = await supabase
-        .from('gyeol_learned_topics' as any)
+        .from('gyeol_learned_topics')
         .select('id, title, summary, source, learned_at')
         .eq('agent_id', agentId)
         .order('learned_at', { ascending: false })
@@ -110,7 +110,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
 
   const handleEdit = async (id: string) => {
     if (!editValue.trim()) return;
-    await supabase.from('gyeol_user_memories' as any).update({ value: editValue.trim() } as any).eq('id', id);
+    await supabase.from('gyeol_user_memories' as any).update({ value: editValue.trim() }).eq('id', id);
     setMemories((prev) => prev.map((m) => m.id === id ? { ...m, value: editValue.trim() } : m));
     setEditTarget(null);
     setEditValue('');

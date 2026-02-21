@@ -38,7 +38,7 @@ export function MoodHistory({ agentId }: { agentId?: string }) {
         .order('created_at', { ascending: false })
         .limit(14);
       if (data) {
-        setEntries((data as any[]).map((d) => ({
+        setEntries((data ?? []).map((d) => ({
           mood: d.emotion_arc || 'neutral',
           created_at: d.created_at,
         })).reverse());

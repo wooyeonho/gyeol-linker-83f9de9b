@@ -79,7 +79,7 @@ export function AgentBackupRestore({ agent }: { agent: Agent }) {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      await supabase.from('gyeol_agents' as any).update({
+      await supabase.from('gyeol_agents').update({
         warmth: data.warmth,
         logic: data.logic,
         creativity: data.creativity,
@@ -87,7 +87,7 @@ export function AgentBackupRestore({ agent }: { agent: Agent }) {
         humor: data.humor,
         visual_state: data.visual_state,
         settings: data.settings,
-      } as any).eq('id', agent.id);
+      }).eq('id', agent.id);
     } catch (err) {
       console.error('Restore failed:', err);
     }

@@ -53,7 +53,7 @@ export function PersonalitySection({
                   <input type="text" value={agentName} onChange={e => setAgentName(e.target.value)}
                     onBlur={async () => {
                       if (agentName.trim() && agentName !== agent?.name) {
-                        const { data: dup } = await supabase.from('gyeol_agents' as any)
+                        const { data: dup } = await supabase.from('gyeol_agents')
                           .select('id').eq('name', agentName.trim()).neq('id', agent?.id ?? '').limit(1);
                         if (dup && (dup as any[]).length > 0) {
                           setError({ message: 'Name already taken' });
@@ -82,7 +82,7 @@ export function PersonalitySection({
               <button type="button" onClick={async () => {
                 const locked = !((agent?.settings as any)?.personalityLocked);
                 const s = { ...(agent?.settings as any), personalityLocked: locked };
-                await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
                 if (agent) setAgent({ ...agent, settings: s } as any);
               }}
                 className={`w-10 h-6 rounded-full transition ${(agent?.settings as any)?.personalityLocked ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>
@@ -94,7 +94,7 @@ export function PersonalitySection({
               <p className="text-[10px] text-foreground/30">Custom Persona</p>
               <select value={(agent?.settings as any)?.persona ?? 'friend'} onChange={async (e) => {
                 const s = { ...(agent?.settings as any), persona: e.target.value };
-                await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
                 if (agent) setAgent({ ...agent, settings: s } as any);
               }}
                 className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground outline-none">
@@ -110,7 +110,7 @@ export function PersonalitySection({
                 onBlur={async (e) => {
                   const val = e.target.value.trim();
                   const s = { ...(agent?.settings as any), personaCustom: val, ...(val ? { persona: val } : {}) };
-                  await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                  await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
                   if (agent) setAgent({ ...agent, settings: s } as any);
                 }}
                 className="w-full rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] px-3 py-2 text-xs text-foreground placeholder:text-foreground/20 outline-none" />
@@ -140,7 +140,7 @@ export function PersonalitySection({
                   const saved = s.savedPresets ?? [];
                   const updated = [...saved, preset].slice(-6);
                   const ns = { ...s, savedPresets: updated };
-                  await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                  await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                   if (agent) setAgent({ ...agent, settings: ns } as any);
                 }}
                   className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary/70 hover:bg-primary/20 transition flex items-center gap-1">
@@ -174,7 +174,7 @@ export function PersonalitySection({
                           const s = (agent?.settings as any) ?? {};
                           const saved = (s.savedPresets ?? []).filter((_: any, j: number) => j !== i);
                           const ns = { ...s, savedPresets: saved };
-                          await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                          await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                           if (agent) setAgent({ ...agent, settings: ns } as any);
                         }}
                           className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive/80 text-foreground text-[8px] flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition">&times;</button>

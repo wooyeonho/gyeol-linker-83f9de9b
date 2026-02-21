@@ -116,7 +116,7 @@ export default function SettingsPage() {
     if (!agent) return;
     setWarmth(agent.warmth); setLogic(agent.logic); setCreativity(agent.creativity);
     setEnergy(agent.energy); setHumor(agent.humor); setAgentName(agent.name);
-    const s = (agent as any).settings ?? {};
+    const s = agent?.settings ?? {};
     if (typeof s.autoTTS === 'boolean') setAutoTTS(s.autoTTS);
     if (typeof s.ttsSpeed === 'number') setTtsSpeed(s.ttsSpeed);
     if (s.analysisDomains) setAnalysisDomains(s.analysisDomains);
@@ -127,9 +127,9 @@ export default function SettingsPage() {
     setTelegramCode(agent.id);
     (async () => {
       const [feedsRes, keywordsRes, telegramRes] = await Promise.all([
-        supabase.from('gyeol_user_feeds' as any).select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
+        supabase.from('gyeol_user_feeds').select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
         supabase.from('gyeol_user_keywords' as any).select('*').eq('agent_id', agent.id).order('created_at', { ascending: false }),
-        supabase.from('gyeol_telegram_links' as any).select('id').eq('agent_id', agent.id).limit(1),
+        supabase.from('gyeol_telegram_links').select('id').eq('agent_id', agent.id).limit(1),
       ]);
       if (feedsRes.data) setFeeds(feedsRes.data as any[]);
       if (keywordsRes.data) setKeywords(keywordsRes.data as any[]);
@@ -140,14 +140,14 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from('gyeol_byok_keys' as any).select('provider, encrypted_key').eq('user_id', user.id);
-      if (data) setByokList((data as any[]).map((x: any) => ({ provider: x.provider, masked: '****' + (x.encrypted_key?.slice(-4) ?? '') })));
+      const { data } = await supabase.from('gyeol_byok_keys').select('provider, encrypted_key').eq('user_id', user.id);
+      if (data) setByokList((data ?? []).map((x: any) => ({ provider: x.provider, masked: '****' + (x.encrypted_key?.slice(-4) ?? '') })));
     })();
   }, [user]);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from('gyeol_system_state' as any).select('kill_switch').eq('id', 'global').maybeSingle();
+      const { data } = await supabase.from('gyeol_system_state').select('kill_switch').eq('id', 'global').maybeSingle();
       if (data) setKillSwitchActive((data as any).kill_switch);
     })();
   }, []);
@@ -156,7 +156,7 @@ export default function SettingsPage() {
   const savePersonality = useCallback(async () => {
     if (!agent) return;
     setPersonalitySaving(true);
-    await supabase.from('gyeol_agents' as any).update({ warmth, logic, creativity, energy, humor, name: agentName } as any).eq('id', agent.id);
+    await supabase.from('gyeol_agents').update({ warmth, logic, creativity, energy, humor, name: agentName }).eq('id', agent.id);
     setPersonalitySaving(false);
   }, [agent, warmth, logic, creativity, energy, humor, agentName]);
 
@@ -169,19 +169,19 @@ export default function SettingsPage() {
 
   const addFeed = async () => {
     if (!agent || !newFeedUrl.trim()) return;
-    const { data, error } = await supabase.from('gyeol_user_feeds' as any).insert({ agent_id: agent.id, feed_url: newFeedUrl.trim(), feed_name: newFeedName.trim() || null } as any).select().single();
+    const { data, error } = await supabase.from('gyeol_user_feeds').insert({ agent_id: agent.id, feed_url: newFeedUrl.trim(), feed_name: newFeedName.trim() || null }).select().single();
     if (data && !error) { setFeeds(prev => [data as any, ...prev]); setNewFeedUrl(''); setNewFeedName(''); }
   };
-  const removeFeed = async (id: string) => { await supabase.from('gyeol_user_feeds' as any).delete().eq('id', id); setFeeds(prev => prev.filter(f => f.id !== id)); };
+  const removeFeed = async (id: string) => { await supabase.from('gyeol_user_feeds').delete().eq('id', id); setFeeds(prev => prev.filter(f => f.id !== id)); };
   const addKeyword = async () => {
     if (!agent || !newKeyword.trim()) return;
-    const { data, error } = await supabase.from('gyeol_user_keywords' as any).insert({ agent_id: agent.id, keyword: newKeyword.trim() } as any).select().single();
+    const { data, error } = await supabase.from('gyeol_user_keywords' as any).insert({ agent_id: agent.id, keyword: newKeyword.trim() }).select().single();
     if (data && !error) { setKeywords(prev => [data as any, ...prev]); setNewKeyword(''); }
   };
   const removeKeyword = async (id: string) => { await supabase.from('gyeol_user_keywords' as any).delete().eq('id', id); setKeywords(prev => prev.filter(k => k.id !== id)); };
   const toggleKillSwitch = async () => {
     const newVal = !killSwitchActive;
-    await supabase.from('gyeol_system_state' as any).update({ kill_switch: newVal, reason: newVal ? 'User activated' : 'User deactivated' } as any).eq('id', 'global');
+    await supabase.from('gyeol_system_state').update({ kill_switch: newVal, reason: newVal ? 'User activated' : 'User deactivated' }).eq('id', 'global');
     setKillSwitchActive(newVal);
   };
   const toggleSection = (s: string) => setActiveSection(prev => prev === s ? null : s);
@@ -239,8 +239,8 @@ export default function SettingsPage() {
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Account</p>
             <p className="text-sm text-foreground/60">{user?.email}</p>
           </section>
-          {agent && (agent as any).consecutive_days > 0 && (
-            <StreakCalendar streakDays={(agent as any).consecutive_days} longestStreak={(agent as any).consecutive_days} />
+          {agent && agent?.consecutive_days > 0 && (
+            <StreakCalendar streakDays={agent?.consecutive_days} longestStreak={agent?.consecutive_days} />
           )}
         </div>
 
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                   const color = e.target.value;
                   document.documentElement.style.setProperty('--primary', `${hexToHSL(color)}`);
                   const s = { ...(agent?.settings as any), customThemeColor: color };
-                  await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                  await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
                   if (agent) setAgent({ ...agent, settings: s } as any);
                 }}
                 className="w-8 h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
@@ -346,7 +346,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-[10px] text-foreground/30 mb-2">Current Mood</p>
                   <MoodSelector currentMood={(agent?.mood as any) ?? 'neutral'} onChange={async (mood) => {
-                    await supabase.from('gyeol_agents' as any).update({ mood } as any).eq('id', agent?.id);
+                    await supabase.from('gyeol_agents').update({ mood }).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, mood } as any);
                   }} />
                 </div>
@@ -354,7 +354,7 @@ export default function SettingsPage() {
                   <p className="text-[10px] text-foreground/30 mb-2">Persona</p>
                   <PersonaSelector current={(agent?.settings as any)?.persona ?? 'friend'} onSelect={async (id) => {
                     const s = { ...(agent?.settings as any), persona: id };
-                    await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                    await supabase.from('gyeol_agents').update({ settings: s }).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, settings: s } as any);
                   }} />
                 </div>
@@ -396,8 +396,8 @@ export default function SettingsPage() {
                       <button key={opt.value} type="button" onClick={async () => {
                         setProactiveInterval(opt.value);
                         if (agent) {
-                          const newSettings = { ...(agent as any).settings, proactiveInterval: opt.value };
-                          await supabase.from('gyeol_agents' as any).update({ settings: newSettings } as any).eq('id', agent.id);
+                          const newSettings = { ...agent?.settings, proactiveInterval: opt.value };
+                          await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent.id);
                           setAgent({ ...agent, settings: newSettings } as any);
                         }
                       }}
@@ -452,7 +452,7 @@ export default function SettingsPage() {
                     </div>
                     <button type="button" onClick={() => {
                       const next = !autoTTS; setAutoTTS(next);
-                      if (agent) supabase.from('gyeol_agents' as any).update({ settings: { ...(agent as any).settings, autoTTS: next } } as any).eq('id', agent.id);
+                      if (agent) supabase.from('gyeol_agents').update({ settings: { ...agent?.settings, autoTTS: next } } as any).eq('id', agent.id);
                     }}
                       className={`w-9 h-5 rounded-full transition ${autoTTS ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>
                       <span className={`block w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-all ${autoTTS ? 'ml-[18px]' : 'ml-1'}`} />
@@ -464,7 +464,7 @@ export default function SettingsPage() {
                       <span className="text-[10px] text-foreground/20">{ttsSpeed.toFixed(1)}x</span>
                       <input type="range" min={0.5} max={1.5} step={0.1} value={ttsSpeed}
                         onChange={e => { const v = Number(e.target.value); setTtsSpeed(v);
-                          if (agent) supabase.from('gyeol_agents' as any).update({ settings: { ...(agent as any).settings, ttsSpeed: v } } as any).eq('id', agent.id);
+                          if (agent) supabase.from('gyeol_agents').update({ settings: { ...agent?.settings, ttsSpeed: v } } as any).eq('id', agent.id);
                         }} className="w-20 accent-primary" />
                     </div>
                   </div>
@@ -574,7 +574,7 @@ export default function SettingsPage() {
       <ModeSwitchGuide isOpen={modeSwitchOpen} onClose={() => setModeSwitchOpen(false)} targetMode={modeSwitchTarget}
         onConfirm={async () => {
           const s = (agent?.settings as any) ?? {};
-          await supabase.from('gyeol_agents' as any).update({ settings: { ...s, mode: modeSwitchTarget } } as any).eq('id', agent?.id);
+          await supabase.from('gyeol_agents').update({ settings: { ...s, mode: modeSwitchTarget } } as any).eq('id', agent?.id);
           window.location.href = '/';
         }} />
       <DeleteAccountModal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onDeleted={() => { window.location.href = '/auth'; }} />

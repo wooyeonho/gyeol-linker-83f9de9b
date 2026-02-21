@@ -44,8 +44,8 @@ export function AnalysisDomainSection({ agent, activeSection, SectionHeader, ana
                     <button type="button" onClick={() => {
                       const next = { ...analysisDomains, [d.key]: !enabled };
                       setAnalysisDomains(next);
-                      if (agent) supabase.from('gyeol_agents' as any)
-                        .update({ settings: { ...(agent as any).settings, analysisDomains: next } } as any)
+                      if (agent) supabase.from('gyeol_agents')
+                        .update({ settings: { ...agent?.settings, analysisDomains: next } } as any)
                         .eq('id', agent.id);
                     }}
                       className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 ${enabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/[0.06]'}`}>

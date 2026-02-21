@@ -39,10 +39,10 @@ export default function MarketSkillsPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from('gyeol_skills' as any)
+      const { data } = await supabase.from('gyeol_skills')
         .select('id, name, description, category, min_gen, price, rating, downloads')
         .eq('is_approved', true).order('downloads', { ascending: false }).limit(50);
-      setSkills((data as any[]) ?? []);
+      setSkills((data ?? []) ?? []);
       setLoading(false);
     })();
   }, []);
@@ -50,8 +50,8 @@ export default function MarketSkillsPage() {
   useEffect(() => {
     if (!agent?.id) return;
     (async () => {
-      const { data } = await supabase.from('gyeol_agent_skills' as any).select('skill_id').eq('agent_id', agent.id);
-      if (data) setInstalledIds(new Set((data as any[]).map((d: any) => d.skill_id)));
+      const { data } = await supabase.from('gyeol_agent_skills').select('skill_id').eq('agent_id', agent.id);
+      if (data) setInstalledIds(new Set((data ?? []).map((d: any) => d.skill_id)));
     })();
   }, [agent?.id]);
 
@@ -61,7 +61,7 @@ export default function MarketSkillsPage() {
   useEffect(() => {
     if (!agent?.id) return;
     (async () => {
-      const { data } = await supabase.from('gyeol_agent_skills' as any).select('skill_id, is_active').eq('agent_id', agent.id);
+      const { data } = await supabase.from('gyeol_agent_skills').select('skill_id, is_active').eq('agent_id', agent.id);
       if (data) {
         const map: Record<string, boolean> = {};
         for (const d of data as any[]) { map[d.skill_id] = d.is_active; }
@@ -74,7 +74,7 @@ export default function MarketSkillsPage() {
     if (!agent?.id || installing) return;
     setInstalling(skill.id);
     try {
-      await supabase.from('gyeol_agent_skills' as any)
+      await supabase.from('gyeol_agent_skills')
         .upsert({ agent_id: agent.id, skill_id: skill.id, is_active: true } as any, { onConflict: 'agent_id,skill_id' });
       setInstalledIds(prev => new Set(prev).add(skill.id));
       setActiveSkills(prev => ({ ...prev, [skill.id]: true }));
@@ -86,8 +86,8 @@ export default function MarketSkillsPage() {
     if (!agent?.id) return;
     const newActive = !(activeSkills[skillId] ?? true);
     setActiveSkills(prev => ({ ...prev, [skillId]: newActive }));
-    await supabase.from('gyeol_agent_skills' as any)
-      .update({ is_active: newActive } as any)
+    await supabase.from('gyeol_agent_skills')
+      .update({ is_active: newActive })
       .eq('agent_id', agent.id).eq('skill_id', skillId);
   };
 
@@ -95,10 +95,10 @@ export default function MarketSkillsPage() {
     if (!user || !uploadName.trim() || uploading) return;
     setUploading(true);
     try {
-      await supabase.from('gyeol_skills' as any).insert({
+      await supabase.from('gyeol_skills').insert({
         name: uploadName.trim(), description: uploadDesc.trim() || null, category: uploadCategory,
         creator_id: user.id, is_approved: false, price: 0, min_gen: 1,
-      } as any);
+      });
       setUploadName(''); setUploadDesc(''); setShowUpload(false);
     } catch (err) { console.warn('Failed to upload skill:', err); }
     setUploading(false);

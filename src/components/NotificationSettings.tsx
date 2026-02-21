@@ -55,7 +55,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
     setToggles(updated);
     const ns = { ...notifSettings, ...updated };
     const newSettings = { ...settings, notifications: ns };
-    await supabase.from('gyeol_agents' as any).update({ settings: newSettings } as any).eq('id', agent?.id);
+    await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
     onUpdate(newSettings);
   };
 
@@ -64,7 +64,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
     setQuietEnd(end);
     const ns = { ...notifSettings, ...toggles, quietStart: start, quietEnd: end };
     const newSettings = { ...settings, notifications: ns };
-    await supabase.from('gyeol_agents' as any).update({ settings: newSettings } as any).eq('id', agent?.id);
+    await supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
     onUpdate(newSettings);
   };
 
@@ -85,7 +85,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
           setToggles(updated);
           const ns = { ...notifSettings, ...updated };
           const newSettings = { ...settings, notifications: ns };
-          supabase.from('gyeol_agents' as any).update({ settings: newSettings } as any).eq('id', agent?.id);
+          supabase.from('gyeol_agents').update({ settings: newSettings }).eq('id', agent?.id);
           onUpdate(newSettings);
         }}
           className={`w-10 h-6 rounded-full transition ${allOn ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-foreground/10'}`}>

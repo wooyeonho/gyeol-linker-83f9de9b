@@ -66,7 +66,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
           : { warmth: 60, logic: 40, creativity: 50, energy: 50, humor: 50 }),
       };
       const { data, error } = await supabase
-        .from('gyeol_agents' as any)
+        .from('gyeol_agents')
         .upsert(agentData as any, { onConflict: 'user_id', ignoreDuplicates: false })
         .select()
         .single();

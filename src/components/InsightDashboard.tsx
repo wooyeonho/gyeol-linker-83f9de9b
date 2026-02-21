@@ -47,7 +47,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
         .eq('agent_id', agent.id)
         .order('created_at', { ascending: false })
         .limit(20);
-      setInsights((data as any[]) ?? []);
+      setInsights((data ?? []) ?? []);
       setLoading(false);
     })();
   }, [isOpen, agent?.id]);

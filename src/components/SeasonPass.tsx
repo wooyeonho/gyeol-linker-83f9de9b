@@ -55,7 +55,7 @@ export function SeasonPass() {
           const newClaimed = [...claimed, ...autoClaimed];
           const maxTier = Math.max(...newClaimed);
           await supabase.from('gyeol_season_progress')
-            .update({ rewards_claimed: newClaimed, tier: maxTier } as any)
+            .update({ rewards_claimed: newClaimed, tier: maxTier })
             .eq('agent_id', agent.id).eq('season_id', (s as any).id);
           setProgress({ ...progressData, rewards_claimed: newClaimed, tier: maxTier });
           setClaimMsg(`🎉 Tier ${autoClaimed.join(', ')} 보상 자동 지급!`);
@@ -71,7 +71,7 @@ export function SeasonPass() {
     const claimed = Array.isArray(progress.rewards_claimed) ? [...progress.rewards_claimed] : [];
     claimed.push(tier);
     await supabase.from('gyeol_season_progress')
-      .update({ rewards_claimed: claimed, tier: Math.max(progress.tier, tier) } as any)
+      .update({ rewards_claimed: claimed, tier: Math.max(progress.tier, tier) })
       .eq('agent_id', agent.id)
       .eq('season_id', season.id);
     setProgress({ ...progress, rewards_claimed: claimed, tier: Math.max(progress.tier, tier) });
