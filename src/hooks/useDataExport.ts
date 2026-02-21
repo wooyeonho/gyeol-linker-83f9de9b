@@ -22,7 +22,7 @@ export function useDataExport() {
           name: (agent as any).name,
           persona: (agent as any).persona,
           personality_traits: (agent as any).personality_traits,
-          settings: (agent as any).settings,
+          settings: agent?.settings,
           created_at: (agent as any).created_at,
         },
         conversations: convRes.data ?? [],

@@ -35,7 +35,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
       message: message.trim(),
       contact_email: email.trim() || null,
       status: 'new',
-    } as any);
+    });
     setSubmitting(false);
     setSubmitted(true);
     setTimeout(() => { onClose(); setSubmitted(false); setCategory(''); setMessage(''); setEmail(''); }, 1500);

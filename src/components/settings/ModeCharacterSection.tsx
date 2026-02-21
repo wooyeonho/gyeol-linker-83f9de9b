@@ -83,8 +83,8 @@ export function ModeCharacterSection({
                     setCharPreset(c.key);
                     const s = (agent?.settings as any) ?? {};
                     const newSettings = { ...s, characterPreset: c.key };
-                    await supabase.from('gyeol_agents' as any)
-                      .update({ settings: newSettings } as any).eq('id', agent?.id);
+                    await supabase.from('gyeol_agents')
+                      .update({ settings: newSettings }).eq('id', agent?.id);
                     if (agent) setAgent({ ...agent, settings: newSettings } as any);
                   }}
                     className={`flex flex-col items-center p-3 rounded-xl transition ${
@@ -107,7 +107,7 @@ export function ModeCharacterSection({
                           const s = (agent?.settings as any) ?? {};
                           const cc = { ...(s.customChar ?? {}), color1: e.target.value };
                           const ns = { ...s, customChar: cc };
-                          await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                          await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                           if (agent) setAgent({ ...agent, settings: ns } as any);
                         }}
                         className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
@@ -119,7 +119,7 @@ export function ModeCharacterSection({
                           const s = (agent?.settings as any) ?? {};
                           const cc = { ...(s.customChar ?? {}), color2: e.target.value };
                           const ns = { ...s, customChar: cc };
-                          await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                          await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                           if (agent) setAgent({ ...agent, settings: ns } as any);
                         }}
                         className="w-full h-8 rounded-lg border border-foreground/10 cursor-pointer bg-transparent" />
@@ -132,7 +132,7 @@ export function ModeCharacterSection({
                         const s = (agent?.settings as any) ?? {};
                         const cc = { ...(s.customChar ?? {}), glow: Number(e.target.value) };
                         const ns = { ...s, customChar: cc };
-                        await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                        await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                         if (agent) setAgent({ ...agent, settings: ns } as any);
                       }}
                       className="w-full" />
@@ -145,7 +145,7 @@ export function ModeCharacterSection({
                           const s = (agent?.settings as any) ?? {};
                           const cc = { ...(s.customChar ?? {}), emoji };
                           const ns = { ...s, customChar: cc };
-                          await supabase.from('gyeol_agents' as any).update({ settings: ns } as any).eq('id', agent?.id);
+                          await supabase.from('gyeol_agents').update({ settings: ns }).eq('id', agent?.id);
                           if (agent) setAgent({ ...agent, settings: ns } as any);
                         }}
                           className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${

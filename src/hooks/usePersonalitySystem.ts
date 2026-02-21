@@ -46,7 +46,7 @@ export function usePersonalitySystem(agentId?: string) {
     if (locked) return;
     setAxes(preset.axes);
     if (agentId) {
-      await supabase.from('gyeol_agents' as any).update({
+      await supabase.from('gyeol_agents').update({
         personality: preset.axes,
         settings: { personality_locked: locked },
       } as any).eq('id', agentId);
@@ -58,7 +58,7 @@ export function usePersonalitySystem(agentId?: string) {
     const newAxes = { ...axes, [axis]: Math.min(100, Math.max(0, value)) };
     setAxes(newAxes);
     if (agentId) {
-      await supabase.from('gyeol_agents' as any).update({ personality: newAxes } as any).eq('id', agentId);
+      await supabase.from('gyeol_agents').update({ personality: newAxes }).eq('id', agentId);
     }
   }, [axes, agentId, locked]);
 
@@ -66,7 +66,7 @@ export function usePersonalitySystem(agentId?: string) {
     const newLocked = !locked;
     setLocked(newLocked);
     if (agentId) {
-      await supabase.from('gyeol_agents' as any).update({
+      await supabase.from('gyeol_agents').update({
         settings: { personality_locked: newLocked },
       } as any).eq('id', agentId);
     }
@@ -75,7 +75,7 @@ export function usePersonalitySystem(agentId?: string) {
   const resetPersonality = useCallback(async () => {
     setAxes(DEFAULT_AXES);
     if (agentId) {
-      await supabase.from('gyeol_agents' as any).update({ personality: DEFAULT_AXES } as any).eq('id', agentId);
+      await supabase.from('gyeol_agents').update({ personality: DEFAULT_AXES }).eq('id', agentId);
     }
   }, [agentId]);
 

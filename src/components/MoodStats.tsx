@@ -26,7 +26,7 @@ export function MoodStats({ agentId }: { agentId?: string }) {
         .limit(100);
       if (!data) return;
       const counts: Record<string, number> = {};
-      (data as any[]).forEach(d => {
+      (data ?? []).forEach(d => {
         const m = d.emotion_arc || 'neutral';
         counts[m] = (counts[m] ?? 0) + 1;
       });

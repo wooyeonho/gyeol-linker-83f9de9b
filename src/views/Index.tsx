@@ -55,7 +55,7 @@ export default function GyeolPage() {
 
   useEffect(() => {
     if (!agent) return;
-    const intimacy = (agent as any).intimacy ?? 0;
+    const intimacy = agent?.intimacy ?? 0;
     const thresholds = [20, 40, 60, 80, 95];
     if (prevIntimacyRef.current !== null) {
       const prev = prevIntimacyRef.current;
@@ -63,7 +63,7 @@ export default function GyeolPage() {
       if (crossed) setIntimacyPopup({ show: true, value: intimacy });
     }
     prevIntimacyRef.current = intimacy;
-  }, [(agent as any)?.intimacy]);
+  }, [agent?.intimacy]);
 
   useEffect(() => {
     if (!agent) return;
@@ -104,14 +104,14 @@ export default function GyeolPage() {
   useEffect(() => {
     if (!agent?.id || messages.length > 0) return;
     (async () => {
-      const { data } = await supabase.from('gyeol_conversations' as any)
+      const { data } = await supabase.from('gyeol_conversations')
         .select('id, agent_id, role, content, channel, provider, tokens_used, response_time_ms, created_at')
         .eq('agent_id', agent.id)
         .order('created_at', { ascending: false })
         .limit(50);
       if (data && data.length > 0) {
         const { setMessages } = useGyeolStore.getState();
-        setMessages((data as any[]).reverse());
+        setMessages((data ?? []).reverse());
       }
     })();
   }, [agent?.id]);
@@ -322,7 +322,7 @@ export default function GyeolPage() {
                 creativity={agent.creativity}
                 energy={agent.energy}
                 humor={agent.humor}
-                intimacy={(agent as any).intimacy ?? 0}
+                intimacy={agent?.intimacy ?? 0}
                 totalConversations={agent.total_conversations ?? 0}
                 mood={(agent as any).mood ?? 'neutral'}
                 onClose={() => setShareCardOpen(false)}

@@ -97,7 +97,7 @@ export function useSimpleChatState() {
       return next;
     });
     if (!msgId.startsWith('local-')) {
-      supabase.from('gyeol_conversations' as any).update({ is_pinned: !pinnedMessages.has(msgId) } as any).eq('id', msgId);
+      supabase.from('gyeol_conversations').update({ is_pinned: !pinnedMessages.has(msgId) }).eq('id', msgId);
     }
   };
 
@@ -131,7 +131,7 @@ export function useSimpleChatState() {
       return next;
     });
     if (!msgId.startsWith('local-')) {
-      await supabase.from('gyeol_conversations' as any).update({ content: editText.trim(), is_edited: true } as any).eq('id', msgId);
+      await supabase.from('gyeol_conversations').update({ content: editText.trim(), is_edited: true }).eq('id', msgId);
     }
     setEditingMsg(null); setEditText('');
   };
@@ -139,7 +139,7 @@ export function useSimpleChatState() {
   const handleReaction = (msgId: string, emoji: string) => {
     setReactions(prev => ({ ...prev, [msgId]: emoji }));
     if (!msgId.startsWith('local-')) {
-      supabase.from('gyeol_conversations' as any).update({ reactions: { [emoji]: 1 } } as any).eq('id', msgId);
+      supabase.from('gyeol_conversations').update({ reactions: { [emoji]: 1 } } as any).eq('id', msgId);
     }
   };
 
@@ -284,7 +284,7 @@ export function useSimpleChatState() {
     await sendMessage(content);
   };
 
-  const intimacy = (agent as any)?.intimacy ?? 0;
+  const intimacy = agent?.intimacy ?? 0;
   const intimacyLevel = intimacy < 10 ? 'Stranger' : intimacy < 20 ? 'Acquaintance' : intimacy < 30 ? 'Casual' : intimacy < 40 ? 'Friend' : intimacy < 50 ? 'Good Friend' : intimacy < 60 ? 'Close Friend' : intimacy < 70 ? 'Bestie' : intimacy < 80 ? 'Soulmate' : intimacy < 90 ? 'Family' : 'Inseparable';
   const intimacyEmoji = intimacy < 10 ? '🤝' : intimacy < 20 ? '👋' : intimacy < 30 ? '😊' : intimacy < 40 ? '💕' : intimacy < 50 ? '💖' : intimacy < 60 ? '💗' : intimacy < 70 ? '💞' : intimacy < 80 ? '💘' : intimacy < 90 ? '👨‍👩‍👧' : '💫';
 

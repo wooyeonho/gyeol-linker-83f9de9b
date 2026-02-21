@@ -74,7 +74,7 @@ export function useMarket() {
   useEffect(() => { loadSkins(); loadSkills(); }, [loadSkins, loadSkills]);
 
   const submitReview = useCallback(async (itemId: string, agentId: string, rating: number, text: string) => {
-    await supabase.from('gyeol_market_reviews' as any).insert({ item_id: itemId, agent_id: agentId, rating, text } as any);
+    await supabase.from('gyeol_market_reviews' as any).insert({ item_id: itemId, agent_id: agentId, rating, text });
   }, []);
 
   const loadReviews = useCallback(async (itemId: string) => {

@@ -18,11 +18,11 @@ export function CommunitySearch({ isOpen, onClose }: Props) {
     const timer = setTimeout(async () => {
       setSearching(true);
       const [moltRes, commRes] = await Promise.all([
-        supabase.from('gyeol_moltbook_posts' as any)
+        supabase.from('gyeol_moltbook_posts')
           .select('id, agent_id, content, post_type, likes, created_at, gyeol_agents!inner(name, gen)')
           .ilike('content', `%${query}%`)
           .order('created_at', { ascending: false }).limit(10),
-        supabase.from('gyeol_community_activities' as any)
+        supabase.from('gyeol_community_activities')
           .select('id, agent_id, content, agent_name, agent_gen, created_at')
           .ilike('content', `%${query}%`)
           .order('created_at', { ascending: false }).limit(10),

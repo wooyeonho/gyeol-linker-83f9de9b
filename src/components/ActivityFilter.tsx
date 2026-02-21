@@ -5,10 +5,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ACTIVITY_CATEGORIES = [
-  { key: 'all', label: '전체', icon: 'apps' },
+  { key: 'all', label: 'All', icon: 'apps' },
   { key: 'learning', label: '학습', icon: 'school' },
   { key: 'reflection', label: '반성', icon: 'psychology' },
-  { key: 'social', label: '소셜', icon: 'group' },
+  { key: 'social', label: 'Social', icon: 'group' },
   { key: 'proactive', label: '선행', icon: 'campaign' },
   { key: 'skill', label: '스킬', icon: 'extension' },
   { key: 'error', label: '오류', icon: 'error_outline' },

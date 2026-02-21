@@ -1,5 +1,5 @@
 /**
- * 모드 전환 안내 — Simple ↔ Advanced 전환 시 표시
+ * Switch Mode 안내 — Simple ↔ Advanced 전환 시 표시
  */
 import { motion, AnimatePresence } from 'framer-motion';
 

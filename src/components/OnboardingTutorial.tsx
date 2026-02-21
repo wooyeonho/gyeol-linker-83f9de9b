@@ -1,5 +1,5 @@
 /**
- * 온보딩 튜토리얼 오버레이 — 주요 기능 소개 가이드
+ * 온보딩 Tutorial 오버레이 — 주요 기능 소개 가이드
  * 첫 방문 시 자동 표시, localStorage로 표시 여부 관리
  */
 import { useState } from 'react';
@@ -8,9 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 const STEPS = [
   {
     icon: '💬',
-    title: '대화하기',
+    title: 'Chat',
     desc: '하단 입력창에 메시지를 입력하세요. AI가 당신의 말투와 관심사를 학습합니다.',
-    tip: '한국어, 영어, 일본어 등 다국어를 지원해요!',
+    tip: '한국어, 영어, 일본어 등 Supports multiple languages!',
   },
   {
     icon: '🧬',
@@ -26,15 +26,15 @@ const STEPS = [
   },
   {
     icon: '🔥',
-    title: '연속 접속',
-    desc: '매일 접속하면 스트릭 보너스를 받아요. 연속 접속이 길어질수록 보상이 커집니다.',
+    title: 'Login Streak',
+    desc: '매일 접속하면 스트릭 보너스를 받아요. Login Streak이 길어질수록 보상이 커집니다.',
     tip: '7일 연속 → EXP 2배 보너스!',
   },
   {
     icon: '🏆',
     title: 'Quest & Achievement',
     desc: '하단 내비게이션의 Quest 탭에서 일일/주간 미션을 Confirm하고 보상을 받으세요.',
-    tip: 'Done된 Quest는 "Claim Reward" 버튼을 눌러 수령하세요.',
+    tip: 'Done된 Quest는 "Claim Reward" 버튼을 눌러 claim your reward.',
   },
   {
     icon: '⚙️',
@@ -66,7 +66,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md"
         onClick={onClose}
         role="dialog"
-        aria-label="온보딩 튜토리얼"
+        aria-label="온보딩 Tutorial"
       >
         <motion.div
           key={step}
@@ -133,7 +133,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
               }}
               className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20"
             >
-              {isLast ? '시작하기 🚀' : 'Next'}
+              {isLast ? 'Get Started 🚀' : 'Next'}
             </button>
           </div>
 
@@ -141,7 +141,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
             onClick={() => { onClose(); setStep(0); }}
             className="mt-3 text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition"
           >
-            건너뛰기
+            Skip
           </button>
         </motion.div>
       </motion.div>

@@ -65,7 +65,7 @@ export function ChatCore({
   const handleReaction = useCallback((msgId: string, emoji: string) => {
     setReactions(prev => ({ ...prev, [msgId]: emoji }));
     if (!msgId.startsWith('local-')) {
-      supabase.from('gyeol_conversations' as any).update({ reactions: { [emoji]: 1 } } as any).eq('id', msgId);
+      supabase.from('gyeol_conversations').update({ reactions: { [emoji]: 1 } } as any).eq('id', msgId);
     }
   }, []);
 
@@ -77,7 +77,7 @@ export function ChatCore({
       return next;
     });
     if (!msgId.startsWith('local-')) {
-      supabase.from('gyeol_conversations' as any).update({ is_pinned: !pinnedMessages.has(msgId) } as any).eq('id', msgId);
+      supabase.from('gyeol_conversations').update({ is_pinned: !pinnedMessages.has(msgId) }).eq('id', msgId);
     }
   }, [pinnedMessages]);
 

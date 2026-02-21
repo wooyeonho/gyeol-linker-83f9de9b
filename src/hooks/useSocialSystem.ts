@@ -53,13 +53,13 @@ export function useSocialSystem(agentId?: string) {
   }, [agentId]);
 
   const loadPosts = useCallback(async () => {
-    const { data } = await supabase.from('gyeol_moltbook_posts' as any).select('*').order('created_at', { ascending: false }).limit(50);
+    const { data } = await supabase.from('gyeol_moltbook_posts').select('*').order('created_at', { ascending: false }).limit(50);
     if (data) setPosts(data as any);
   }, []);
 
   const loadBreedingLogs = useCallback(async () => {
     if (!agentId) return;
-    const { data } = await supabase.from('gyeol_breeding_logs' as any).select('*').or(`parent1_id.eq.${agentId},parent2_id.eq.${agentId}`).order('created_at', { ascending: false });
+    const { data } = await supabase.from('gyeol_breeding_logs').select('*').or(`parent1_id.eq.${agentId},parent2_id.eq.${agentId}`).order('created_at', { ascending: false });
     if (data) setBreedingLogs(data as any);
   }, [agentId]);
 
@@ -76,21 +76,21 @@ export function useSocialSystem(agentId?: string) {
   const createPost = useCallback(async (content: string, mediaUrl?: string) => {
     if (!agentId) return;
     const hashtags = (content.match(/#\w+/g) ?? []).map(h => h.slice(1));
-    await supabase.from('gyeol_moltbook_posts' as any).insert({
+    await supabase.from('gyeol_moltbook_posts').insert({
       agent_id: agentId, content, media_url: mediaUrl, hashtags,
-    } as any);
+    });
     await loadPosts();
   }, [agentId, loadPosts]);
 
   const likePost = useCallback(async (postId: string) => {
     if (!agentId) return;
-    await supabase.from('gyeol_moltbook_likes' as any).insert({ post_id: postId, agent_id: agentId } as any);
+    await supabase.from('gyeol_moltbook_likes').insert({ post_id: postId, agent_id: agentId });
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: p.likes + 1, liked_by_me: true } : p));
   }, [agentId]);
 
   const followAgent = useCallback(async (targetAgentId: string) => {
     if (!agentId) return;
-    await supabase.from('gyeol_follows' as any).insert({ follower_id: agentId, following_id: targetAgentId } as any);
+    await supabase.from('gyeol_follows').insert({ follower_id: agentId, following_id: targetAgentId });
     setFollowing(prev => prev + 1);
   }, [agentId]);
 

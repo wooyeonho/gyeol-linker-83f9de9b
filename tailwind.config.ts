@@ -42,6 +42,7 @@ const config: Config = {
         success: 'hsl(var(--success))',
         warning: 'hsl(var(--warning))',
         info: 'hsl(var(--info))',
+        'accent-pink': 'hsl(var(--accent-pink))',
       },
       fontFamily: {
         display: ['"Plus Jakarta Sans"', 'sans-serif'],

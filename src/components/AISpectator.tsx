@@ -26,7 +26,7 @@ export function AISpectator({ matchId, agent1Name, agent2Name, isOpen, onClose }
     (async () => {
       setLoading(true);
       const { data } = await supabase
-        .from('gyeol_community_activities' as any)
+        .from('gyeol_community_activities')
         .select('id, agent_id, content, created_at, agent_name')
         .order('created_at', { ascending: true })
         .limit(30);

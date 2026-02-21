@@ -49,9 +49,9 @@ export default function AdminPage() {
   const loadStats = useCallback(async () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const [agentsRes, convsRes, postsRes, reportsRes, dauRes] = await Promise.all([
-      supabase.from('gyeol_agents' as any).select('id', { count: 'exact', head: true }),
-      supabase.from('gyeol_conversations' as any).select('id', { count: 'exact', head: true }),
-      supabase.from('gyeol_moltbook_posts' as any).select('id', { count: 'exact', head: true }),
+      supabase.from('gyeol_agents').select('id', { count: 'exact', head: true }),
+      supabase.from('gyeol_conversations').select('id', { count: 'exact', head: true }),
+      supabase.from('gyeol_moltbook_posts').select('id', { count: 'exact', head: true }),
       supabase.from('gyeol_reports' as any).select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('gyeol_login_history' as any).select('user_id', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
     ]);
@@ -70,7 +70,7 @@ export default function AdminPage() {
   }, []);
 
   const loadKillSwitch = useCallback(async () => {
-    const { data } = await supabase.from('gyeol_system_state' as any).select('kill_switch').eq('id', 'global').maybeSingle();
+    const { data } = await supabase.from('gyeol_system_state').select('kill_switch').eq('id', 'global').maybeSingle();
     if (data) setKillSwitch((data as any).kill_switch);
   }, []);
 
@@ -81,12 +81,12 @@ export default function AdminPage() {
 
   const toggleKillSwitch = async () => {
     const newVal = !killSwitch;
-    await supabase.from('gyeol_system_state' as any).update({ kill_switch: newVal, reason: newVal ? 'Admin activated' : 'Admin deactivated' } as any).eq('id', 'global');
+    await supabase.from('gyeol_system_state').update({ kill_switch: newVal, reason: newVal ? 'Admin activated' : 'Admin deactivated' }).eq('id', 'global');
     setKillSwitch(newVal);
   };
 
   const resolveReport = async (id: string, action: 'resolved' | 'dismissed') => {
-    await supabase.from('gyeol_reports' as any).update({ status: action, resolved_at: new Date().toISOString() } as any).eq('id', id);
+    await supabase.from('gyeol_reports' as any).update({ status: action, resolved_at: new Date().toISOString() }).eq('id', id);
     setReports(prev => prev.filter(r => r.id !== id));
   };
 
@@ -198,7 +198,7 @@ export default function AdminPage() {
                 className="w-full bg-muted/20 border border-border/30 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground resize-none h-20 mb-2" />
               <button onClick={async () => {
                 if (!announcement.trim()) return;
-                await supabase.from('gyeol_system_state' as any).update({ announcement: announcement.trim() } as any).eq('id', 'global');
+                await supabase.from('gyeol_system_state').update({ announcement: announcement.trim() }).eq('id', 'global');
                 setAnnouncement('');
               }} className="px-4 py-1.5 bg-primary/20 text-primary rounded-lg text-xs hover:bg-primary/30 transition">
                 Send

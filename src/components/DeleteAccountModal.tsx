@@ -12,10 +12,10 @@ interface Props {
 }
 
 const WARNINGS = [
-  { icon: 'chat_bubble', text: '모든 대화 기록이 영구 삭제됩니다' },
+  { icon: 'chat_bubble', text: '모든 대화 기록이 영구 Delete됩니다' },
   { icon: 'psychology', text: 'AI Personality과 기억이 모두 사라집니다' },
   { icon: 'emoji_events', text: 'Achievement, Level, Coins이 초기화됩니다' },
-  { icon: 'group', text: '소셜 활동과 Follow가 삭제됩니다' },
+  { icon: 'group', text: '소셜 활동과 Follow가 Delete됩니다' },
 ];
 
 export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
@@ -24,7 +24,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canDelete = confirmText === '삭제합니다';
+  const canDelete = confirmText === 'Delete합니다';
 
   const handleDelete = async () => {
     if (!canDelete || deleting) return;
@@ -47,7 +47,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
         onDeleted();
       } else {
         const data = await res.json();
-        setError(data.error || '삭제에 실패했어요');
+        setError(data.error || 'Delete에 실패했어요');
       }
     } catch {
       setError('서버 오류가 발생했어요');
@@ -89,8 +89,8 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     className="space-y-4">
                     <div className="text-center">
                       <span className="text-4xl">⚠️</span>
-                      <h2 className="text-base font-bold text-foreground mt-2">정말 삭제하시겠어요?</h2>
-                      <p className="text-[11px] text-muted-foreground mt-1">이 작업은 되돌릴 수 없습니다</p>
+                      <h2 className="text-base font-bold text-foreground mt-2">정말 Delete하시겠어요?</h2>
+                      <p className="text-[11px] text-muted-foreground mt-1">This action cannot be undone</p>
                     </div>
                     <div className="space-y-2">
                       {WARNINGS.map(w => (
@@ -119,14 +119,14 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     <div className="text-center">
                       <h2 className="text-base font-bold text-foreground">Confirm 입력</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        Confirm하려면 <strong className="text-destructive">"삭제합니다"</strong>를 입력하세요
+                        Confirm하려면 <strong className="text-destructive">"Delete합니다"</strong>를 입력하세요
                       </p>
                     </div>
                     <input
                       type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)}
-                      placeholder="삭제합니다"
+                      placeholder="Delete합니다"
                       className="w-full rounded-xl bg-secondary/50 border border-border/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-destructive/40 transition"
-                      aria-label="삭제 Confirm 텍스트 입력"
+                      aria-label="Delete Confirm 텍스트 입력"
                       autoComplete="off"
                     />
                     <div className="flex gap-2">
@@ -149,16 +149,16 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                       <span className="text-4xl">🔥</span>
                       <h2 className="text-base font-bold text-destructive mt-2">최종 Confirm</h2>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        이 버튼을 누르면 모든 데이터가<br />영구적으로 삭제됩니다
+                        이 버튼을 누르면 모든 데이터가<br />영구적으로 Delete됩니다
                       </p>
                     </div>
                     {error && <p className="text-[11px] text-destructive text-center">{error}</p>}
                     <button onClick={handleDelete} disabled={deleting}
                       className="w-full py-3 rounded-xl bg-destructive/20 text-destructive font-bold text-sm disabled:opacity-50 transition hover:bg-destructive/30 flex items-center justify-center gap-2">
                       {deleting ? (
-                        <><div className="void-dot w-3 h-3" /> 삭제 중...</>
+                        <><div className="void-dot w-3 h-3" /> Delete 중...</>
                       ) : (
-                        <><span aria-hidden="true" className="material-icons-round text-sm">delete_forever</span> 영구 삭제</>
+                        <><span aria-hidden="true" className="material-icons-round text-sm">delete_forever</span> 영구 Delete</>
                       )}
                     </button>
                     <button onClick={() => setStep(1)}

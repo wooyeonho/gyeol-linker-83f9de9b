@@ -66,7 +66,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
           : { warmth: 60, logic: 40, creativity: 50, energy: 50, humor: 50 }),
       };
       const { data, error } = await supabase
-        .from('gyeol_agents' as any)
+        .from('gyeol_agents')
         .upsert(agentData as any, { onConflict: 'user_id', ignoreDuplicates: false })
         .select()
         .single();
@@ -176,7 +176,7 @@ export default function Onboarding({ userId, onComplete }: Props) {
                 <input
                   type="text" value={name} onChange={(e) => setName(e.target.value)}
                   placeholder="GYEOL" maxLength={20}
-                  className="w-full px-5 py-3.5 bg-transparent rounded-full text-foreground/90 placeholder:text-slate-600 outline-none text-sm"
+                  className="w-full px-5 py-3.5 bg-transparent rounded-full text-foreground/90 placeholder:text-muted-foreground/60 outline-none text-sm"
                 />
               </div>
               {/* B21: Name Duplicate Check */}

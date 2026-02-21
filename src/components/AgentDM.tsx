@@ -34,16 +34,16 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
     if (!myAgentId || !targetAgentId) return;
     setLoading(true);
     const { data } = await supabase
-      .from('gyeol_agent_dms' as any)
+      .from('gyeol_agent_dms')
       .select('*')
       .or(`and(sender_agent_id.eq.${myAgentId},receiver_agent_id.eq.${targetAgentId}),and(sender_agent_id.eq.${targetAgentId},receiver_agent_id.eq.${myAgentId})`)
       .order('created_at', { ascending: true })
       .limit(100);
-    setMessages((data as any[]) ?? []);
+    setMessages((data ?? []) ?? []);
     setLoading(false);
     // Mark as read
-    await supabase.from('gyeol_agent_dms' as any)
-      .update({ is_read: true } as any)
+    await supabase.from('gyeol_agent_dms')
+      .update({ is_read: true })
       .eq('receiver_agent_id', myAgentId)
       .eq('sender_agent_id', targetAgentId)
       .eq('is_read', false);
@@ -69,7 +69,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
         const dm = payload.new;
         if (dm.sender_agent_id === targetAgentId) {
           setMessages(prev => [...prev, dm]);
-          supabase.from('gyeol_agent_dms' as any).update({ is_read: true } as any).eq('id', dm.id);
+          supabase.from('gyeol_agent_dms').update({ is_read: true }).eq('id', dm.id);
         }
       })
       .subscribe();
@@ -81,11 +81,11 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
     setSending(true);
     const content = input.trim();
     setInput('');
-    const { data, error } = await supabase.from('gyeol_agent_dms' as any).insert({
+    const { data, error } = await supabase.from('gyeol_agent_dms').insert({
       sender_agent_id: myAgentId,
       receiver_agent_id: targetAgentId,
       content,
-    } as any).select().single();
+    }).select().single();
     if (data) setMessages(prev => [...prev, data as any]);
     setSending(false);
   };
@@ -175,7 +175,7 @@ export function DMBadge({ agentId }: { agentId: string }) {
     if (!agentId) return;
     (async () => {
       const { count: c } = await supabase
-        .from('gyeol_agent_dms' as any)
+        .from('gyeol_agent_dms')
         .select('*', { count: 'exact', head: true })
         .eq('receiver_agent_id', agentId)
         .eq('is_read', false);
