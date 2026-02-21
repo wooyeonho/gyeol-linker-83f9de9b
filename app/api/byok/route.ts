@@ -9,9 +9,18 @@ import { encryptKey, maskKey, SUPPORTED_PROVIDERS } from '@/lib/gyeol/byok';
 
 const TABLE = 'gyeol_byok_keys';
 
+function getUserIdFromToken(req: NextRequest): string | null {
+  const auth = req.headers.get('Authorization');
+  if (!auth?.startsWith('Bearer ')) return null;
+  try {
+    const payload = JSON.parse(atob(auth.replace('Bearer ', '').split('.')[1]));
+    return payload.sub ?? null;
+  } catch { return null; }
+}
+
 export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('userId');
-  if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
+  const userId = getUserIdFromToken(req);
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = createGyeolServerClient();
   const { data, error } = await supabase
@@ -30,10 +39,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = getUserIdFromToken(req);
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const body = await req.json().catch(() => ({}));
-  const { userId, provider, apiKey } = body as { userId?: string; provider?: string; apiKey?: string };
-  if (!userId || !provider || typeof apiKey !== 'string') {
-    return NextResponse.json({ error: 'userId, provider, apiKey required' }, { status: 400 });
+  const { provider, apiKey } = body as { provider?: string; apiKey?: string };
+  if (!provider || typeof apiKey !== 'string') {
+    return NextResponse.json({ error: 'provider, apiKey required' }, { status: 400 });
   }
   if (!SUPPORTED_PROVIDERS.includes(provider as (typeof SUPPORTED_PROVIDERS)[number])) {
     return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 });
@@ -57,9 +69,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('userId');
+  const userId = getUserIdFromToken(req);
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const provider = req.nextUrl.searchParams.get('provider');
-  if (!userId || !provider) return NextResponse.json({ error: 'userId, provider required' }, { status: 400 });
+  if (!provider) return NextResponse.json({ error: 'provider required' }, { status: 400 });
 
   const supabase = createGyeolServerClient();
   const { error } = await supabase
