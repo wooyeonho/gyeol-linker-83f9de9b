@@ -474,6 +474,16 @@ Deno.serve(async (req) => {
             }
           }
         } catch (e) { console.warn('[telegram] auto-persona evolution failed:', e) }
+
+        // Gamification tick (fire-and-forget)
+        try {
+          const gamUrl = `${SUPABASE_URL}/functions/v1/gamification-tick`
+          await fetch(gamUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+            body: JSON.stringify({ agentId, action: 'chat', channel: 'telegram' }),
+          })
+        } catch (e) { console.warn('[telegram] gamification tick failed:', e) }
       })()
     }
 
