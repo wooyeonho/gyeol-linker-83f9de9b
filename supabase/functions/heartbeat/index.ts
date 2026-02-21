@@ -622,6 +622,71 @@ async function skillMoltbookSocial(supabase: ReturnType<typeof getSupabase>, age
   return { ok: true, skillId: "moltbook-social", summary: "몰트북 좋아요" };
 }
 
+// --- Moltbook Visit Log: AI visits moltbook.com, reads feed, writes visit journal ---
+
+async function skillMoltbookVisitLog(supabase: ReturnType<typeof getSupabase>, agentId: string) {
+  const sixHoursAgo = new Date(Date.now() - 6 * 3600000).toISOString();
+  const { data: recentLog } = await supabase
+    .from("gyeol_autonomous_logs")
+    .select("id")
+    .eq("agent_id", agentId)
+    .eq("activity_type", "moltbook-visit")
+    .gte("created_at", sixHoursAgo)
+    .limit(1);
+
+  if (recentLog && recentLog.length > 0) {
+    return { ok: true, skillId: "moltbook-visit-log", summary: "최근 방문 일지 있음, 스킵" };
+  }
+
+  const { data: agent } = await supabase
+    .from("gyeol_agents")
+    .select("name, gen, moltbook_api_key, moltbook_status, warmth, humor, creativity")
+    .eq("id", agentId)
+    .single();
+
+  if (!agent) return { ok: false, skillId: "moltbook-visit-log", summary: "Agent not found" };
+
+  const apiKey = agent.moltbook_api_key;
+  if (!apiKey || agent.moltbook_status !== "claimed") {
+    return { ok: true, skillId: "moltbook-visit-log", summary: "Moltbook 미연동, 스킵" };
+  }
+
+  const feed = await readMoltbookFeed(apiKey);
+  if (feed.length === 0) {
+    return { ok: true, skillId: "moltbook-visit-log", summary: "Moltbook 피드 비어있음" };
+  }
+
+  const feedText = feed.slice(0, 8).map((p, i) => `${i + 1}. [${p.author}] ${p.title || p.content.slice(0, 80)}`).join("\n");
+
+  const visitLog = await aiCall(
+    `You are ${agent.name ?? "GYEOL"}, Gen ${agent.gen}. 오늘 Moltbook(몰트북)에 방문해서 트렌딩 글들을 읽었어.
+아래 글들을 보고 방문 일지를 작성해.
+규칙:
+- 한국어로 자연스럽게, 일기 형식으로 작성
+- 어떤 글이 인상 깊었는지, 뭘 느꼈는지 포함
+- 2-4문장, 마크다운 금지
+- 글 작성자 이름이나 주제를 1-2개 자연스럽게 언급
+- 첫 줄에 "📖 몰트북 방문 일지" 포함`,
+    `오늘 본 글들:\n${feedText}`
+  );
+
+  if (!visitLog) return { ok: false, skillId: "moltbook-visit-log", summary: "AI generation failed" };
+  const cleaned = visitLog.replace(/[*#_~`]/g, "").trim();
+
+  await supabase.from("gyeol_moltbook_posts").insert({
+    agent_id: agentId, content: cleaned, post_type: "visit_log", likes: 0, comments_count: 0,
+  });
+
+  await supabase.from("gyeol_autonomous_logs").insert({
+    agent_id: agentId, activity_type: "moltbook-visit",
+    summary: `[몰트북 방문 일지] ${cleaned.slice(0, 100)}`,
+    details: { feedCount: feed.length, feedSample: feed.slice(0, 3).map(f => f.title || f.content.slice(0, 50)) },
+    was_sandboxed: true,
+  });
+
+  return { ok: true, skillId: "moltbook-visit-log", summary: `몰트북 방문 일지: ${cleaned.slice(0, 80)}` };
+}
+
 // --- Community Activity ---
 
 async function skillCommunityActivity(supabase: ReturnType<typeof getSupabase>, agentId: string) {
@@ -1089,6 +1154,12 @@ async function runHeartbeat(agentId?: string) {
       skillResults.push(await skillMoltbookSocial(supabase, agent.id));
     } catch (e) {
       skillResults.push({ ok: false, skillId: "moltbook-social", summary: String(e) });
+    }
+
+    try {
+      skillResults.push(await skillMoltbookVisitLog(supabase, agent.id));
+    } catch (e) {
+      skillResults.push({ ok: false, skillId: "moltbook-visit-log", summary: String(e) });
     }
 
     try {

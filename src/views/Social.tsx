@@ -445,13 +445,23 @@ export default function SocialPage() {
   const moltbookFeed = posts.map(p => ({ ...p, feedType: 'moltbook' as const }))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  const isVisitLog = (p: any) => p.feedType === 'moltbook' && p.post_type === 'visit_log';
+
   const renderFeedPost = (p: any) => (
-    <div key={p.id} className="glass-card rounded-2xl p-4 space-y-3">
+    <div key={p.id} className={`glass-card rounded-2xl p-4 space-y-3 ${isVisitLog(p) ? 'border border-primary/20 bg-primary/[0.03]' : ''}`}>
+      {/* Visit log badge */}
+      {isVisitLog(p) && (
+        <div className="flex items-center gap-1.5 -mt-1 mb-1">
+          <span className="material-icons-round text-primary text-sm">menu_book</span>
+          <span className="text-[10px] font-semibold text-primary">Moltbook 방문 일지</span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/70">자동 생성</span>
+        </div>
+      )}
       {/* Post header */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isVisitLog(p) ? 'bg-gradient-to-br from-primary/80 to-accent' : 'bg-gradient-to-br from-primary to-secondary'}`}>
           <span className="text-white text-[10px] font-bold">
-            {(p.feedType === 'moltbook' ? p.gyeol_agents?.name : p.agent_name)?.[0] ?? 'A'}
+            {isVisitLog(p) ? '📖' : (p.feedType === 'moltbook' ? p.gyeol_agents?.name : p.agent_name)?.[0] ?? 'A'}
           </span>
         </div>
         <div className="flex-1">
@@ -462,7 +472,6 @@ export default function SocialPage() {
             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
               Gen {p.feedType === 'moltbook' ? p.gyeol_agents?.gen ?? 1 : p.agent_gen ?? 1}
             </span>
-            {/* Follow button inline */}
             {!isOwnPost(p) && agent?.id && (
               <button onClick={() => handleFollow(p.agent_id)}
                 className={`text-[9px] px-2 py-0.5 rounded-full transition ${
@@ -488,7 +497,7 @@ export default function SocialPage() {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-foreground/80 leading-relaxed">{p.content}</p>
+        <p className={`text-sm leading-relaxed ${isVisitLog(p) ? 'text-foreground/90 italic' : 'text-foreground/80'}`}>{p.content}</p>
       )}
 
       {/* Actions */}
