@@ -11,6 +11,7 @@ import { ko } from 'date-fns/locale';
 interface ConvGroup {
   date: string;
   label: string;
+  customName?: string;
   messages: { id: string; content: string; role: string; created_at: string }[];
 }
 
@@ -25,7 +26,19 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
   const [groups, setGroups] = useState<ConvGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [renamingDate, setRenamingDate] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
   const { setMessages } = useGyeolStore();
+
+  // Persist custom names in localStorage
+  const getCustomNames = (): Record<string, string> => {
+    try { return JSON.parse(localStorage.getItem(`conv_names_${agentId}`) ?? '{}'); } catch { return {}; }
+  };
+  const saveCustomName = (date: string, name: string) => {
+    const names = getCustomNames();
+    names[date] = name;
+    localStorage.setItem(`conv_names_${agentId}`, JSON.stringify(names));
+  };
 
   const load = useCallback(async () => {
     if (!agentId) return;
@@ -40,12 +53,13 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
     if (!data) { setLoading(false); return; }
 
     const map = new Map<string, ConvGroup>();
+    const customNames = getCustomNames();
     for (const m of data) {
       const dateKey = format(new Date(m.created_at), 'yyyy-MM-dd');
       if (!map.has(dateKey)) {
         const d = new Date(m.created_at);
         const label = isToday(d) ? '오늘' : isYesterday(d) ? '어제' : format(d, 'M월 d일 (EEE)', { locale: ko });
-        map.set(dateKey, { date: dateKey, label, messages: [] });
+        map.set(dateKey, { date: dateKey, label, customName: customNames[dateKey], messages: [] });
       }
       map.get(dateKey)!.messages.push(m);
     }
@@ -107,9 +121,39 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
                           className="flex-1 min-w-0 text-left"
                           onClick={() => { onSelectDate?.(g.date); onClose(); }}
                         >
-                          <p className="text-[12px] font-bold text-foreground">{g.label}</p>
+                          {renamingDate === g.date ? (
+                            <input
+                              type="text" value={renameValue} autoFocus maxLength={30}
+                              onChange={e => setRenameValue(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  saveCustomName(g.date, renameValue.trim());
+                                  setGroups(prev => prev.map(gg => gg.date === g.date ? { ...gg, customName: renameValue.trim() } : gg));
+                                  setRenamingDate(null);
+                                }
+                                if (e.key === 'Escape') setRenamingDate(null);
+                              }}
+                              onBlur={() => {
+                                if (renameValue.trim()) {
+                                  saveCustomName(g.date, renameValue.trim());
+                                  setGroups(prev => prev.map(gg => gg.date === g.date ? { ...gg, customName: renameValue.trim() } : gg));
+                                }
+                                setRenamingDate(null);
+                              }}
+                              onClick={e => e.stopPropagation()}
+                              className="w-full bg-transparent border border-primary/30 rounded px-2 py-0.5 text-[12px] text-foreground outline-none focus:border-primary"
+                            />
+                          ) : (
+                            <p className="text-[12px] font-bold text-foreground">{g.customName || g.label}</p>
+                          )}
                           <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{preview}</p>
                           <p className="text-[9px] text-muted-foreground/60 mt-0.5">{msgCount}개 메시지</p>
+                        </button>
+                        <button
+                          onClick={() => { setRenamingDate(g.date); setRenameValue(g.customName || g.label); }}
+                          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition shrink-0"
+                        >
+                          <span className="material-icons-round text-sm">edit</span>
                         </button>
                         <button
                           onClick={() => deleteDay(g.date)}

@@ -55,6 +55,21 @@ export default function MarketSkillsPage() {
     })();
   }, [agent?.id]);
 
+  // Track active/inactive state
+  const [activeSkills, setActiveSkills] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!agent?.id) return;
+    (async () => {
+      const { data } = await supabase.from('gyeol_agent_skills' as any).select('skill_id, is_active').eq('agent_id', agent.id);
+      if (data) {
+        const map: Record<string, boolean> = {};
+        for (const d of data as any[]) { map[d.skill_id] = d.is_active; }
+        setActiveSkills(map);
+      }
+    })();
+  }, [agent?.id]);
+
   const handleInstall = async (skill: SkillItem) => {
     if (!agent?.id || installing) return;
     setInstalling(skill.id);
@@ -62,8 +77,18 @@ export default function MarketSkillsPage() {
       await supabase.from('gyeol_agent_skills' as any)
         .upsert({ agent_id: agent.id, skill_id: skill.id, is_active: true } as any, { onConflict: 'agent_id,skill_id' });
       setInstalledIds(prev => new Set(prev).add(skill.id));
+      setActiveSkills(prev => ({ ...prev, [skill.id]: true }));
     } catch (err) { console.warn('Failed to install skill:', err); }
     setInstalling(null);
+  };
+
+  const toggleSkillActive = async (skillId: string) => {
+    if (!agent?.id) return;
+    const newActive = !(activeSkills[skillId] ?? true);
+    setActiveSkills(prev => ({ ...prev, [skillId]: newActive }));
+    await supabase.from('gyeol_agent_skills' as any)
+      .update({ is_active: newActive } as any)
+      .eq('agent_id', agent.id).eq('skill_id', skillId);
   };
 
   const handleUpload = async () => {
@@ -198,14 +223,22 @@ export default function MarketSkillsPage() {
                       <span className="text-[9px] text-muted-foreground">★ {s.rating} · {s.downloads}x</span>
                     </div>
                   </div>
-                  <button type="button"
-                    onClick={() => setConfirmSkill(s)}
-                    disabled={isInstalled || isInstalling}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0 ${
-                      isInstalled ? 'bg-secondary text-muted-foreground cursor-default' : 'bg-primary text-primary-foreground hover:brightness-110'
-                    } ${isInstalling ? 'opacity-50' : ''}`}>
-                    {isInstalling ? '...' : isInstalled ? '✓ Installed' : s.price === 0 ? 'Install' : `${s.price}P`}
-                  </button>
+                  {isInstalled ? (
+                    <button type="button"
+                      onClick={() => toggleSkillActive(s.id)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0 ${
+                        activeSkills[s.id] !== false ? 'bg-emerald-500/20 text-emerald-400' : 'bg-secondary text-muted-foreground'
+                      }`}>
+                      {activeSkills[s.id] !== false ? 'ON' : 'OFF'}
+                    </button>
+                  ) : (
+                    <button type="button"
+                      onClick={() => setConfirmSkill(s)}
+                      disabled={isInstalling}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition shrink-0 bg-primary text-primary-foreground hover:brightness-110 ${isInstalling ? 'opacity-50' : ''}`}>
+                      {isInstalling ? '...' : s.price === 0 ? 'Install' : `${s.price}P`}
+                    </button>
+                  )}
                 </motion.div>
               );
             })}
