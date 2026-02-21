@@ -24,17 +24,19 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 function calculateCompatibility(
-  a1: Record<string, number>,
-  a2: Record<string, number>,
+  a1: Record<string, any>,
+  a2: Record<string, any>,
   taste1?: Record<string, any>,
   taste2?: Record<string, any>
 ): number {
   const traits = ["warmth", "logic", "creativity", "energy", "humor"];
 
+  // 1. Personality similarity (40%)
   const diffs = traits.map((t) => Math.abs((a1[t] ?? 50) - (a2[t] ?? 50)));
   const avgDiff = diffs.reduce((s, d) => s + d, 0) / diffs.length;
   const personalitySim = Math.max(0, 100 - avgDiff * 1.5);
 
+  // 2. Taste/interest overlap (30%)
   let tasteSim = 50;
   if (taste1 && taste2) {
     const t1Topics = Object.keys(taste1.topics ?? {});
@@ -48,12 +50,36 @@ function calculateCompatibility(
     tasteSim = ((topicOverlap / maxTopics) * 60 + (interestOverlap / maxInterests) * 40);
   }
 
+  // 3. Complementarity bonus (10%)
   const complementary = traits.filter(
     (t) => ((a1[t] ?? 50) >= 70 && (a2[t] ?? 50) <= 40) || ((a2[t] ?? 50) >= 70 && (a1[t] ?? 50) <= 40)
   ).length;
   const complementScore = Math.min(100, complementary * 30);
 
-  return Math.round(personalitySim * 0.5 + tasteSim * 0.4 + complementScore * 0.1);
+  // 4. Mood compatibility (10%) — same or complementary moods score higher
+  const MOOD_COMPAT: Record<string, string[]> = {
+    happy: ['happy', 'excited', 'playful', 'grateful'],
+    neutral: ['neutral', 'focused', 'curious'],
+    sad: ['sad', 'melancholic', 'hopeful'],
+    excited: ['excited', 'happy', 'playful', 'energetic'],
+    curious: ['curious', 'focused', 'neutral'],
+    lonely: ['lonely', 'loving', 'hopeful'],
+  };
+  const mood1 = a1.mood ?? 'neutral';
+  const mood2 = a2.mood ?? 'neutral';
+  const moodCompat = (MOOD_COMPAT[mood1] ?? [mood1]).includes(mood2) ? 100 : 40;
+
+  // 5. Activity level similarity (10%) — based on gen and conversation count
+  const genDiff = Math.abs((a1.gen ?? 1) - (a2.gen ?? 1));
+  const activitySim = Math.max(0, 100 - genDiff * 15);
+
+  return Math.round(
+    personalitySim * 0.4 +
+    tasteSim * 0.3 +
+    complementScore * 0.1 +
+    moodCompat * 0.1 +
+    activitySim * 0.1
+  );
 }
 
 Deno.serve(async (req) => {
@@ -117,7 +143,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: agent } = await supabase.from("gyeol_agents")
-      .select("id, user_id, warmth, logic, creativity, energy, humor, gen")
+      .select("id, user_id, warmth, logic, creativity, energy, humor, gen, mood, total_conversations")
       .eq("id", agentId)
       .single();
 
@@ -134,7 +160,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: candidates } = await supabase.from("gyeol_agents")
-      .select("id, user_id, warmth, logic, creativity, energy, humor, gen, name")
+      .select("id, user_id, warmth, logic, creativity, energy, humor, gen, name, mood, total_conversations")
       .neq("user_id", agent.user_id)
       .limit(100);
 

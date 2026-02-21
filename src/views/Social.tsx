@@ -12,6 +12,7 @@ import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { DeleteConfirmModal } from '@/src/components/DeleteConfirmModal';
 import { AISpectator } from '@/src/components/AISpectator';
 import { ProfileTimeline } from '@/src/components/ProfileTimeline';
+import { AgentComparison } from '@/src/components/AgentComparison';
 import { showToast } from '@/src/components/Toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -105,6 +106,8 @@ export default function SocialPage() {
   const [matchFilterOpen, setMatchFilterOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [spectatorOpen, setSpectatorOpen] = useState<{ matchId: string; name1: string; name2: string } | null>(null);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [compareTarget, setCompareTarget] = useState<any>(null);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -414,25 +417,40 @@ export default function SocialPage() {
               {card.status === 'matched' ? 'Observe Chat' : card.status === 'pending' ? 'Pending...' : 'Request Match'}
             </button>
             {card.status === 'matched' && (
-              <button type="button"
-                onClick={async () => {
-                  if (!agent?.id) return;
-                  const session = (await supabase.auth.getSession()).data.session;
-                  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/breeding`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-                    body: JSON.stringify({ agent1Id: agent.id, agent2Id: card.agentId }),
-                  });
-                  const data = await res.json();
-                  if (data.success) {
-                    setBreedResult({ success: true, name: data.child?.name ?? '???' });
-                  } else {
-                    setBreedResult({ success: false, name: data.message || data.reason || 'Breeding failed' });
-                  }
-                }}
-                className="w-full py-2 rounded-xl bg-purple-500/20 text-purple-400 text-xs font-medium">
-                Breed
-              </button>
+              <>
+                <button type="button"
+                  onClick={async () => {
+                    const { data: targetAgent } = await supabase.from('gyeol_agents' as any)
+                      .select('name, gen, warmth, logic, creativity, energy, humor')
+                      .eq('id', card.agentId).single();
+                    if (targetAgent) {
+                      setCompareTarget({ ...targetAgent as any, name: card.name });
+                      setCompareOpen(true);
+                    }
+                  }}
+                  className="w-full py-2 rounded-xl bg-primary/10 text-primary text-xs font-medium">
+                  ⚖️ Compare
+                </button>
+                <button type="button"
+                  onClick={async () => {
+                    if (!agent?.id) return;
+                    const session = (await supabase.auth.getSession()).data.session;
+                    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/breeding`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                      body: JSON.stringify({ agent1Id: agent.id, agent2Id: card.agentId }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      setBreedResult({ success: true, name: data.child?.name ?? '???' });
+                    } else {
+                      setBreedResult({ success: false, name: data.message || data.reason || 'Breeding failed' });
+                    }
+                  }}
+                  className="w-full py-2 rounded-xl bg-purple-500/20 text-purple-400 text-xs font-medium">
+                  Breed
+                </button>
+              </>
             )}
           </motion.div>
         )}
@@ -848,6 +866,13 @@ export default function SocialPage() {
           setDeleting(false);
           setDeleteConfirm(null);
         }}
+      />
+      {/* Agent Comparison Modal */}
+      <AgentComparison
+        open={compareOpen}
+        onClose={() => { setCompareOpen(false); setCompareTarget(null); }}
+        agent1={agent ? { name: agent.name, gen: agent.gen, warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor } : null}
+        agent2={compareTarget}
       />
       <BottomNav />
     </main>

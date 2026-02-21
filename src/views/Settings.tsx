@@ -13,6 +13,7 @@ import { DeleteAccountModal } from '@/src/components/DeleteAccountModal';
 import { AgentShareCard } from '@/src/components/AgentShareCard';
 import { StreakCalendar } from '@/src/components/StreakCalendar';
 import { subscribePush, unsubscribePush } from '@/lib/gyeol/push';
+import { getLocale, setLocale, getAvailableLocales, type Locale } from '@/src/lib/i18n';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -363,6 +364,33 @@ export default function SettingsPage() {
               }}
               className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent" />
           </div>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
+
+        {/* ====== LANGUAGE ====== */}
+        <section>
+          <SectionHeader id="language" icon="language" title="Language" />
+          <AnimatePresence>
+            {activeSection === 'language' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden pt-2 px-1">
+                <div className="grid grid-cols-3 gap-2">
+                  {getAvailableLocales().map(loc => (
+                    <button key={loc.code} type="button" onClick={() => {
+                      setLocale(loc.code);
+                      window.location.reload();
+                    }}
+                      className={`p-3 rounded-xl text-center transition ${
+                        getLocale() === loc.code ? 'glass-card-selected' : 'glass-card'
+                      }`}>
+                      <span className="text-sm block">{loc.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         <div className="h-px bg-white/[0.04]" />
