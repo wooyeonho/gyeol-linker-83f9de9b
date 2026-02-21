@@ -75,7 +75,7 @@ export function SystemPromptEditor({ agent, onUpdate }: SystemPromptEditorProps)
           {saved && (
             <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="text-[10px] text-[hsl(var(--success,142_71%_45%))] flex items-center gap-1">
-              <span className="material-icons-round text-[12px]">check</span> 저장됨
+              <span aria-hidden="true" className="material-icons-round text-[12px]">check</span> 저장됨
             </motion.span>
           )}
           <button type="button" onClick={() => save(prompt)} disabled={saving}

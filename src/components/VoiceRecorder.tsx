@@ -52,14 +52,14 @@ export function VoiceRecorder({ onRecorded, disabled }: Props) {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive/20 text-destructive text-[11px] font-medium">
           <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
           {fmtTime(duration)}
-          <span className="material-icons-round text-sm">stop</span>
+          <span aria-hidden="true" className="material-icons-round text-sm">stop</span>
         </motion.button>
       ) : (
         <motion.button key="start" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}
           onClick={startRecording}
           disabled={disabled}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition disabled:opacity-40">
-          <span className="material-icons-round text-[20px]">mic</span>
+          <span aria-hidden="true" className="material-icons-round text-[20px]">mic</span>
         </motion.button>
       )}
     </AnimatePresence>
@@ -84,7 +84,7 @@ export function AudioMessage({ src, duration }: { src: string; duration: number 
   return (
     <button onClick={toggle}
       className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 transition">
-      <span className="material-icons-round text-primary text-base">{playing ? 'pause' : 'play_arrow'}</span>
+      <span aria-hidden="true" className="material-icons-round text-primary text-base">{playing ? 'pause' : 'play_arrow'}</span>
       <div className="flex-1 h-1 rounded-full bg-primary/20 relative overflow-hidden">
         <div className="absolute inset-y-0 left-0 bg-primary/50 rounded-full" style={{ width: playing ? '100%' : '0%', transition: playing ? `width ${duration}s linear` : 'none' }} />
       </div>

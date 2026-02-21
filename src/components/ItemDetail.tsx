@@ -48,7 +48,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
             {/* Header */}
             <div className="flex items-start gap-3 mb-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center">
-                <span className="material-icons-round text-primary text-2xl">{item.icon}</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-2xl">{item.icon}</span>
               </div>
               <div className="flex-1">
                 <h2 className="text-base font-bold text-foreground">{item.name}</h2>
@@ -67,7 +67,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
                 </div>
               </div>
               <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground">
-                <span className="material-icons-round text-lg">close</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">close</span>
               </button>
             </div>
 
@@ -82,19 +82,19 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
                 <p className="text-[10px] font-bold text-foreground/60 uppercase">효과</p>
                 {effects.exp_boost && (
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="material-icons-round text-secondary text-xs">bolt</span>
+                    <span aria-hidden="true" className="material-icons-round text-secondary text-xs">bolt</span>
                     <span className="text-foreground">EXP +{effects.exp_boost}</span>
                   </div>
                 )}
                 {effects.evolution_boost && (
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-xs">trending_up</span>
+                    <span aria-hidden="true" className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-xs">trending_up</span>
                     <span className="text-foreground">진화 진행도 +{effects.evolution_boost}%</span>
                   </div>
                 )}
                 {effects.coin_boost && (
                   <div className="flex items-center gap-2 text-[11px]">
-                    <span className="material-icons-round text-[hsl(var(--warning))] text-xs">monetization_on</span>
+                    <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-xs">monetization_on</span>
                     <span className="text-foreground">코인 +{effects.coin_boost}</span>
                   </div>
                 )}
@@ -104,7 +104,7 @@ export function ItemDetail({ isOpen, onClose, item }: Props) {
             {/* Price & Stock */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="material-icons-round text-[hsl(var(--warning))] text-sm">monetization_on</span>
+                <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">monetization_on</span>
                 <span className="text-sm font-bold text-foreground">{item.price_coins}</span>
               </div>
               {item.stock !== null && (

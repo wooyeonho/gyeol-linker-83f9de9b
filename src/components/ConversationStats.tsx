@@ -58,7 +58,7 @@ export function ConversationStats({ agentId, isOpen, onClose }: ConversationStat
         onClick={e => e.stopPropagation()}
         className="glass-card rounded-2xl p-5 w-full max-w-[300px] space-y-4">
         <div className="flex items-center gap-2">
-          <span className="material-icons-round text-primary">bar_chart</span>
+          <span aria-hidden="true" className="material-icons-round text-primary">bar_chart</span>
           <h3 className="text-sm font-bold text-foreground">대화 통계</h3>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -69,14 +69,14 @@ export function ConversationStats({ agentId, isOpen, onClose }: ConversationStat
             { label: '평균 길이', value: `${stats.avgLength}자`, icon: 'text_fields' },
           ].map(s => (
             <div key={s.label} className="glass-card rounded-xl p-3 text-center">
-              <span className="material-icons-round text-primary/50 text-sm">{s.icon}</span>
+              <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm">{s.icon}</span>
               <p className="text-lg font-bold text-foreground mt-1">{s.value}</p>
               <p className="text-[9px] text-muted-foreground">{s.label}</p>
             </div>
           ))}
         </div>
         <div className="glass-card rounded-xl p-3 flex items-center gap-3">
-          <span className="material-icons-round text-secondary text-sm">schedule</span>
+          <span aria-hidden="true" className="material-icons-round text-secondary text-sm">schedule</span>
           <div>
             <p className="text-[11px] text-foreground/80">가장 활발한 시간</p>
             <p className="text-sm font-bold text-primary">{stats.topHour}</p>

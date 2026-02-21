@@ -54,7 +54,7 @@ export function ActivityStats({ agentId }: Props) {
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-primary text-sm">bar_chart</span>
+          <span aria-hidden="true" className="material-icons-round text-primary text-sm">bar_chart</span>
           주간 활동
         </h3>
         <span className="text-[9px] text-muted-foreground">최근 7일</span>

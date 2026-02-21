@@ -80,7 +80,7 @@ export function ConversationExport({ isOpen, onClose, messages, agentName }: Con
             className="glass-card rounded-2xl p-5 w-full max-w-[320px] space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <span className="material-icons-round text-primary text-lg">download</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-lg">download</span>
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">대화 내보내기</h3>

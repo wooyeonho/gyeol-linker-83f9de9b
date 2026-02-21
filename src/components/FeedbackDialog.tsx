@@ -52,7 +52,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
           className="glass-panel rounded-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
           {submitted ? (
             <div className="text-center py-8">
-              <span className="material-icons-round text-3xl text-primary mb-2">favorite</span>
+              <span aria-hidden="true" className="material-icons-round text-3xl text-primary mb-2">favorite</span>
               <p className="text-sm text-foreground/70">Thank you for your feedback!</p>
             </div>
           ) : (
@@ -62,7 +62,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
                 {CATEGORIES.map(c => (
                   <button key={c.value} onClick={() => setCategory(c.value)}
                     className={"flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition " + (category === c.value ? 'bg-primary/20 text-primary' : 'bg-muted/30 text-foreground/60 hover:bg-muted/50')}>
-                    <span className="material-icons-round text-sm">{c.icon}</span>
+                    <span aria-hidden="true" className="material-icons-round text-sm">{c.icon}</span>
                     {c.label}
                   </button>
                 ))}

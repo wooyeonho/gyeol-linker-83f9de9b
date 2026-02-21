@@ -70,7 +70,7 @@ Stats: ❤️${warmth} 🧠${logic} 🎨${creativity} ⚡${energy} 😂${humor}
             <span className="text-2xl">{MOOD_EMOJI[mood] ?? '🙂'}</span>
             {onClose && (
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition" aria-label="닫기">
-                <span className="material-icons-round text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">close</span>
               </button>
             )}
           </div>
@@ -100,7 +100,7 @@ Stats: ❤️${warmth} 🧠${logic} 🎨${creativity} ⚡${energy} 😂${humor}
           <button onClick={copyAsText}
             className="flex-1 py-2 rounded-xl bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20 transition flex items-center justify-center gap-1.5"
             aria-label="프로필 텍스트 복사">
-            <span className="material-icons-round text-sm">{copied ? 'check' : 'content_copy'}</span>
+            <span aria-hidden="true" className="material-icons-round text-sm">{copied ? 'check' : 'content_copy'}</span>
             {copied ? '복사됨!' : '텍스트 복사'}
           </button>
         </div>

@@ -57,7 +57,7 @@ export function BYOKSection({
                       <button type="button" onClick={() => setByokOpen(byokOpen === provider ? null : provider)}
                         className={`rounded-lg border py-1.5 text-xs capitalize transition ${registered ? 'border-primary/20 text-primary/80 bg-primary/5' : 'border-foreground/[0.06] text-foreground/30 hover:bg-foreground/[0.03]'}`}>
                         <span className="flex items-center justify-center gap-1">
-                          {registered && <span className="material-icons-round text-[10px] text-[hsl(var(--success,142_71%_45%))]">check_circle</span>}
+                          {registered && <span aria-hidden="true" className="material-icons-round text-[10px] text-[hsl(var(--success,142_71%_45%))]">check_circle</span>}
                           {provider}
                         </span>
                       </button>
@@ -73,7 +73,7 @@ export function BYOKSection({
                                 setByokOpen(null);
                               }}
                                 className="text-destructive/60 hover:text-destructive transition">
-                                <span className="material-icons-round text-xs">delete_outline</span>
+                                <span aria-hidden="true" className="material-icons-round text-xs">delete_outline</span>
                               </button>
                             </div>
                           )}

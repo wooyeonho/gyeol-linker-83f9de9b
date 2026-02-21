@@ -59,7 +59,7 @@ export function InsightCard({ insight, onDismiss }: InsightCardProps) {
               <span className="text-sm">{emotionEmoji}</span>
             </div>
             <button onClick={onDismiss} className="text-muted-foreground/40 hover:text-foreground transition" aria-label="닫기">
-              <span className="material-icons-round text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">close</span>
             </button>
           </div>
 

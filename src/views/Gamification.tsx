@@ -40,7 +40,7 @@ export default function GamificationPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <main role="main" className="min-h-screen bg-background flex items-center justify-center">
         <div className="aurora-bg" />
         <div className="void-dot" />
       </main>
@@ -59,15 +59,15 @@ export default function GamificationPage() {
           <h1 className="text-lg font-bold text-foreground">게이미피케이션</h1>
           <div className="flex items-center gap-3">
             <button onClick={() => setInsightOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span className="material-icons-round text-primary text-[12px]">insights</span>
+              <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">insights</span>
               <span className="font-bold text-foreground">인사이트</span>
             </button>
             <button onClick={() => setInventoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span className="material-icons-round text-primary text-[12px]">inventory_2</span>
+              <span aria-hidden="true" className="material-icons-round text-primary text-[12px]">inventory_2</span>
               <span className="font-bold text-foreground">{inventory.length}</span>
             </button>
             <button onClick={() => setCoinHistoryOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-card text-[10px]">
-              <span className="material-icons-round text-[hsl(var(--warning))] text-[12px]">monetization_on</span>
+              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[12px]">monetization_on</span>
               <span className="font-bold text-foreground">{profile?.coins ?? 0}</span>
             </button>
           </div>
@@ -140,7 +140,7 @@ export default function GamificationPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <span className="material-icons-round text-[14px]">{t.icon}</span>
+              <span aria-hidden="true" className="material-icons-round text-[14px]">{t.icon}</span>
               {t.label}
             </button>
           ))}
@@ -270,13 +270,13 @@ function QuestsTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
                   <div className="flex items-center gap-3 mt-2">
                     {quest.reward_exp > 0 && (
                       <span className="text-[9px] text-secondary flex items-center gap-0.5">
-                        <span className="material-icons-round text-[10px]">bolt</span>
+                        <span aria-hidden="true" className="material-icons-round text-[10px]">bolt</span>
                         +{quest.reward_exp} EXP
                       </span>
                     )}
                     {quest.reward_coins > 0 && (
                       <span className="text-[9px] text-[hsl(var(--warning))] flex items-center gap-0.5">
-                        <span className="material-icons-round text-[10px]">monetization_on</span>
+                        <span aria-hidden="true" className="material-icons-round text-[10px]">monetization_on</span>
                         +{quest.reward_coins}
                       </span>
                     )}
@@ -402,7 +402,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
         className="glass-card rounded-2xl p-6 w-full max-w-[280px] text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto">
-          <span className="material-icons-round text-3xl text-primary">{ach.icon}</span>
+          <span aria-hidden="true" className="material-icons-round text-3xl text-primary">{ach.icon}</span>
         </div>
         <div>
           <span className={`text-[8px] px-2 py-0.5 rounded-full font-bold uppercase ${RARITY_BG[ach.rarity]} ${RARITY_COLORS[ach.rarity]}`}>{ach.rarity}</span>
@@ -420,7 +420,7 @@ function AchievementShareModal({ ach, onClose }: { ach: any; onClose: () => void
             onClose();
           }}
             className="flex-1 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1">
-            <span className="material-icons-round text-sm">share</span> 공유
+            <span aria-hidden="true" className="material-icons-round text-sm">share</span> 공유
           </button>
         </div>
       </motion.div>
@@ -461,7 +461,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Leaderboard rewards info */}
       <div className="glass-card rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="material-icons-round text-[hsl(var(--warning))] text-sm">card_giftcard</span>
+          <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-sm">card_giftcard</span>
           <span className="text-[11px] font-bold text-foreground">순위 보상</span>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -521,7 +521,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
       {/* Leaderboard list */}
       {filteredBoard.length === 0 ? (
         <div className="text-center py-12">
-          <span className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
+          <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20 mb-2">leaderboard</span>
           <p className="text-sm text-muted-foreground">아직 랭킹 데이터가 없습니다</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">대화하고 퀘스트를 완료하면 랭킹에 등록됩니다</p>
         </div>
@@ -555,7 +555,7 @@ function LeaderboardTab({ gam, agentId }: { gam: ReturnType<typeof useGamificati
                 <span className={`text-[9px] font-bold flex items-center gap-0.5 ${
                   rankChange.dir === 'up' ? 'text-[hsl(var(--success,142_71%_45%))]' : 'text-destructive'
                 }`}>
-                  <span className="material-icons-round text-[10px]">
+                  <span aria-hidden="true" className="material-icons-round text-[10px]">
                     {rankChange.dir === 'up' ? 'arrow_upward' : 'arrow_downward'}
                   </span>
                   {rankChange.val}
@@ -595,7 +595,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
         <div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">보유 코인</p>
           <p className="text-2xl font-bold text-[hsl(var(--warning))] flex items-center gap-1">
-            <span className="material-icons-round text-lg">monetization_on</span>
+            <span aria-hidden="true" className="material-icons-round text-lg">monetization_on</span>
             {profile?.coins ?? 0}
           </p>
         </div>
@@ -627,14 +627,14 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
           return (
             <div key={item.id} className="glass-card rounded-2xl p-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-secondary/10 flex items-center justify-center mb-2">
-                <span className="material-icons-round text-lg text-primary">{item.icon}</span>
+                <span aria-hidden="true" className="material-icons-round text-lg text-primary">{item.icon}</span>
               </div>
               <p className="text-[11px] font-bold text-foreground">{item.name}</p>
               <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>
               
               <div className="flex items-center justify-between mt-3">
                 <span className="text-[10px] font-bold text-[hsl(var(--warning))] flex items-center gap-0.5">
-                  <span className="material-icons-round text-[10px]">monetization_on</span>
+                  <span aria-hidden="true" className="material-icons-round text-[10px]">monetization_on</span>
                   {item.price_coins}
                 </span>
                 {owned ? (
@@ -670,7 +670,7 @@ function ShopTab({ gam }: { gam: ReturnType<typeof useGamification> }) {
               return (
                 <div key={inv.id} className="glass-card rounded-xl p-3 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="material-icons-round text-sm text-primary">{item?.icon ?? 'inventory_2'}</span>
+                    <span aria-hidden="true" className="material-icons-round text-sm text-primary">{item?.icon ?? 'inventory_2'}</span>
                   </div>
                   <div className="flex-1">
                     <span className="text-[11px] font-bold text-foreground">{item?.name ?? '아이템'}</span>

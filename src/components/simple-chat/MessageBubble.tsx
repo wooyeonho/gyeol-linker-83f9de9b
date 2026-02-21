@@ -54,52 +54,52 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
         <button onClick={() => { setEditingMsg(msg.id); setEditText(msg.content); }}
           aria-label="Edit message"
           className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-          <span className="material-icons-round text-[12px]">edit</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px]">edit</span>
         </button>
       )}
       <button onClick={() => handleDeleteMessage(msg.id)}
         aria-label="Delete message"
         className="text-[9px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10 transition">
-        <span className="material-icons-round text-[12px]">delete</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">delete</span>
       </button>
       <button onClick={() => navigator.clipboard.writeText(msg.content)}
         aria-label="Copy message"
         className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-        <span className="material-icons-round text-[12px]">content_copy</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">content_copy</span>
       </button>
       {!isUser && (
         <button onClick={() => speakText(msg.content, settings.readSpeed ?? 0.95)}
           aria-label="Read aloud"
           className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-          <span className="material-icons-round text-[12px]">volume_up</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px]">volume_up</span>
         </button>
       )}
       {!isUser && (
         <button onClick={() => setTranslatePickerFor(translatePickerFor === msg.id ? null : msg.id)}
           aria-label="Translate"
           className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-          <span className="material-icons-round text-[12px]">translate</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px]">translate</span>
         </button>
       )}
       <button onClick={() => setReplyTo(msg)}
         aria-label="Reply"
         className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-        <span className="material-icons-round text-[12px]">reply</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">reply</span>
       </button>
       <button onClick={() => togglePin(msg.id)}
         aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
         className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground hover:text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]'}`}>
-        <span className="material-icons-round text-[12px]">push_pin</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">push_pin</span>
       </button>
       <button onClick={() => setTagInput(tagInput === msg.id ? null : msg.id)}
         aria-label="Add tag"
         className="text-[9px] text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-        <span className="material-icons-round text-[12px]">label</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">label</span>
       </button>
       <button onClick={() => toggleBookmark(msg.id)}
         aria-label={bookmarks.has(msg.id) ? 'Remove bookmark' : 'Bookmark'}
         className={`text-[9px] px-1.5 py-0.5 rounded transition ${bookmarks.has(msg.id) ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground hover:text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]'}`}>
-        <span className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">{bookmarks.has(msg.id) ? 'bookmark' : 'bookmark_border'}</span>
       </button>
     </div>
   );
@@ -200,7 +200,7 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
             {renderMessageActions()}
           </div>
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-foreground/10 flex items-center justify-center shadow-lg mt-5">
-            <span className="material-icons-round text-muted-foreground text-[14px]">person</span>
+            <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[14px]">person</span>
           </div>
         </div>
       </div>
@@ -211,7 +211,7 @@ export function MessageBubble({ msg, state }: MessageBubbleProps) {
     <div className={`flex mb-3 justify-start group`}>
       <div className="flex gap-2.5 justify-start">
         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-foreground/10 flex items-center justify-center shadow-lg mt-5">
-          <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
+          <span aria-hidden="true" className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
         </div>
         <div className="max-w-[80%]">
           <span className="text-[10px] text-primary/60 font-medium ml-1 mb-1 block">{agentName} · {format(new Date(msg.created_at), 'HH:mm')}</span>

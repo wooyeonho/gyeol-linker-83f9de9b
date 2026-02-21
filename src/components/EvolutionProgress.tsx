@@ -108,7 +108,7 @@ export function EvolutionProgress({ isOpen, onClose, currentGen, agent, onEvolve
                   <h2 className="text-sm font-bold text-foreground">진화 현황</h2>
                 </div>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
               <div className="flex items-center gap-2 mt-3">

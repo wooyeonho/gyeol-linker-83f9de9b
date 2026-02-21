@@ -94,7 +94,7 @@ export function ProfileTimeline({ agentId }: { agentId: string }) {
           className="flex gap-3 py-2 relative">
           {/* Dot */}
           <div className={`w-[30px] h-[30px] rounded-full glass-card flex items-center justify-center shrink-0 z-10 ${typeColors[event.type] ?? 'text-muted-foreground'}`}>
-            <span className="material-icons-round text-[14px]">{event.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-[14px]">{event.icon}</span>
           </div>
           {/* Content */}
           <div className="flex-1 min-w-0 pt-1">

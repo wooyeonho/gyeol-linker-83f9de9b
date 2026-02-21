@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 export default function NotFound() {
   const isKo = typeof navigator !== 'undefined' && navigator.language.startsWith('ko');
   return (
-    <main className="min-h-screen bg-background font-display flex flex-col items-center justify-center gap-6 relative overflow-hidden">
+    <main role="main" className="min-h-screen bg-background font-display flex flex-col items-center justify-center gap-6 relative overflow-hidden">
       <div className="aurora-bg" />
 
       {/* Animated 404 */}
@@ -59,7 +59,7 @@ export default function NotFound() {
           to="/"
           className="px-6 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold flex items-center gap-2"
         >
-          <span className="material-icons-round text-lg">home</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">home</span>
           {isKo ? 'GYEOL로 돌아가기' : 'Back to GYEOL'}
         </Link>
       </motion.div>

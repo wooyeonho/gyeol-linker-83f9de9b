@@ -23,24 +23,24 @@ export default function SocialPage() {
   const state = useSocialFeed(agent?.id, agent);
 
   return (
-    <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
+    <main role="main" className="flex flex-col min-h-[100dvh] bg-background font-display relative">
       <PullToRefresh onRefresh={state.refreshFeed} className="flex-1 overflow-y-auto max-w-md mx-auto p-5 pt-6 pb-28 space-y-5 relative z-10">
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-lg font-bold text-foreground">Community Feed</h1>
           <div className="flex items-center gap-2">
             {state.tab === 'feed' && (
               <button onClick={() => state.setNewPostOpen(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-primary-foreground text-xs font-medium">
-                <span className="material-icons-round text-sm">add</span> New Post
+                <span aria-hidden="true" className="material-icons-round text-sm">add</span> New Post
               </button>
             )}
             {state.tab === 'matching' && (
               <button onClick={() => state.setMatchFilterOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Filter">
-                <span className="material-icons-round text-sm">tune</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">tune</span>
               </button>
             )}
             {state.tab === 'friends' && (
               <button onClick={() => state.setSearchOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Search">
-                <span className="material-icons-round text-sm">search</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">search</span>
               </button>
             )}
           </div>

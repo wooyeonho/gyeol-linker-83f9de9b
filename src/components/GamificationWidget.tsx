@@ -34,7 +34,7 @@ export function GamificationWidget() {
               </div>
             </div>
           </div>
-          <span className="material-icons-round text-muted-foreground/30 text-sm">chevron_right</span>
+          <span aria-hidden="true" className="material-icons-round text-muted-foreground/30 text-sm">chevron_right</span>
         </div>
 
         {/* EXP bar */}

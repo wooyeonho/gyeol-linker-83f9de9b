@@ -95,7 +95,7 @@ export function AchievementPopup() {
 
             <div className="flex items-center gap-3 relative z-10">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                <span className="material-icons-round text-2xl text-primary">{achievement.icon ?? 'emoji_events'}</span>
+                <span aria-hidden="true" className="material-icons-round text-2xl text-primary">{achievement.icon ?? 'emoji_events'}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-primary/60 uppercase tracking-wider font-bold">🏆 Achievement Unlocked!</p>

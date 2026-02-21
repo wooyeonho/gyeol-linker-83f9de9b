@@ -49,7 +49,7 @@ export function LeaderboardWidget({ agentId }: { agentId?: string }) {
     <div className="glass-card rounded-2xl p-3 w-full max-w-[280px]">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-          <span className="material-icons-round text-[12px] text-secondary">leaderboard</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px] text-secondary">leaderboard</span>
           Top Rankings
           <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success,142_71%_45%))] animate-pulse" title="Live" />
         </span>

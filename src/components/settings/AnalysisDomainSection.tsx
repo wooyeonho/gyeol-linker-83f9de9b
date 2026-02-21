@@ -35,7 +35,7 @@ export function AnalysisDomainSection({ agent, activeSection, SectionHeader, ana
                 return (
                   <div key={d.key} className="flex items-center justify-between rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] px-3 py-2.5">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="material-icons-round text-primary/40 text-sm">{d.icon}</span>
+                      <span aria-hidden="true" className="material-icons-round text-primary/40 text-sm">{d.icon}</span>
                       <div className="min-w-0">
                         <p className="text-[11px] text-foreground/70">{d.label}</p>
                         <p className="text-[9px] text-foreground/20 truncate">{d.desc}</p>

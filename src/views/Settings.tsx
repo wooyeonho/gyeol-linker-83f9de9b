@@ -191,10 +191,10 @@ export default function SettingsPage() {
       aria-expanded={activeSection === id} aria-controls={`section-${id}`}
       className="w-full flex items-center justify-between py-2 group focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-lg">
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-primary/50 text-sm" aria-hidden="true">{icon}</span>
+        <span aria-hidden="true" className="material-icons-round text-primary/50 text-sm" aria-hidden="true">{icon}</span>
         <p className="text-[11px] text-foreground/40 uppercase tracking-widest font-medium">{title}</p>
       </div>
-      <span className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30" aria-hidden="true"
+      <span aria-hidden="true" className="material-icons-round text-foreground/15 text-sm transition-transform group-hover:text-foreground/30" aria-hidden="true"
         style={{ transform: activeSection === id ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>
     </button>
   );
@@ -221,20 +221,20 @@ export default function SettingsPage() {
               <p className="text-[9px] text-muted-foreground/50">Status: Evolving & Learning</p>
             </div>
             <button onClick={() => setDashboardOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Dashboard">
-              <span className="material-icons-round text-sm">dashboard</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">dashboard</span>
             </button>
             <button onClick={() => setProfileCustomOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Customize">
-              <span className="material-icons-round text-sm">palette</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">palette</span>
             </button>
             <button onClick={() => setShareCardOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition" aria-label="Share">
-              <span className="material-icons-round text-sm">share</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">share</span>
             </button>
           </div>
         </div>
 
         {/* General */}
         <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">settings</span><h2 className="text-sm font-semibold text-foreground">General</h2></div>
+          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">settings</span><h2 className="text-sm font-semibold text-foreground">General</h2></div>
           <section className="space-y-1">
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Account</p>
             <p className="text-sm text-foreground/60">{user?.email}</p>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
 
         {/* AI Section */}
         <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">smart_toy</span><h2 className="text-sm font-semibold text-foreground">AI</h2></div>
+          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">smart_toy</span><h2 className="text-sm font-semibold text-foreground">AI</h2></div>
 
           <ModeCharacterSection agent={agent} activeSection={activeSection} SectionHeader={SectionHeader}
             currentMode={currentMode} setModeSwitchTarget={setModeSwitchTarget} setModeSwitchOpen={setModeSwitchOpen}
@@ -258,7 +258,7 @@ export default function SettingsPage() {
 
           {/* Appearance */}
           <section className="glass-card rounded-2xl overflow-hidden p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">palette</span><h2 className="text-sm font-semibold text-foreground">Appearance</h2></div>
+            <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">palette</span><h2 className="text-sm font-semibold text-foreground">Appearance</h2></div>
             <ThemeToggle />
             <div className="flex items-center justify-between mt-3">
               <div>
@@ -365,7 +365,7 @@ export default function SettingsPage() {
 
         {/* Integrations */}
         <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">extension</span><h2 className="text-sm font-semibold text-foreground">Integrations</h2></div>
+          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">extension</span><h2 className="text-sm font-semibold text-foreground">Integrations</h2></div>
 
           <FeedKeywordSection activeSection={activeSection} SectionHeader={SectionHeader}
             feeds={feeds} keywords={keywords}
@@ -529,11 +529,11 @@ export default function SettingsPage() {
 
         {/* Info */}
         <div className="glass-card rounded-2xl overflow-hidden p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2"><span className="material-icons-round text-primary text-sm">info</span><h2 className="text-sm font-semibold text-foreground">Info</h2></div>
+          <div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="material-icons-round text-primary text-sm">info</span><h2 className="text-sm font-semibold text-foreground">Info</h2></div>
           <section className="px-4 mt-6 space-y-3">
             <button type="button" onClick={() => setFeedbackOpen(true)}
               className="w-full py-2.5 rounded-xl text-xs font-medium border border-primary/20 bg-primary/5 text-primary/70 hover:bg-primary/10 transition flex items-center justify-center gap-2">
-              <span className="material-icons-round text-sm" aria-hidden="true">feedback</span> Send Feedback
+              <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">feedback</span> Send Feedback
             </button>
             <div className="p-3 rounded-xl border border-border/10 bg-card/30 space-y-2">
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Invite Friends</p>
@@ -559,7 +559,7 @@ export default function SettingsPage() {
             </div>
             <button type="button" onClick={exportData} disabled={exporting}
               className="w-full py-2.5 rounded-xl text-xs font-medium border border-border/20 bg-card/30 text-foreground/70 hover:bg-card/50 transition flex items-center justify-center gap-2">
-              <span className="material-icons-round text-sm" aria-hidden="true">download</span>
+              <span aria-hidden="true" className="material-icons-round text-sm" aria-hidden="true">download</span>
               {exporting ? 'Preparing...' : 'Export My Data (JSON)'}
             </button>
           </section>

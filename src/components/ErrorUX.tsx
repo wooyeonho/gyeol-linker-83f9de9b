@@ -65,7 +65,7 @@ export function ErrorToastContainer() {
               t.type === 'success' ? 'bg-green-500/20 border-green-500/30 text-green-400' :
               'bg-primary/20 border-primary/30 text-primary'
             }`}>
-            <span className="material-icons-round text-sm">
+            <span aria-hidden="true" className="material-icons-round text-sm">
               {t.type === 'error' ? 'error' : t.type === 'warning' ? 'warning' : t.type === 'success' ? 'check_circle' : 'info'}
             </span>
             <span className="flex-1">{t.message}</span>
@@ -97,7 +97,7 @@ export function OfflineIndicator() {
   return (
     <motion.div initial={{ y: -40 }} animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-[9998] bg-yellow-500/90 text-background text-center py-2 text-xs font-medium backdrop-blur-sm">
-      <span className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
+      <span aria-hidden="true" className="material-icons-round text-xs align-middle mr-1">wifi_off</span>
       오프라인 상태입니다 — 이전 대화 읽기만 가능합니다
     </motion.div>
   );
@@ -112,7 +112,7 @@ export function MessageRetryButton({ onRetry, label = '다시 보내기' }: Retr
   return (
     <button onClick={onRetry}
       className="inline-flex items-center gap-1 text-[10px] text-destructive hover:text-destructive/80 transition mt-1">
-      <span className="material-icons-round text-xs">refresh</span>
+      <span aria-hidden="true" className="material-icons-round text-xs">refresh</span>
       {label}
     </button>
   );

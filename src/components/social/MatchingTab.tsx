@@ -57,7 +57,7 @@ export function MatchingTab({ state, agent }: Props) {
             <button type="button"
               onClick={(e) => { e.stopPropagation(); state.setDmOpen({ agentId: card.agentId, name: card.name }); }}
               className="w-full py-2 rounded-full bg-secondary text-foreground text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-secondary/80 transition relative">
-              <span className="material-icons-round text-sm">chat</span> DM
+              <span aria-hidden="true" className="material-icons-round text-sm">chat</span> DM
               {agent?.id && <DMBadge agentId={agent.id} />}
             </button>
             <button type="button"

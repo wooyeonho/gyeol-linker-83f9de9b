@@ -151,7 +151,7 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                   </span>
                 </div>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -215,14 +215,14 @@ export function MemoryDashboard({ isOpen, onClose, agentId }: MemoryDashboardPro
                                   onClick={() => startEdit(mem)}
                                   className="text-muted-foreground/30 hover:text-primary transition p-1"
                                 >
-                                  <span className="material-icons-round text-sm">edit</span>
+                                  <span aria-hidden="true" className="material-icons-round text-sm">edit</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setDeleteTarget(mem.id)}
                                   className="text-muted-foreground/30 hover:text-destructive transition p-1"
                                 >
-                                  <span className="material-icons-round text-sm">close</span>
+                                  <span aria-hidden="true" className="material-icons-round text-sm">close</span>
                                 </button>
                               </div>
                             )}

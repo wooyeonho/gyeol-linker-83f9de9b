@@ -146,7 +146,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{inventory.length}개</span>
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -194,7 +194,7 @@ export function InventoryPanel({ isOpen, onClose, inventory, shopItems, onReload
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         inv.is_equipped ? 'bg-gradient-to-br from-primary/20 to-secondary/20' : 'bg-primary/10'
                       }`}>
-                        <span className="material-icons-round text-lg text-primary">{item?.icon ?? 'inventory_2'}</span>
+                        <span aria-hidden="true" className="material-icons-round text-lg text-primary">{item?.icon ?? 'inventory_2'}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">

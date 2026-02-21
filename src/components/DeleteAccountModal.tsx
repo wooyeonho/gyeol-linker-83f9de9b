@@ -95,7 +95,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                     <div className="space-y-2">
                       {WARNINGS.map(w => (
                         <div key={w.icon} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-destructive/5">
-                          <span className="material-icons-round text-destructive/50 text-sm">{w.icon}</span>
+                          <span aria-hidden="true" className="material-icons-round text-destructive/50 text-sm">{w.icon}</span>
                           <p className="text-[11px] text-foreground/70">{w.text}</p>
                         </div>
                       ))}
@@ -158,7 +158,7 @@ export function DeleteAccountModal({ isOpen, onClose, onDeleted }: Props) {
                       {deleting ? (
                         <><div className="void-dot w-3 h-3" /> 삭제 중...</>
                       ) : (
-                        <><span className="material-icons-round text-sm">delete_forever</span> 영구 삭제</>
+                        <><span aria-hidden="true" className="material-icons-round text-sm">delete_forever</span> 영구 삭제</>
                       )}
                     </button>
                     <button onClick={() => setStep(1)}

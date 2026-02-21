@@ -134,24 +134,24 @@ export function ChatCore({
       <button onClick={() => navigator.clipboard.writeText(msg.content)}
         aria-label="Copy message"
         className="text-[9px] text-muted-foreground/40 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-        <span className="material-icons-round text-[12px]">content_copy</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">content_copy</span>
       </button>
       {!isUser && (
         <button onClick={() => speakText(msg.content, readSpeed)}
           aria-label="Read aloud"
           className="text-[9px] text-muted-foreground/40 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-          <span className="material-icons-round text-[12px]">volume_up</span>
+          <span aria-hidden="true" className="material-icons-round text-[12px]">volume_up</span>
         </button>
       )}
       <button onClick={() => setReplyTo(msg)}
         aria-label="Reply"
         className="text-[9px] text-muted-foreground/40 hover:text-primary px-1.5 py-0.5 rounded hover:bg-primary/10 transition">
-        <span className="material-icons-round text-[12px]">reply</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">reply</span>
       </button>
       <button onClick={() => togglePin(msg.id)}
         aria-label={pinnedMessages.has(msg.id) ? 'Unpin' : 'Pin'}
         className={`text-[9px] px-1.5 py-0.5 rounded transition ${pinnedMessages.has(msg.id) ? 'text-[hsl(var(--warning))]' : 'text-muted-foreground/40 hover:text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]'}`}>
-        <span className="material-icons-round text-[12px]">push_pin</span>
+        <span aria-hidden="true" className="material-icons-round text-[12px]">push_pin</span>
       </button>
     </div>
   ), [handleReaction, reactions, readSpeed, togglePin, pinnedMessages]);
@@ -168,7 +168,7 @@ export function ChatCore({
         {pinnedList.length > 0 && (
           <div className="mx-3 mb-2 p-2 rounded-xl glass-card border border-[hsl(var(--warning))]/20 sticky top-0 z-20 backdrop-blur-md">
             <div className="flex items-center gap-1 mb-1">
-              <span className="material-icons-round text-[hsl(var(--warning))] text-[12px]">push_pin</span>
+              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[12px]">push_pin</span>
               <span className="text-[10px] text-[hsl(var(--warning))] font-medium">Pinned ({pinnedList.length})</span>
             </div>
             <div className="space-y-1 max-h-20 overflow-y-auto">
@@ -177,7 +177,7 @@ export function ChatCore({
                   <span className={m.role === 'user' ? 'text-primary/50' : 'text-secondary/50'}>{m.role === 'user' ? 'You' : agentName}:</span>
                   <span className="truncate">{m.content.slice(0, 60)}</span>
                   <button onClick={() => togglePin(m.id)} className="ml-auto text-[hsl(var(--warning))]/50 hover:text-[hsl(var(--warning))] shrink-0">
-                    <span className="material-icons-round text-[10px]">close</span>
+                    <span aria-hidden="true" className="material-icons-round text-[10px]">close</span>
                   </button>
                 </div>
               ))}
@@ -201,7 +201,7 @@ export function ChatCore({
                 {!isUser && (
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/10 mt-6">
                     <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-                      <span className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-[14px]">smart_toy</span>
+                      <span aria-hidden="true" className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-[14px]">smart_toy</span>
                     </div>
                   </div>
                 )}
@@ -250,7 +250,7 @@ export function ChatCore({
 
                 {isUser && (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-border/20 flex items-center justify-center mt-6">
-                    <span className="material-icons-round text-muted-foreground text-[14px]">person</span>
+                    <span aria-hidden="true" className="material-icons-round text-muted-foreground text-[14px]">person</span>
                   </div>
                 )}
               </motion.div>
@@ -309,7 +309,7 @@ export function ChatCore({
                 <button type="button" onClick={() => fileInputRef.current?.click()}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition flex-shrink-0"
                   aria-label="Attach file">
-                  <span className="material-icons-round text-[20px]">attach_file</span>
+                  <span aria-hidden="true" className="material-icons-round text-[20px]">attach_file</span>
                 </button>
               </>
             )}
@@ -334,7 +334,7 @@ export function ChatCore({
               aria-label="Send message"
               className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-primary-foreground flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
             >
-              <span className="material-icons-round text-base">arrow_upward</span>
+              <span aria-hidden="true" className="material-icons-round text-base">arrow_upward</span>
             </button>
           </div>
           <p className="text-center text-[11px] text-muted-foreground mt-1.5">

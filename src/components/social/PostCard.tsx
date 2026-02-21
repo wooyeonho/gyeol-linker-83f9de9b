@@ -20,7 +20,7 @@ export function PostCard({ p, state }: Props) {
       <div className="relative">
         <button onClick={(e) => { e.stopPropagation(); state.setPostMenu(state.postMenu === p.id ? null : p.id); }}
           className="w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:bg-secondary/50 transition">
-          <span className="material-icons-round text-sm">more_vert</span>
+          <span aria-hidden="true" className="material-icons-round text-sm">more_vert</span>
         </button>
         <AnimatePresence>
           {state.postMenu === p.id && (
@@ -28,11 +28,11 @@ export function PostCard({ p, state }: Props) {
               className="absolute right-0 top-7 z-20 glass-card rounded-xl p-1 min-w-[100px] shadow-xl border border-border/30">
               <button onClick={() => { state.setEditingPost(p.id); state.setEditContent(p.content); state.setPostMenu(null); }}
                 className="w-full px-3 py-1.5 text-left text-[11px] text-foreground hover:bg-secondary/50 rounded-lg flex items-center gap-2">
-                <span className="material-icons-round text-xs">edit</span> Edit
+                <span aria-hidden="true" className="material-icons-round text-xs">edit</span> Edit
               </button>
               <button onClick={() => state.handleDeletePost(p.id, p.feedType)}
                 className="w-full px-3 py-1.5 text-left text-[11px] text-destructive hover:bg-destructive/10 rounded-lg flex items-center gap-2">
-                <span className="material-icons-round text-xs">delete</span> Delete
+                <span aria-hidden="true" className="material-icons-round text-xs">delete</span> Delete
               </button>
             </motion.div>
           )}
@@ -45,7 +45,7 @@ export function PostCard({ p, state }: Props) {
     <div className={`glass-card rounded-2xl p-4 space-y-3 ${isVisitLog ? 'border border-primary/20 bg-primary/[0.03]' : ''}`}>
       {isVisitLog && (
         <div className="flex items-center gap-1.5 -mt-1 mb-1">
-          <span className="material-icons-round text-primary text-sm">menu_book</span>
+          <span aria-hidden="true" className="material-icons-round text-primary text-sm">menu_book</span>
           <span className="text-[10px] font-semibold text-primary">Moltbook Visit Log</span>
           <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/70">Auto</span>
         </div>
@@ -96,22 +96,22 @@ export function PostCard({ p, state }: Props) {
           <>
             <button type="button" onClick={() => state.handleLike(p.id)}
               className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${state.likedPosts.has(p.id) ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-              <span className="material-icons-round text-sm">{state.likedPosts.has(p.id) ? 'favorite' : 'favorite_border'}</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">{state.likedPosts.has(p.id) ? 'favorite' : 'favorite_border'}</span>
               {p.likes ?? 0}
             </button>
             <button type="button" onClick={() => state.toggleComments(p.id)}
               className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${state.expandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-              <span className="material-icons-round text-sm">chat_bubble_outline</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">chat_bubble_outline</span>
               {p.comments_count ?? 0}
             </button>
             <button className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-full hover:bg-secondary transition">
-              <span className="material-icons-round text-sm">share</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">share</span>
             </button>
           </>
         ) : (
           <button type="button" onClick={() => state.toggleCommunityComments(p.id)}
             className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition ${state.communityExpandedComments === p.id ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}>
-            <span className="material-icons-round text-sm">chat_bubble_outline</span>
+            <span aria-hidden="true" className="material-icons-round text-sm">chat_bubble_outline</span>
             {(state.communityComments[p.id] ?? []).length || 'Reply'}
           </button>
         )}
@@ -130,7 +130,7 @@ export function PostCard({ p, state }: Props) {
                     {state.isOwnPost({ agent_id: c.agent_id }) && (
                       <button onClick={() => state.setDeleteConfirm({ id: c.id, type: 'comment', postId: p.id })}
                         className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
-                        <span className="material-icons-round text-[12px]">close</span>
+                        <span aria-hidden="true" className="material-icons-round text-[12px]">close</span>
                       </button>
                     )}
                   </div>
@@ -167,7 +167,7 @@ export function PostCard({ p, state }: Props) {
                     {state.isOwnPost({ agent_id: c.agent_id }) && (
                       <button onClick={() => state.setDeleteConfirm({ id: c.id, type: 'communityReply', postId: p.id })}
                         className="opacity-0 group-hover/comment:opacity-100 text-destructive/50 hover:text-destructive transition shrink-0">
-                        <span className="material-icons-round text-[12px]">close</span>
+                        <span aria-hidden="true" className="material-icons-round text-[12px]">close</span>
                       </button>
                     )}
                   </div>

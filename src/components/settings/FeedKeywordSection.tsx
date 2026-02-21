@@ -50,7 +50,7 @@ export function FeedKeywordSection({
                     {k.keyword}
                     <button type="button" onClick={() => removeKeyword(k.id)}
                       className="text-foreground/20 hover:text-destructive/60 transition">
-                      <span className="material-icons-round text-[10px]">close</span>
+                      <span aria-hidden="true" className="material-icons-round text-[10px]">close</span>
                     </button>
                   </span>
                 ))}
@@ -93,7 +93,7 @@ export function FeedKeywordSection({
                     </div>
                     <button type="button" onClick={() => removeFeed(f.id)}
                       className="text-foreground/15 hover:text-destructive/60 transition ml-2">
-                      <span className="material-icons-round text-sm">delete_outline</span>
+                      <span aria-hidden="true" className="material-icons-round text-sm">delete_outline</span>
                     </button>
                   </div>
                 ))}

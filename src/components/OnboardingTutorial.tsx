@@ -111,7 +111,7 @@ export function OnboardingTutorial({ isOpen, onClose }: OnboardingTutorialProps)
           {current.tip && (
             <div className="px-3 py-2 rounded-xl bg-primary/5 border border-primary/10 mb-5">
               <p className="text-[10px] text-primary/80 flex items-center gap-1 justify-center">
-                <span className="material-icons-round text-[12px]">lightbulb</span>
+                <span aria-hidden="true" className="material-icons-round text-[12px]">lightbulb</span>
                 {current.tip}
               </p>
             </div>

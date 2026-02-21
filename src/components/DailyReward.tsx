@@ -99,7 +99,7 @@ export function DailyReward({ isOpen, onClose, streakDays, onClaim, alreadyClaim
             )}
 
             <button onClick={onClose} className="absolute top-3 right-3 text-muted-foreground/40 hover:text-foreground">
-              <span className="material-icons-round text-lg">close</span>
+              <span aria-hidden="true" className="material-icons-round text-lg">close</span>
             </button>
           </motion.div>
         </motion.div>

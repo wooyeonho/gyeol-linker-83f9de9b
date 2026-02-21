@@ -68,7 +68,7 @@ export function PersonalitySection({
                 <button type="button" onClick={() => setNameEditing(true)}
                   className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary/80 transition">
                   <span>{agentName}</span>
-                  <span className="material-icons-round text-foreground/20 text-xs">edit</span>
+                  <span aria-hidden="true" className="material-icons-round text-foreground/20 text-xs">edit</span>
                 </button>
               )}
               <span className="text-[10px] text-foreground/20 bg-foreground/[0.03] px-2 py-0.5 rounded">Gen {agent?.gen ?? 1}</span>
@@ -144,7 +144,7 @@ export function PersonalitySection({
                   if (agent) setAgent({ ...agent, settings: ns } as any);
                 }}
                   className="text-[9px] px-2 py-1 rounded-full bg-primary/10 text-primary/70 hover:bg-primary/20 transition flex items-center gap-1">
-                  <span className="material-icons-round text-[10px]">save</span> Save Current
+                  <span aria-hidden="true" className="material-icons-round text-[10px]">save</span> Save Current
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-1.5">

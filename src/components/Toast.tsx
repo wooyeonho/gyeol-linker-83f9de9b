@@ -32,7 +32,7 @@ export function ToastContainer() {
   }, []);
 
   return (
-    <div className="fixed top-[max(env(safe-area-inset-top),12px)] left-0 right-0 z-[200] flex flex-col items-center gap-2 px-4 pointer-events-none">
+    <div aria-live="polite" className="fixed top-[max(env(safe-area-inset-top),12px)] left-0 right-0 z-[200] flex flex-col items-center gap-2 px-4 pointer-events-none">
       <AnimatePresence>
         {toasts.map(t => (
           <motion.div

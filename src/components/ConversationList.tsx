@@ -98,7 +98,7 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/20">
               <h2 className="text-sm font-bold text-foreground">대화 기록</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground">
-                <span className="material-icons-round text-lg">close</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">close</span>
               </button>
             </div>
 
@@ -107,7 +107,7 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
                 <div className="flex items-center justify-center py-20"><div className="void-dot" /></div>
               ) : groups.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <span className="material-icons-round text-4xl text-muted-foreground/20">chat_bubble_outline</span>
+                  <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20">chat_bubble_outline</span>
                   <p className="text-sm text-muted-foreground">아직 대화가 없어요</p>
                 </div>
               ) : (
@@ -153,14 +153,14 @@ export function ConversationList({ isOpen, onClose, agentId, onSelectDate }: Pro
                           onClick={() => { setRenamingDate(g.date); setRenameValue(g.customName || g.label); }}
                           className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition shrink-0"
                         >
-                          <span className="material-icons-round text-sm">edit</span>
+                          <span aria-hidden="true" className="material-icons-round text-sm">edit</span>
                         </button>
                         <button
                           onClick={() => deleteDay(g.date)}
                           disabled={deleting === g.date}
                           className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition shrink-0"
                         >
-                          <span className="material-icons-round text-sm">
+                          <span aria-hidden="true" className="material-icons-round text-sm">
                             {deleting === g.date ? 'hourglass_empty' : 'delete_outline'}
                           </span>
                         </button>

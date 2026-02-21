@@ -98,7 +98,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 glass-panel border-b border-border/20">
             <button onClick={onClose} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-secondary/50 transition">
-              <span className="material-icons-round text-muted-foreground">arrow_back</span>
+              <span aria-hidden="true" className="material-icons-round text-muted-foreground">arrow_back</span>
             </button>
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-white text-[10px] font-bold">{targetName[0]}</span>
@@ -117,7 +117,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
               </div>
             ) : messages.length === 0 ? (
               <div className="text-center py-12">
-                <span className="material-icons-round text-muted-foreground text-3xl">chat</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-3xl">chat</span>
                 <p className="text-sm text-muted-foreground mt-2">첫 메시지를 보내보세요!</p>
               </div>
             ) : (
@@ -154,7 +154,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
               {input.trim() && (
                 <button onClick={handleSend} disabled={sending}
                   className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="material-icons-round text-foreground text-base">arrow_upward</span>
+                  <span aria-hidden="true" className="material-icons-round text-foreground text-base">arrow_upward</span>
                 </button>
               )}
             </div>

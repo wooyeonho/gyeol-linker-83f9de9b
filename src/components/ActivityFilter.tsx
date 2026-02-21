@@ -33,7 +33,7 @@ export function ActivityFilter({ onFilterChange, onSearchChange, activeFilter, s
           className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
           aria-label="활동 검색"
         >
-          <span className="material-icons-round text-sm">search</span>
+          <span aria-hidden="true" className="material-icons-round text-sm">search</span>
         </button>
         <AnimatePresence>
           {searchOpen && (
@@ -68,7 +68,7 @@ export function ActivityFilter({ onFilterChange, onSearchChange, activeFilter, s
                 : 'glass-card text-muted-foreground hover:text-foreground'
             }`}
           >
-            <span className="material-icons-round text-[12px]">{cat.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-[12px]">{cat.icon}</span>
             {cat.label}
           </button>
         ))}

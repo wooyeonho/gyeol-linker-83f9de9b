@@ -129,7 +129,7 @@ export default function ActivityPage() {
   ];
 
   return (
-    <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
+    <main role="main" className="flex flex-col min-h-[100dvh] bg-background font-display relative">
       <div className="aurora-bg" />
       <PullToRefresh onRefresh={handleRefresh} className="flex-1 overflow-y-auto max-w-md mx-auto px-5 pt-6 pb-24 space-y-4 relative z-10">
         {/* B24: Breadcrumbs */}
@@ -145,7 +145,7 @@ export default function ActivityPage() {
             <ActivityExportButton onExport={(format) => { setExportOpen(true); }} />
             <button onClick={() => setExportOpen(true)}
               className="w-8 h-8 rounded-full flex items-center justify-center glass-card text-muted-foreground hover:text-primary transition">
-              <span className="material-icons-round text-sm">download</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">download</span>
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function ActivityPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="material-icons-round text-primary/50 text-lg">bolt</span>
+              <span aria-hidden="true" className="material-icons-round text-primary/50 text-lg">bolt</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-bold">+{learningGrowth}%</span>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Interaction Score</p>
@@ -175,7 +175,7 @@ export default function ActivityPage() {
           </div>
           <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="material-icons-round text-secondary/50 text-lg">trending_up</span>
+              <span aria-hidden="true" className="material-icons-round text-secondary/50 text-lg">trending_up</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Lv. {growthLevel}</span>
             </div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Growth</p>
@@ -193,7 +193,7 @@ export default function ActivityPage() {
         {securityLogs.length > 0 && (
           <div className="glass-card rounded-2xl p-4 border border-[hsl(var(--warning))]/20">
             <div className="flex items-center gap-2 mb-3">
-              <span className="material-icons-round text-[hsl(var(--warning))] text-lg">security</span>
+              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-lg">security</span>
               <h3 className="text-sm font-bold text-foreground">Security Audit</h3>
               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] font-medium">{securityLogs.length} events</span>
             </div>
@@ -282,7 +282,7 @@ export default function ActivityPage() {
               {logs.slice(0, 3).map(log => (
                 <div key={log.id} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="material-icons-round text-primary text-sm">{TYPE_ICON[log.activity_type] ?? 'info'}</span>
+                    <span aria-hidden="true" className="material-icons-round text-primary text-sm">{TYPE_ICON[log.activity_type] ?? 'info'}</span>
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-medium text-foreground truncate">{TYPE_LABEL[log.activity_type] ?? log.activity_type}</p>
@@ -299,7 +299,7 @@ export default function ActivityPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <button onClick={() => setShowLogs(!showLogs)} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
+              <span aria-hidden="true" className="material-icons-round text-[14px]">{showLogs ? 'expand_less' : 'expand_more'}</span>
               {showLogs ? 'Hide' : 'Show'} Activity Log
             </button>
           </div>

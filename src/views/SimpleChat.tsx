@@ -55,7 +55,7 @@ export default function SimpleChat() {
         {pinnedMessages.size > 0 && (
           <div className="mb-2 p-2 rounded-xl glass-card border border-[hsl(var(--warning))]/20 sticky top-0 z-20 backdrop-blur-md">
             <div className="flex items-center gap-1 mb-1">
-              <span className="material-icons-round text-[hsl(var(--warning))] text-[12px]">push_pin</span>
+              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-[12px]">push_pin</span>
               <span className="text-[10px] text-[hsl(var(--warning))] font-medium">Pinned ({pinnedMessages.size})</span>
             </div>
             <div className="space-y-1 max-h-20 overflow-y-auto">
@@ -64,7 +64,7 @@ export default function SimpleChat() {
                   <span className={m.role === 'user' ? 'text-primary/50' : 'text-secondary/50'}>{m.role === 'user' ? 'You' : agentName}:</span>
                   <span className="truncate">{m.content.slice(0, 60)}</span>
                   <button onClick={() => togglePin(m.id)} className="ml-auto text-[hsl(var(--warning))]/50 hover:text-[hsl(var(--warning))] shrink-0">
-                    <span className="material-icons-round text-[10px]">close</span>
+                    <span aria-hidden="true" className="material-icons-round text-[10px]">close</span>
                   </button>
                 </div>
               ))}
@@ -87,7 +87,7 @@ export default function SimpleChat() {
         {isLoading && (
           <div className="flex gap-2.5 mb-3 justify-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/20 border border-foreground/10 flex items-center justify-center">
-              <span className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
+              <span aria-hidden="true" className="material-icons-round text-primary/80 text-[14px]">smart_toy</span>
             </div>
             <div className="glass-bubble p-4 rounded-2xl rounded-bl-sm">
               <div className="flex items-center gap-1.5 h-4">
@@ -120,16 +120,16 @@ export default function SimpleChat() {
               className="fixed inset-x-4 bottom-20 top-auto z-[70] max-h-[60vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="material-icons-round text-primary text-base">summarize</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-base">summarize</span>
                   Conversation Summary
                 </h3>
                 <button onClick={() => setSummaryOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
                 </button>
               </div>
               {summarizing ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-                  <span className="material-icons-round text-primary animate-spin text-base">hourglass_top</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary animate-spin text-base">hourglass_top</span>
                   Analyzing conversation...
                 </div>
               ) : (
@@ -165,7 +165,7 @@ export default function SimpleChat() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-foreground">Token Usage</h3>
               <button onClick={() => setShowTokenUsage(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
             <TokenUsageDisplay tokensUsed={messages.length * 150} dailyTotal={messages.length * 150} maxTokens={maxTokens} />
@@ -184,7 +184,7 @@ export default function SimpleChat() {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground">AI Provider Settings</h3>
                 <button onClick={() => setShowProviderPanel(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
                 </button>
               </div>
               <ProviderComparison />
@@ -193,7 +193,7 @@ export default function SimpleChat() {
               <div className="pt-2 border-t border-border/10">
                 <button onClick={() => { setShowProviderPanel(false); setShowSystemPrompt(true); }}
                   className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl glass-card hover:bg-muted/10 transition text-left">
-                  <span className="material-icons-round text-primary text-base">psychology</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-base">psychology</span>
                   <div>
                     <p className="text-[11px] font-medium text-foreground">System Prompt Editor</p>
                     <p className="text-[9px] text-muted-foreground">Customize AI behavior</p>
@@ -203,7 +203,7 @@ export default function SimpleChat() {
               <div className="pt-2 border-t border-border/10">
                 <button onClick={() => { setShowProviderPanel(false); setShowTTSSettings(true); }}
                   className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl glass-card hover:bg-muted/10 transition text-left">
-                  <span className="material-icons-round text-primary text-base">record_voice_over</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-base">record_voice_over</span>
                   <div>
                     <p className="text-[11px] font-medium text-foreground">TTS Voice Settings</p>
                     <p className="text-[9px] text-muted-foreground">Change voice, speed, pitch</p>
@@ -232,7 +232,7 @@ export default function SimpleChat() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground">System Prompt</h3>
                 <button onClick={() => setShowSystemPrompt(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
                 </button>
               </div>
               <SystemPromptEditor agent={agent} onUpdate={() => {}} />
@@ -251,7 +251,7 @@ export default function SimpleChat() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground">TTS Voice Settings</h3>
                 <button onClick={() => setShowTTSSettings(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                  <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
                 </button>
               </div>
               <TTSVoiceSelector />

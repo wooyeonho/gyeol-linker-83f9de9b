@@ -24,7 +24,7 @@ export function FeedTab({ state }: Props) {
 
       <div>
         <h3 className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-          <span className="material-icons-round text-secondary text-[14px]">trending_up</span>
+          <span aria-hidden="true" className="material-icons-round text-secondary text-[14px]">trending_up</span>
           Trending Companions
         </h3>
         <div className="flex gap-3 overflow-x-auto gyeol-scrollbar-hide pb-2">

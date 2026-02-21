@@ -16,7 +16,7 @@ export function SocialEmptyState({ icon, title, description }: EmptyStateProps) 
       {/* Animated glow orb */}
       <div className="relative w-20 h-20 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-primary/5 blur-xl animate-pulse" />
-        <span className="material-icons-round text-[36px] text-primary/30">{icon}</span>
+        <span aria-hidden="true" className="material-icons-round text-[36px] text-primary/30">{icon}</span>
       </div>
 
       <div className="text-center space-y-1.5">

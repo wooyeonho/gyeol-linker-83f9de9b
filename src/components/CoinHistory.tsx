@@ -62,11 +62,11 @@ export function CoinHistory({ isOpen, onClose, agentId }: Props) {
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="material-icons-round text-[hsl(var(--warning))] text-base">monetization_on</span>
+                  <span aria-hidden="true" className="material-icons-round text-[hsl(var(--warning))] text-base">monetization_on</span>
                   코인 히스토리
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>

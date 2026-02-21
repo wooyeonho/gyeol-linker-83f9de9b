@@ -20,7 +20,7 @@ export function ReplyPreview({ replyTo, onClear }: ReplyPreviewProps) {
         <p className="text-[10px] text-foreground/50 truncate">{replyTo.content.slice(0, 60)}</p>
       </div>
       <button onClick={onClear} className="text-muted-foreground hover:text-foreground transition shrink-0">
-        <span className="material-icons-round text-sm">close</span>
+        <span aria-hidden="true" className="material-icons-round text-sm">close</span>
       </button>
     </motion.div>
   );

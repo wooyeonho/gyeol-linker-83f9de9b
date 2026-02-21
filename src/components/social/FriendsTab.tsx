@@ -20,7 +20,7 @@ export function FriendsTab({ state, agentId }: Props) {
       )}
       {agentId && (
         <div className="glass-card rounded-2xl p-3 text-center mt-3">
-          <span className="material-icons-round text-primary text-lg">timeline</span>
+          <span aria-hidden="true" className="material-icons-round text-primary text-lg">timeline</span>
           <p className="text-[11px] text-muted-foreground mt-1">Your AI Growth Timeline</p>
           <ProfileTimeline agentId={agentId} />
         </div>

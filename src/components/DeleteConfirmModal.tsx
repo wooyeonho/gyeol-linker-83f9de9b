@@ -32,7 +32,7 @@ export function DeleteConfirmModal({ isOpen, title = '삭제 확인', message = 
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                <span className="material-icons-round text-destructive">warning</span>
+                <span aria-hidden="true" className="material-icons-round text-destructive">warning</span>
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground">{title}</h3>

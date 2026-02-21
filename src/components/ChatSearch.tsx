@@ -91,7 +91,7 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
       {/* Search header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
         <button onClick={onClose} className="text-muted-foreground" aria-label="닫기">
-          <span className="material-icons-round text-lg">arrow_back</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">arrow_back</span>
         </button>
         <div className="flex-1 relative">
           <input
@@ -130,7 +130,7 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
         ))}
         <button onClick={() => setShowAdvanced(!showAdvanced)}
           className={`px-2 py-1 rounded-full text-[10px] font-medium transition ${showAdvanced ? 'bg-secondary/20 text-secondary' : 'text-muted-foreground hover:bg-muted/10'}`}>
-          <span className="material-icons-round text-[10px]">tune</span>
+          <span aria-hidden="true" className="material-icons-round text-[10px]">tune</span>
         </button>
         {results.length > 0 && (
           <span className="ml-auto text-[9px] text-muted-foreground/50">{results.length}개 결과</span>
@@ -176,14 +176,14 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {results.length === 0 && query.trim() && !searching && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-icons-round text-muted-foreground/20 text-4xl">search_off</span>
+            <span aria-hidden="true" className="material-icons-round text-muted-foreground/20 text-4xl">search_off</span>
             <p className="text-muted-foreground text-sm">검색 결과 없음</p>
           </div>
         )}
 
         {!query.trim() && !searching && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-icons-round text-muted-foreground/20 text-4xl">search</span>
+            <span aria-hidden="true" className="material-icons-round text-muted-foreground/20 text-4xl">search</span>
             <p className="text-muted-foreground/50 text-xs">검색어를 입력하세요</p>
           </div>
         )}

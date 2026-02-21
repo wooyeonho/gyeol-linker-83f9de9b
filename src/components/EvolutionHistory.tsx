@@ -40,7 +40,7 @@ export function EvolutionHistory({ agentId }: Props) {
   return (
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-        <span className="material-icons-round text-secondary text-sm">history</span>
+        <span aria-hidden="true" className="material-icons-round text-secondary text-sm">history</span>
         진화 기록
       </h3>
 

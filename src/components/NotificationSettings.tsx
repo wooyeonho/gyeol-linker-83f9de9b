@@ -99,7 +99,7 @@ export function NotificationSettings({ agent, onUpdate }: Props) {
       {NOTIF_CATEGORIES.map(cat => (
         <div key={cat.key} className="flex items-center justify-between py-0.5">
           <div className="flex items-center gap-2">
-            <span className="material-icons-round text-primary/40 text-sm">{cat.icon}</span>
+            <span aria-hidden="true" className="material-icons-round text-primary/40 text-sm">{cat.icon}</span>
             <div>
               <p className="text-[11px] text-foreground/80">{cat.label}</p>
               <p className="text-[9px] text-muted-foreground">{cat.description}</p>

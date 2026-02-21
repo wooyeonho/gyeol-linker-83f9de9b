@@ -50,7 +50,7 @@ export function QuestTimer({ type, compact = false }: Props) {
   if (compact) {
     return (
       <span className="text-[9px] text-muted-foreground flex items-center gap-1">
-        <span className="material-icons-round text-[10px]">schedule</span>
+        <span aria-hidden="true" className="material-icons-round text-[10px]">schedule</span>
         {formatTimeLeft(timeLeft)}
       </span>
     );
@@ -63,7 +63,7 @@ export function QuestTimer({ type, compact = false }: Props) {
       className="glass-card rounded-xl px-3 py-2 flex items-center justify-between"
     >
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-primary text-sm">timer</span>
+        <span aria-hidden="true" className="material-icons-round text-primary text-sm">timer</span>
         <span className="text-[10px] text-foreground font-medium">
           {type === 'daily' ? '일일 리셋' : '주간 리셋'}
         </span>

@@ -169,7 +169,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 <button onClick={onClose}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
                   aria-label="알림 패널 닫기">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -195,7 +195,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 <div className="flex items-center justify-center py-20"><div className="void-dot" /></div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <span className="material-icons-round text-4xl text-muted-foreground/20">notifications_none</span>
+                  <span aria-hidden="true" className="material-icons-round text-4xl text-muted-foreground/20">notifications_none</span>
                   <p className="text-sm text-muted-foreground">
                     {filter ? '해당 종류의 알림이 없어요' : '아직 알림이 없어요'}
                   </p>

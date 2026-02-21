@@ -30,10 +30,10 @@ export function PersonalityChangeNotif({ show, changes, onClose }: PersonalityCh
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[80] glass-card rounded-2xl p-4 w-[280px] shadow-xl border border-primary/20"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="material-icons-round text-primary text-sm">auto_awesome</span>
+            <span aria-hidden="true" className="material-icons-round text-primary text-sm">auto_awesome</span>
             <span className="text-[11px] font-bold text-foreground">성격이 변했어요!</span>
             <button onClick={onClose} className="ml-auto text-muted-foreground hover:text-foreground">
-              <span className="material-icons-round text-sm">close</span>
+              <span aria-hidden="true" className="material-icons-round text-sm">close</span>
             </button>
           </div>
           <div className="space-y-1">

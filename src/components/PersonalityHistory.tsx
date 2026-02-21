@@ -70,7 +70,7 @@ export function PersonalityHistory({ agentId }: Props) {
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-primary text-sm">timeline</span>
+          <span aria-hidden="true" className="material-icons-round text-primary text-sm">timeline</span>
           성격 변화 히스토리
         </h3>
         <span className="text-[9px] text-muted-foreground">{entries.length}건</span>

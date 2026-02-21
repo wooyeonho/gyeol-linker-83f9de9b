@@ -44,7 +44,7 @@ export function EvolutionGuide({ gen, evolutionProgress, totalConversations, int
     <div className="glass-card rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold text-foreground/80 flex items-center gap-1.5">
-          <span className="material-icons-round text-secondary text-sm">info</span>
+          <span aria-hidden="true" className="material-icons-round text-secondary text-sm">info</span>
           {current.desc}
         </h3>
         <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${

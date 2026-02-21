@@ -36,7 +36,7 @@ export function ThemeToggle() {
       className="flex items-center justify-between w-full py-2"
     >
       <div className="flex items-center gap-2">
-        <span className="material-icons-round text-sm text-primary/50">
+        <span aria-hidden="true" className="material-icons-round text-sm text-primary/50">
           {theme === 'dark' ? 'dark_mode' : 'light_mode'}
         </span>
         <div>

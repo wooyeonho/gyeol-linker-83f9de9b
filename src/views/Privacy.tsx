@@ -41,7 +41,7 @@ export default function Privacy() {
   const t = lang === 'ko' ? PRIVACY_KO : PRIVACY_EN;
 
   return (
-    <main className="min-h-screen bg-background p-4 sm:p-6 font-display relative">
+    <main role="main" className="min-h-screen bg-background p-4 sm:p-6 font-display relative">
       <div className="aurora-bg" />
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
         className="glass-panel rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto relative z-10">

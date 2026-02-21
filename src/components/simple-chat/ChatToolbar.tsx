@@ -25,12 +25,12 @@ export function ChatToolbar({ state }: ChatToolbarProps) {
           <button onClick={() => setConvListOpen(true)}
             aria-label="Conversation history"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history</span>
           </button>
           <button onClick={() => setSearchOpen(true)}
             aria-label="Search messages"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">search</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">search</span>
           </button>
         </div>
         <div className="absolute top-4 right-4 flex gap-2">
@@ -38,32 +38,32 @@ export function ChatToolbar({ state }: ChatToolbarProps) {
           <button onClick={() => setStatsOpen(true)}
             aria-label="Stats"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">bar_chart</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">bar_chart</span>
           </button>
           <button onClick={() => setShareOpen(true)}
             aria-label="Share conversation"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">share</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">share</span>
           </button>
           <button onClick={() => setExportOpen(true)}
             aria-label="Export conversation"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">download</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">download</span>
           </button>
           <button onClick={() => setSummaryHistoryOpen(true)}
             aria-label="Summary history"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history_edu</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">history_edu</span>
           </button>
           <button onClick={handleSummarize}
             aria-label="Summarize conversation"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">summarize</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">summarize</span>
           </button>
           <button onClick={() => navigate('/settings')}
             aria-label="Settings"
             className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
-            <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">settings</span>
+            <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">settings</span>
           </button>
         </div>
         <AnimatedCharacter
@@ -92,11 +92,11 @@ export function ChatToolbar({ state }: ChatToolbarProps) {
       <div className="flex items-center gap-2">
         <button onClick={() => setConvListOpen(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition">
-          <span className="material-icons-round text-lg">history</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">history</span>
         </button>
         <button onClick={() => setSearchOpen(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition">
-          <span className="material-icons-round text-lg">search</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">search</span>
         </button>
         <p className="text-base font-medium text-foreground">{agentName}</p>
         <div className="w-2 h-2 rounded-full bg-[hsl(var(--success,142_71%_45%))] shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
@@ -106,11 +106,11 @@ export function ChatToolbar({ state }: ChatToolbarProps) {
         <button onClick={() => setShowProviderPanel(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition"
           aria-label="AI Provider settings">
-          <span className="material-icons-round text-lg">tune</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">tune</span>
         </button>
         <button onClick={() => navigate('/settings')}
           className="w-11 h-11 rounded-full flex items-center justify-center glass-card">
-          <span className="material-icons-round text-lg text-muted-foreground">settings</span>
+          <span aria-hidden="true" className="material-icons-round text-lg text-muted-foreground">settings</span>
         </button>
       </div>
     </div>

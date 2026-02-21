@@ -65,11 +65,11 @@ export function ProfileCustomizer({ isOpen, onClose, agent, onUpdate }: Props) {
             className="fixed inset-x-4 bottom-4 top-auto z-[80] max-h-[80vh] overflow-y-auto glass-card rounded-2xl p-5 max-w-md mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span className="material-icons-round text-primary text-base">palette</span>
+                <span aria-hidden="true" className="material-icons-round text-primary text-base">palette</span>
                 Profile Customization
               </h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary/20">
-                <span className="material-icons-round text-muted-foreground text-sm">close</span>
+                <span aria-hidden="true" className="material-icons-round text-muted-foreground text-sm">close</span>
               </button>
             </div>
 

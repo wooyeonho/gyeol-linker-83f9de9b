@@ -17,7 +17,7 @@ export function TelegramSection({ activeSection, SectionHeader, telegramLinked, 
             exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-3 pt-2">
             {telegramLinked ? (
               <div className="flex items-center gap-2 text-[hsl(var(--success,142_71%_45%)/0.7)]">
-                <span className="material-icons-round text-sm">check_circle</span>
+                <span aria-hidden="true" className="material-icons-round text-sm">check_circle</span>
                 <span className="text-xs">Telegram Connected</span>
               </div>
             ) : (

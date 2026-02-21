@@ -52,7 +52,7 @@ export function ModeCharacterSection({
                     className={`p-4 rounded-xl text-center transition ${
                       currentMode === m.key ? 'glass-card-selected' : 'glass-card'
                     }`}>
-                    <span className="material-icons-round text-xl text-primary/60">{m.icon}</span>
+                    <span aria-hidden="true" className="material-icons-round text-xl text-primary/60">{m.icon}</span>
                     <p className="text-[11px] text-foreground/80 mt-1">{m.label}</p>
                   </button>
                 ))}
@@ -90,7 +90,7 @@ export function ModeCharacterSection({
                     className={`flex flex-col items-center p-3 rounded-xl transition ${
                       charPreset === c.key ? 'glass-card-selected' : 'glass-card'
                     }`}>
-                    <span className="material-icons-round text-lg text-primary/60">{c.emoji}</span>
+                    <span aria-hidden="true" className="material-icons-round text-lg text-primary/60">{c.emoji}</span>
                     <span className="text-[9px] text-foreground/30 mt-1">{c.label}</span>
                   </button>
                 ))}

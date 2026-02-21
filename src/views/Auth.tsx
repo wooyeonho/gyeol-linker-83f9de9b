@@ -76,7 +76,7 @@ export default function AuthPage() {
               <div className="absolute inset-0 aurora-ring rounded-full animate-spin-slow" />
               {/* Inner dark circle with icon */}
               <div className="relative w-14 h-14 rounded-full bg-[#0d0b14] border border-foreground/[0.06] flex items-center justify-center shadow-[0_0_30px_rgba(120,78,218,0.3)]">
-                <span className="material-icons-round text-2xl bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
+                <span aria-hidden="true" className="material-icons-round text-2xl bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
                   all_inclusive
                 </span>
               </div>
@@ -113,7 +113,7 @@ export default function AuthPage() {
             <div>
               <label htmlFor="auth-email" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Email Address</label>
               <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03] transition-all">
-                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">email</span>
+                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">email</span>
                 <input
                   id="auth-email"
                   type="email" value={email} onChange={(e) => setEmail(e.target.value)}
@@ -128,7 +128,7 @@ export default function AuthPage() {
             <div>
               <label htmlFor="auth-password" className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium mb-1.5 block">Password</label>
               <div className="relative input-glow rounded-xl border border-foreground/[0.06] bg-foreground/[0.03] transition-all">
-                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">lock</span>
+                <span aria-hidden="true" className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-lg" aria-hidden="true">lock</span>
                 <input
                   id="auth-password"
                   type={showPassword ? 'text' : 'password'}
@@ -140,7 +140,7 @@ export default function AuthPage() {
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors focus-visible:outline-2 focus-visible:outline-primary">
-                  <span className="material-icons-round text-lg" aria-hidden="true">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg" aria-hidden="true">{showPassword ? 'visibility' : 'visibility_off'}</span>
                 </button>
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function AuthPage() {
                     className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${
                       rememberMe ? 'bg-primary border-primary' : 'border-foreground/20 bg-transparent'
                     }`}>
-                    {rememberMe && <span className="material-icons-round text-foreground text-[12px]">check</span>}
+                    {rememberMe && <span aria-hidden="true" className="material-icons-round text-foreground text-[12px]">check</span>}
                   </button>
                   <span className="text-[11px] text-muted-foreground">Remember me</span>
                 </label>
@@ -183,7 +183,7 @@ export default function AuthPage() {
             <button type="submit" disabled={loading}
               className="w-full py-4 mt-2 btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground font-bold rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-30 text-sm">
               {loading ? 'Processing...' : mode === 'login' ? 'Enter GYEOL' : 'Create Account'}
-              {!loading && <span className="material-icons-round text-base">arrow_forward</span>}
+              {!loading && <span aria-hidden="true" className="material-icons-round text-base">arrow_forward</span>}
             </button>
           </form>
 

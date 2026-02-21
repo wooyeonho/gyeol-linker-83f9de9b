@@ -56,14 +56,14 @@ export default function ServerError() {
           onClick={() => window.location.reload()}
           className="px-5 py-3 rounded-xl bg-muted/10 text-foreground/70 text-sm font-bold flex items-center gap-2 hover:bg-muted/20 transition"
         >
-          <span className="material-icons-round text-lg">refresh</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">refresh</span>
           새로고침
         </button>
         <Link
           to="/"
           className="px-5 py-3 rounded-xl btn-glow bg-gradient-to-r from-primary to-secondary text-primary-foreground text-sm font-bold flex items-center gap-2"
         >
-          <span className="material-icons-round text-lg">home</span>
+          <span aria-hidden="true" className="material-icons-round text-lg">home</span>
           홈으로
         </Link>
       </motion.div>

@@ -62,7 +62,7 @@ export function NewPostModal({ isOpen, onClose, agentId, agentName, agentGen, on
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-foreground">새 글 작성</h3>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-                <span className="material-icons-round text-lg">close</span>
+                <span aria-hidden="true" className="material-icons-round text-lg">close</span>
               </button>
             </div>
 

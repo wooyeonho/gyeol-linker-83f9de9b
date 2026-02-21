@@ -40,13 +40,13 @@ export function ActivityExport({ isOpen, onClose, logs }: ActivityExportProps) {
           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
             className="glass-card rounded-2xl p-5 w-full max-w-[280px] space-y-3">
             <div className="flex items-center gap-2">
-              <span className="material-icons-round text-primary">download</span>
+              <span aria-hidden="true" className="material-icons-round text-primary">download</span>
               <h3 className="text-sm font-bold text-foreground">활동 내보내기</h3>
             </div>
             <p className="text-[10px] text-muted-foreground">{logs.length}개 활동 로그</p>
             <button onClick={exportJSON}
               className="w-full py-3 rounded-xl glass-card flex items-center gap-3 px-4 hover:bg-primary/5 transition">
-              <span className="material-icons-round text-secondary text-lg">code</span>
+              <span aria-hidden="true" className="material-icons-round text-secondary text-lg">code</span>
               <div className="text-left">
                 <p className="text-[12px] font-medium text-foreground">JSON</p>
                 <p className="text-[9px] text-muted-foreground">구조화된 데이터</p>
@@ -54,7 +54,7 @@ export function ActivityExport({ isOpen, onClose, logs }: ActivityExportProps) {
             </button>
             <button onClick={exportCSV}
               className="w-full py-3 rounded-xl glass-card flex items-center gap-3 px-4 hover:bg-primary/5 transition">
-              <span className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-lg">table_chart</span>
+              <span aria-hidden="true" className="material-icons-round text-[hsl(var(--success,142_71%_45%))] text-lg">table_chart</span>
               <div className="text-left">
                 <p className="text-[12px] font-medium text-foreground">CSV</p>
                 <p className="text-[9px] text-muted-foreground">스프레드시트 호환</p>

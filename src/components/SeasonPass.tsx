@@ -84,7 +84,7 @@ export function SeasonPass() {
   if (!season) {
     return (
       <div className="glass-card rounded-2xl p-5 text-center">
-        <span className="material-icons-round text-3xl text-muted-foreground/20 mb-2">event_busy</span>
+        <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20 mb-2">event_busy</span>
         <p className="text-sm text-muted-foreground">현재 활성 시즌이 없습니다</p>
         <p className="text-[10px] text-muted-foreground/60 mt-1">다음 시즌을 기대해주세요!</p>
       </div>

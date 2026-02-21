@@ -85,11 +85,11 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
               <div className="w-10 h-1 rounded-full bg-border/40 mx-auto mb-3" />
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="material-icons-round text-primary text-base">insights</span>
+                  <span aria-hidden="true" className="material-icons-round text-primary text-base">insights</span>
                   대화 인사이트
                 </h2>
                 <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition p-1">
-                  <span className="material-icons-round text-lg">close</span>
+                  <span aria-hidden="true" className="material-icons-round text-lg">close</span>
                 </button>
               </div>
             </div>
@@ -101,7 +101,7 @@ export function InsightDashboard({ isOpen, onClose }: Props) {
                 </div>
               ) : insights.length === 0 ? (
                 <div className="text-center py-12">
-                  <span className="material-icons-round text-3xl text-muted-foreground/20">psychology</span>
+                  <span aria-hidden="true" className="material-icons-round text-3xl text-muted-foreground/20">psychology</span>
                   <p className="text-[11px] text-muted-foreground/50 mt-2">아직 대화 인사이트가 없어요</p>
                   <p className="text-[10px] text-muted-foreground/30 mt-1">AI와 대화를 나눠보세요!</p>
                 </div>
