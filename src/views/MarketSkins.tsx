@@ -8,7 +8,7 @@ import { useGamification } from '@/src/hooks/useGamification';
 import { BottomNav } from '../components/BottomNav';
 import { PurchaseConfirmModal } from '../components/PurchaseConfirmModal';
 import { showToast } from '../components/Toast';
-import { MarketDeep } from '@/src/components/MarketDeep';
+import { SkinPreviewCard, MarketSearch } from '@/src/components/MarketDeep';
 
 interface SkinItem {
   id: string; name: string; description: string | null; price: number;
@@ -38,7 +38,6 @@ export default function MarketSkinsPage() {
 
   const [confirmSkin, setConfirmSkin] = useState<SkinItem | null>(null);
   const [purchasing, setPurchasing] = useState(false);
-  const [marketDeepOpen, setMarketDeepOpen] = useState(false);
 
   useEffect(() => {
     if (agent?.skin_id) setAppliedId(agent.skin_id as string);
@@ -206,12 +205,11 @@ export default function MarketSkinsPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="flex items-center gap-2 glass-card rounded-full px-4 py-2.5">
-          <span className="material-icons-round text-slate-400 text-lg">search</span>
-          <input type="text" placeholder="Search skins..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-slate-500 outline-none" />
-        </div>
+        {/* B16: Market Search */}
+        <MarketSearch
+          onSearch={(q) => setSearchQuery(q)}
+          onSort={(sort) => console.log('Sort by:', sort)}
+        />
 
         {/* Category tabs */}
         <div className="flex gap-2 overflow-x-auto gyeol-scrollbar-hide">
@@ -293,10 +291,6 @@ export default function MarketSkinsPage() {
         currentBalance={profile?.coins ?? 0}
         loading={purchasing}
       />
-      {/* B16: Market Deep */}
-      {agent?.id && (
-        <MarketDeep isOpen={marketDeepOpen} onClose={() => setMarketDeepOpen(false)} agentId={agent.id} />
-      )}
       <BottomNav />
     </main>
   );

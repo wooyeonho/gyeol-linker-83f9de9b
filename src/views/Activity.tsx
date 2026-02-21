@@ -6,7 +6,7 @@ import { BottomNav } from '../components/BottomNav';
 import { PullToRefresh } from '@/src/components/PullToRefresh';
 import { ActivityFilter } from '@/src/components/ActivityFilter';
 import { ActivityExport } from '@/src/components/ActivityExport';
-import { NavigationDeep } from '@/src/components/NavigationDeep';
+import { Breadcrumbs, ActivityExportButton, ActivitySummary } from '@/src/components/NavigationDeep';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ActivityLog {
@@ -58,7 +58,6 @@ export default function ActivityPage() {
   const [activitySearch, setActivitySearch] = useState('');
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [navDeepOpen, setNavDeepOpen] = useState(false);
 
   useEffect(() => {
     if (!agent?.id) return;
@@ -133,17 +132,32 @@ export default function ActivityPage() {
     <main className="flex flex-col min-h-[100dvh] bg-background font-display relative">
       <div className="aurora-bg" />
       <PullToRefresh onRefresh={handleRefresh} className="flex-1 overflow-y-auto max-w-md mx-auto px-5 pt-6 pb-24 space-y-4 relative z-10">
+        {/* B24: Breadcrumbs */}
+        <Breadcrumbs items={[{ label: 'Home', path: '/' }, { label: 'Activity' }]} />
+
         {/* Header */}
         <div className="flex items-end justify-between mb-2">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Activity & Growth</h1>
             <p className="text-sm text-slate-400 mt-1">Track your interaction depth and shared journey.</p>
           </div>
-          <button onClick={() => setExportOpen(true)}
-            className="w-8 h-8 rounded-full flex items-center justify-center glass-card text-muted-foreground hover:text-primary transition">
-            <span className="material-icons-round text-sm">download</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <ActivityExportButton onExport={(format) => { setExportOpen(true); }} />
+            <button onClick={() => setExportOpen(true)}
+              className="w-8 h-8 rounded-full flex items-center justify-center glass-card text-muted-foreground hover:text-primary transition">
+              <span className="material-icons-round text-sm">download</span>
+            </button>
+          </div>
         </div>
+
+        {/* B29: Activity Summary */}
+        <ActivitySummary data={{
+          chats: agent?.total_conversations ?? 0,
+          exp: interactionScore,
+          coins: 0,
+          quests: 0,
+          streak: 0,
+        }} />
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-3">
@@ -371,10 +385,6 @@ export default function ActivityPage() {
       </PullToRefresh>
       <ActivityExport isOpen={exportOpen} onClose={() => setExportOpen(false)} logs={logs} />
 
-      {/* B24+B25+B29: Navigation Deep */}
-      {agent?.id && (
-        <NavigationDeep isOpen={navDeepOpen} onClose={() => setNavDeepOpen(false)} agentId={agent.id} />
-      )}
 
       <BottomNav />
     </main>

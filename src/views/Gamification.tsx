@@ -14,8 +14,8 @@ import { CoinHistory } from '@/src/components/CoinHistory';
 import { QuestTimer } from '@/src/components/QuestTimer';
 import { AchievementRecommend } from '@/src/components/AchievementRecommend';
 import { useGyeolStore } from '@/store/gyeol-store';
-import { GamificationDeep } from '@/src/components/GamificationDeep';
-import { EvolutionEngine } from '@/src/components/EvolutionEngine';
+import { ExpBooster, LevelPerks } from '@/src/components/GamificationDeep';
+import { EvolutionCountdown } from '@/src/components/EvolutionEngine';
 
 type Tab = 'quests' | 'achievements' | 'leaderboard' | 'shop' | 'season';
 
@@ -37,8 +37,6 @@ export default function GamificationPage() {
   const [insightOpen, setInsightOpen] = useState(false);
   const [levelUpShow, setLevelUpShow] = useState(false);
   const [levelUpLevel, setLevelUpLevel] = useState(1);
-  const [gamDeepOpen, setGamDeepOpen] = useState(false);
-  const [evolutionOpen, setEvolutionOpen] = useState(false);
 
   if (loading) {
     return (
@@ -115,6 +113,19 @@ export default function GamificationPage() {
               </div>
             </div>
           </div>
+
+          {/* B14: EXP Booster + Level Perks */}
+          <div className="mt-3 pt-3 border-t border-border/10 space-y-2">
+            <ExpBooster active={!!profile?.title} multiplier={profile?.streak_days && profile.streak_days >= 7 ? 1.5 : 1} />
+            <LevelPerks level={profile?.level ?? 1} />
+          </div>
+
+          {/* B13: Evolution Countdown */}
+          {agent && (
+            <div className="mt-3 pt-3 border-t border-border/10">
+              <EvolutionCountdown targetDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()} />
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -152,15 +163,6 @@ export default function GamificationPage() {
       <InsightDashboard isOpen={insightOpen} onClose={() => setInsightOpen(false)} />
       <LevelUpCeremony show={levelUpShow} newLevel={levelUpLevel} onClose={() => setLevelUpShow(false)} />
 
-      {/* B14: Gamification Deep */}
-      {agent?.id && (
-        <GamificationDeep isOpen={gamDeepOpen} onClose={() => setGamDeepOpen(false)} agentId={agent.id} />
-      )}
-
-      {/* B13: Evolution Engine */}
-      {agent?.id && (
-        <EvolutionEngine isOpen={evolutionOpen} onClose={() => setEvolutionOpen(false)} agentId={agent.id} gen={agent.gen} />
-      )}
 
       <BottomNav />
     </main>

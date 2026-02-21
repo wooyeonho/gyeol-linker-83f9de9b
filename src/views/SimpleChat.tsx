@@ -754,7 +754,7 @@ export default function SimpleChat() {
         <div className="fixed inset-0 z-[80] flex items-end justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModelSelector(false)} />
           <div className="relative z-10 w-full max-w-md p-4">
-            <ModelSelector selected={selectedModel} onSelect={(m) => { setSelectedModel(m); setShowModelSelector(false); }} />
+            <ModelSelector currentModel={selectedModel} onSelect={(m) => { setSelectedModel(m); setShowModelSelector(false); }} />
           </div>
         </div>
       )}
@@ -764,7 +764,7 @@ export default function SimpleChat() {
         <div className="fixed inset-0 z-[80] flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowTokenUsage(false)} />
           <div className="relative z-10 w-full max-w-sm p-4">
-            <TokenUsageDisplay used={messages.length * 150} limit={100000} model={selectedModel} />
+            <TokenUsageDisplay tokensUsed={messages.length * 150} dailyTotal={messages.length * 150} maxTokens={100000} />
           </div>
         </div>
       )}

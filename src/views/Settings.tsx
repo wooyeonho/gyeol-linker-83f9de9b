@@ -18,14 +18,14 @@ import { NotificationSettings } from '@/src/components/NotificationSettings';
 import { ProfileCustomizer } from '@/src/components/ProfileCustomizer';
 import { AgentStatsDashboard } from '@/src/components/AgentStatsDashboard';
 import { SystemPromptEditor } from '@/src/components/SystemPromptEditor';
-import { AgentManager } from '@/src/components/AgentManager';
-import { PersonalityPresets } from '@/src/components/PersonalityPresets';
-import { IntimacySystem } from '@/src/components/IntimacySystem';
+import { AgentListPanel } from '@/src/components/AgentManager';
+import { PersonalityPresetSelector } from '@/src/components/PersonalityPresets';
+import { IntimacyEmoji } from '@/src/components/IntimacySystem';
 import { MoodSelector } from '@/src/components/MoodSelector';
-import { PersonaSystem } from '@/src/components/PersonaSystem';
-import { SettingsDeep } from '@/src/components/SettingsDeep';
-import { CharacterEditor } from '@/src/components/CharacterEditor';
-import { AuthDeep } from '@/src/components/AuthDeep';
+import { PersonaSelector } from '@/src/components/PersonaSystem';
+import { SafetyContentFilter, PIIFilter } from '@/src/components/SettingsDeep';
+import { CharacterEditorPanel } from '@/src/components/CharacterEditor';
+import { SocialLoginButtons, ProfilePictureUpload } from '@/src/components/AuthDeep';
 
 function hexToHSL(hex: string): string {
   let r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -141,12 +141,9 @@ export default function SettingsPage() {
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [profileCustomOpen, setProfileCustomOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
-  const [agentManagerOpen, setAgentManagerOpen] = useState(false);
-  const [intimacyOpen, setIntimacyOpen] = useState(false);
-  const [personaOpen, setPersonaOpen] = useState(false);
-  const [characterEditorOpen, setCharacterEditorOpen] = useState(false);
-  const [authDeepOpen, setAuthDeepOpen] = useState(false);
-  const [settingsDeepOpen, setSettingsDeepOpen] = useState(false);
+  const [safetyLevel, setSafetyLevel] = useState<'low' | 'medium' | 'high'>('medium');
+  const [piiFilterOn, setPiiFilterOn] = useState(false);
+  const [charEditorOpen, setCharEditorOpen] = useState(false);
   useEffect(() => {
     if (!agent) return;
     setWarmth(agent.warmth);
@@ -771,6 +768,47 @@ export default function SettingsPage() {
 
         <div className="h-px bg-white/[0.04]" />
 
+        {/* ====== MOOD & INTIMACY (B12) ====== */}
+        <section>
+          <SectionHeader id="mood" icon="mood" title="Mood & Intimacy" />
+          <AnimatePresence>
+            {activeSection === 'mood' && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }} className="overflow-hidden space-y-4 pt-2">
+                <div className="flex items-center gap-3">
+                  <IntimacyEmoji intimacy={agent?.intimacy ?? 0} />
+                  <div>
+                    <p className="text-[11px] text-foreground/80">Intimacy Level</p>
+                    <p className="text-[9px] text-white/25">{agent?.intimacy ?? 0}% — {(agent?.intimacy ?? 0) < 20 ? 'Stranger' : (agent?.intimacy ?? 0) < 50 ? 'Friend' : (agent?.intimacy ?? 0) < 80 ? 'Close Friend' : 'Soulmate'}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-white/30 mb-2">Current Mood</p>
+                  <MoodSelector
+                    currentMood={(agent?.mood as any) ?? 'neutral'}
+                    onChange={async (mood) => {
+                      await supabase.from('gyeol_agents' as any).update({ mood } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, mood } as any);
+                    }}
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] text-white/30 mb-2">Persona</p>
+                  <PersonaSelector
+                    current={(agent?.settings as any)?.persona ?? 'friend'}
+                    onSelect={async (id) => {
+                      const s = { ...(agent?.settings as any), persona: id };
+                      await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, settings: s } as any);
+                    }}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        <div className="h-px bg-white/[0.04]" />
 
         {/* ====== INTERESTS & KEYWORDS ====== */}
         <section>
@@ -1139,6 +1177,27 @@ export default function SettingsPage() {
                     })}
                   </div>
                 </div>
+                {/* B17: Safety Content Filter */}
+                <div className="space-y-3">
+                  <p className="text-[10px] text-white/30">Safety Content Filter</p>
+                  <SafetyContentFilter level={safetyLevel} onChange={(l) => setSafetyLevel(l)} />
+                  <PIIFilter enabled={piiFilterOn} onToggle={() => setPiiFilterOn(!piiFilterOn)} />
+                </div>
+
+                {/* B20: Account */}
+                <div className="space-y-3">
+                  <p className="text-[10px] text-white/30">Account</p>
+                  <ProfilePictureUpload
+                    currentUrl={(agent?.settings as any)?.profilePicture}
+                    onUpload={async (url) => {
+                      const s = { ...(agent?.settings as any), profilePicture: url };
+                      await supabase.from('gyeol_agents' as any).update({ settings: s } as any).eq('id', agent?.id);
+                      if (agent) setAgent({ ...agent, settings: s } as any);
+                    }}
+                  />
+                  <SocialLoginButtons onLogin={(provider) => console.log('Social login:', provider)} />
+                </div>
+
                 <button type="button" onClick={toggleKillSwitch}
                   className={`w-full py-2.5 rounded-xl text-xs font-medium border transition ${killSwitchActive ? 'bg-emerald-500/5 text-emerald-500/70 border-emerald-500/10' : 'bg-destructive/5 text-destructive/70 border-destructive/10'}`}>
                   {killSwitchActive ? 'Resume System' : 'Emergency Stop (Kill Switch)'}
@@ -1215,33 +1274,6 @@ export default function SettingsPage() {
         <AgentStatsDashboard isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} agentId={agent.id} />
       )}
 
-      {/* B12: Agent Manager */}
-      {agent?.id && (
-        <AgentManager isOpen={agentManagerOpen} onClose={() => setAgentManagerOpen(false)} agentId={agent.id} />
-      )}
-
-      {/* B12: Intimacy System */}
-      {agent?.id && (
-        <IntimacySystem isOpen={intimacyOpen} onClose={() => setIntimacyOpen(false)} agentId={agent.id} intimacy={agent.intimacy} />
-      )}
-
-      {/* B12: Persona System */}
-      {agent?.id && (
-        <PersonaSystem isOpen={personaOpen} onClose={() => setPersonaOpen(false)} agentId={agent.id} />
-      )}
-
-      {/* B18: Character Editor */}
-      {agent && (
-        <CharacterEditor isOpen={characterEditorOpen} onClose={() => setCharacterEditorOpen(false)} agent={agent} onUpdate={(updated) => setAgent(updated)} />
-      )}
-
-      {/* B20: Auth Deep */}
-      <AuthDeep isOpen={authDeepOpen} onClose={() => setAuthDeepOpen(false)} />
-
-      {/* B17: Settings Deep */}
-      {agent?.id && (
-        <SettingsDeep isOpen={settingsDeepOpen} onClose={() => setSettingsDeepOpen(false)} agentId={agent.id} />
-      )}
 
       <BottomNav />
     </main>
