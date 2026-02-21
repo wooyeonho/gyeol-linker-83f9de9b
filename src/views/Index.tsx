@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { useGyeolStore } from '@/store/gyeol-store';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
 import { useAuth } from '@/src/hooks/useAuth';
@@ -9,8 +7,6 @@ import { supabase, supabaseUrl } from '@/src/lib/supabase';
 import Onboarding from './Onboarding';
 import { EvolutionCeremony } from '../components/evolution/EvolutionCeremony';
 import { BottomNav } from '@/src/components/BottomNav';
-import { VoiceInput } from '@/components/VoiceInput';
-import { speakText, stopSpeaking } from '@/lib/gyeol/tts';
 import { MemoryDashboard } from '@/src/components/MemoryDashboard';
 import { EvolutionProgress } from '@/src/components/EvolutionProgress';
 import { InsightCard } from '@/src/components/InsightCard';
@@ -25,102 +21,16 @@ import { IntimacyLevelUp } from '@/src/components/IntimacyLevelUp';
 import { OnboardingTutorial } from '@/src/components/OnboardingTutorial';
 import { PersonalityChangeNotif } from '@/src/components/PersonalityChangeNotif';
 import { useSwipeNavigation } from '@/src/components/SwipeNavigation';
-import type { Message } from '@/lib/gyeol/types';
-
-function MessageBubble({ msg, agentName }: { msg: Message; agentName: string }) {
-  const isUser = msg.role === 'user';
-  const [reading, setReading] = useState(false);
-  const time = new Date((msg as any).created_at ?? Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  const handleSpeak = () => {
-    if (reading) { stopSpeaking(); setReading(false); }
-    else { setReading(true); speakText(msg.content, 0.95, () => setReading(false)); }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} w-full`}
-    >
-      {!isUser && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary p-[1px] shadow-lg shadow-primary/10 mt-6">
-          <div className="w-full h-full rounded-[7px] bg-background flex items-center justify-center">
-            <span className="material-icons-round text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary text-[14px]">smart_toy</span>
-          </div>
-        </div>
-      )}
-
-      {isUser ? (
-        <div className="max-w-[75%]">
-          <div className="flex items-center justify-end gap-2 mb-1">
-            <span className="text-[10px] text-muted-foreground/60">{time}</span>
-            <span className="text-[10px] text-muted-foreground font-medium">You</span>
-          </div>
-          <div className="user-bubble p-4 rounded-2xl rounded-br-sm">
-            <div className="text-[13px] leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-[85%]">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] text-foreground font-bold">{agentName}</span>
-            <span className="text-[10px] text-muted-foreground/60">{time}</span>
-          </div>
-          <div className="flex gap-0">
-            <div className="w-[3px] rounded-full bg-gradient-to-b from-primary to-primary/30 mr-3 flex-shrink-0" />
-            <div className="glass-bubble p-4 rounded-2xl rounded-tl-sm flex-1">
-              {(msg as any).metadata?.criticalLearning && (
-                <span className="inline-block text-[8px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 mb-1">
-                  Critical Learning! x{(msg as any).metadata.criticalMultiplier}
-                </span>
-              )}
-              <div className="text-[13px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words prose prose-invert max-w-none prose-p:my-1 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-              </div>
-              <div className="flex items-center gap-3 mt-2">
-                <button type="button" onClick={handleSpeak}
-                  className={`p-1 rounded-full transition ${reading ? 'text-primary' : 'text-muted-foreground/20 hover:text-muted-foreground/50'}`}
-                  aria-label={reading ? 'Stop reading' : 'Read aloud'}>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-1.5 ml-7">
-            <button onClick={() => navigator.clipboard.writeText(msg.content)}
-              className="flex items-center gap-1 text-[10px] text-muted-foreground/20 hover:text-muted-foreground/50 transition">
-              <span className="material-icons-round text-[14px]">content_copy</span>
-              Copy
-            </button>
-            <button className="flex items-center gap-1 text-[10px] text-muted-foreground/20 hover:text-muted-foreground/50 transition">
-              <span className="material-icons-round text-[14px]">thumb_up</span>
-              Helpful
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isUser && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 border border-border/20 flex items-center justify-center mt-6">
-          <span className="material-icons-round text-muted-foreground text-[14px]">person</span>
-        </div>
-      )}
-    </motion.div>
-  );
-}
+import { ChatCore } from '@/src/components/ChatCore';
+import { ConversationList } from '@/src/components/ConversationList';
+import { ConversationStats } from '@/src/components/ConversationStats';
+import { SummaryHistory } from '@/src/components/SummaryHistory';
+import { ConversationFilter } from '@/src/components/ConversationFilter';
 
 export default function GyeolPage() {
   const { subscribeToUpdates, isLoading, messages, error, setError, sendMessage, lastInsight, clearInsight, lastReaction } = useGyeolStore();
   const { agent, loading: agentLoading, needsOnboarding, completeOnboarding } = useInitAgent();
   const { user } = useAuth();
-  const [input, setInput] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [evoOpen, setEvoOpen] = useState(false);
@@ -136,9 +46,11 @@ export default function GyeolPage() {
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [personalityNotif, setPersonalityNotif] = useState<{ show: boolean; changes: Record<string, number> }>({ show: false, changes: {} });
+  const [convListOpen, setConvListOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [summaryHistoryOpen, setSummaryHistoryOpen] = useState(false);
   const prevIntimacyRef = useRef<number | null>(null);
   const prevPersonalityRef = useRef<{ w: number; l: number; c: number; e: number; h: number } | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
   const swipeHandlers = useSwipeNavigation();
 
   useEffect(() => {
@@ -204,21 +116,6 @@ export default function GyeolPage() {
     })();
   }, [agent?.id]);
 
-  useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages]);
-
-  const handleSend = async () => {
-    const text = input.trim();
-    if (!text || !agent?.id) return;
-    setInput('');
-    await sendMessage(text);
-  };
-
-  const handleVoiceResult = (text: string) => {
-    if (text.trim()) setInput((prev) => (prev ? prev + ' ' + text : text));
-  };
-
   const agentName = agent?.name ?? 'GYEOL';
 
   if (agentLoading) {
@@ -250,7 +147,7 @@ export default function GyeolPage() {
           <div>
             <span className="text-sm font-bold text-foreground tracking-tight">{agentName}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success,142_71%_45%))] shadow-[0_0_6px_hsl(var(--success,142_71%_45%)/0.6)]" />
               <span className="text-[10px] text-muted-foreground">Online</span>
               <span className="text-[10px] text-muted-foreground/50 ml-1">Gen {agent?.gen ?? 1}</span>
             </div>
@@ -271,6 +168,18 @@ export default function GyeolPage() {
             <button onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
               <span className="material-icons-round text-muted-foreground text-[18px]">search</span> Search
+            </button>
+            <button onClick={() => { setConvListOpen(true); setMenuOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
+              <span className="material-icons-round text-muted-foreground text-[18px]">history</span> Conversations
+            </button>
+            <button onClick={() => { setStatsOpen(true); setMenuOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
+              <span className="material-icons-round text-muted-foreground text-[18px]">bar_chart</span> Stats
+            </button>
+            <button onClick={() => { setSummaryHistoryOpen(true); setMenuOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
+              <span className="material-icons-round text-muted-foreground text-[18px]">history_edu</span> Summaries
             </button>
             <button onClick={() => { setNotifOpen(true); setMenuOpen(false); }}
               className="w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary/50 rounded-xl flex items-center gap-3">
@@ -311,6 +220,7 @@ export default function GyeolPage() {
                 placeholder="Search conversations..." autoFocus
                 aria-label="Search conversations"
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus-visible:outline-none" />
+              <ConversationFilter onFilter={() => {}} availableTags={[]} />
               <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-muted-foreground" aria-label="Close search">
                 <span className="material-icons-round text-sm" aria-hidden="true">close</span>
               </button>
@@ -319,11 +229,24 @@ export default function GyeolPage() {
         )}
       </AnimatePresence>
 
-      {/* Main content always fullscreen chat */}
-      <div className="flex-1 flex flex-col min-h-0 relative z-10">
-        <div ref={listRef} className="flex-1 overflow-y-auto px-3 space-y-3 gyeol-scrollbar-hide pb-2 pt-2">
+      {/* Main chat area using ChatCore */}
+      <div className="flex-1 flex flex-col min-h-0 relative z-10 pb-[calc(64px+env(safe-area-inset-bottom,8px))]">
+        <ChatCore
+          messages={searchQuery ? messages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages}
+          isLoading={isLoading}
+          agentName={agentName}
+          agentId={agent?.id}
+          onSendMessage={sendMessage}
+          error={error}
+          onClearError={() => setError(null)}
+          inputPlaceholder={`Send a message to ${agentName}...`}
+          showModelSelector={true}
+          showFileAttach={true}
+          showContinuousVoice={false}
+          readSpeed={(agent?.settings as any)?.readSpeed ?? 0.95}
+        >
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
+            <div className="flex flex-col items-center justify-center gap-4 py-20 px-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary p-[1px]">
                 <div className="w-full h-full rounded-[15px] bg-background flex items-center justify-center">
                   <span className="material-icons-round text-primary text-2xl">smart_toy</span>
@@ -333,74 +256,7 @@ export default function GyeolPage() {
               <p className="text-[11px] text-muted-foreground/50">Send a message to start chatting</p>
             </div>
           )}
-
-          {messages.length > 0 && (
-            <div className="flex justify-center py-4">
-              <span className="px-4 py-1.5 rounded-full glass-card text-[11px] font-medium text-muted-foreground">
-                Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          )}
-
-          {(searchQuery ? messages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase())) : messages).map((msg) => (
-            <MessageBubble key={msg.id} msg={msg} agentName={agentName} />
-          ))}
-
-          {error && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center py-2">
-              <button type="button" onClick={() => setError(null)}
-                className="text-[11px] text-destructive/70 hover:text-destructive transition">
-                {error.message}
-              </button>
-            </motion.div>
-          )}
-
-          {isLoading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2 py-4">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
-                  <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: '0.4s' }} />
-                </div>
-                <span className="text-[10px] text-primary/60 font-medium tracking-[0.2em] uppercase">Processing</span>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Input bar */}
-      <div className="relative z-[60] px-4 pb-[calc(64px+env(safe-area-inset-bottom,8px)+12px)] pt-2">
-        <div className="bg-gradient-to-t from-background to-transparent pt-4">
-          <div className="glass-panel input-glow flex items-center gap-2 rounded-full px-2 py-1.5">
-            <button type="button" onClick={() => setMemoryOpen(true)} aria-label="Open memory dashboard" className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition flex-shrink-0">
-              <span className="material-icons-round text-[20px]">add_circle_outline</span>
-            </button>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Send a message to GYEOL..."
-              aria-label="Message input"
-              className="flex-1 bg-transparent text-foreground/90 placeholder:text-muted-foreground text-sm py-2 outline-none min-w-0 focus-visible:outline-none"
-            />
-            <VoiceInput onResult={handleVoiceResult} disabled={!agent?.id} />
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              aria-label="Send message"
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30 text-primary-foreground flex items-center justify-center disabled:opacity-20 transition-all active:scale-95 hover:shadow-primary/50 hover:scale-105 flex-shrink-0"
-            >
-              <span className="material-icons-round text-base">arrow_upward</span>
-            </button>
-          </div>
-          <p className="text-center text-[11px] text-muted-foreground mt-1.5">
-            GYEOL can make mistakes. Verify important information.
-          </p>
-        </div>
+        </ChatCore>
       </div>
 
       <BottomNav />
@@ -488,6 +344,11 @@ export default function GyeolPage() {
         changes={personalityNotif.changes}
         onClose={() => setPersonalityNotif({ show: false, changes: {} })}
       />
+      {agent?.id && (
+        <ConversationList isOpen={convListOpen} onClose={() => setConvListOpen(false)} agentId={agent.id} />
+      )}
+      <ConversationStats isOpen={statsOpen} onClose={() => setStatsOpen(false)} agentId={agent?.id} />
+      <SummaryHistory isOpen={summaryHistoryOpen} onClose={() => setSummaryHistoryOpen(false)} agentId={agent?.id} />
     </main>
   );
 }
