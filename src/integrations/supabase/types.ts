@@ -45,6 +45,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_achievement_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_achievement_ref"
             columns: ["achievement_id"]
             isOneToOne: false
@@ -135,6 +142,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gyeol_agent_skills_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gyeol_agent_skills_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
@@ -171,6 +185,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_agent_skins_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -308,6 +329,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_autonomous_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_breeding_logs: {
@@ -347,8 +375,29 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gyeol_breeding_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gyeol_breeding_logs_parent_1_id_fkey"
             columns: ["parent_1_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_breeding_logs_parent_1_id_fkey"
+            columns: ["parent_1_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_breeding_logs_parent_2_id_fkey"
+            columns: ["parent_2_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
@@ -357,7 +406,7 @@ export type Database = {
             foreignKeyName: "gyeol_breeding_logs_parent_2_id_fkey"
             columns: ["parent_2_id"]
             isOneToOne: false
-            referencedRelation: "gyeol_agents"
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -422,6 +471,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_community_activities_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_community_replies: {
@@ -459,6 +515,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_community_replies_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -508,6 +571,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_conversation_insights_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_conversations: {
@@ -552,6 +622,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_conversations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_currency_logs: {
@@ -590,6 +667,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_currency_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_follows: {
@@ -620,10 +704,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gyeol_follows_follower_agent_id_fkey"
+            columns: ["follower_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gyeol_follows_following_agent_id_fkey"
             columns: ["following_agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_follows_following_agent_id_fkey"
+            columns: ["following_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -679,6 +777,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_gamification_agent"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_inventory: {
@@ -712,6 +817,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_inventory_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -765,6 +877,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_leaderboard_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_learned_topics: {
@@ -803,6 +922,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_learned_topics_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_matches: {
@@ -839,10 +965,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gyeol_matches_agent_1_id_fkey"
+            columns: ["agent_1_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gyeol_matches_agent_2_id_fkey"
             columns: ["agent_2_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_matches_agent_2_id_fkey"
+            columns: ["agent_2_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -875,6 +1015,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_moltbook_comments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -911,6 +1058,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_moltbook_likes_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -958,6 +1112,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_moltbook_posts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_proactive_messages: {
@@ -993,6 +1154,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_proactive_messages_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_push_subscriptions: {
@@ -1023,6 +1191,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_push_subscriptions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1067,6 +1242,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_quest_progress_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -1171,6 +1353,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_reflections_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_season_progress: {
@@ -1204,6 +1393,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_season_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
           {
@@ -1452,6 +1648,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_taste_vectors_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: true
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_telegram_links: {
@@ -1482,6 +1685,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_telegram_links_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1522,6 +1732,13 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_user_feeds_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       gyeol_user_keywords: {
@@ -1552,6 +1769,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_user_keywords_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1595,11 +1819,77 @@ export type Database = {
             referencedRelation: "gyeol_agents"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gyeol_user_memories_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      gyeol_agents_public: {
+        Row: {
+          consecutive_days: number | null
+          created_at: string | null
+          creativity: number | null
+          energy: number | null
+          evolution_progress: number | null
+          gen: number | null
+          humor: number | null
+          id: string | null
+          intimacy: number | null
+          last_active: string | null
+          logic: number | null
+          mood: string | null
+          name: string | null
+          skin_id: string | null
+          total_conversations: number | null
+          visual_state: Json | null
+          warmth: number | null
+        }
+        Insert: {
+          consecutive_days?: number | null
+          created_at?: string | null
+          creativity?: number | null
+          energy?: number | null
+          evolution_progress?: number | null
+          gen?: number | null
+          humor?: number | null
+          id?: string | null
+          intimacy?: number | null
+          last_active?: string | null
+          logic?: number | null
+          mood?: string | null
+          name?: string | null
+          skin_id?: string | null
+          total_conversations?: number | null
+          visual_state?: Json | null
+          warmth?: number | null
+        }
+        Update: {
+          consecutive_days?: number | null
+          created_at?: string | null
+          creativity?: number | null
+          energy?: number | null
+          evolution_progress?: number | null
+          gen?: number | null
+          humor?: number | null
+          id?: string | null
+          intimacy?: number | null
+          last_active?: string | null
+          logic?: number | null
+          mood?: string | null
+          name?: string | null
+          skin_id?: string | null
+          total_conversations?: number | null
+          visual_state?: Json | null
+          warmth?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
