@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitAgent } from '@/src/hooks/useInitAgent';
@@ -180,6 +180,7 @@ export default function SettingsPage() {
     })();
   }, []);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savePersonality = useCallback(async () => {
     if (!agent) return;
     setPersonalitySaving(true);
@@ -188,6 +189,13 @@ export default function SettingsPage() {
     } as any).eq('id', agent.id);
     setPersonalitySaving(false);
   }, [agent, warmth, logic, creativity, energy, humor, agentName]);
+
+  useEffect(() => {
+    if (!agent) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => { savePersonality(); }, 800);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [warmth, logic, creativity, energy, humor, savePersonality]);
 
   const addFeed = async () => {
     if (!agent || !newFeedUrl.trim()) return;

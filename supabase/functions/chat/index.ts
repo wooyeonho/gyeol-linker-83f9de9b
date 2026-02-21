@@ -267,9 +267,14 @@ function buildDomainPrompts(enabledDomains: Record<string, boolean>, lang: strin
 
 function cleanMarkdown(text: string): string {
   return text
+    .replace(/```[\s\S]*?```/g, (m) => m.replace(/```\w*\n?/g, "").replace(/```/g, ""))
+    .replace(/\*\*\*(.+?)\*\*\*/g, "$1")
     .replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1").replace(/^#+\s/gm, "")
-    .replace(/^[-*]\s/gm, "").replace(/\n{3,}/g, "\n\n").trim();
+    .replace(/`([^`]+)`/g, "$1").replace(/^#{1,6}\s/gm, "")
+    .replace(/^[-*+]\s/gm, "").replace(/^\d+\.\s/gm, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\$1/g, "").replace(/\\1/g, "")
+    .replace(/\n{3,}/g, "\n\n").trim();
 }
 
 function sanitizeOutput(text: string): string {
@@ -599,8 +604,9 @@ serve(async (req) => {
         : safeMessage;
       searchContext = await searchRealtime(searchQuery);
       if (searchContext) {
-        console.log("[chat] Search results found, length:", searchContext.length);
-        systemPrompt += `\n\n[실시간 검색 결과 - 이 정보를 바탕으로 정확하게 답변해]\n${searchContext}`;
+        const truncated = searchContext.slice(0, 3000);
+        console.log("[chat] Search results found, length:", truncated.length);
+        systemPrompt += `\n\n[실시간 검색 결과 - 이 정보를 바탕으로 정확하게 답변해]\n${truncated}`;
       }
     }
 
@@ -674,7 +680,7 @@ serve(async (req) => {
 
                   // Send final metadata
                   const reaction = detectReaction(assistantContent);
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, reaction, provider })}\n\n`));
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, reaction, provider, evolved: false, newGen: null, conversationInsight: null })}\n\n`));
                   controller.close();
 
                   // Fire post-processing (stats, gamification, memory) in background

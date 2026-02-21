@@ -38,7 +38,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
-    const { agentId } = await req.json();
+    const body = await req.json();
+    const { agentId, action } = body;
     if (!agentId || !isValidUUID(agentId)) {
       return new Response(JSON.stringify({ error: "Valid agentId required" }), { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
@@ -64,6 +65,56 @@ serve(async (req) => {
     const rewards: { type: string; amount: number; reason: string }[] = [];
     const unlockedAchievements: string[] = [];
     let streakUpdated = false;
+
+    // ── Action-based routing (daily_claim, evolution_attempt) ──
+    if (action === "daily_claim") {
+      const now = new Date();
+      const todayStr = now.toISOString().slice(0, 10);
+      const lastClaim = profile.last_daily_claim ? new Date(profile.last_daily_claim).toISOString().slice(0, 10) : null;
+      if (lastClaim === todayStr) {
+        return new Response(JSON.stringify({ ok: true, alreadyClaimed: true }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      }
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().slice(0, 10);
+      const newStreak = lastClaim === yesterdayStr ? (profile.streak_days ?? 0) + 1 : 1;
+      const reward = Math.min(100, 5 + newStreak * 5);
+      const expReward = 10 + Math.min(newStreak, 7) * 3;
+      await db.from("gyeol_gamification_profiles").update({
+        coins: (profile.coins ?? 0) + reward,
+        exp: (profile.exp ?? 0) + expReward,
+        total_exp: (profile.total_exp ?? 0) + expReward,
+        streak_days: newStreak,
+        longest_streak: Math.max(newStreak, profile.longest_streak ?? 0),
+        last_daily_claim: now.toISOString(),
+        updated_at: now.toISOString(),
+      }).eq("agent_id", agentId);
+      await db.from("gyeol_agents").update({ consecutive_days: newStreak }).eq("id", agentId);
+      return new Response(JSON.stringify({ ok: true, coins: reward, exp: expReward, streak: newStreak }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+    }
+
+    if (action === "evolution_attempt") {
+      const progress = agent.evolution_progress ?? 0;
+      if (progress < 100) {
+        return new Response(JSON.stringify({ evolved: false, message: `Evolution progress ${progress}% — need 100%` }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      }
+      const BASE_RATES: Record<number, number> = { 1: 60, 2: 40, 3: 20, 4: 5 };
+      const baseRate = BASE_RATES[agent.gen] ?? 0;
+      if (baseRate === 0) {
+        return new Response(JSON.stringify({ evolved: false, message: "Max generation reached" }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      }
+      const avg = (agent.warmth + agent.logic + agent.creativity + agent.energy + agent.humor) / 5;
+      const bonus = Math.floor(avg / 20) + Math.min(10, Math.floor((agent.total_conversations ?? 0) / 50));
+      const probability = Math.min(95, baseRate + bonus);
+      const roll = Math.random() * 100;
+      if (roll < probability) {
+        await db.from("gyeol_agents").update({ gen: agent.gen + 1, evolution_progress: 0 }).eq("id", agentId);
+        return new Response(JSON.stringify({ evolved: true, newGen: agent.gen + 1 }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      } else {
+        await db.from("gyeol_agents").update({ evolution_progress: 80 }).eq("id", agentId);
+        return new Response(JSON.stringify({ evolved: false, message: "Evolution failed... progress reset to 80%" }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
+      }
+    }
 
     // ── 2. 출석 스트릭 계산 ──
     const now = new Date();

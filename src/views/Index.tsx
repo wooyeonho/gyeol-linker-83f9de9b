@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -210,6 +210,22 @@ export default function GyeolPage() {
     const unsub = subscribeToUpdates(agent.id);
     return () => { if (typeof unsub === 'function') unsub(); };
   }, [agent?.id, subscribeToUpdates]);
+
+  useEffect(() => {
+    if (!agent?.id || messages.length > 0) return;
+    (async () => {
+      const { data } = await supabase.from('gyeol_conversations' as any)
+        .select('id, agent_id, role, content, channel, provider, tokens_used, response_time_ms, created_at')
+        .eq('agent_id', agent.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (data && data.length > 0) {
+        const { setMessages } = useGyeolStore.getState();
+        setMessages((data as any[]).reverse());
+        setChatExpanded(true);
+      }
+    })();
+  }, [agent?.id]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
@@ -597,15 +613,16 @@ export default function GyeolPage() {
           if (!agent?.id) return;
           try {
             const session = (await supabase.auth.getSession()).data.session;
-            const res = await fetch(`${supabaseUrl}/functions/v1/evolution-attempt`, {
+            if (!session?.access_token) { alert('Please sign in first.'); return; }
+            const res = await fetch(`${supabaseUrl}/functions/v1/gamification-tick`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-              body: JSON.stringify({ agentId: agent.id }),
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+              body: JSON.stringify({ agentId: agent.id, action: 'evolution_attempt' }),
             });
             const data = await res.json();
             if (!data.evolved) alert(data.message || 'Evolution failed...');
             setEvoOpen(false);
-          } catch { alert('Evolution attempt failed.'); }
+          } catch (err) { console.warn('Evolution attempt failed:', err); alert('Evolution attempt failed.'); }
         }}
       />
       <InsightCard insight={lastInsight} onDismiss={clearInsight} />
@@ -619,19 +636,17 @@ export default function GyeolPage() {
         onClaim={async () => {
           if (!agent?.id) return;
           try {
-            const { data: profile } = await supabase
-              .from('gyeol_gamification_profiles')
-              .select('id, coins, exp, last_daily_claim')
-              .eq('agent_id', agent.id)
-              .maybeSingle();
-            if (profile) {
-              const reward = Math.min(100, 5 + (agent.consecutive_days ?? 0) * 5);
-              await supabase.from('gyeol_gamification_profiles')
-                .update({ coins: (profile as any).coins + reward, last_daily_claim: new Date().toISOString() } as any)
-                .eq('id', (profile as any).id);
-              setDailyClaimed(true);
-            }
-          } catch {}
+            const session = (await supabase.auth.getSession()).data.session;
+            if (!session?.access_token) return;
+            const res = await fetch(`${supabaseUrl}/functions/v1/gamification-tick`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+              body: JSON.stringify({ agentId: agent.id, action: 'daily_claim' }),
+            });
+            if (res.ok) setDailyClaimed(true);
+          } catch (err) {
+            console.warn('Daily claim failed:', err);
+          }
         }}
       />
       <AgentProfile isOpen={profileOpen} onClose={() => setProfileOpen(false)} agent={agent as any} onShareCard={() => { setProfileOpen(false); setShareCardOpen(true); }} />

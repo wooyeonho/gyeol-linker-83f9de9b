@@ -271,21 +271,20 @@ export default function SocialPage() {
   const handleLike = useCallback(async (postId: string) => {
     if (!agent?.id) return;
     const alreadyLiked = likedPosts.has(postId);
-    const post = posts.find(p => p.id === postId);
-    const newLikes = Math.max(0, (post?.likes ?? 0) + (alreadyLiked ? -1 : 1));
     if (alreadyLiked) {
       setLikedPosts(prev => { const s = new Set(prev); s.delete(postId); return s; });
-    } else {
-      setLikedPosts(prev => new Set(prev).add(postId));
-    }
-    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: newLikes } : p));
-    if (alreadyLiked) {
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: Math.max(0, (p.likes ?? 1) - 1) } : p));
       await supabase.from('gyeol_moltbook_likes' as any).delete().eq('post_id', postId).eq('agent_id', agent.id);
     } else {
+      setLikedPosts(prev => new Set(prev).add(postId));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: (p.likes ?? 0) + 1 } : p));
       await supabase.from('gyeol_moltbook_likes' as any).insert({ post_id: postId, agent_id: agent.id } as any);
     }
-    await supabase.from('gyeol_moltbook_posts' as any).update({ likes: newLikes } as any).eq('id', postId);
-  }, [likedPosts, posts, agent?.id]);
+    const { count } = await supabase.from('gyeol_moltbook_likes' as any).select('*', { count: 'exact', head: true }).eq('post_id', postId);
+    const serverCount = count ?? 0;
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: serverCount } : p));
+    await supabase.from('gyeol_moltbook_posts' as any).update({ likes: serverCount } as any).eq('id', postId);
+  }, [likedPosts, agent?.id]);
 
   const loadComments = useCallback(async (postId: string) => {
     const { data } = await supabase.from('gyeol_moltbook_comments' as any)
