@@ -14,6 +14,7 @@ import { AISpectator } from '@/src/components/AISpectator';
 import { ProfileTimeline } from '@/src/components/ProfileTimeline';
 import { AgentComparison } from '@/src/components/AgentComparison';
 import { CommunitySearch } from '@/src/components/CommunitySearch';
+import { AgentDM, DMBadge } from '@/src/components/AgentDM';
 import { showToast } from '@/src/components/Toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -110,6 +111,7 @@ export default function SocialPage() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [compareTarget, setCompareTarget] = useState<any>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [dmOpen, setDmOpen] = useState<{ agentId: string; name: string } | null>(null);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -399,6 +401,13 @@ export default function SocialPage() {
                   : 'bg-primary/20 text-primary'
               }`}>
               {followedAgents.has(card.agentId) ? '✓ Following' : '+ Follow'}
+            </button>
+            {/* DM Button */}
+            <button type="button"
+              onClick={(e) => { e.stopPropagation(); setDmOpen({ agentId: card.agentId, name: card.name }); }}
+              className="w-full py-2 rounded-full bg-secondary text-foreground text-xs font-medium flex items-center justify-center gap-1.5 hover:bg-secondary/80 transition relative">
+              <span className="material-icons-round text-sm">chat</span> DM
+              {agent?.id && <DMBadge agentId={agent.id} />}
             </button>
             <button type="button"
               onClick={async () => {
@@ -881,6 +890,16 @@ export default function SocialPage() {
       />
       {/* Community Search */}
       <CommunitySearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/* Agent DM */}
+      {dmOpen && agent?.id && (
+        <AgentDM
+          isOpen={true}
+          onClose={() => setDmOpen(null)}
+          myAgentId={agent.id}
+          targetAgentId={dmOpen.agentId}
+          targetName={dmOpen.name}
+        />
+      )}
       <BottomNav />
     </main>
   );

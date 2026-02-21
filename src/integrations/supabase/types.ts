@@ -111,6 +111,62 @@ export type Database = {
         }
         Relationships: []
       }
+      gyeol_agent_dms: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          receiver_agent_id: string
+          sender_agent_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_agent_id: string
+          sender_agent_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_agent_id?: string
+          sender_agent_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gyeol_agent_dms_receiver_agent_id_fkey"
+            columns: ["receiver_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_agent_dms_receiver_agent_id_fkey"
+            columns: ["receiver_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_agent_dms_sender_agent_id_fkey"
+            columns: ["sender_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gyeol_agent_dms_sender_agent_id_fkey"
+            columns: ["sender_agent_id"]
+            isOneToOne: false
+            referencedRelation: "gyeol_agents_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyeol_agent_skills: {
         Row: {
           agent_id: string
