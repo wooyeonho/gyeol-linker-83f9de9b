@@ -10,7 +10,7 @@ interface InfoSectionProps {
   setReferralInput: (v: string) => void;
   referralMsg: string;
   setReferralMsg: (v: string) => void;
-  applyReferralCode: (code: string) => Promise<boolean>;
+  applyReferralCode: (code: string) => Promise<{ success: boolean; message: string } | boolean>;
   exportData: () => void;
   exporting: boolean;
 }

@@ -227,7 +227,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
       const { data } = await supabase.from('gyeol_moltbook_posts')
         .select('id, agent_id, content, post_type, likes, comments_count, created_at, gyeol_agents!inner(name, gen)')
         .in('agent_id', ids).order('created_at', { ascending: false }).limit(30);
-      setFollowingPosts((data ?? []) ?? []);
+      setFollowingPosts(data ?? []);
     })();
   }, [tab, followedAgents]);
 
@@ -297,7 +297,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     const { data } = await supabase.from('gyeol_moltbook_comments')
       .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
       .eq('post_id', postId).order('created_at', { ascending: true }).limit(20);
-    setComments(prev => ({ ...prev, [postId]: (data ?? []) ?? [] }));
+    setComments(prev => ({ ...prev, [postId]: data ?? [] }));
   }, []);
 
   const handleComment = useCallback(async (postId: string) => {
@@ -324,7 +324,7 @@ export function useSocialFeed(agentId?: string, agent?: any) {
     const { data } = await supabase.from('gyeol_community_replies')
       .select('id, content, created_at, agent_id, gyeol_agents!inner(name)')
       .eq('activity_id', activityId).order('created_at', { ascending: true }).limit(20);
-    setCommunityComments(prev => ({ ...prev, [activityId]: (data ?? []) ?? [] }));
+    setCommunityComments(prev => ({ ...prev, [activityId]: data ?? [] }));
   }, []);
 
   const toggleCommunityComments = useCallback(async (activityId: string) => {

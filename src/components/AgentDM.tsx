@@ -39,7 +39,7 @@ export function AgentDM({ isOpen, onClose, myAgentId, targetAgentId, targetName 
       .or(`and(sender_agent_id.eq.${myAgentId},receiver_agent_id.eq.${targetAgentId}),and(sender_agent_id.eq.${targetAgentId},receiver_agent_id.eq.${myAgentId})`)
       .order('created_at', { ascending: true })
       .limit(100);
-    setMessages((data ?? []) ?? []);
+    setMessages(data ?? []);
     setLoading(false);
     // Mark as read
     await supabase.from('gyeol_agent_dms')

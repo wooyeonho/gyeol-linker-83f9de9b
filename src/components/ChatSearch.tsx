@@ -61,7 +61,7 @@ export function ChatSearch({ isOpen, onClose, agentId, onJumpToMessage }: Props)
       if (dateFrom) q = q.gte('created_at', `${dateFrom}T00:00:00`);
       if (dateTo) q = q.lte('created_at', `${dateTo}T23:59:59`);
       const { data } = await q;
-      setResults((data ?? []) ?? []);
+      setResults(data ?? []);
       setSearching(false);
     }, 300);
     return () => clearTimeout(timer);

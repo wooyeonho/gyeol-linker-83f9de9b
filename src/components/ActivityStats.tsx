@@ -29,7 +29,7 @@ export function ActivityStats({ agentId }: Props) {
         .eq('agent_id', agentId)
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: true });
-      setLogs((data ?? []) ?? []);
+      setLogs(data ?? []);
       setLoading(false);
     })();
   }, [agentId]);

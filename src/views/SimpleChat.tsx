@@ -45,9 +45,9 @@ export default function SimpleChat() {
 
       <ChatToolbar state={state} />
 
-      {agent?.consecutive_days > 1 && (
+      {(agent?.consecutive_days ?? 0) > 1 && (
         <div className="px-4 pb-1 relative z-10">
-          <StreakBonus streakDays={agent?.consecutive_days} />
+          <StreakBonus streakDays={agent?.consecutive_days ?? 0} />
         </div>
       )}
 

@@ -42,7 +42,7 @@ export default function MarketSkillsPage() {
       const { data } = await supabase.from('gyeol_skills')
         .select('id, name, description, category, min_gen, price, rating, downloads')
         .eq('is_approved', true).order('downloads', { ascending: false }).limit(50);
-      setSkills((data ?? []) ?? []);
+      setSkills(data ?? []);
       setLoading(false);
     })();
   }, []);

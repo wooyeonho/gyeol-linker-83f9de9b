@@ -49,7 +49,7 @@ export default function MarketSkinsPage() {
       const { data } = await supabase.from('gyeol_skins')
         .select('id, name, description, price, preview_url, rating, downloads, category')
         .eq('is_approved', true).order('downloads', { ascending: false }).limit(50);
-      setSkins((data ?? []) ?? []);
+      setSkins(data ?? []);
       setLoading(false);
     })();
   }, []);
