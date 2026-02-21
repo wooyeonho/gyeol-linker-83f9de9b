@@ -18,7 +18,11 @@ import { StreakBonus } from '@/src/components/StreakBonus';
 import { SummaryHistory, saveSummaryToHistory } from '@/src/components/SummaryHistory';
 import { ConversationStats } from '@/src/components/ConversationStats';
 import { ConversationShare } from '@/src/components/ConversationShare';
+import { ConversationExport } from '@/src/components/ConversationExport';
 import { ReplyPreview, ReplyBubble } from '@/src/components/MessageReply';
+import { ImageMessage } from '@/src/components/ImageMessage';
+import { VoiceRecorder, AudioMessage } from '@/src/components/VoiceRecorder';
+import { TypingIndicator } from '@/src/components/TypingIndicator';
 import type { Message as Msg } from '@/lib/gyeol/types';
 
 // Emoji reactions for messages
@@ -82,6 +86,8 @@ export default function SimpleChat() {
   const [summaryHistoryOpen, setSummaryHistoryOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [voiceMessages, setVoiceMessages] = useState<Record<string, { url: string; duration: number }>>({});
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [replyMap, setReplyMap] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem('gyeol_replies') ?? '{}'); } catch { return {}; }
@@ -307,6 +313,11 @@ export default function SimpleChat() {
               aria-label="Share conversation"
               className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
               <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">share</span>
+            </button>
+            <button onClick={() => setExportOpen(true)}
+              aria-label="Export conversation"
+              className="w-11 h-11 rounded-full flex items-center justify-center glass-card focus-visible:outline-2 focus-visible:outline-primary">
+              <span className="material-icons-round text-lg text-muted-foreground" aria-hidden="true">download</span>
             </button>
             <button onClick={() => setSummaryHistoryOpen(true)}
               aria-label="Summary history"
@@ -655,6 +666,11 @@ export default function SimpleChat() {
               aria-label="Message input"
               style={{ fontSize: '16px' }}
               className="flex-1 bg-transparent outline-none min-w-0 text-foreground placeholder:text-slate-500 focus-visible:outline-none" />
+            <VoiceRecorder onRecorded={(url, dur) => {
+              const id = `voice-${Date.now()}`;
+              setVoiceMessages(prev => ({ ...prev, [id]: { url, duration: dur } }));
+              sendMessage(`[🎤 Voice message (${dur}s)]`);
+            }} disabled={isLoading} />
             <VoiceInput onResult={t => setInput(t)} disabled={isLoading} />
             {input.trim() && (
               <button onClick={handleSend} disabled={isLoading}
@@ -721,6 +737,9 @@ export default function SimpleChat() {
 
       {/* Conversation Share */}
       <ConversationShare isOpen={shareOpen} onClose={() => setShareOpen(false)} messages={messages} agentName={agentName} />
+
+      {/* Conversation Export */}
+      <ConversationExport isOpen={exportOpen} onClose={() => setExportOpen(false)} messages={messages} agentName={agentName} />
     </main>
   );
 }

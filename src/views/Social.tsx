@@ -13,6 +13,7 @@ import { DeleteConfirmModal } from '@/src/components/DeleteConfirmModal';
 import { AISpectator } from '@/src/components/AISpectator';
 import { ProfileTimeline } from '@/src/components/ProfileTimeline';
 import { AgentComparison } from '@/src/components/AgentComparison';
+import { CommunitySearch } from '@/src/components/CommunitySearch';
 import { showToast } from '@/src/components/Toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -108,6 +109,7 @@ export default function SocialPage() {
   const [spectatorOpen, setSpectatorOpen] = useState<{ matchId: string; name1: string; name2: string } | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
   const [compareTarget, setCompareTarget] = useState<any>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Follow system
   const [followedAgents, setFollowedAgents] = useState<Set<string>>(new Set());
@@ -662,6 +664,9 @@ export default function SocialPage() {
               <span className="material-icons-round text-sm">add</span>
               New Post
             </button>
+            <button onClick={() => setSearchOpen(true)} className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-muted-foreground hover:text-primary transition">
+              <span className="material-icons-round text-sm">search</span>
+            </button>
           </div>
         </div>
 
@@ -874,6 +879,8 @@ export default function SocialPage() {
         agent1={agent ? { name: agent.name, gen: agent.gen, warmth: agent.warmth, logic: agent.logic, creativity: agent.creativity, energy: agent.energy, humor: agent.humor } : null}
         agent2={compareTarget}
       />
+      {/* Community Search */}
+      <CommunitySearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <BottomNav />
     </main>
   );
