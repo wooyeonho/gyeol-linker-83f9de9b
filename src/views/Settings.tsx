@@ -204,6 +204,12 @@ export default function SettingsPage() {
     } finally { setByokSaving(false); }
   };
 
+  const deleteByok = async (provider: string) => {
+    if (!user) return;
+    await supabase.from('gyeol_byok_keys' as any).delete().eq('user_id', user.id).eq('provider', provider);
+    setByokList(prev => prev.filter(x => x.provider !== provider));
+  };
+
   const toggleKillSwitch = async () => {
     const newVal = !killSwitchActive;
     await supabase.from('gyeol_system_state' as any).update({ kill_switch: newVal, reason: newVal ? 'User activated' : 'User deactivated' } as any).eq('id', 'global');
